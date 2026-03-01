@@ -4,9 +4,16 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>IVYCOAST & Boldoath Hub</title>
+<meta name="theme-color" content="#1a73e8">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: 'Roboto', sans-serif; background: #fff; color: #202124; line-height: 1.6; }
@@ -46,6 +53,22 @@ body { font-family: 'Roboto', sans-serif; background: #fff; color: #202124; line
 }
 .tab:hover { color: #1a73e8; }
 .tab.active { color: #1a73e8; border-bottom-color: #1a73e8; }
+.tab:focus-visible,
+.btn-add-task:focus-visible,
+.board-modal-actions button:focus-visible,
+.sync-indicator button:focus-visible,
+.pill:focus-visible {
+  outline: 2px solid #1a73e8;
+  outline-offset: 2px;
+}
+.search-input:focus,
+.filter-select:focus,
+.board-modal input:focus,
+.board-modal select:focus,
+.board-modal textarea:focus {
+  border-color: #1a73e8;
+  box-shadow: 0 0 0 2px rgba(26,115,232,0.2);
+}
 
 /* Main Content */
 .main { max-width: 1100px; margin: 0 auto; padding: 32px 24px; }
@@ -72,10 +95,10 @@ body { font-family: 'Roboto', sans-serif; background: #fff; color: #202124; line
 }
 .pill:hover { opacity: 0.85; }
 .pill-figma { background: #1a73e8; }
-.pill-shopify { background: #96bf48; }
-.pill-instagram { background: #e1306c; }
+.pill-shopify { background: #5a7a00; }
+.pill-instagram { background: #c0285a; }
 .pill-yamato { background: #1b1b1b; }
-.pill-drive { background: #0f9d58; }
+.pill-drive { background: #0a7a45; }
 
 /* Info Cards */
 .info-cards {
@@ -176,7 +199,7 @@ body { font-family: 'Roboto', sans-serif; background: #fff; color: #202124; line
   flex-shrink: 0;
 }
 .badge-doc { background: #e6f4ea; color: #137333; }
-.badge-sheet { background: #fef7e0; color: #b06000; }
+.badge-sheet { background: #fef7e0; color: #8a4a00; }
 .file-date { font-size: 12px; color: #5f6368; flex-shrink: 0; }
 
 /* Document Library */
@@ -198,7 +221,6 @@ body { font-family: 'Roboto', sans-serif; background: #fff; color: #202124; line
   outline: none;
   transition: border-color 0.15s;
 }
-.search-input:focus { border-color: #1a73e8; }
 .filter-select {
   padding: 10px 12px;
   border: 1px solid #dadce0;
@@ -209,7 +231,6 @@ body { font-family: 'Roboto', sans-serif; background: #fff; color: #202124; line
   outline: none;
   cursor: pointer;
 }
-.filter-select:focus { border-color: #1a73e8; }
 
 .doc-table {
   width: 100%;
@@ -238,6 +259,277 @@ body { font-family: 'Roboto', sans-serif; background: #fff; color: #202124; line
 .doc-table tr:hover td { background: #f8f9fa; }
 .no-results { text-align: center; padding: 40px; color: #5f6368; }
 
+/* Board */
+.board-toolbar {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+.board-toolbar .filter-select { min-width: 140px; }
+.btn-add-task {
+  padding: 8px 18px;
+  background: #1a73e8;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+}
+.btn-add-task:hover { background: #1557b0; }
+.sync-indicator {
+  margin-left: auto;
+  font-size: 12px;
+  color: #5f6368;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.sync-indicator button {
+  background: none;
+  border: 1px solid #dadce0;
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 12px;
+  cursor: pointer;
+  font-family: inherit;
+  color: #5f6368;
+}
+.sync-indicator button:hover { background: #f8f9fa; }
+.kanban {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  min-height: 400px;
+}
+.kanban-col {
+  background: #f8f9fa;
+  border-radius: 12px;
+  padding: 16px 12px;
+  min-height: 300px;
+}
+.kanban-col-header {
+  font-size: 13px;
+  font-weight: 500;
+  color: #5f6368;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.kanban-col-header .col-count {
+  background: #e8eaed;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+}
+.kanban-col.drag-over { background: #e8f0fe; }
+.task-card {
+  background: #fff;
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 10px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  cursor: grab;
+  transition: box-shadow 0.15s;
+  position: relative;
+}
+.task-card:active { cursor: grabbing; }
+.task-card:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.13); }
+.task-card.dragging { opacity: 0.5; }
+.task-card-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: #202124;
+  margin-bottom: 6px;
+  line-height: 1.3;
+}
+.task-card-name a { color: #1a73e8; text-decoration: none; }
+.task-card-name a:hover { text-decoration: underline; }
+.task-card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  font-size: 11px;
+}
+.task-badge {
+  display: inline-block;
+  padding: 2px 7px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 500;
+}
+.task-badge-high { background: #fce8e6; color: #c5221f; }
+.task-badge-medium { background: #fef7e0; color: #b06000; }
+.task-badge-ivy { background: #e6f4ea; color: #137333; }
+.task-badge-bld { background: #e8eaf6; color: #3f51b5; }
+.task-assignee { color: #5f6368; }
+.task-due { color: #5f6368; }
+.task-due.overdue { color: #c5221f; font-weight: 500; }
+
+/* Board Modal */
+.board-modal-overlay {
+  display: none;
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.4);
+  -webkit-backdrop-filter: blur(2px);
+  backdrop-filter: blur(2px);
+  z-index: 200;
+  justify-content: center;
+  align-items: center;
+}
+.board-modal-overlay.open { display: flex; }
+.board-modal {
+  background: #fff;
+  border-radius: 12px;
+  padding: 28px;
+  width: 480px;
+  max-width: 92vw;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.18);
+}
+.board-modal h2 {
+  font-size: 18px;
+  font-weight: 500;
+  margin-bottom: 20px;
+}
+.board-modal label {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  color: #5f6368;
+  margin-bottom: 4px;
+  margin-top: 12px;
+}
+.board-modal label:first-of-type { margin-top: 0; }
+.board-modal input,
+.board-modal select,
+.board-modal textarea {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #dadce0;
+  border-radius: 6px;
+  font-size: 14px;
+  font-family: inherit;
+  outline: none;
+}
+.board-modal input:focus,
+.board-modal select:focus,
+.board-modal textarea:focus { border-color: #1a73e8; }
+.board-modal textarea { resize: vertical; min-height: 60px; }
+.board-modal-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+  justify-content: flex-end;
+}
+.board-modal-actions button {
+  padding: 8px 20px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+  border: 1px solid #dadce0;
+  background: #fff;
+  color: #5f6368;
+}
+.board-modal-actions .btn-save {
+  background: #1a73e8;
+  color: #fff;
+  border-color: #1a73e8;
+}
+.board-modal-actions .btn-save:hover { background: #1557b0; }
+.board-modal-actions .btn-delete {
+  background: #fff;
+  color: #c5221f;
+  border-color: #c5221f;
+  margin-right: auto;
+}
+.board-modal-actions .btn-delete:hover { background: #fce8e6; }
+
+/* Mobile status picker */
+.status-picker-overlay {
+  display: none;
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.4);
+  z-index: 200;
+  justify-content: center;
+  align-items: flex-end;
+}
+.status-picker-overlay.open { display: flex; }
+.status-picker {
+  background: #fff;
+  border-radius: 16px 16px 0 0;
+  padding: 20px;
+  width: 100%;
+  max-width: 400px;
+}
+.status-picker h3 {
+  font-size: 15px;
+  font-weight: 500;
+  margin-bottom: 12px;
+}
+.status-picker button {
+  display: block;
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 8px;
+  border: 1px solid #e8eaed;
+  border-radius: 8px;
+  background: #fff;
+  font-size: 14px;
+  font-family: inherit;
+  cursor: pointer;
+  text-align: left;
+}
+.status-picker button:hover { background: #f8f9fa; }
+.status-picker button.current { background: #e8f0fe; border-color: #1a73e8; }
+
+/* Done column de-emphasis */
+.kanban-col[data-status="done"] .task-card { opacity: 0.65; }
+.kanban-col[data-status="done"] .task-card-name { text-decoration: line-through; color: #5f6368; }
+
+/* Board setup banner */
+.board-setup {
+  background: #fef7e0;
+  border: 1px solid #f9e6a0;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 20px;
+  font-size: 14px;
+  color: #8a4a00;
+}
+.board-setup input {
+  padding: 6px 10px;
+  border: 1px solid #dadce0;
+  border-radius: 6px;
+  font-size: 13px;
+  font-family: inherit;
+  width: 360px;
+  max-width: 100%;
+  margin: 8px 4px 0 0;
+}
+.board-setup button {
+  padding: 6px 14px;
+  background: #1a73e8;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+  font-family: inherit;
+}
+
 /* Responsive */
 @media (max-width: 600px) {
   .header { padding: 16px 16px 0; }
@@ -255,20 +547,132 @@ body { font-family: 'Roboto', sans-serif; background: #fff; color: #202124; line
   .doc-table { font-size: 13px; }
   .doc-table th, .doc-table td { padding: 8px 6px; }
   .file-date { display: none; }
+  .kanban {
+    grid-template-columns: repeat(4, 80vw);
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+  }
+  .kanban-col { scroll-snap-align: start; }
+  .board-modal { padding: 20px; }
+  .board-setup input { width: 100%; }
 }
+
+/* Login Screen */
+#login-screen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: #f8f9fa;
+}
+.login-card {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.08);
+  padding: 48px 40px;
+  text-align: center;
+  max-width: 400px;
+  width: 100%;
+}
+.login-card h1 {
+  font-size: 22px;
+  font-weight: 500;
+  color: #202124;
+  margin-bottom: 8px;
+}
+.login-card p {
+  font-size: 14px;
+  color: #5f6368;
+  margin-bottom: 32px;
+}
+#sign-in-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 32px;
+  background: #1a73e8;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 15px;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+#sign-in-btn:hover { background: #1557b0; }
+#auth-error {
+  margin-top: 20px;
+  color: #d93025;
+  font-size: 14px;
+  min-height: 20px;
+}
+.header-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.header-user {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.header-user img {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+}
+.header-user span {
+  font-size: 13px;
+  color: #5f6368;
+}
+#sign-out-btn {
+  padding: 6px 14px;
+  background: none;
+  border: 1px solid #dadce0;
+  border-radius: 4px;
+  font-size: 13px;
+  font-family: inherit;
+  color: #5f6368;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+#sign-out-btn:hover { background: #f1f3f4; border-color: #c6c6c6; }
 </style>
 </head>
 <body>
 
+<div id="login-screen">
+  <div class="login-card">
+    <h1>IVYCOAST & Boldoath Hub</h1>
+    <p>Sign in with your @ivycoast.co account</p>
+    <button id="sign-in-btn" onclick="signIn()">Sign in with Google</button>
+    <div id="auth-error"></div>
+  </div>
+</div>
+
+<div id="app-container" style="display:none">
+
 <div class="header">
   <div class="header-inner">
-    <h1>IVYCOAST & Boldoath Hub</h1>
-    <p>Document Management Dashboard</p>
-    <nav class="tabs">
-      <button class="tab active" data-view="home">Home</button>
-      <button class="tab" data-view="ivycoast">IVYCOAST</button>
-      <button class="tab" data-view="boldoath">Boldoath</button>
-      <button class="tab" data-view="library">Document Library</button>
+    <div class="header-top">
+      <div>
+        <h1>IVYCOAST & Boldoath Hub</h1>
+        <p>Document Management Dashboard</p>
+      </div>
+      <div class="header-user">
+        <img id="user-avatar" src="" alt="">
+        <span id="user-name"></span>
+        <button id="sign-out-btn" onclick="signOut()">Sign out</button>
+      </div>
+    </div>
+    <nav class="tabs" role="tablist">
+      <button class="tab active" data-view="home" role="tab" aria-selected="true" aria-controls="home" id="tab-home">Home</button>
+      <button class="tab" data-view="ivycoast" role="tab" aria-selected="false" aria-controls="ivycoast" id="tab-ivycoast">IVYCOAST</button>
+      <button class="tab" data-view="boldoath" role="tab" aria-selected="false" aria-controls="boldoath" id="tab-boldoath">Boldoath</button>
+      <button class="tab" data-view="library" role="tab" aria-selected="false" aria-controls="library" id="tab-library">Document Library</button>
+      <button class="tab" data-view="board" role="tab" aria-selected="false" aria-controls="board" id="tab-board">Board</button>
     </nav>
   </div>
 </div>
@@ -276,13 +680,13 @@ body { font-family: 'Roboto', sans-serif; background: #fff; color: #202124; line
 <div class="main">
 
   <!-- HOME -->
-  <div id="home" class="view active">
+  <div id="home" class="view active" role="tabpanel" aria-labelledby="tab-home">
     <div class="quick-links">
-      <a class="pill pill-figma" href="https://www.figma.com/board/oO7mtsykQVHjUdlrwdZJ3n/Ivycoast-Strategy" target="_blank">Figma</a>
-      <a class="pill pill-shopify" href="https://ivycoast.co" target="_blank">Shopify</a>
-      <a class="pill pill-instagram" href="https://www.instagram.com/ivycoast" target="_blank">Instagram</a>
-      <a class="pill pill-yamato" href="https://www.kuronekoyamato.co.jp" target="_blank">Yamato</a>
-      <a class="pill pill-drive" href="#" target="_blank" id="drive-link">Google Drive</a>
+      <a class="pill pill-figma" href="https://www.figma.com/board/oO7mtsykQVHjUdlrwdZJ3n/Ivycoast-Strategy" target="_blank" rel="noopener noreferrer">Figma</a>
+      <a class="pill pill-shopify" href="https://ivycoast.co" target="_blank" rel="noopener noreferrer">Shopify</a>
+      <a class="pill pill-instagram" href="https://www.instagram.com/ivycoast" target="_blank" rel="noopener noreferrer">Instagram</a>
+      <a class="pill pill-yamato" href="https://www.kuronekoyamato.co.jp" target="_blank" rel="noopener noreferrer">Yamato</a>
+      <span class="pill pill-drive" style="opacity:0.5;cursor:not-allowed" title="Drive link not yet configured">Google Drive</span>
     </div>
 
     <div class="info-cards">
@@ -303,7 +707,7 @@ body { font-family: 'Roboto', sans-serif; background: #fff; color: #202124; line
             <div class="stat-label">Active Projects</div>
           </div>
           <div>
-            <div class="stat-num" style="color:#fbbc04">1</div>
+            <div class="stat-num" style="color:#d97706">1</div>
             <div class="stat-label">Upcoming Event</div>
           </div>
         </div>
@@ -311,27 +715,27 @@ body { font-family: 'Roboto', sans-serif; background: #fff; color: #202124; line
       <div class="info-card">
         <h3>Ask Gemini</h3>
         <p>Search across all documents with AI</p>
-        <p style="margin-top:8px"><a href="https://notebooklm.google.com" target="_blank">Open NotebookLM</a></p>
+        <p style="margin-top:8px"><a href="https://notebooklm.google.com" target="_blank" rel="noopener noreferrer">Open NotebookLM</a></p>
       </div>
     </div>
   </div>
 
   <!-- IVYCOAST -->
-  <div id="ivycoast" class="view">
+  <div id="ivycoast" class="view" role="tabpanel" aria-labelledby="tab-ivycoast">
     <h2 class="section-title">IVYCOAST Documents</h2>
     <p class="section-subtitle">27 files across 8 categories</p>
     <div class="cat-grid" id="ivycoast-grid"></div>
   </div>
 
   <!-- BOLDOATH -->
-  <div id="boldoath" class="view">
+  <div id="boldoath" class="view" role="tabpanel" aria-labelledby="tab-boldoath">
     <h2 class="section-title">Boldoath Documents</h2>
     <p class="section-subtitle">7 files across 4 categories</p>
     <div class="cat-grid" id="boldoath-grid"></div>
   </div>
 
   <!-- DOCUMENT LIBRARY -->
-  <div id="library" class="view">
+  <div id="library" class="view" role="tabpanel" aria-labelledby="tab-library">
     <h2 class="section-title">Document Library</h2>
     <p class="section-subtitle">Search and filter all 34 documents</p>
     <div class="search-bar">
@@ -363,6 +767,116 @@ body { font-family: 'Roboto', sans-serif; background: #fff; color: #202124; line
       <tbody id="library-body"></tbody>
     </table>
     <div class="no-results" id="no-results" style="display:none">No documents match your filters.</div>
+  </div>
+
+  <!-- BOARD -->
+  <div id="board" class="view" role="tabpanel" aria-labelledby="tab-board">
+    <h2 class="section-title">Task Board</h2>
+    <p class="section-subtitle">Collaborative Kanban — synced via Google Sheets</p>
+
+    <div id="board-setup" class="board-setup" style="display:none">
+      Paste your Google Apps Script web app URL to connect the board.<br>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;">
+        <input type="text" id="script-url-input" placeholder="https://script.google.com/macros/s/.../exec" style="flex:1;min-width:200px;"
+          title="Paste the URL from Google Apps Script: Extensions > Apps Script > Deploy > Manage deployments">
+        <button onclick="saveScriptUrl()">Connect</button>
+      </div>
+    </div>
+
+    <div class="board-toolbar" id="board-toolbar">
+      <button class="btn-add-task" onclick="openCreateModal()">+ Add Task</button>
+      <select class="filter-select" id="board-filter-ws" onchange="renderBoard()">
+        <option value="">All Workspaces</option>
+        <option value="IVYCOAST">IVYCOAST</option>
+        <option value="BOLDOATH">BOLDOATH</option>
+      </select>
+      <div class="sync-indicator">
+        <span id="sync-status"></span>
+        <button onclick="fetchBoardTasks()">Refresh</button>
+        <button onclick="resetScriptUrl()" title="Change Apps Script URL">Change URL</button>
+      </div>
+    </div>
+
+    <div id="board-loading" style="display:none;text-align:center;padding:48px;color:#5f6368;font-size:14px;">
+      Loading tasks from Google Sheets...
+    </div>
+
+    <div class="kanban" id="kanban">
+      <div class="kanban-col" data-status="backlog">
+        <div class="kanban-col-header">Backlog <span class="col-count" id="count-backlog">0</span></div>
+        <div class="kanban-col-body" id="col-backlog"></div>
+      </div>
+      <div class="kanban-col" data-status="todo">
+        <div class="kanban-col-header">To Do <span class="col-count" id="count-todo">0</span></div>
+        <div class="kanban-col-body" id="col-todo"></div>
+      </div>
+      <div class="kanban-col" data-status="in_progress">
+        <div class="kanban-col-header">In Progress <span class="col-count" id="count-in_progress">0</span></div>
+        <div class="kanban-col-body" id="col-in_progress"></div>
+      </div>
+      <div class="kanban-col" data-status="done">
+        <div class="kanban-col-header">Done <span class="col-count" id="count-done">0</span></div>
+        <div class="kanban-col-body" id="col-done"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Board Task Modal -->
+<div class="board-modal-overlay" id="task-modal-overlay" onclick="if(event.target===this)closeModal()">
+  <div class="board-modal">
+    <h2 id="modal-title">New Task</h2>
+    <input type="hidden" id="modal-task-id">
+    <label for="modal-name">Name</label>
+    <input type="text" id="modal-name">
+    <label for="modal-desc">Description</label>
+    <textarea id="modal-desc"></textarea>
+    <label for="modal-status">Status</label>
+    <select id="modal-status">
+      <option value="backlog">Backlog</option>
+      <option value="todo">To Do</option>
+      <option value="in_progress">In Progress</option>
+      <option value="done">Done</option>
+    </select>
+    <label for="modal-priority">Priority</label>
+    <select id="modal-priority">
+      <option value="">None</option>
+      <option value="High">High</option>
+      <option value="Medium">Medium</option>
+    </select>
+    <label for="modal-assignee">Assignee</label>
+    <select id="modal-assignee">
+      <option value="">Unassigned</option>
+      <option value="Taka Imoto">Taka Imoto</option>
+      <option value="YOKO">YOKO</option>
+    </select>
+    <label for="modal-due">Due Date</label>
+    <input type="date" id="modal-due">
+    <label for="modal-workspace">Workspace</label>
+    <select id="modal-workspace">
+      <option value="IVYCOAST">IVYCOAST</option>
+      <option value="BOLDOATH">BOLDOATH</option>
+    </select>
+    <label for="modal-category">Category</label>
+    <input type="text" id="modal-category">
+    <label for="modal-doclink">Doc Link</label>
+    <input type="url" id="modal-doclink" placeholder="https://docs.google.com/...">
+    <div class="board-modal-actions">
+      <button class="btn-delete" id="modal-delete-btn" style="display:none" onclick="deleteTaskConfirm()">Delete</button>
+      <button onclick="closeModal()">Cancel</button>
+      <button class="btn-save" onclick="saveTask()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Mobile Status Picker -->
+<div class="status-picker-overlay" id="status-picker-overlay" onclick="if(event.target===this)closeStatusPicker()">
+  <div class="status-picker">
+    <h3>Move to&hellip;</h3>
+    <button data-status="backlog" onclick="pickStatus('backlog')">Backlog</button>
+    <button data-status="todo" onclick="pickStatus('todo')">To Do</button>
+    <button data-status="in_progress" onclick="pickStatus('in_progress')">In Progress</button>
+    <button data-status="done" onclick="pickStatus('done')">Done</button>
   </div>
 </div>
 
@@ -424,14 +938,20 @@ function init() {
   renderLibrary();
   populateCategoryFilter();
   renderMeetingLink();
+  var defaultTh = document.querySelector('.doc-table th[data-sort="name"]');
+  if (defaultTh) defaultTh.querySelector(".sort-arrow").textContent = " \u25B2";
 }
 
 // Tab switching
 document.querySelectorAll(".tab").forEach(function(tab) {
   tab.addEventListener("click", function() {
-    document.querySelectorAll(".tab").forEach(function(t) { t.classList.remove("active"); });
+    document.querySelectorAll(".tab").forEach(function(t) {
+      t.classList.remove("active");
+      t.setAttribute("aria-selected", "false");
+    });
     document.querySelectorAll(".view").forEach(function(v) { v.classList.remove("active"); });
     tab.classList.add("active");
+    tab.setAttribute("aria-selected", "true");
     document.getElementById(tab.dataset.view).classList.add("active");
   });
 });
@@ -633,6 +1153,567 @@ document.querySelectorAll(".doc-table th").forEach(function(th) {
     renderLibrary();
   });
 });
+
+// ===================== BOARD =====================
+
+var SCRIPT_URL = localStorage.getItem("boardScriptUrl") || "";
+var boardTasks = [];
+var boardRefreshTimer = null;
+var isMobile = window.matchMedia("(max-width: 600px)").matches;
+var mobilePickTaskId = null;
+
+function saveScriptUrl() {
+  var url = document.getElementById("script-url-input").value.trim();
+  if (!url) return;
+  if (!url.startsWith("https://script.google.com/macros/s/")) {
+    alert("Please paste a valid Google Apps Script web app URL.\nIt should start with: https://script.google.com/macros/s/");
+    return;
+  }
+  localStorage.setItem("boardScriptUrl", url);
+  SCRIPT_URL = url;
+  checkBoardSetup();
+  fetchBoardTasks();
+}
+
+function resetScriptUrl() {
+  localStorage.removeItem("boardScriptUrl");
+  SCRIPT_URL = "";
+  boardTasks = [];
+  renderBoard();
+  checkBoardSetup();
+}
+
+function checkBoardSetup() {
+  var hasUrl = !!SCRIPT_URL;
+  document.getElementById("board-setup").style.display = hasUrl ? "none" : "block";
+  document.getElementById("board-toolbar").style.display = hasUrl ? "flex" : "none";
+}
+
+function setSyncStatus(msg) {
+  document.getElementById("sync-status").textContent = msg;
+}
+
+function showLastSynced() {
+  var now = new Date();
+  var hhmm = String(now.getHours()).padStart(2,"0") + ":" + String(now.getMinutes()).padStart(2,"0");
+  setSyncStatus("Last synced " + hhmm);
+}
+
+// Fetch tasks from API
+function fetchBoardTasks() {
+  if (!SCRIPT_URL) { checkBoardSetup(); return; }
+  setSyncStatus("Syncing\u2026");
+  document.getElementById("board-loading").style.display = boardTasks.length === 0 ? "block" : "none";
+  fetch(SCRIPT_URL + "?action=list")
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      boardTasks = data.tasks || [];
+      renderBoard();
+      document.getElementById("board-loading").style.display = "none";
+      showLastSynced();
+    })
+    .catch(function(err) {
+      document.getElementById("board-loading").style.display = "none";
+      var msg = "Sync failed";
+      if (!navigator.onLine) msg = "Offline \u2014 check your connection";
+      setSyncStatus(msg);
+      console.error("Board fetch error:", err);
+    });
+}
+
+// API helpers
+// Content-Type is "text/plain" (not "application/json") to avoid the CORS
+// preflight OPTIONS request that Google Apps Script cannot respond to.
+function apiPost(body) {
+  return fetch(SCRIPT_URL, {
+    method: "POST",
+    headers: { "Content-Type": "text/plain" },
+    body: JSON.stringify(body)
+  }).then(function(r) { return r.json(); });
+}
+
+// Render board
+function renderBoard() {
+  var wsFilter = document.getElementById("board-filter-ws").value;
+  var cols = { backlog: [], todo: [], in_progress: [], done: [] };
+
+  boardTasks.forEach(function(t) {
+    if (wsFilter && t.workspace !== wsFilter) return;
+    var s = t.status || "backlog";
+    if (!cols[s]) s = "backlog";
+    cols[s].push(t);
+  });
+
+  Object.keys(cols).forEach(function(status) {
+    var container = document.getElementById("col-" + status);
+    container.textContent = "";
+    document.getElementById("count-" + status).textContent = cols[status].length;
+
+    cols[status].forEach(function(t) {
+      var card = document.createElement("div");
+      card.className = "task-card";
+      card.setAttribute("data-id", t.id);
+      card.setAttribute("tabindex", "0");
+      card.draggable = true;
+
+      // Name
+      var nameDiv = document.createElement("div");
+      nameDiv.className = "task-card-name";
+      if (t.docLink && isValidURL(t.docLink)) {
+        var a = document.createElement("a");
+        a.href = t.docLink;
+        a.target = "_blank";
+        a.rel = "noopener noreferrer";
+        a.textContent = t.name;
+        a.addEventListener("click", function(e) { e.stopPropagation(); });
+        nameDiv.appendChild(a);
+      } else {
+        nameDiv.textContent = t.name;
+      }
+      card.appendChild(nameDiv);
+
+      // Meta
+      var metaDiv = document.createElement("div");
+      metaDiv.className = "task-card-meta";
+
+      if (t.priority === "High") {
+        var bh = document.createElement("span");
+        bh.className = "task-badge task-badge-high";
+        bh.textContent = "High";
+        metaDiv.appendChild(bh);
+      } else if (t.priority === "Medium") {
+        var bm = document.createElement("span");
+        bm.className = "task-badge task-badge-medium";
+        bm.textContent = "Medium";
+        metaDiv.appendChild(bm);
+      }
+
+      if (t.workspace === "IVYCOAST") {
+        var bi = document.createElement("span");
+        bi.className = "task-badge task-badge-ivy";
+        bi.textContent = "IVY";
+        bi.title = "IVYCOAST";
+        metaDiv.appendChild(bi);
+      } else if (t.workspace === "BOLDOATH") {
+        var bb = document.createElement("span");
+        bb.className = "task-badge task-badge-bld";
+        bb.textContent = "BLD";
+        bb.title = "BOLDOATH";
+        metaDiv.appendChild(bb);
+      }
+
+      if (t.assignee) {
+        var assigneeSpan = document.createElement("span");
+        assigneeSpan.className = "task-assignee";
+        assigneeSpan.textContent = t.assignee;
+        metaDiv.appendChild(assigneeSpan);
+      }
+
+      if (t.category) {
+        var catSpan = document.createElement("span");
+        catSpan.className = "task-assignee";
+        catSpan.textContent = t.category;
+        metaDiv.appendChild(catSpan);
+      }
+
+      if (t.due) {
+        var dueSpan = document.createElement("span");
+        dueSpan.className = "task-due";
+        var dueParts = t.due.split("-");
+        var dueDate = new Date(+dueParts[0], +dueParts[1] - 1, +dueParts[2]);
+        var today = new Date();
+        today.setHours(0,0,0,0);
+        if (dueDate < today && status !== "done") {
+          dueSpan.classList.add("overdue");
+        }
+        dueSpan.textContent = formatDate(t.due);
+        metaDiv.appendChild(dueSpan);
+      }
+
+      card.appendChild(metaDiv);
+
+      // Edit button (visible on mobile, hover on desktop)
+      var editBtn = document.createElement("button");
+      editBtn.textContent = "\u22EF";
+      editBtn.title = "Edit task";
+      editBtn.style.cssText = "position:absolute;top:8px;right:8px;background:none;border:none;cursor:pointer;font-size:18px;color:#5f6368;padding:4px;line-height:1;";
+      editBtn.addEventListener("click", function(e) {
+        e.stopPropagation();
+        openEditModal(t.id);
+      });
+      card.appendChild(editBtn);
+
+      // Click → edit modal (desktop) or status picker (mobile)
+      card.addEventListener("click", function() {
+        if (isMobile) {
+          openStatusPicker(t.id, t.status);
+        } else {
+          openEditModal(t.id);
+        }
+      });
+
+      // Keyboard: Enter/Space → edit modal
+      card.addEventListener("keydown", function(e) {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          openEditModal(t.id);
+        }
+      });
+
+      // Long press on mobile → edit modal
+      var longPressTimer;
+      card.addEventListener("touchstart", function(e) {
+        longPressTimer = setTimeout(function() {
+          e.preventDefault();
+          openEditModal(t.id);
+        }, 500);
+      });
+      card.addEventListener("touchend", function() { clearTimeout(longPressTimer); });
+      card.addEventListener("touchmove", function() { clearTimeout(longPressTimer); });
+
+      // Drag events
+      card.addEventListener("dragstart", function(e) {
+        card.classList.add("dragging");
+        e.dataTransfer.setData("text/plain", t.id);
+        e.dataTransfer.effectAllowed = "move";
+      });
+      card.addEventListener("dragend", function() {
+        card.classList.remove("dragging");
+      });
+
+      container.appendChild(card);
+    });
+  });
+
+  // Empty board message
+  var totalVisible = Object.keys(cols).reduce(function(s, k) { return s + cols[k].length; }, 0);
+  var emptyMsg = document.getElementById("board-empty-msg");
+  if (!emptyMsg) {
+    emptyMsg = document.createElement("p");
+    emptyMsg.id = "board-empty-msg";
+    emptyMsg.style.cssText = "text-align:center;padding:32px;color:#5f6368;font-size:14px;";
+    document.getElementById("kanban").parentNode.insertBefore(emptyMsg, document.getElementById("kanban").nextSibling);
+  }
+  emptyMsg.textContent = (totalVisible === 0 && SCRIPT_URL) ? "No tasks found. Create one with + Add Task." : "";
+}
+
+// Drag & Drop on columns
+document.querySelectorAll(".kanban-col").forEach(function(col) {
+  col.addEventListener("dragover", function(e) {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+    col.classList.add("drag-over");
+  });
+  col.addEventListener("dragleave", function(e) {
+    if (!col.contains(e.relatedTarget)) {
+      col.classList.remove("drag-over");
+    }
+  });
+  col.addEventListener("drop", function(e) {
+    e.preventDefault();
+    col.classList.remove("drag-over");
+    var taskId = e.dataTransfer.getData("text/plain");
+    var newStatus = col.dataset.status;
+    // Optimistic update
+    boardTasks.forEach(function(t) {
+      if (t.id === taskId) t.status = newStatus;
+    });
+    renderBoard();
+    // API call
+    apiPost({ action: "update", task: { id: taskId, status: newStatus } })
+      .catch(function() { fetchBoardTasks(); });
+  });
+});
+
+// Mobile status picker
+function openStatusPicker(taskId, currentStatus) {
+  mobilePickTaskId = taskId;
+  var overlay = document.getElementById("status-picker-overlay");
+  overlay.classList.add("open");
+  overlay.querySelectorAll("button").forEach(function(btn) {
+    btn.classList.toggle("current", btn.dataset.status === currentStatus);
+  });
+}
+
+function closeStatusPicker() {
+  document.getElementById("status-picker-overlay").classList.remove("open");
+  mobilePickTaskId = null;
+}
+
+function pickStatus(newStatus) {
+  if (!mobilePickTaskId) return;
+  var taskId = mobilePickTaskId;
+  closeStatusPicker();
+  boardTasks.forEach(function(t) {
+    if (t.id === taskId) t.status = newStatus;
+  });
+  renderBoard();
+  apiPost({ action: "update", task: { id: taskId, status: newStatus } })
+    .catch(function() { fetchBoardTasks(); });
+}
+
+// Modal: Create
+function openCreateModal() {
+  document.getElementById("modal-title").textContent = "New Task";
+  document.getElementById("modal-task-id").value = "";
+  document.getElementById("modal-name").value = "";
+  document.getElementById("modal-desc").value = "";
+  document.getElementById("modal-status").value = "backlog";
+  document.getElementById("modal-priority").value = "";
+  document.getElementById("modal-assignee").value = "";
+  document.getElementById("modal-due").value = "";
+  document.getElementById("modal-workspace").value = "IVYCOAST";
+  document.getElementById("modal-category").value = "";
+  document.getElementById("modal-doclink").value = "";
+  document.getElementById("modal-delete-btn").style.display = "none";
+  document.getElementById("task-modal-overlay").classList.add("open");
+  setTimeout(function() { document.getElementById("modal-name").focus(); }, 50);
+}
+
+// Modal: Edit
+function openEditModal(taskId) {
+  var t = boardTasks.find(function(task) { return task.id === taskId; });
+  if (!t) return;
+  document.getElementById("modal-title").textContent = "Edit Task";
+  document.getElementById("modal-task-id").value = t.id;
+  document.getElementById("modal-name").value = t.name || "";
+  document.getElementById("modal-desc").value = t.description || "";
+  document.getElementById("modal-status").value = t.status || "backlog";
+  document.getElementById("modal-priority").value = t.priority || "";
+  document.getElementById("modal-assignee").value = t.assignee || "";
+  document.getElementById("modal-due").value = t.due || "";
+  document.getElementById("modal-workspace").value = t.workspace || "IVYCOAST";
+  document.getElementById("modal-category").value = t.category || "";
+  document.getElementById("modal-doclink").value = t.docLink || "";
+  document.getElementById("modal-delete-btn").style.display = "inline-block";
+  document.getElementById("task-modal-overlay").classList.add("open");
+  setTimeout(function() { document.getElementById("modal-name").focus(); }, 50);
+}
+
+function closeModal() {
+  document.getElementById("task-modal-overlay").classList.remove("open");
+}
+
+// Save (create or update)
+function saveTask() {
+  if (!SCRIPT_URL) { checkBoardSetup(); closeModal(); return; }
+  var id = document.getElementById("modal-task-id").value;
+  var task = {
+    name: document.getElementById("modal-name").value.trim(),
+    description: document.getElementById("modal-desc").value.trim(),
+    status: document.getElementById("modal-status").value,
+    priority: document.getElementById("modal-priority").value,
+    assignee: document.getElementById("modal-assignee").value,
+    due: document.getElementById("modal-due").value,
+    workspace: document.getElementById("modal-workspace").value,
+    category: document.getElementById("modal-category").value.trim(),
+    docLink: document.getElementById("modal-doclink").value.trim()
+  };
+  if (!task.name) { alert("Task name is required."); return; }
+  if (task.docLink && !isValidURL(task.docLink)) {
+    alert("Doc Link must be a valid URL (https://...)");
+    return;
+  }
+
+  closeModal();
+  setSyncStatus("Saving\u2026");
+
+  if (id) {
+    // Update
+    task.id = id;
+    boardTasks = boardTasks.map(function(t) {
+      return t.id === id ? Object.assign({}, t, task) : t;
+    });
+    renderBoard();
+    apiPost({ action: "update", task: task })
+      .then(function() { setSyncStatus("Saved"); fetchBoardTasks(); })
+      .catch(function() { setSyncStatus("Save failed"); fetchBoardTasks(); });
+  } else {
+    // Create — optimistic with temp id
+    var tempId = "temp-" + Date.now();
+    task.id = tempId;
+    boardTasks.push(task);
+    renderBoard();
+    apiPost({ action: "create", task: task })
+      .then(function(data) {
+        setSyncStatus("Task created");
+        if (data.task) {
+          boardTasks = boardTasks.map(function(t) {
+            return t.id === tempId ? data.task : t;
+          });
+          renderBoard();
+        }
+      })
+      .catch(function() { setSyncStatus("Create failed"); fetchBoardTasks(); });
+  }
+}
+
+// Delete
+function deleteTaskConfirm() {
+  var id = document.getElementById("modal-task-id").value;
+  var taskName = document.getElementById("modal-name").value;
+  if (!id) return;
+  if (!confirm('Delete "' + taskName + '"? This cannot be undone.')) return;
+  closeModal();
+  boardTasks = boardTasks.filter(function(t) { return t.id !== id; });
+  renderBoard();
+  apiPost({ action: "delete", id: id })
+    .catch(function() { fetchBoardTasks(); });
+}
+
+// Auto-refresh when Board tab is active
+function startBoardRefresh() {
+  stopBoardRefresh();
+  boardRefreshTimer = setInterval(fetchBoardTasks, 30000);
+}
+
+function stopBoardRefresh() {
+  if (boardRefreshTimer) { clearInterval(boardRefreshTimer); boardRefreshTimer = null; }
+}
+
+// Hook into tab switching
+document.querySelectorAll(".tab").forEach(function(tab) {
+  tab.addEventListener("click", function() {
+    if (tab.dataset.view === "board") {
+      checkBoardSetup();
+      fetchBoardTasks();
+      startBoardRefresh();
+    } else {
+      stopBoardRefresh();
+    }
+  });
+});
+
+// Mobile detection via MediaQueryList (handles orientation changes)
+var mobileQuery = window.matchMedia("(max-width: 600px)");
+mobileQuery.addEventListener("change", function(e) { isMobile = e.matches; });
+
+// Keyboard shortcuts
+document.addEventListener("keydown", function(e) {
+  // Escape closes modals
+  if (e.key === "Escape") {
+    closeModal();
+    closeStatusPicker();
+  }
+  // "/" focuses search on Library tab
+  if (e.key === "/" && document.activeElement.tagName !== "INPUT" && document.activeElement.tagName !== "TEXTAREA") {
+    var libraryView = document.getElementById("library");
+    if (libraryView.classList.contains("active")) {
+      e.preventDefault();
+      document.getElementById("search-input").focus();
+    }
+  }
+  // "n" opens new task on Board tab
+  if (e.key === "n" && !e.metaKey && !e.ctrlKey && document.activeElement.tagName !== "INPUT" && document.activeElement.tagName !== "TEXTAREA") {
+    var boardView = document.getElementById("board");
+    if (boardView.classList.contains("active") && SCRIPT_URL) openCreateModal();
+  }
+});
+
+// Focus trap inside modal
+document.getElementById("task-modal-overlay").addEventListener("keydown", function(e) {
+  if (!this.classList.contains("open")) return;
+  if (e.key !== "Tab") return;
+  var focusable = this.querySelectorAll('input:not([type="hidden"]), select, textarea, button:not([style*="display:none"]):not([style*="display: none"])');
+  var first = focusable[0];
+  var last = focusable[focusable.length - 1];
+  if (e.shiftKey && document.activeElement === first) {
+    e.preventDefault(); last.focus();
+  } else if (!e.shiftKey && document.activeElement === last) {
+    e.preventDefault(); first.focus();
+  }
+});
+
+// Pause auto-refresh when browser tab is hidden
+document.addEventListener("visibilitychange", function() {
+  if (document.hidden) {
+    stopBoardRefresh();
+  } else {
+    var boardView = document.getElementById("board");
+    if (boardView.classList.contains("active")) {
+      fetchBoardTasks();
+      startBoardRefresh();
+    }
+  }
+});
+</script>
+
+</div><!-- /app-container -->
+
+<script>
+// ── Firebase Auth ──────────────────────────────────────────────
+// TODO: Replace with your Firebase project config from
+// https://console.firebase.google.com → Project Settings → Web app
+var FIREBASE_CONFIG = {
+  apiKey: "AIzaSyDbPvD1pOhU3XlA7G9as19KGUktGx1k9gU",
+  authDomain: "ivycoast.firebaseapp.com",
+  projectId: "ivycoast",
+  storageBucket: "ivycoast.firebasestorage.app",
+  messagingSenderId: "337891836200",
+  appId: "1:337891836200:web:218ea45b9fd1c028ef501d"
+};
+
+var ALLOWED_EMAILS = ["yoko@ivycoast.co", "taka@ivycoast.co"];
+
+firebase.initializeApp(FIREBASE_CONFIG);
+var auth = firebase.auth();
+auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+
+auth.onAuthStateChanged(function(user) {
+  if (user && ALLOWED_EMAILS.includes(user.email)) {
+    showApp(user);
+  } else if (user) {
+    auth.signOut();
+    showLoginError("Access restricted to @ivycoast.co accounts.");
+  } else {
+    showLogin();
+  }
+});
+
+function signIn() {
+  var provider = new firebase.auth.GoogleAuthProvider();
+  provider.setCustomParameters({ hd: "ivycoast.co" });
+  auth.signInWithPopup(provider).catch(function(err) {
+    if (err.code !== "auth/popup-closed-by-user") {
+      showLoginError(err.message);
+    }
+  });
+}
+
+function signOut() {
+  auth.signOut();
+}
+
+function showApp(user) {
+  document.getElementById("login-screen").style.display = "none";
+  document.getElementById("app-container").style.display = "";
+  document.getElementById("auth-error").textContent = "";
+  if (user.photoURL) {
+    document.getElementById("user-avatar").src = user.photoURL;
+    document.getElementById("user-avatar").style.display = "";
+  } else {
+    document.getElementById("user-avatar").style.display = "none";
+  }
+  document.getElementById("user-name").textContent = user.displayName || user.email;
+}
+
+function showLogin() {
+  document.getElementById("login-screen").style.display = "";
+  document.getElementById("app-container").style.display = "none";
+  document.getElementById("auth-error").textContent = "";
+}
+
+function showLoginError(msg) {
+  document.getElementById("login-screen").style.display = "";
+  document.getElementById("app-container").style.display = "none";
+  document.getElementById("auth-error").textContent = msg;
+}
+
+// ── Service Worker (PWA) ──────────────────────────────────────
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("sw.js")
+    .catch(function(err) { console.warn("SW registration failed:", err); });
+}
 </script>
 </body>
 </html>
