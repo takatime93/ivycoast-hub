@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IVYCOAST & Boldoath Hub</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Roboto', sans-serif; background: #fff; color: #202124; line-height: 1.6; }
+
+/* Header */
+.header {
+  background: #fff;
+  border-bottom: 1px solid #e0e0e0;
+  padding: 24px 24px 0;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.header-inner { max-width: 1100px; margin: 0 auto; }
+.header h1 { font-size: 22px; font-weight: 500; color: #202124; }
+.header p { font-size: 14px; color: #5f6368; margin-top: 2px; }
+
+/* Tabs */
+.tabs {
+  display: flex;
+  gap: 0;
+  margin-top: 16px;
+  overflow-x: auto;
+}
+.tab {
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #5f6368;
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  cursor: pointer;
+  white-space: nowrap;
+  font-family: inherit;
+  transition: color 0.15s, border-color 0.15s;
+}
+.tab:hover { color: #1a73e8; }
+.tab.active { color: #1a73e8; border-bottom-color: #1a73e8; }
+
+/* Main Content */
+.main { max-width: 1100px; margin: 0 auto; padding: 32px 24px; }
+.view { display: none; }
+.view.active { display: block; }
+
+/* Quick Links */
+.quick-links {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 32px;
+}
+.pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 10px 22px;
+  border-radius: 24px;
+  color: #fff;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  transition: opacity 0.15s;
+}
+.pill:hover { opacity: 0.85; }
+.pill-figma { background: #1a73e8; }
+.pill-shopify { background: #96bf48; }
+.pill-instagram { background: #e1306c; }
+.pill-yamato { background: #1b1b1b; }
+.pill-drive { background: #0f9d58; }
+
+/* Info Cards */
+.info-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+  margin-top: 8px;
+}
+.info-card {
+  background: #f8f9fa;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+.info-card h3 {
+  font-size: 14px;
+  font-weight: 500;
+  color: #5f6368;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 12px;
+}
+.info-card p { font-size: 15px; color: #202124; }
+.info-card a { color: #1a73e8; text-decoration: none; }
+.info-card a:hover { text-decoration: underline; }
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  text-align: center;
+}
+.stat-num { font-size: 32px; font-weight: 700; }
+.stat-label { font-size: 13px; color: #5f6368; }
+
+/* Category Cards */
+.section-title {
+  font-size: 18px;
+  font-weight: 500;
+  color: #202124;
+  margin-bottom: 8px;
+}
+.section-subtitle {
+  font-size: 14px;
+  color: #5f6368;
+  margin-bottom: 24px;
+}
+.cat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  gap: 20px;
+}
+.cat-card {
+  background: #f8f9fa;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+.cat-card h3 {
+  font-size: 15px;
+  font-weight: 500;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.cat-card h3 .count {
+  font-size: 12px;
+  font-weight: 400;
+  color: #5f6368;
+  background: #e8eaed;
+  padding: 2px 10px;
+  border-radius: 12px;
+}
+.file-row {
+  display: flex;
+  align-items: center;
+  padding: 8px 0;
+  border-top: 1px solid #e8eaed;
+  font-size: 14px;
+  gap: 10px;
+}
+.file-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.file-name a { color: #1a73e8; text-decoration: none; }
+.file-name a:hover { text-decoration: underline; }
+.file-name span { color: #202124; }
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 500;
+  flex-shrink: 0;
+}
+.badge-doc { background: #e6f4ea; color: #137333; }
+.badge-sheet { background: #fef7e0; color: #b06000; }
+.file-date { font-size: 12px; color: #5f6368; flex-shrink: 0; }
+
+/* Document Library */
+.search-bar {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 24px;
+  align-items: center;
+}
+.search-input {
+  flex: 1;
+  min-width: 200px;
+  padding: 10px 16px;
+  border: 1px solid #dadce0;
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.search-input:focus { border-color: #1a73e8; }
+.filter-select {
+  padding: 10px 12px;
+  border: 1px solid #dadce0;
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: inherit;
+  background: #fff;
+  outline: none;
+  cursor: pointer;
+}
+.filter-select:focus { border-color: #1a73e8; }
+
+.doc-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+.doc-table th {
+  text-align: left;
+  padding: 10px 12px;
+  border-bottom: 2px solid #e0e0e0;
+  font-weight: 500;
+  color: #5f6368;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+}
+.doc-table th:hover { color: #1a73e8; }
+.doc-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid #f0f0f0;
+  vertical-align: middle;
+}
+.doc-table tr:hover td { background: #f8f9fa; }
+.no-results { text-align: center; padding: 40px; color: #5f6368; }
+
+/* Responsive */
+@media (max-width: 600px) {
+  .header { padding: 16px 16px 0; }
+  .main { padding: 20px 16px; }
+  .tab { padding: 10px 14px; font-size: 13px; }
+  .cat-grid { grid-template-columns: 1fr; }
+  .info-cards { grid-template-columns: 1fr; }
+  .stat-grid { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .stat-num { font-size: 24px; }
+  .quick-links { gap: 8px; }
+  .pill { padding: 8px 16px; font-size: 13px; }
+  .search-bar { flex-direction: column; }
+  .search-input { min-width: 0; width: 100%; }
+  .filter-select { width: 100%; }
+  .doc-table { font-size: 13px; }
+  .doc-table th, .doc-table td { padding: 8px 6px; }
+  .file-date { display: none; }
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-inner">
+    <h1>IVYCOAST & Boldoath Hub</h1>
+    <p>Document Management Dashboard</p>
+    <nav class="tabs">
+      <button class="tab active" data-view="home">Home</button>
+      <button class="tab" data-view="ivycoast">IVYCOAST</button>
+      <button class="tab" data-view="boldoath">Boldoath</button>
+      <button class="tab" data-view="library">Document Library</button>
+    </nav>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- HOME -->
+  <div id="home" class="view active">
+    <div class="quick-links">
+      <a class="pill pill-figma" href="https://www.figma.com/board/oO7mtsykQVHjUdlrwdZJ3n/Ivycoast-Strategy" target="_blank">Figma</a>
+      <a class="pill pill-shopify" href="https://ivycoast.co" target="_blank">Shopify</a>
+      <a class="pill pill-instagram" href="https://www.instagram.com/ivycoast" target="_blank">Instagram</a>
+      <a class="pill pill-yamato" href="https://www.kuronekoyamato.co.jp" target="_blank">Yamato</a>
+      <a class="pill pill-drive" href="#" target="_blank" id="drive-link">Google Drive</a>
+    </div>
+
+    <div class="info-cards">
+      <div class="info-card">
+        <h3>Latest Meeting Notes</h3>
+        <p>Dec 15, 2025 — Scent Method Meeting & New Brand Mission</p>
+        <p style="margin-top:8px" id="meeting-link-container"></p>
+      </div>
+      <div class="info-card">
+        <h3>Key Stats</h3>
+        <div class="stat-grid">
+          <div>
+            <div class="stat-num" style="color:#1a73e8">6</div>
+            <div class="stat-label">Products</div>
+          </div>
+          <div>
+            <div class="stat-num" style="color:#34a853">2</div>
+            <div class="stat-label">Active Projects</div>
+          </div>
+          <div>
+            <div class="stat-num" style="color:#fbbc04">1</div>
+            <div class="stat-label">Upcoming Event</div>
+          </div>
+        </div>
+      </div>
+      <div class="info-card">
+        <h3>Ask Gemini</h3>
+        <p>Search across all documents with AI</p>
+        <p style="margin-top:8px"><a href="https://notebooklm.google.com" target="_blank">Open NotebookLM</a></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- IVYCOAST -->
+  <div id="ivycoast" class="view">
+    <h2 class="section-title">IVYCOAST Documents</h2>
+    <p class="section-subtitle">27 files across 8 categories</p>
+    <div class="cat-grid" id="ivycoast-grid"></div>
+  </div>
+
+  <!-- BOLDOATH -->
+  <div id="boldoath" class="view">
+    <h2 class="section-title">Boldoath Documents</h2>
+    <p class="section-subtitle">7 files across 4 categories</p>
+    <div class="cat-grid" id="boldoath-grid"></div>
+  </div>
+
+  <!-- DOCUMENT LIBRARY -->
+  <div id="library" class="view">
+    <h2 class="section-title">Document Library</h2>
+    <p class="section-subtitle">Search and filter all 34 documents</p>
+    <div class="search-bar">
+      <input type="text" class="search-input" id="search-input" placeholder="Search by name or description...">
+      <select class="filter-select" id="filter-workspace">
+        <option value="">All Workspaces</option>
+        <option value="IVYCOAST">IVYCOAST</option>
+        <option value="BOLDOATH">BOLDOATH</option>
+      </select>
+      <select class="filter-select" id="filter-category">
+        <option value="">All Categories</option>
+      </select>
+      <select class="filter-select" id="filter-type">
+        <option value="">All Types</option>
+        <option value="Doc">Doc</option>
+        <option value="Sheet">Sheet</option>
+      </select>
+    </div>
+    <table class="doc-table">
+      <thead>
+        <tr>
+          <th data-sort="name">Name <span class="sort-arrow"></span></th>
+          <th data-sort="category">Category <span class="sort-arrow"></span></th>
+          <th data-sort="type">Type <span class="sort-arrow"></span></th>
+          <th data-sort="workspace">Workspace <span class="sort-arrow"></span></th>
+          <th data-sort="updated">Last Updated <span class="sort-arrow"></span></th>
+        </tr>
+      </thead>
+      <tbody id="library-body"></tbody>
+    </table>
+    <div class="no-results" id="no-results" style="display:none">No documents match your filters.</div>
+  </div>
+</div>
+
+<script>
+// Document data
+const DOCS = [
+  { name: "Soap Line Up", category: "Strategy & Brand", type: "Doc", workspace: "IVYCOAST", updated: "2025-11-10", desc: "Current soap product lineup and specifications" },
+  { name: "Brand Assets", category: "Strategy & Brand", type: "Sheet", workspace: "IVYCOAST", updated: "", desc: "Brand logos and visual assets inventory" },
+  { name: "Company Goals", category: "Strategy & Brand", type: "Sheet", workspace: "IVYCOAST", updated: "", desc: "Company objectives and OKR status tracking" },
+  { name: "Key Results", category: "Strategy & Brand", type: "Sheet", workspace: "IVYCOAST", updated: "", desc: "Key results metrics for company goals" },
+  { name: "Soap R&D Formulas", category: "Products", type: "Doc", workspace: "IVYCOAST", updated: "2025-12-05", desc: "Soap recipe formulas and R&D notes" },
+  { name: "Candle Packaging Strategy", category: "Products", type: "Doc", workspace: "IVYCOAST", updated: "2025-12-31", desc: "Candle packaging design and supplier notes (Scent Method)" },
+  { name: "Inventory Management", category: "Products", type: "Sheet", workspace: "IVYCOAST", updated: "", desc: "Product inventory tracking with stock levels and pricing" },
+  { name: "Revenue", category: "Finance", type: "Sheet", workspace: "IVYCOAST", updated: "", desc: "Monthly revenue breakdown by product" },
+  { name: "Expenses", category: "Finance", type: "Sheet", workspace: "IVYCOAST", updated: "", desc: "Monthly expense tracking by category" },
+  { name: "Total Profit", category: "Finance", type: "Sheet", workspace: "IVYCOAST", updated: "", desc: "Monthly profit summary" },
+  { name: "Jumble 2026", category: "Projects", type: "Doc", workspace: "IVYCOAST", updated: "2026-01-28", desc: "Jumble event preparation tasks and vendor booklet plan" },
+  { name: "Jumble Tasks 2026", category: "Projects", type: "Sheet", workspace: "IVYCOAST", updated: "", desc: "Task tracker for Jumble 2026 event preparation" },
+  { name: "IVYCOAST Meeting Notes 2025", category: "Meetings", type: "Doc", workspace: "IVYCOAST", updated: "2025-12-31", desc: "Consolidated meeting notes Sep-Dec 2025 with action items" },
+  { name: "Markets & Events Hub", category: "Marketing", type: "Doc", workspace: "IVYCOAST", updated: "2025-04-18", desc: "Hub for all markets and events planning" },
+  { name: "Futagoza Market Jan 2025", category: "Marketing", type: "Doc", workspace: "IVYCOAST", updated: "2025-04-18", desc: "Futagoza market event details and logistics" },
+  { name: "Futagoza Pre-Market Prep", category: "Marketing", type: "Doc", workspace: "IVYCOAST", updated: "2025-01-27", desc: "Pre-market preparation checklist for Futagoza" },
+  { name: "Social Media Strategy", category: "Marketing", type: "Doc", workspace: "IVYCOAST", updated: "2025-09-23", desc: "Social media strategy and target audience planning" },
+  { name: "Social Posts", category: "Marketing", type: "Sheet", workspace: "IVYCOAST", updated: "", desc: "Social media content calendar and post tracker" },
+  { name: "Social Channels", category: "Marketing", type: "Sheet", workspace: "IVYCOAST", updated: "", desc: "Social media channel metrics" },
+  { name: "Cafe Event", category: "Marketing", type: "Sheet", workspace: "IVYCOAST", updated: "", desc: "Cafe event registration and attendee data" },
+  { name: "Customer Complaint \u2014 Kurkku (Nov 2025)", category: "Operations", type: "Doc", workspace: "IVYCOAST", updated: "2025-12-08", desc: "Customer complaint report and resolution for candle scent issue" },
+  { name: "Ivycoast Tasks", category: "Operations", type: "Sheet", workspace: "IVYCOAST", updated: "", desc: "General task tracker for Ivycoast operations" },
+  { name: "Lead Tracker", category: "Operations", type: "Sheet", workspace: "IVYCOAST", updated: "", desc: "Sales lead and contact management" },
+  { name: "Team Directory", category: "Operations", type: "Sheet", workspace: "IVYCOAST", updated: "", desc: "Team member contact information and roles" },
+  { name: "Key Documents Index", category: "Operations", type: "Sheet", workspace: "IVYCOAST", updated: "", desc: "Quick reference list of key documents" },
+  { name: "ClickFunnels Case Study", category: "Personal Portfolio", type: "Doc", workspace: "IVYCOAST", updated: "2025-01-23", desc: "Portfolio case study on ClickFunnels project" },
+  { name: "Typography in Japan", category: "Personal Portfolio", type: "Doc", workspace: "IVYCOAST", updated: "2024-12-19", desc: "Research and notes on Japanese typography" },
+  { name: "Boldoath Projects", category: "Projects", type: "Sheet", workspace: "BOLDOATH", updated: "", desc: "Active and backlog project tracker" },
+  { name: "Legacy Projects", category: "Projects", type: "Sheet", workspace: "BOLDOATH", updated: "", desc: "Historical project archive" },
+  { name: "Design Projects Brief", category: "Projects", type: "Doc", workspace: "BOLDOATH", updated: "2024-06-29", desc: "Design project brief and task overview" },
+  { name: "Boldoath Tasks", category: "Tasks", type: "Sheet", workspace: "BOLDOATH", updated: "", desc: "Task management for all Boldoath projects" },
+  { name: "Design Contract Template EN JP", category: "Legal", type: "Doc", workspace: "BOLDOATH", updated: "2024-06-29", desc: "Bilingual design contract template (English/Japanese)" },
+  { name: "2025 Changes Updates", category: "Company", type: "Doc", workspace: "BOLDOATH", updated: "2025-03-17", desc: "Corporate structure changes and transition plan" },
+  { name: "Children's Book Brief", category: "Company", type: "Doc", workspace: "BOLDOATH", updated: "2024-02-15", desc: "Creative brief for children's book project" }
+];
+
+let links = {};
+let sortCol = "name";
+let sortAsc = true;
+
+// Load links.json
+fetch("links.json")
+  .then(function(r) { return r.json(); })
+  .then(function(data) {
+    links = data;
+    init();
+  })
+  .catch(function() { init(); });
+
+function init() {
+  renderCategoryGrid("IVYCOAST", "ivycoast-grid");
+  renderCategoryGrid("BOLDOATH", "boldoath-grid");
+  renderLibrary();
+  populateCategoryFilter();
+  renderMeetingLink();
+}
+
+// Tab switching
+document.querySelectorAll(".tab").forEach(function(tab) {
+  tab.addEventListener("click", function() {
+    document.querySelectorAll(".tab").forEach(function(t) { t.classList.remove("active"); });
+    document.querySelectorAll(".view").forEach(function(v) { v.classList.remove("active"); });
+    tab.classList.add("active");
+    document.getElementById(tab.dataset.view).classList.add("active");
+  });
+});
+
+// Validate URL is http/https only
+function isValidURL(url) {
+  if (!url) return false;
+  try {
+    var parsed = new URL(url);
+    return parsed.protocol === "https:" || parsed.protocol === "http:";
+  } catch (e) {
+    return false;
+  }
+}
+
+// Create a safe document link element
+function createDocLinkEl(name) {
+  var url = links[name];
+  if (isValidURL(url)) {
+    var a = document.createElement("a");
+    a.href = url;
+    a.target = "_blank";
+    a.rel = "noopener";
+    a.textContent = name;
+    return a;
+  }
+  var span = document.createElement("span");
+  span.textContent = name;
+  return span;
+}
+
+// Create a badge element
+function createBadgeEl(type) {
+  var span = document.createElement("span");
+  span.className = "badge " + (type === "Doc" ? "badge-doc" : "badge-sheet");
+  span.textContent = type;
+  return span;
+}
+
+function formatDate(d) {
+  if (!d) return "\u2014";
+  var parts = d.split("-");
+  var months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  return months[parseInt(parts[1], 10) - 1] + " " + parseInt(parts[2], 10) + ", " + parts[0];
+}
+
+// Render meeting notes link on Home
+function renderMeetingLink() {
+  var container = document.getElementById("meeting-link-container");
+  container.appendChild(createDocLinkEl("IVYCOAST Meeting Notes 2025"));
+}
+
+// Render category cards using DOM methods
+function renderCategoryGrid(workspace, containerId) {
+  var wsDocs = DOCS.filter(function(d) { return d.workspace === workspace; });
+  var categoryOrder = [];
+  var categories = {};
+  wsDocs.forEach(function(d) {
+    if (!categories[d.category]) {
+      categories[d.category] = [];
+      categoryOrder.push(d.category);
+    }
+    categories[d.category].push(d);
+  });
+
+  var container = document.getElementById(containerId);
+  container.textContent = "";
+
+  categoryOrder.forEach(function(cat) {
+    var files = categories[cat];
+    var card = document.createElement("div");
+    card.className = "cat-card";
+
+    var h3 = document.createElement("h3");
+    h3.textContent = cat;
+    var countSpan = document.createElement("span");
+    countSpan.className = "count";
+    countSpan.textContent = files.length + " file" + (files.length > 1 ? "s" : "");
+    h3.appendChild(countSpan);
+    card.appendChild(h3);
+
+    files.forEach(function(f) {
+      var row = document.createElement("div");
+      row.className = "file-row";
+
+      var nameDiv = document.createElement("div");
+      nameDiv.className = "file-name";
+      nameDiv.appendChild(createDocLinkEl(f.name));
+      row.appendChild(nameDiv);
+
+      row.appendChild(createBadgeEl(f.type));
+
+      var dateSpan = document.createElement("span");
+      dateSpan.className = "file-date";
+      dateSpan.textContent = formatDate(f.updated);
+      row.appendChild(dateSpan);
+
+      card.appendChild(row);
+    });
+
+    container.appendChild(card);
+  });
+}
+
+// Document Library
+function populateCategoryFilter() {
+  var catsSet = {};
+  DOCS.forEach(function(d) { catsSet[d.category] = true; });
+  var cats = Object.keys(catsSet).sort();
+  var sel = document.getElementById("filter-category");
+  cats.forEach(function(c) {
+    var opt = document.createElement("option");
+    opt.value = c;
+    opt.textContent = c;
+    sel.appendChild(opt);
+  });
+}
+
+function renderLibrary() {
+  var query = document.getElementById("search-input").value.toLowerCase();
+  var wsFilter = document.getElementById("filter-workspace").value;
+  var catFilter = document.getElementById("filter-category").value;
+  var typeFilter = document.getElementById("filter-type").value;
+
+  var filtered = DOCS.filter(function(d) {
+    if (wsFilter && d.workspace !== wsFilter) return false;
+    if (catFilter && d.category !== catFilter) return false;
+    if (typeFilter && d.type !== typeFilter) return false;
+    if (query && d.name.toLowerCase().indexOf(query) === -1 && d.desc.toLowerCase().indexOf(query) === -1) return false;
+    return true;
+  });
+
+  filtered.sort(function(a, b) {
+    var va = a[sortCol] || "";
+    var vb = b[sortCol] || "";
+    if (sortCol === "updated") {
+      va = va || "0000-00-00";
+      vb = vb || "0000-00-00";
+    }
+    var cmp = va.localeCompare(vb);
+    return sortAsc ? cmp : -cmp;
+  });
+
+  var tbody = document.getElementById("library-body");
+  var noResults = document.getElementById("no-results");
+  tbody.textContent = "";
+
+  if (filtered.length === 0) {
+    noResults.style.display = "block";
+    return;
+  }
+  noResults.style.display = "none";
+
+  filtered.forEach(function(d) {
+    var tr = document.createElement("tr");
+
+    var tdName = document.createElement("td");
+    tdName.appendChild(createDocLinkEl(d.name));
+    tr.appendChild(tdName);
+
+    var tdCat = document.createElement("td");
+    tdCat.textContent = d.category;
+    tr.appendChild(tdCat);
+
+    var tdType = document.createElement("td");
+    tdType.appendChild(createBadgeEl(d.type));
+    tr.appendChild(tdType);
+
+    var tdWs = document.createElement("td");
+    tdWs.textContent = d.workspace;
+    tr.appendChild(tdWs);
+
+    var tdDate = document.createElement("td");
+    tdDate.textContent = formatDate(d.updated);
+    tr.appendChild(tdDate);
+
+    tbody.appendChild(tr);
+  });
+}
+
+// Search & filter events
+document.getElementById("search-input").addEventListener("input", renderLibrary);
+document.getElementById("filter-workspace").addEventListener("change", renderLibrary);
+document.getElementById("filter-category").addEventListener("change", renderLibrary);
+document.getElementById("filter-type").addEventListener("change", renderLibrary);
+
+// Sort
+document.querySelectorAll(".doc-table th").forEach(function(th) {
+  th.addEventListener("click", function() {
+    var col = th.dataset.sort;
+    if (sortCol === col) {
+      sortAsc = !sortAsc;
+    } else {
+      sortCol = col;
+      sortAsc = true;
+    }
+    document.querySelectorAll(".doc-table th .sort-arrow").forEach(function(a) { a.textContent = ""; });
+    th.querySelector(".sort-arrow").textContent = sortAsc ? " \u25B2" : " \u25BC";
+    renderLibrary();
+  });
+});
+</script>
+</body>
+</html>
