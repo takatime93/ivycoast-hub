@@ -1,10 +1,10 @@
 {
-  "name": "IVYCOAST & Boldoath Hub",
-  "short_name": "IVY Hub",
+  "name": "Ivycoast Hub",
+  "short_name": "Ivycoast",
   "start_url": "/ivycoast-hub/",
   "display": "standalone",
   "background_color": "#ffffff",
-  "theme_color": "#1a73e8",
+  "theme_color": "#0d4d4a",
   "icons": [
     {
       "src": "icons/icon-192.png",
