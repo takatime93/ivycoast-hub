@@ -641,6 +641,119 @@ body { font-family: 'Roboto', sans-serif; background: #fff; color: #202124; line
   transition: background 0.15s, border-color 0.15s;
 }
 #sign-out-btn:hover { background: #f1f3f4; border-color: #c6c6c6; }
+
+/* Global Search */
+.global-search { position: relative; flex: 1; max-width: 360px; margin: 0 20px; }
+.global-search input {
+  width: 100%;
+  padding: 8px 14px;
+  border: 1px solid #dadce0;
+  border-radius: 24px;
+  font-size: 14px;
+  font-family: inherit;
+  background: #f1f3f4;
+  transition: background 0.15s, border-color 0.15s, box-shadow 0.15s;
+}
+.global-search input:focus {
+  background: #fff;
+  border-color: #1a73e8;
+  box-shadow: 0 0 0 2px rgba(26,115,232,0.2);
+  outline: none;
+}
+.search-results {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  margin-top: 4px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+  max-height: 400px;
+  overflow-y: auto;
+  z-index: 200;
+}
+.search-results.active { display: block; }
+.search-group-label {
+  font-size: 11px;
+  font-weight: 500;
+  color: #5f6368;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 12px 16px 4px;
+}
+.search-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  cursor: pointer;
+  font-size: 14px;
+  color: #202124;
+  text-decoration: none;
+  transition: background 0.1s;
+}
+.search-item:hover { background: #f1f3f4; }
+.search-item-type {
+  font-size: 11px;
+  color: #5f6368;
+  background: #e8eaed;
+  padding: 2px 8px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+.search-item-desc {
+  font-size: 12px;
+  color: #5f6368;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.search-no-results {
+  padding: 16px;
+  text-align: center;
+  color: #5f6368;
+  font-size: 14px;
+}
+
+/* Clickable stat cards */
+.stat-link {
+  cursor: pointer;
+  border-radius: 8px;
+  padding: 8px;
+  transition: background 0.15s;
+}
+.stat-link:hover { background: rgba(0,0,0,0.04); }
+
+/* Board tab badge */
+.tab-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 9px;
+  font-size: 11px;
+  font-weight: 500;
+  background: #d93025;
+  color: #fff;
+  margin-left: 6px;
+  vertical-align: middle;
+}
+
+/* Clickable meta on board cards */
+.task-assignee-link, .task-category-link {
+  cursor: pointer;
+  text-decoration: none;
+  border-radius: 3px;
+  transition: background 0.1s;
+}
+.task-assignee-link:hover, .task-category-link:hover {
+  background: rgba(0,0,0,0.06);
+  text-decoration: underline;
+}
 </style>
 </head>
 <body>
@@ -661,6 +774,10 @@ body { font-family: 'Roboto', sans-serif; background: #fff; color: #202124; line
     <div class="header-top">
       <div>
         <img src="icons/logo.png" alt="Ivycoast" style="height:32px">
+      </div>
+      <div class="global-search">
+        <input type="text" id="global-search" placeholder="Search documents & tasks..." autocomplete="off">
+        <div id="search-results" class="search-results"></div>
       </div>
       <div class="header-user">
         <img id="user-avatar" src="" alt="">
@@ -699,15 +816,15 @@ body { font-family: 'Roboto', sans-serif; background: #fff; color: #202124; line
       <div class="info-card">
         <h3>Key Stats</h3>
         <div class="stat-grid">
-          <div>
+          <div class="stat-link" onclick="navigateTo('library','Products')" title="View products in library">
             <div class="stat-num" style="color:#1a73e8">6</div>
             <div class="stat-label">Products</div>
           </div>
-          <div>
+          <div class="stat-link" onclick="navigateTo('board','','in_progress')" title="View active tasks on board">
             <div class="stat-num" style="color:#34a853">2</div>
             <div class="stat-label">Active Projects</div>
           </div>
-          <div>
+          <div class="stat-link" onclick="navigateTo('ivycoast')" title="View IVYCOAST documents">
             <div class="stat-num" style="color:#d97706">1</div>
             <div class="stat-label">Upcoming Event</div>
           </div>
@@ -1292,28 +1409,46 @@ function renderBoard() {
       if (t.workspace === "IVYCOAST") {
         var bi = document.createElement("span");
         bi.className = "task-badge task-badge-ivy";
+        bi.style.cursor = "pointer";
         bi.textContent = "IVY";
-        bi.title = "IVYCOAST";
+        bi.title = "View IVYCOAST documents";
+        bi.addEventListener("click", function(e) { e.stopPropagation(); navigateTo("ivycoast"); });
         metaDiv.appendChild(bi);
       } else if (t.workspace === "BOLDOATH") {
         var bb = document.createElement("span");
         bb.className = "task-badge task-badge-bld";
+        bb.style.cursor = "pointer";
         bb.textContent = "BLD";
-        bb.title = "BOLDOATH";
+        bb.title = "View Boldoath documents";
+        bb.addEventListener("click", function(e) { e.stopPropagation(); navigateTo("boldoath"); });
         metaDiv.appendChild(bb);
       }
 
       if (t.assignee) {
         var assigneeSpan = document.createElement("span");
-        assigneeSpan.className = "task-assignee";
+        assigneeSpan.className = "task-assignee task-assignee-link";
         assigneeSpan.textContent = t.assignee;
+        assigneeSpan.title = "Filter by " + t.assignee;
+        assigneeSpan.addEventListener("click", (function(name) {
+          return function(e) {
+            e.stopPropagation();
+            filterBoardByAssignee(name);
+          };
+        })(t.assignee));
         metaDiv.appendChild(assigneeSpan);
       }
 
       if (t.category) {
         var catSpan = document.createElement("span");
-        catSpan.className = "task-assignee";
+        catSpan.className = "task-assignee task-category-link";
         catSpan.textContent = t.category;
+        catSpan.title = "Search for " + t.category;
+        catSpan.addEventListener("click", (function(cat) {
+          return function(e) {
+            e.stopPropagation();
+            navigateTo("library", cat);
+          };
+        })(t.category));
         metaDiv.appendChild(catSpan);
       }
 
@@ -1637,6 +1772,193 @@ document.addEventListener("visibilitychange", function() {
     }
   }
 });
+
+// ── Navigation helper ─────────────────────────────────────────
+function navigateTo(viewId, searchQuery, statusFilter) {
+  document.querySelectorAll(".tab").forEach(function(t) {
+    t.classList.remove("active");
+    t.setAttribute("aria-selected", "false");
+  });
+  document.querySelectorAll(".view").forEach(function(v) { v.classList.remove("active"); });
+  var tab = document.querySelector('.tab[data-view="' + viewId + '"]');
+  if (tab) {
+    tab.classList.add("active");
+    tab.setAttribute("aria-selected", "true");
+  }
+  document.getElementById(viewId).classList.add("active");
+  if (viewId === "library" && searchQuery) {
+    var si = document.getElementById("search-input");
+    si.value = searchQuery;
+    renderLibrary();
+  }
+  if (viewId === "board" && statusFilter) {
+    var col = document.querySelector('.kanban-col[data-status="' + statusFilter + '"]');
+    if (col) col.scrollIntoView({ behavior: "smooth", inline: "start" });
+  }
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+// ── Board assignee filter ─────────────────────────────────────
+var boardAssigneeFilter = "";
+function filterBoardByAssignee(name) {
+  boardAssigneeFilter = (boardAssigneeFilter === name) ? "" : name;
+  renderBoard();
+}
+
+var _origRenderBoard = renderBoard;
+renderBoard = function() {
+  if (boardAssigneeFilter) {
+    var origTasks = boardTasks;
+    boardTasks = origTasks.filter(function(t) { return t.assignee === boardAssigneeFilter; });
+    _origRenderBoard();
+    boardTasks = origTasks;
+    var toolbar = document.getElementById("board-toolbar");
+    var existing = document.getElementById("assignee-filter-badge");
+    if (!existing) {
+      var badge = document.createElement("span");
+      badge.id = "assignee-filter-badge";
+      badge.style.cssText = "display:inline-flex;align-items:center;gap:6px;padding:4px 12px;background:#e8eaf6;border-radius:16px;font-size:13px;margin-left:8px;";
+      badge.appendChild(document.createTextNode(boardAssigneeFilter));
+      var clearBtn = document.createElement("button");
+      clearBtn.textContent = "\u2715";
+      clearBtn.style.cssText = "border:none;background:none;cursor:pointer;font-size:12px;color:#5f6368;padding:0 2px;";
+      clearBtn.onclick = function() { filterBoardByAssignee(boardAssigneeFilter); };
+      badge.appendChild(clearBtn);
+      toolbar.appendChild(badge);
+    }
+  } else {
+    _origRenderBoard();
+    var existing = document.getElementById("assignee-filter-badge");
+    if (existing) existing.remove();
+  }
+};
+
+// ── Global Search ─────────────────────────────────────────────
+var globalSearchInput = document.getElementById("global-search");
+var searchResultsEl = document.getElementById("search-results");
+
+function createSearchItem(name, typeLabel, url, action, id) {
+  var div = document.createElement("div");
+  div.className = "search-item";
+  div.dataset.action = action;
+  if (url) div.dataset.url = url;
+  if (id) div.dataset.id = id;
+  if (name) div.dataset.name = name;
+  var nameSpan = document.createElement("span");
+  nameSpan.style.flex = "1";
+  nameSpan.textContent = name;
+  div.appendChild(nameSpan);
+  var badge = document.createElement("span");
+  badge.className = "search-item-type";
+  badge.textContent = typeLabel;
+  div.appendChild(badge);
+  return div;
+}
+
+globalSearchInput.addEventListener("input", function() {
+  var q = this.value.toLowerCase().trim();
+  if (q.length < 2) {
+    searchResultsEl.classList.remove("active");
+    return;
+  }
+  searchResultsEl.textContent = "";
+
+  var docMatches = DOCS.filter(function(d) {
+    return d.name.toLowerCase().indexOf(q) !== -1 || d.desc.toLowerCase().indexOf(q) !== -1 || d.category.toLowerCase().indexOf(q) !== -1;
+  }).slice(0, 5);
+
+  var taskMatches = boardTasks.filter(function(t) {
+    return (t.name && t.name.toLowerCase().indexOf(q) !== -1) ||
+           (t.assignee && t.assignee.toLowerCase().indexOf(q) !== -1) ||
+           (t.category && t.category.toLowerCase().indexOf(q) !== -1);
+  }).slice(0, 5);
+
+  if (docMatches.length === 0 && taskMatches.length === 0) {
+    var noRes = document.createElement("div");
+    noRes.className = "search-no-results";
+    noRes.textContent = "No results found";
+    searchResultsEl.appendChild(noRes);
+    searchResultsEl.classList.add("active");
+    return;
+  }
+
+  if (docMatches.length > 0) {
+    var label = document.createElement("div");
+    label.className = "search-group-label";
+    label.textContent = "Documents";
+    searchResultsEl.appendChild(label);
+    docMatches.forEach(function(d) {
+      var url = links[d.name];
+      searchResultsEl.appendChild(createSearchItem(d.name, d.workspace, isValidURL(url) ? url : "", "doc", ""));
+    });
+  }
+
+  if (taskMatches.length > 0) {
+    var label2 = document.createElement("div");
+    label2.className = "search-group-label";
+    label2.textContent = "Board Tasks";
+    searchResultsEl.appendChild(label2);
+    taskMatches.forEach(function(t) {
+      var url = t.docLink && isValidURL(t.docLink) ? t.docLink : "";
+      searchResultsEl.appendChild(createSearchItem(t.name, (t.status || "backlog").replace("_", " "), url, "task", t.id));
+    });
+  }
+
+  searchResultsEl.classList.add("active");
+});
+
+searchResultsEl.addEventListener("click", function(e) {
+  var item = e.target.closest(".search-item");
+  if (!item) return;
+  var url = item.dataset.url;
+  if (url) {
+    window.open(url, "_blank", "noopener");
+  } else if (item.dataset.action === "doc") {
+    navigateTo("library", item.dataset.name);
+  } else if (item.dataset.action === "task") {
+    navigateTo("board");
+  }
+  globalSearchInput.value = "";
+  searchResultsEl.classList.remove("active");
+});
+
+document.addEventListener("click", function(e) {
+  if (!e.target.closest(".global-search")) {
+    searchResultsEl.classList.remove("active");
+  }
+});
+
+// ── Overdue badge on Board tab ────────────────────────────────
+function updateBoardBadge() {
+  var tab = document.getElementById("tab-board");
+  var existing = tab.querySelector(".tab-badge");
+  if (existing) existing.remove();
+  var today = new Date();
+  today.setHours(0,0,0,0);
+  var overdueCount = boardTasks.filter(function(t) {
+    if (!t.due || t.status === "done") return false;
+    var parts = t.due.split("-");
+    return new Date(+parts[0], +parts[1] - 1, +parts[2]) < today;
+  }).length;
+  if (overdueCount > 0) {
+    var badge = document.createElement("span");
+    badge.className = "tab-badge";
+    badge.textContent = overdueCount;
+    badge.title = overdueCount + " overdue task" + (overdueCount > 1 ? "s" : "");
+    tab.appendChild(badge);
+  }
+}
+
+(function() {
+  var origFetch = typeof fetchBoardTasks === "function" ? fetchBoardTasks : null;
+  if (origFetch) {
+    fetchBoardTasks = function() {
+      var result = origFetch.apply(this, arguments);
+      setTimeout(updateBoardBadge, 1000);
+      return result;
+    };
+  }
+})();
 </script>
 
 </div><!-- /app-container -->
