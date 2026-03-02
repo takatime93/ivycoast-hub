@@ -135,6 +135,72 @@ body { font-family: 'Roboto', sans-serif; background: #fff; color: #202124; line
 .stat-num { font-size: 32px; font-weight: 700; }
 .stat-label { font-size: 13px; color: #5f6368; }
 
+/* Home layout */
+.info-card-wide { margin-bottom: 20px; }
+.info-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.info-card-header h3 { margin-bottom: 0; }
+.info-card-count { font-size: 13px; color: #5f6368; }
+.info-card-scroll {
+  max-height: 280px;
+  overflow-y: auto;
+  border-top: 1px solid #e0e0e0;
+  padding-top: 8px;
+}
+.home-list-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+.home-list-row:last-child { border-bottom: none; }
+.home-list-row-name { flex: 1; font-size: 14px; }
+.home-list-row-name a { color: #1a73e8; text-decoration: none; }
+.home-list-row-name a:hover { text-decoration: underline; }
+.home-list-row-date { font-size: 13px; color: #5f6368; white-space: nowrap; flex-shrink: 0; }
+.home-list-row-desc { font-size: 13px; color: #5f6368; margin-top: 2px; }
+.home-task-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid #f0f0f0;
+  cursor: pointer;
+  transition: background 0.1s;
+}
+.home-task-row:hover { background: rgba(0,0,0,0.02); }
+.home-task-row:last-child { border-bottom: none; }
+.home-task-name { flex: 1; font-size: 14px; }
+.home-task-name a { color: #1a73e8; text-decoration: none; }
+.home-task-name a:hover { text-decoration: underline; }
+.home-task-meta { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+.info-card-footer {
+  border-top: 1px solid #e0e0e0;
+  padding-top: 12px;
+  margin-top: 8px;
+  text-align: right;
+}
+.info-card-footer a { color: #1a73e8; text-decoration: none; font-size: 13px; font-weight: 500; }
+.info-card-footer a:hover { text-decoration: underline; }
+.home-grid-2col {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 20px;
+  margin-top: 20px;
+}
+.home-sidebar { display: flex; flex-direction: column; gap: 20px; }
+.home-placeholder { font-size: 14px; color: #5f6368; padding: 16px 0; text-align: center; }
+.recent-doc-row { display: flex; align-items: center; gap: 8px; padding: 6px 0; font-size: 14px; }
+.recent-doc-row + .recent-doc-row { border-top: 1px solid #f0f0f0; }
+.recent-doc-row a { color: #1a73e8; text-decoration: none; }
+.recent-doc-row a:hover { text-decoration: underline; }
+.recent-doc-date { font-size: 12px; color: #5f6368; flex-shrink: 0; min-width: 70px; }
+
 /* Category Cards */
 .section-title {
   font-size: 18px;
@@ -539,6 +605,8 @@ body { font-family: 'Roboto', sans-serif; background: #fff; color: #202124; line
   .tab { padding: 10px 14px; font-size: 13px; }
   .cat-grid { grid-template-columns: 1fr; }
   .info-cards { grid-template-columns: 1fr; }
+  .home-grid-2col { grid-template-columns: 1fr; }
+  .info-card-scroll { max-height: 220px; }
   .stat-grid { grid-template-columns: repeat(3, 1fr); gap: 8px; }
   .stat-num { font-size: 24px; }
   .quick-links { gap: 8px; }
@@ -835,36 +903,47 @@ body { font-family: 'Roboto', sans-serif; background: #fff; color: #202124; line
       <a class="pill pill-shopify" href="https://ivycoast.co" target="_blank" rel="noopener noreferrer">Shopify</a>
       <a class="pill pill-instagram" href="https://www.instagram.com/ivycoast" target="_blank" rel="noopener noreferrer">Instagram</a>
       <a class="pill pill-yamato" href="https://www.kuronekoyamato.co.jp" target="_blank" rel="noopener noreferrer">Yamato</a>
-      <span class="pill pill-drive" style="opacity:0.5;cursor:not-allowed" title="Drive link not yet configured">Google Drive</span>
+      <a class="pill pill-drive" href="https://drive.google.com" target="_blank" rel="noopener noreferrer">Google Drive</a>
     </div>
 
-    <div class="info-cards">
-      <div class="info-card">
-        <h3>Latest Meeting Notes</h3>
-        <p>Dec 15, 2025 — Scent Method Meeting & New Brand Mission</p>
-        <p style="margin-top:8px" id="meeting-link-container"></p>
+    <div class="info-card info-card-wide">
+      <div class="info-card-header">
+        <h3>Meeting Notes</h3>
+        <span class="info-card-count" id="meeting-count"></span>
       </div>
-      <div class="info-card">
-        <h3>Key Stats</h3>
-        <div class="stat-grid">
-          <div class="stat-link" onclick="navigateTo('library','Products')" title="View products in library">
-            <div class="stat-num" style="color:#1a73e8">6</div>
-            <div class="stat-label">Products</div>
-          </div>
-          <div class="stat-link" onclick="navigateTo('board','','in_progress')" title="View active tasks on board">
-            <div class="stat-num" style="color:#34a853">2</div>
-            <div class="stat-label">Active Projects</div>
-          </div>
-          <div class="stat-link" onclick="navigateTo('ivycoast')" title="View IVYCOAST documents">
-            <div class="stat-num" style="color:#d97706">1</div>
-            <div class="stat-label">Upcoming Event</div>
-          </div>
+      <div class="info-card-scroll" id="meeting-notes-list"></div>
+    </div>
+
+    <div class="home-grid-2col">
+      <div class="info-card" id="home-active-tasks">
+        <div class="info-card-header">
+          <h3>Active Tasks</h3>
+          <span class="info-card-count" id="tasks-count"></span>
+        </div>
+        <div class="info-card-scroll" id="active-tasks-list">
+          <p class="home-placeholder">Loading board tasks...</p>
+        </div>
+        <div class="info-card-footer">
+          <a href="#" onclick="navigateTo('board','','in_progress');return false;">View all on Board &rarr;</a>
         </div>
       </div>
-      <div class="info-card">
-        <h3>Ask Gemini</h3>
-        <p>Search across all documents with AI</p>
-        <p style="margin-top:8px"><a href="https://notebooklm.google.com" target="_blank" rel="noopener noreferrer">Open NotebookLM</a></p>
+
+      <div class="home-sidebar">
+        <div class="info-card" id="home-key-stats">
+          <h3>Key Stats</h3>
+          <div class="stat-grid" id="home-stats-grid"></div>
+        </div>
+
+        <div class="info-card" id="home-recently-updated">
+          <h3>Recently Updated</h3>
+          <div id="recently-updated-list"></div>
+        </div>
+
+        <div class="info-card">
+          <h3>Ask Gemini</h3>
+          <p>Search across all documents with AI</p>
+          <p style="margin-top:8px"><a href="https://notebooklm.google.com" target="_blank" rel="noopener noreferrer">Open NotebookLM &rarr;</a></p>
+        </div>
       </div>
     </div>
   </div>
@@ -1086,7 +1165,10 @@ function init() {
   renderCategoryGrid("BOLDOATH", "boldoath-grid");
   renderLibrary();
   populateCategoryFilter();
-  renderMeetingLink();
+  renderHomeMeetingNotes();
+  renderHomeRecentlyUpdated();
+  renderHomeKeyStats();
+  renderHomeActiveTasks();
   var defaultTh = document.querySelector('.doc-table th[data-sort="name"]');
   if (defaultTh) defaultTh.querySelector(".sort-arrow").textContent = " \u25B2";
 }
@@ -1147,10 +1229,191 @@ function formatDate(d) {
   return months[parseInt(parts[1], 10) - 1] + " " + parseInt(parts[2], 10) + ", " + parts[0];
 }
 
-// Render meeting notes link on Home
-function renderMeetingLink() {
-  var container = document.getElementById("meeting-link-container");
-  container.appendChild(createDocLinkEl("IVYCOAST Meeting Notes 2025"));
+// ── Home tab rendering ─────────────────────────────────────────
+function renderHomeMeetingNotes() {
+  var container = document.getElementById("meeting-notes-list");
+  var countEl = document.getElementById("meeting-count");
+  container.textContent = "";
+  var meetingDocs = DOCS.filter(function(d) {
+    return d.category === "Meetings" ||
+           d.name.toLowerCase().indexOf("meeting") !== -1 ||
+           d.name.toLowerCase().indexOf("notes") !== -1;
+  });
+  meetingDocs.sort(function(a, b) {
+    if (!a.updated && !b.updated) return 0;
+    if (!a.updated) return 1;
+    if (!b.updated) return -1;
+    return b.updated.localeCompare(a.updated);
+  });
+  countEl.textContent = meetingDocs.length + " document" + (meetingDocs.length !== 1 ? "s" : "");
+  if (meetingDocs.length === 0) {
+    var p = document.createElement("p");
+    p.className = "home-placeholder";
+    p.textContent = "No meeting notes found.";
+    container.appendChild(p);
+    return;
+  }
+  meetingDocs.forEach(function(doc) {
+    var row = document.createElement("div");
+    row.className = "home-list-row";
+    var nameDiv = document.createElement("div");
+    nameDiv.className = "home-list-row-name";
+    nameDiv.appendChild(createDocLinkEl(doc.name));
+    if (doc.desc) {
+      var descP = document.createElement("div");
+      descP.className = "home-list-row-desc";
+      descP.textContent = doc.desc;
+      nameDiv.appendChild(descP);
+    }
+    var dateSpan = document.createElement("div");
+    dateSpan.className = "home-list-row-date";
+    dateSpan.textContent = formatDate(doc.updated);
+    row.appendChild(nameDiv);
+    row.appendChild(dateSpan);
+    container.appendChild(row);
+  });
+}
+
+function isOverdue(t, today) {
+  if (!t.due || t.status === "done") return false;
+  var parts = t.due.split("-");
+  return new Date(+parts[0], +parts[1] - 1, +parts[2]) < today;
+}
+
+function renderHomeActiveTasks() {
+  var container = document.getElementById("active-tasks-list");
+  var countEl = document.getElementById("tasks-count");
+  if (!container) return;
+  container.textContent = "";
+  var today = new Date();
+  today.setHours(0, 0, 0, 0);
+  var activeTasks = boardTasks.filter(function(t) {
+    if (t.status === "in_progress") return true;
+    if (t.status === "done") return false;
+    if (t.due) return isOverdue(t, today);
+    return false;
+  });
+  activeTasks.sort(function(a, b) {
+    var aOv = isOverdue(a, today) ? 0 : 1;
+    var bOv = isOverdue(b, today) ? 0 : 1;
+    if (aOv !== bOv) return aOv - bOv;
+    if (!a.due && !b.due) return 0;
+    if (!a.due) return 1;
+    if (!b.due) return -1;
+    return a.due.localeCompare(b.due);
+  });
+  countEl.textContent = activeTasks.length + " task" + (activeTasks.length !== 1 ? "s" : "");
+  if (boardTasks.length === 0) {
+    var p = document.createElement("p");
+    p.className = "home-placeholder";
+    p.textContent = typeof SCRIPT_URL !== "undefined" && SCRIPT_URL ? "No active or overdue tasks." : "Connect your Board to see tasks here.";
+    container.appendChild(p);
+    return;
+  }
+  if (activeTasks.length === 0) {
+    var p2 = document.createElement("p");
+    p2.className = "home-placeholder";
+    p2.textContent = "No active or overdue tasks. Nice work!";
+    container.appendChild(p2);
+    return;
+  }
+  activeTasks.forEach(function(t) {
+    var row = document.createElement("div");
+    row.className = "home-task-row";
+    row.onclick = function() { navigateTo("board", "", t.status); };
+    var nameSpan = document.createElement("span");
+    nameSpan.className = "home-task-name";
+    if (t.docLink && isValidURL(t.docLink)) {
+      var a = document.createElement("a");
+      a.href = t.docLink;
+      a.target = "_blank";
+      a.rel = "noopener noreferrer";
+      a.textContent = t.name;
+      a.addEventListener("click", function(e) { e.stopPropagation(); });
+      nameSpan.appendChild(a);
+    } else {
+      nameSpan.textContent = t.name;
+    }
+    row.appendChild(nameSpan);
+    var metaDiv = document.createElement("span");
+    metaDiv.className = "home-task-meta";
+    if (t.priority === "High" || t.priority === "Medium") {
+      var badge = document.createElement("span");
+      badge.className = "task-badge " + (t.priority === "High" ? "task-badge-high" : "task-badge-medium");
+      badge.textContent = t.priority;
+      metaDiv.appendChild(badge);
+    }
+    if (t.due) {
+      var dueSpan = document.createElement("span");
+      dueSpan.className = "task-due";
+      if (isOverdue(t, today)) dueSpan.classList.add("overdue");
+      dueSpan.textContent = formatDate(t.due);
+      metaDiv.appendChild(dueSpan);
+    }
+    if (t.assignee) {
+      var assigneeSpan = document.createElement("span");
+      assigneeSpan.style.cssText = "font-size:12px;color:#5f6368;";
+      assigneeSpan.textContent = t.assignee;
+      metaDiv.appendChild(assigneeSpan);
+    }
+    row.appendChild(metaDiv);
+    container.appendChild(row);
+  });
+}
+
+function renderHomeKeyStats() {
+  var grid = document.getElementById("home-stats-grid");
+  if (!grid) return;
+  grid.textContent = "";
+  var productCount = DOCS.filter(function(d) { return d.category === "Products"; }).length;
+  var activeCount = boardTasks.filter(function(t) { return t.status === "in_progress"; }).length;
+  var today = new Date();
+  today.setHours(0,0,0,0);
+  var overdueCount = boardTasks.filter(function(t) { return isOverdue(t, today); }).length;
+  var stats = [
+    { num: productCount, label: "Products", color: "#1a73e8", action: "navigateTo('library','Products')" },
+    { num: activeCount, label: "In Progress", color: "#34a853", action: "navigateTo('board','','in_progress')" },
+    { num: overdueCount, label: "Overdue", color: overdueCount > 0 ? "#d93025" : "#5f6368", action: "navigateTo('board')" }
+  ];
+  stats.forEach(function(s) {
+    var div = document.createElement("div");
+    div.className = "stat-link";
+    div.setAttribute("onclick", s.action);
+    div.title = "View " + s.label.toLowerCase();
+    var numDiv = document.createElement("div");
+    numDiv.className = "stat-num";
+    numDiv.style.color = s.color;
+    numDiv.textContent = s.num;
+    var labelDiv = document.createElement("div");
+    labelDiv.className = "stat-label";
+    labelDiv.textContent = s.label;
+    div.appendChild(numDiv);
+    div.appendChild(labelDiv);
+    grid.appendChild(div);
+  });
+}
+
+function renderHomeRecentlyUpdated() {
+  var container = document.getElementById("recently-updated-list");
+  if (!container) return;
+  container.textContent = "";
+  var recentDocs = DOCS.filter(function(d) { return d.updated; })
+    .sort(function(a, b) { return b.updated.localeCompare(a.updated); })
+    .slice(0, 5);
+  if (recentDocs.length === 0) {
+    container.textContent = "No recently updated documents.";
+    return;
+  }
+  recentDocs.forEach(function(doc) {
+    var row = document.createElement("div");
+    row.className = "recent-doc-row";
+    var dateSpan = document.createElement("span");
+    dateSpan.className = "recent-doc-date";
+    dateSpan.textContent = formatDate(doc.updated);
+    row.appendChild(dateSpan);
+    row.appendChild(createDocLinkEl(doc.name));
+    container.appendChild(row);
+  });
 }
 
 // Render category cards using DOM methods
@@ -1358,6 +1621,8 @@ function fetchBoardTasks() {
     .then(function(data) {
       boardTasks = data.tasks || [];
       renderBoard();
+      renderHomeActiveTasks();
+      renderHomeKeyStats();
       document.getElementById("board-loading").style.display = "none";
       showLastSynced();
     })
