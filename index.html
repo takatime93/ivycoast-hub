@@ -151,6 +151,32 @@ body { font-family: 'Roboto', sans-serif; background: #fff; color: #202124; line
   border-top: 1px solid #e0e0e0;
   padding-top: 8px;
 }
+.doc-embed {
+  width: 100%;
+  height: 500px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  margin-bottom: 12px;
+}
+.doc-embed-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+.doc-embed-tab {
+  padding: 6px 14px;
+  font-size: 13px;
+  font-family: inherit;
+  background: #f1f3f4;
+  border: 1px solid #dadce0;
+  border-radius: 20px;
+  cursor: pointer;
+  color: #5f6368;
+  transition: background 0.15s, color 0.15s;
+}
+.doc-embed-tab:hover { background: #e8eaed; }
+.doc-embed-tab.active { background: #1a73e8; color: #fff; border-color: #1a73e8; }
 .home-list-row {
   display: flex;
   align-items: flex-start;
@@ -911,7 +937,12 @@ body { font-family: 'Roboto', sans-serif; background: #fff; color: #202124; line
         <h3>Meeting Notes</h3>
         <span class="info-card-count" id="meeting-count"></span>
       </div>
-      <div class="info-card-scroll" id="meeting-notes-list"></div>
+      <div id="meeting-embed-tabs" class="doc-embed-tabs"></div>
+      <iframe id="meeting-embed" class="doc-embed" frameborder="0"></iframe>
+      <details style="margin-top:8px">
+        <summary style="font-size:13px;color:#5f6368;cursor:pointer">All meeting documents</summary>
+        <div class="info-card-scroll" id="meeting-notes-list" style="margin-top:8px"></div>
+      </details>
     </div>
 
     <div class="home-grid-2col">
@@ -1230,10 +1261,21 @@ function formatDate(d) {
 }
 
 // ── Home tab rendering ─────────────────────────────────────────
+function getDocPreviewUrl(name) {
+  var url = links[name];
+  if (!isValidURL(url)) return "";
+  // Convert /edit URL to /preview
+  return url.replace(/\/edit.*$/, "/preview");
+}
+
 function renderHomeMeetingNotes() {
   var container = document.getElementById("meeting-notes-list");
   var countEl = document.getElementById("meeting-count");
+  var tabsEl = document.getElementById("meeting-embed-tabs");
+  var iframe = document.getElementById("meeting-embed");
   container.textContent = "";
+  tabsEl.textContent = "";
+
   var meetingDocs = DOCS.filter(function(d) {
     return d.category === "Meetings" ||
            d.name.toLowerCase().indexOf("meeting") !== -1 ||
@@ -1246,6 +1288,28 @@ function renderHomeMeetingNotes() {
     return b.updated.localeCompare(a.updated);
   });
   countEl.textContent = meetingDocs.length + " document" + (meetingDocs.length !== 1 ? "s" : "");
+
+  // Embed tabs + iframe for docs that have links
+  var embeddableDocs = meetingDocs.filter(function(d) { return getDocPreviewUrl(d.name); });
+  if (embeddableDocs.length > 0) {
+    iframe.src = getDocPreviewUrl(embeddableDocs[0].name);
+    iframe.style.display = "";
+    embeddableDocs.forEach(function(doc, i) {
+      var btn = document.createElement("button");
+      btn.className = "doc-embed-tab" + (i === 0 ? " active" : "");
+      btn.textContent = doc.name;
+      btn.addEventListener("click", function() {
+        iframe.src = getDocPreviewUrl(doc.name);
+        tabsEl.querySelectorAll(".doc-embed-tab").forEach(function(t) { t.classList.remove("active"); });
+        btn.classList.add("active");
+      });
+      tabsEl.appendChild(btn);
+    });
+  } else {
+    iframe.style.display = "none";
+  }
+
+  // Full list in collapsible details
   if (meetingDocs.length === 0) {
     var p = document.createElement("p");
     p.className = "home-placeholder";
