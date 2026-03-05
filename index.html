@@ -1154,6 +1154,7 @@ const DOCS = [
   { name: "Total Profit", category: "Finance", type: "Sheet", workspace: "IVYCOAST", updated: "", desc: "Monthly profit summary" },
   { name: "Jumble 2026", category: "Projects", type: "Doc", workspace: "IVYCOAST", updated: "2026-01-28", desc: "Jumble event preparation tasks and vendor booklet plan" },
   { name: "Jumble Tasks 2026", category: "Projects", type: "Sheet", workspace: "IVYCOAST", updated: "", desc: "Task tracker for Jumble 2026 event preparation" },
+  { name: "IVYCOAST Meeting Notes 2026", category: "Meetings", type: "Doc", workspace: "IVYCOAST", updated: "2026-03-05", desc: "Meeting notes for 2026" },
   { name: "IVYCOAST Meeting Notes 2025", category: "Meetings", type: "Doc", workspace: "IVYCOAST", updated: "2025-12-31", desc: "Consolidated meeting notes Sep-Dec 2025 with action items" },
   { name: "Markets & Events Hub", category: "Marketing", type: "Doc", workspace: "IVYCOAST", updated: "2025-04-18", desc: "Hub for all markets and events planning" },
   { name: "Futagoza Market Jan 2025", category: "Marketing", type: "Doc", workspace: "IVYCOAST", updated: "2025-04-18", desc: "Futagoza market event details and logistics" },
@@ -1638,6 +1639,98 @@ var boardRefreshTimer = null;
 var isMobile = window.matchMedia("(max-width: 600px)").matches;
 var mobilePickTaskId = null;
 
+// ── Seed tasks (batch-created on first connected load) ────────
+var SEED_TASKS = [
+  {
+    name: "Research soap wrapping for 1-year shelf life",
+    description: "Yoko emailed the wrapping company to get info on extending soap shelf life to at least 1 year. Awaiting reply.",
+    status: "todo", priority: "Medium", assignee: "YOKO",
+    workspace: "IVYCOAST", category: "Product", due: ""
+  },
+  {
+    name: "Create soap stamp design",
+    description: "Design a soap stamp that can be stamped easily and comes out clean.",
+    status: "todo", priority: "Medium", assignee: "Taka Imoto",
+    workspace: "IVYCOAST", category: "Design", due: ""
+  },
+  {
+    name: "Create English brand book & product book",
+    description: "Create English versions of the brand book and product book. CRITICAL — this blocks sending outreach emails to international vendors. Must be completed before Friday March 6.",
+    status: "todo", priority: "High", assignee: "Taka Imoto",
+    workspace: "IVYCOAST", category: "Marketing", due: "2026-03-05"
+  },
+  {
+    name: "Email 3 international vendors",
+    description: "Send outreach emails to 3 international vendors. Blocked until English brand book & product book are ready.",
+    status: "backlog", priority: "High", assignee: "Taka Imoto",
+    workspace: "IVYCOAST", category: "Sales", due: "2026-03-06"
+  },
+  {
+    name: "Finish updating wholesale site",
+    description: "Complete the wholesale site updates and test with Yoko.",
+    status: "todo", priority: "Medium", assignee: "Taka Imoto",
+    workspace: "IVYCOAST", category: "Web", due: ""
+  },
+  {
+    name: "Plan Notion to Google Workspace migration",
+    description: "Yoko and Taka to decide on the approach for migrating Notion documents into Google Workspace.",
+    status: "todo", priority: "Medium", assignee: "",
+    workspace: "IVYCOAST", category: "Operations", due: ""
+  }
+];
+
+function seedBoardTasks() {
+  var SEED_KEY = "boardSeeded_2026-03-03";
+  if (localStorage.getItem(SEED_KEY)) return;
+  if (!SCRIPT_URL) return;
+
+  var existingNames = boardTasks.map(function(t) { return t.name.toLowerCase(); });
+  var toCreate = SEED_TASKS.filter(function(s) {
+    return existingNames.indexOf(s.name.toLowerCase()) === -1;
+  });
+
+  if (toCreate.length === 0) {
+    localStorage.setItem(SEED_KEY, "1");
+    return;
+  }
+
+  setSyncStatus("Adding " + toCreate.length + " tasks\u2026");
+
+  // Add to local array immediately so they render
+  var tempIds = [];
+  toCreate.forEach(function(s) {
+    var tempId = "seed-" + Date.now() + "-" + Math.random().toString(36).slice(2, 6);
+    tempIds.push(tempId);
+    boardTasks.push(Object.assign({ id: tempId }, s));
+  });
+  renderBoard();
+  renderHomeActiveTasks();
+
+  // Push to Google Sheets sequentially
+  var chain = Promise.resolve();
+  toCreate.forEach(function(s, i) {
+    chain = chain.then(function() {
+      return apiPost({ action: "create", task: s }).then(function(data) {
+        if (data.task) {
+          boardTasks = boardTasks.map(function(t) {
+            return t.id === tempIds[i] ? data.task : t;
+          });
+        }
+      });
+    });
+  });
+
+  chain.then(function() {
+    localStorage.setItem(SEED_KEY, "1");
+    renderBoard();
+    renderHomeActiveTasks();
+    setSyncStatus(toCreate.length + " tasks added");
+    setTimeout(showLastSynced, 2000);
+  }).catch(function() {
+    setSyncStatus("Some tasks failed to sync");
+  });
+}
+
 function saveScriptUrl() {
   var url = document.getElementById("script-url-input").value.trim();
   if (!url) return;
@@ -1689,6 +1782,7 @@ function fetchBoardTasks() {
       renderHomeKeyStats();
       document.getElementById("board-loading").style.display = "none";
       showLastSynced();
+      seedBoardTasks();
     })
     .catch(function(err) {
       document.getElementById("board-loading").style.display = "none";
