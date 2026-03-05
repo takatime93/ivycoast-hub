@@ -1,37 +1,41 @@
 // ==============================================================
-// IVYCOAST & Boldoath — Kanban Board API (Google Apps Script)
+// IVYCOAST & Boldoath — Kanban Board + CRM API (Google Apps Script)
 // ==============================================================
-// 1. Create a Google Sheet with a sheet named "Tasks"
-// 2. Add headers in row 1: id | name | status | priority | assignee | due | workspace | category | description | docLink | createdAt | updatedAt
-// 3. Open Extensions → Apps Script, paste this code, deploy as web app
-// 4. Set "Execute as: Me" and "Who has access: Anyone"
-// 5. Copy the deployed URL into the dashboard (Board tab config)
+// Sheets:
+//   "Tasks"    — Kanban board (id prefix: ivy-)
+//   "Contacts" — CRM contacts (id prefix: crm-)
+//
+// 1. Create a Google Sheet with sheets named "Tasks" and "Contacts"
+// 2. Tasks headers:    id | name | status | priority | assignee | due | workspace | category | description | docLink | createdAt | updatedAt
+// 3. Contacts headers: id | name | type | company | role | email | phone | products | location | stage | notes | connectedDate | lastContactDate | workspace | createdAt | updatedAt
+// 4. Open Extensions → Apps Script, paste this code, deploy as web app
+// 5. Set "Execute as: Me" and "Who has access: Anyone"
+// 6. Copy the deployed URL into the dashboard (Board tab config)
 // ==============================================================
 
-var SHEET_NAME = "Tasks";
-
-function getSheet() {
-  return SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME);
+function getSheet(sheetName) {
+  var name = sheetName || "Tasks";
+  return SpreadsheetApp.getActiveSpreadsheet().getSheetByName(name);
 }
 
-function rowToTask(headers, row) {
-  var task = {};
+function rowToObj(headers, row) {
+  var obj = {};
   headers.forEach(function (h, i) {
-    task[h] = row[i] || "";
+    obj[h] = row[i] || "";
   });
-  return task;
+  return obj;
 }
 
-function getAllTasks() {
-  var sheet = getSheet();
+function getAllRows(sheetName) {
+  var sheet = getSheet(sheetName);
   var data = sheet.getDataRange().getValues();
   if (data.length < 2) return [];
   var headers = data[0];
-  var tasks = [];
+  var rows = [];
   for (var i = 1; i < data.length; i++) {
-    tasks.push(rowToTask(headers, data[i]));
+    rows.push(rowToObj(headers, data[i]));
   }
-  return tasks;
+  return rows;
 }
 
 function findRowById(sheet, id) {
@@ -42,49 +46,41 @@ function findRowById(sheet, id) {
   return -1;
 }
 
-function nextId(sheet) {
+function nextId(sheet, prefix) {
   var data = sheet.getDataRange().getValues();
   var max = 0;
   for (var i = 1; i < data.length; i++) {
     var num = parseInt(String(data[i][0]).replace(/\D/g, ""), 10);
     if (num > max) max = num;
   }
-  return "ivy-" + (max + 1);
+  return prefix + (max + 1);
 }
 
-function createTask(task) {
-  var sheet = getSheet();
+function createRow(sheetName, item) {
+  var sheet = getSheet(sheetName);
+  var prefix = (sheetName === "Contacts") ? "crm-" : "ivy-";
   var now = new Date().toISOString();
-  var id = nextId(sheet);
-  var row = [
-    id,
-    task.name || "",
-    task.status || "backlog",
-    task.priority || "",
-    task.assignee || "",
-    task.due || "",
-    task.workspace || "IVYCOAST",
-    task.category || "",
-    task.description || "",
-    task.docLink || "",
-    now,
-    now
-  ];
-  sheet.appendRow(row);
+  var id = nextId(sheet, prefix);
   var headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
-  return rowToTask(headers, row);
+  var row = headers.map(function(h) {
+    if (h === "id") return id;
+    if (h === "createdAt" || h === "updatedAt") return now;
+    return item[h] || "";
+  });
+  sheet.appendRow(row);
+  return rowToObj(headers, row);
 }
 
-function updateTask(task) {
-  var sheet = getSheet();
-  var rowNum = findRowById(sheet, task.id);
+function updateRow(sheetName, item) {
+  var sheet = getSheet(sheetName);
+  var rowNum = findRowById(sheet, item.id);
   if (rowNum === -1) return null;
   var headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
   var existing = sheet.getRange(rowNum, 1, 1, headers.length).getValues()[0];
-  var obj = rowToTask(headers, existing);
+  var obj = rowToObj(headers, existing);
   // Merge provided fields
-  Object.keys(task).forEach(function (k) {
-    if (k !== "createdAt") obj[k] = task[k];
+  Object.keys(item).forEach(function (k) {
+    if (k !== "createdAt") obj[k] = item[k];
   });
   obj.updatedAt = new Date().toISOString();
   var newRow = headers.map(function (h) { return obj[h] || ""; });
@@ -92,8 +88,8 @@ function updateTask(task) {
   return obj;
 }
 
-function deleteTask(id) {
-  var sheet = getSheet();
+function deleteRow(sheetName, id) {
+  var sheet = getSheet(sheetName);
   var rowNum = findRowById(sheet, id);
   if (rowNum === -1) return false;
   sheet.deleteRow(rowNum);
@@ -104,8 +100,12 @@ function deleteTask(id) {
 
 function doGet(e) {
   var action = (e.parameter && e.parameter.action) || "list";
+  var sheetName = (e.parameter && e.parameter.sheet) || "Tasks";
   if (action === "list") {
-    return jsonResponse({ tasks: getAllTasks() });
+    var key = (sheetName === "Contacts") ? "contacts" : "tasks";
+    var result = {};
+    result[key] = getAllRows(sheetName);
+    return jsonResponse(result);
   }
   return jsonResponse({ error: "Unknown action" });
 }
@@ -114,19 +114,27 @@ function doPost(e) {
   var body;
   try { body = JSON.parse(e.postData.contents); }
   catch (err) { return jsonResponse({ error: "Invalid JSON body" }); }
+
   var action = body.action;
+  var sheetName = body.sheet || "Tasks";
+  var itemKey = (sheetName === "Contacts") ? "contact" : "task";
+  var item = body[itemKey] || body.task || body.contact || {};
 
   if (action === "create") {
-    var created = createTask(body.task);
-    return jsonResponse({ task: created });
+    var created = createRow(sheetName, item);
+    var res = {};
+    res[itemKey] = created;
+    return jsonResponse(res);
   }
   if (action === "update") {
-    var updated = updateTask(body.task);
-    if (!updated) return jsonResponse({ error: "Task not found" });
-    return jsonResponse({ task: updated });
+    var updated = updateRow(sheetName, item);
+    if (!updated) return jsonResponse({ error: itemKey + " not found" });
+    var res2 = {};
+    res2[itemKey] = updated;
+    return jsonResponse(res2);
   }
   if (action === "delete") {
-    var ok = deleteTask(body.id);
+    var ok = deleteRow(sheetName, body.id);
     return jsonResponse({ success: ok });
   }
   return jsonResponse({ error: "Unknown action" });

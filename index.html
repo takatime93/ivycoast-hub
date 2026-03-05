@@ -624,6 +624,129 @@ body { font-family: 'Roboto', sans-serif; background: #fff; color: #202124; line
   font-family: inherit;
 }
 
+/* CRM Sub-tabs */
+.crm-subtabs {
+  display: flex;
+  gap: 0;
+  margin-bottom: 20px;
+  border-bottom: 1px solid #e0e0e0;
+}
+.crm-subtab {
+  padding: 8px 18px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #5f6368;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  font-family: inherit;
+  transition: color 0.15s, border-color 0.15s;
+}
+.crm-subtab:hover { color: #1a73e8; }
+.crm-subtab.active { color: #1a73e8; border-bottom-color: #1a73e8; }
+
+.crm-subview { display: none; }
+.crm-subview.active { display: block; }
+
+/* CRM Vendor Grid */
+.crm-vendor-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+}
+.crm-vendor-card {
+  background: #f8f9fa;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  cursor: pointer;
+  transition: box-shadow 0.15s;
+}
+.crm-vendor-card:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.13); }
+.crm-vendor-name {
+  font-size: 15px;
+  font-weight: 500;
+  color: #202124;
+  margin-bottom: 4px;
+}
+.crm-vendor-company { font-size: 13px; color: #5f6368; margin-bottom: 8px; }
+.crm-vendor-details { font-size: 13px; color: #5f6368; margin-bottom: 8px; }
+.crm-vendor-details span { display: block; margin-bottom: 2px; }
+
+/* CRM Product Tags */
+.crm-product-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px; }
+.crm-product-tag {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 500;
+  background: #e6f4ea;
+  color: #137333;
+}
+
+/* CRM Stage Badges */
+.crm-stage-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: capitalize;
+}
+.crm-stage-prospect { background: #e8eaed; color: #5f6368; }
+.crm-stage-outreach { background: #e8f0fe; color: #1a73e8; }
+.crm-stage-negotiation { background: #fef7e0; color: #b06000; }
+.crm-stage-active_partner { background: #e6f4ea; color: #137333; }
+.crm-stage-inactive { background: #fce8e6; color: #c5221f; }
+
+/* CRM Contacts Table */
+.crm-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+.crm-table th {
+  text-align: left;
+  padding: 10px 12px;
+  border-bottom: 2px solid #e0e0e0;
+  font-weight: 500;
+  color: #5f6368;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+.crm-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid #f0f0f0;
+  vertical-align: middle;
+}
+.crm-table tr { cursor: pointer; }
+.crm-table tr:hover td { background: #f8f9fa; }
+
+/* CRM Pipeline (5-col kanban) */
+.crm-kanban {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12px;
+  min-height: 400px;
+}
+.crm-kanban .kanban-col { min-height: 200px; }
+
+/* CRM Type Badges */
+.crm-type-badge {
+  display: inline-block;
+  padding: 2px 7px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 500;
+}
+.crm-type-vendor { background: #e8f0fe; color: #1a73e8; }
+.crm-type-contact { background: #e8eaed; color: #5f6368; }
+.crm-type-partner { background: #e6f4ea; color: #137333; }
+
 /* Responsive */
 @media (max-width: 600px) {
   .header { padding: 16px 16px 0; }
@@ -652,6 +775,16 @@ body { font-family: 'Roboto', sans-serif; background: #fff; color: #202124; line
   .kanban-col { scroll-snap-align: start; }
   .board-modal { padding: 20px; }
   .board-setup input { width: 100%; }
+  .crm-vendor-grid { grid-template-columns: 1fr; }
+  .crm-kanban {
+    grid-template-columns: repeat(5, 80vw);
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+  }
+  .crm-kanban .kanban-col { scroll-snap-align: start; }
+  .crm-table { font-size: 13px; }
+  .crm-table th, .crm-table td { padding: 8px 6px; }
 }
 
 /* Login Screen */
@@ -901,7 +1034,7 @@ body { font-family: 'Roboto', sans-serif; background: #fff; color: #202124; line
         <img src="icons/logo.png" alt="Ivycoast" style="height:32px">
       </div>
       <div class="global-search">
-        <input type="text" id="global-search" placeholder="Search documents & tasks..." autocomplete="off">
+        <input type="text" id="global-search" placeholder="Search documents, tasks & contacts..." autocomplete="off">
         <div id="search-results" class="search-results"></div>
       </div>
       <div class="header-user">
@@ -916,6 +1049,7 @@ body { font-family: 'Roboto', sans-serif; background: #fff; color: #202124; line
       <button class="tab" data-view="boldoath" role="tab" aria-selected="false" aria-controls="boldoath" id="tab-boldoath">Boldoath</button>
       <button class="tab" data-view="library" role="tab" aria-selected="false" aria-controls="library" id="tab-library">Document Library</button>
       <button class="tab" data-view="board" role="tab" aria-selected="false" aria-controls="board" id="tab-board">Board</button>
+      <button class="tab" data-view="crm" role="tab" aria-selected="false" aria-controls="crm" id="tab-crm">CRM</button>
     </nav>
   </div>
 </div>
@@ -968,6 +1102,11 @@ body { font-family: 'Roboto', sans-serif; background: #fff; color: #202124; line
         <div class="info-card" id="home-recently-updated">
           <h3>Recently Updated</h3>
           <div id="recently-updated-list"></div>
+        </div>
+
+        <div class="info-card" id="home-crm-pipeline">
+          <h3>CRM Pipeline</h3>
+          <div class="stat-grid" id="home-crm-stats"></div>
         </div>
 
         <div class="info-card">
@@ -1077,6 +1216,140 @@ body { font-family: 'Roboto', sans-serif; background: #fff; color: #202124; line
         <div class="kanban-col-header">Done <span class="col-count" id="count-done">0</span></div>
         <div class="kanban-col-body" id="col-done"></div>
       </div>
+    </div>
+  </div>
+
+  <!-- CRM -->
+  <div id="crm" class="view" role="tabpanel" aria-labelledby="tab-crm">
+    <h2 class="section-title">CRM</h2>
+    <p class="section-subtitle">Vendor contacts & sales pipeline — synced via Google Sheets</p>
+
+    <div class="board-toolbar" id="crm-toolbar">
+      <button class="btn-add-task" onclick="openCrmCreateModal()">+ Add Contact</button>
+      <select class="filter-select" id="crm-filter-ws" onchange="renderCrmActiveView()">
+        <option value="">All Workspaces</option>
+        <option value="IVYCOAST">IVYCOAST</option>
+        <option value="BOLDOATH">BOLDOATH</option>
+      </select>
+      <select class="filter-select" id="crm-filter-type" onchange="renderCrmActiveView()">
+        <option value="">All Types</option>
+        <option value="Vendor">Vendor</option>
+        <option value="Contact">Contact</option>
+        <option value="Partner">Partner</option>
+      </select>
+      <div class="sync-indicator">
+        <span id="crm-sync-status"></span>
+        <button onclick="fetchCrmContacts()">Refresh</button>
+      </div>
+    </div>
+
+    <div class="crm-subtabs">
+      <button class="crm-subtab active" data-subview="crm-vendors" onclick="switchCrmSubView('crm-vendors')">Vendors</button>
+      <button class="crm-subtab" data-subview="crm-contacts" onclick="switchCrmSubView('crm-contacts')">Contacts</button>
+      <button class="crm-subtab" data-subview="crm-pipeline" onclick="switchCrmSubView('crm-pipeline')">Pipeline</button>
+    </div>
+
+    <!-- Vendors sub-tab -->
+    <div id="crm-vendors" class="crm-subview active">
+      <div class="crm-vendor-grid" id="crm-vendor-grid"></div>
+      <p id="crm-vendors-empty" style="display:none;text-align:center;padding:32px;color:#5f6368;font-size:14px;">No vendors found. Add one with + Add Contact.</p>
+    </div>
+
+    <!-- Contacts sub-tab -->
+    <div id="crm-contacts" class="crm-subview">
+      <table class="crm-table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Company</th>
+            <th>Role</th>
+            <th>Email</th>
+            <th>Products</th>
+            <th>Stage</th>
+            <th>Last Contact</th>
+          </tr>
+        </thead>
+        <tbody id="crm-contacts-body"></tbody>
+      </table>
+      <p id="crm-contacts-empty" style="display:none;text-align:center;padding:32px;color:#5f6368;font-size:14px;">No contacts found.</p>
+    </div>
+
+    <!-- Pipeline sub-tab -->
+    <div id="crm-pipeline" class="crm-subview">
+      <div class="crm-kanban" id="crm-kanban">
+        <div class="kanban-col" data-stage="prospect">
+          <div class="kanban-col-header">Prospect <span class="col-count" id="crm-count-prospect">0</span></div>
+          <div class="kanban-col-body" id="crm-col-prospect"></div>
+        </div>
+        <div class="kanban-col" data-stage="outreach">
+          <div class="kanban-col-header">Outreach <span class="col-count" id="crm-count-outreach">0</span></div>
+          <div class="kanban-col-body" id="crm-col-outreach"></div>
+        </div>
+        <div class="kanban-col" data-stage="negotiation">
+          <div class="kanban-col-header">Negotiation <span class="col-count" id="crm-count-negotiation">0</span></div>
+          <div class="kanban-col-body" id="crm-col-negotiation"></div>
+        </div>
+        <div class="kanban-col" data-stage="active_partner">
+          <div class="kanban-col-header">Active Partner <span class="col-count" id="crm-count-active_partner">0</span></div>
+          <div class="kanban-col-body" id="crm-col-active_partner"></div>
+        </div>
+        <div class="kanban-col" data-stage="inactive">
+          <div class="kanban-col-header">Inactive <span class="col-count" id="crm-count-inactive">0</span></div>
+          <div class="kanban-col-body" id="crm-col-inactive"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CRM Contact Modal -->
+<div class="board-modal-overlay" id="crm-modal-overlay" onclick="if(event.target===this)closeCrmModal()">
+  <div class="board-modal">
+    <h2 id="crm-modal-title">New Contact</h2>
+    <input type="hidden" id="crm-modal-id">
+    <label for="crm-modal-name">Name</label>
+    <input type="text" id="crm-modal-name">
+    <label for="crm-modal-type">Type</label>
+    <select id="crm-modal-type">
+      <option value="Vendor">Vendor</option>
+      <option value="Contact">Contact</option>
+      <option value="Partner">Partner</option>
+    </select>
+    <label for="crm-modal-company">Company</label>
+    <input type="text" id="crm-modal-company">
+    <label for="crm-modal-role">Role</label>
+    <input type="text" id="crm-modal-role">
+    <label for="crm-modal-email">Email</label>
+    <input type="email" id="crm-modal-email">
+    <label for="crm-modal-phone">Phone</label>
+    <input type="tel" id="crm-modal-phone">
+    <label for="crm-modal-products">Products (comma-separated)</label>
+    <input type="text" id="crm-modal-products" placeholder="soap, candles, packaging">
+    <label for="crm-modal-location">Location</label>
+    <input type="text" id="crm-modal-location">
+    <label for="crm-modal-stage">Stage</label>
+    <select id="crm-modal-stage">
+      <option value="prospect">Prospect</option>
+      <option value="outreach">Outreach</option>
+      <option value="negotiation">Negotiation</option>
+      <option value="active_partner">Active Partner</option>
+      <option value="inactive">Inactive</option>
+    </select>
+    <label for="crm-modal-workspace">Workspace</label>
+    <select id="crm-modal-workspace">
+      <option value="IVYCOAST">IVYCOAST</option>
+      <option value="BOLDOATH">BOLDOATH</option>
+    </select>
+    <label for="crm-modal-connected">Connected Date</label>
+    <input type="date" id="crm-modal-connected">
+    <label for="crm-modal-lastcontact">Last Contact Date</label>
+    <input type="date" id="crm-modal-lastcontact">
+    <label for="crm-modal-notes">Notes</label>
+    <textarea id="crm-modal-notes"></textarea>
+    <div class="board-modal-actions">
+      <button class="btn-delete" id="crm-modal-delete-btn" style="display:none" onclick="deleteCrmContactConfirm()">Delete</button>
+      <button onclick="closeCrmModal()">Cancel</button>
+      <button class="btn-save" onclick="saveCrmContact()">Save</button>
     </div>
   </div>
 </div>
@@ -1987,8 +2260,8 @@ function renderBoard() {
   emptyMsg.textContent = (totalVisible === 0 && SCRIPT_URL) ? "No tasks found. Create one with + Add Task." : "";
 }
 
-// Drag & Drop on columns
-document.querySelectorAll(".kanban-col").forEach(function(col) {
+// Drag & Drop on columns (scoped to Board kanban only)
+document.querySelectorAll("#kanban .kanban-col").forEach(function(col) {
   col.addEventListener("dragover", function(e) {
     e.preventDefault();
     e.dataTransfer.dropEffect = "move";
@@ -2161,15 +2434,18 @@ function stopBoardRefresh() {
   if (boardRefreshTimer) { clearInterval(boardRefreshTimer); boardRefreshTimer = null; }
 }
 
-// Hook into tab switching
+// Hook into tab switching (Board + CRM coordination)
 document.querySelectorAll(".tab").forEach(function(tab) {
   tab.addEventListener("click", function() {
+    stopBoardRefresh();
+    if (typeof stopCrmRefresh === "function") stopCrmRefresh();
     if (tab.dataset.view === "board") {
       checkBoardSetup();
       fetchBoardTasks();
       startBoardRefresh();
-    } else {
-      stopBoardRefresh();
+    } else if (tab.dataset.view === "crm") {
+      if (typeof fetchCrmContacts === "function") fetchCrmContacts();
+      if (typeof startCrmRefresh === "function") startCrmRefresh();
     }
   });
 });
@@ -2240,6 +2516,18 @@ function navigateTo(viewId, searchQuery, statusFilter) {
     tab.setAttribute("aria-selected", "true");
   }
   document.getElementById(viewId).classList.add("active");
+  // Stop all auto-refresh timers
+  stopBoardRefresh();
+  if (typeof stopCrmRefresh === "function") stopCrmRefresh();
+  // Trigger fetch/refresh for target tab
+  if (viewId === "board") {
+    checkBoardSetup();
+    fetchBoardTasks();
+    startBoardRefresh();
+  } else if (viewId === "crm") {
+    if (typeof fetchCrmContacts === "function") fetchCrmContacts();
+    if (typeof startCrmRefresh === "function") startCrmRefresh();
+  }
   if (viewId === "library" && searchQuery) {
     var si = document.getElementById("search-input");
     si.value = searchQuery;
@@ -2282,8 +2570,8 @@ renderBoard = function() {
     }
   } else {
     _origRenderBoard();
-    var existing = document.getElementById("assignee-filter-badge");
-    if (existing) existing.remove();
+    var oldBadge = document.getElementById("assignee-filter-badge");
+    if (oldBadge) oldBadge.remove();
   }
 };
 
@@ -2327,7 +2615,14 @@ globalSearchInput.addEventListener("input", function() {
            (t.category && t.category.toLowerCase().indexOf(q) !== -1);
   }).slice(0, 5);
 
-  if (docMatches.length === 0 && taskMatches.length === 0) {
+  var crmMatches = (typeof crmContacts !== "undefined" ? crmContacts : []).filter(function(c) {
+    return (c.name && c.name.toLowerCase().indexOf(q) !== -1) ||
+           (c.company && c.company.toLowerCase().indexOf(q) !== -1) ||
+           (c.products && c.products.toLowerCase().indexOf(q) !== -1) ||
+           (c.email && c.email.toLowerCase().indexOf(q) !== -1);
+  }).slice(0, 5);
+
+  if (docMatches.length === 0 && taskMatches.length === 0 && crmMatches.length === 0) {
     var noRes = document.createElement("div");
     noRes.className = "search-no-results";
     noRes.textContent = "No results found";
@@ -2358,6 +2653,16 @@ globalSearchInput.addEventListener("input", function() {
     });
   }
 
+  if (crmMatches.length > 0) {
+    var label3 = document.createElement("div");
+    label3.className = "search-group-label";
+    label3.textContent = "CRM Contacts";
+    searchResultsEl.appendChild(label3);
+    crmMatches.forEach(function(c) {
+      searchResultsEl.appendChild(createSearchItem(c.name, c.type || "Contact", "", "crm", c.id));
+    });
+  }
+
   searchResultsEl.classList.add("active");
 });
 
@@ -2371,6 +2676,8 @@ searchResultsEl.addEventListener("click", function(e) {
     navigateTo("library", item.dataset.name);
   } else if (item.dataset.action === "task") {
     navigateTo("board");
+  } else if (item.dataset.action === "crm") {
+    navigateTo("crm");
   }
   globalSearchInput.value = "";
   searchResultsEl.classList.remove("active");
@@ -2413,6 +2720,532 @@ function updateBoardBadge() {
     };
   }
 })();
+
+// ===================== CRM =====================
+
+var crmContacts = [];
+var crmRefreshTimer = null;
+var crmActiveSubView = "crm-vendors";
+
+function setCrmSyncStatus(msg) {
+  document.getElementById("crm-sync-status").textContent = msg;
+}
+
+function showCrmLastSynced() {
+  var now = new Date();
+  var hhmm = String(now.getHours()).padStart(2,"0") + ":" + String(now.getMinutes()).padStart(2,"0");
+  setCrmSyncStatus("Last synced " + hhmm);
+}
+
+function crmApiPost(body) {
+  body.sheet = "Contacts";
+  return fetch(SCRIPT_URL, {
+    method: "POST",
+    headers: { "Content-Type": "text/plain" },
+    body: JSON.stringify(body)
+  }).then(function(r) { return r.json(); });
+}
+
+function fetchCrmContacts() {
+  if (!SCRIPT_URL) return;
+  setCrmSyncStatus("Syncing\u2026");
+  fetch(SCRIPT_URL + "?action=list&sheet=Contacts")
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      crmContacts = data.contacts || [];
+      renderCrmActiveView();
+      renderHomeCrmStats();
+      showCrmLastSynced();
+    })
+    .catch(function(err) {
+      setCrmSyncStatus("Sync failed");
+      console.error("CRM fetch error:", err);
+    });
+}
+
+function switchCrmSubView(viewId) {
+  crmActiveSubView = viewId;
+  document.querySelectorAll(".crm-subtab").forEach(function(t) {
+    t.classList.toggle("active", t.dataset.subview === viewId);
+  });
+  document.querySelectorAll(".crm-subview").forEach(function(v) {
+    v.classList.toggle("active", v.id === viewId);
+  });
+  renderCrmActiveView();
+}
+
+function getFilteredCrmContacts() {
+  var wsFilter = document.getElementById("crm-filter-ws").value;
+  var typeFilter = document.getElementById("crm-filter-type").value;
+  return crmContacts.filter(function(c) {
+    if (wsFilter && c.workspace !== wsFilter) return false;
+    if (typeFilter && c.type !== typeFilter) return false;
+    return true;
+  });
+}
+
+function renderCrmActiveView() {
+  if (crmActiveSubView === "crm-vendors") renderCrmVendors();
+  else if (crmActiveSubView === "crm-contacts") renderCrmContacts();
+  else if (crmActiveSubView === "crm-pipeline") renderCrmPipeline();
+}
+
+function renderCrmVendors() {
+  var grid = document.getElementById("crm-vendor-grid");
+  var empty = document.getElementById("crm-vendors-empty");
+  grid.textContent = "";
+  var contacts = getFilteredCrmContacts().filter(function(c) {
+    return c.type === "Vendor" || c.type === "Partner";
+  });
+  if (contacts.length === 0) {
+    empty.style.display = "block";
+    return;
+  }
+  empty.style.display = "none";
+  contacts.forEach(function(c) {
+    var card = document.createElement("div");
+    card.className = "crm-vendor-card";
+    card.addEventListener("click", function() { openCrmEditModal(c.id); });
+
+    var nameDiv = document.createElement("div");
+    nameDiv.className = "crm-vendor-name";
+    nameDiv.textContent = c.name;
+    card.appendChild(nameDiv);
+
+    if (c.company) {
+      var companyDiv = document.createElement("div");
+      companyDiv.className = "crm-vendor-company";
+      companyDiv.textContent = c.company;
+      card.appendChild(companyDiv);
+    }
+
+    var details = document.createElement("div");
+    details.className = "crm-vendor-details";
+    if (c.location) {
+      var locSpan = document.createElement("span");
+      locSpan.textContent = "\uD83D\uDCCD " + c.location;
+      details.appendChild(locSpan);
+    }
+    if (c.email) {
+      var emailSpan = document.createElement("span");
+      emailSpan.textContent = "\u2709 " + c.email;
+      details.appendChild(emailSpan);
+    }
+    if (c.role) {
+      var roleSpan = document.createElement("span");
+      roleSpan.textContent = c.role;
+      details.appendChild(roleSpan);
+    }
+    card.appendChild(details);
+
+    // Stage badge
+    var stageBadge = document.createElement("span");
+    stageBadge.className = "crm-stage-badge crm-stage-" + (c.stage || "prospect");
+    stageBadge.textContent = (c.stage || "prospect").replace("_", " ");
+    card.appendChild(stageBadge);
+
+    // Product tags
+    if (c.products) {
+      var tagsDiv = document.createElement("div");
+      tagsDiv.className = "crm-product-tags";
+      c.products.split(",").forEach(function(p) {
+        p = p.trim();
+        if (!p) return;
+        var tag = document.createElement("span");
+        tag.className = "crm-product-tag";
+        tag.textContent = p;
+        tagsDiv.appendChild(tag);
+      });
+      card.appendChild(tagsDiv);
+    }
+
+    grid.appendChild(card);
+  });
+}
+
+function renderCrmContacts() {
+  var tbody = document.getElementById("crm-contacts-body");
+  var empty = document.getElementById("crm-contacts-empty");
+  tbody.textContent = "";
+  var contacts = getFilteredCrmContacts();
+  if (contacts.length === 0) {
+    empty.style.display = "block";
+    return;
+  }
+  empty.style.display = "none";
+  contacts.forEach(function(c) {
+    var tr = document.createElement("tr");
+    tr.addEventListener("click", function() { openCrmEditModal(c.id); });
+
+    var tdName = document.createElement("td");
+    tdName.textContent = c.name;
+    tr.appendChild(tdName);
+
+    var tdCompany = document.createElement("td");
+    tdCompany.textContent = c.company || "\u2014";
+    tr.appendChild(tdCompany);
+
+    var tdRole = document.createElement("td");
+    tdRole.textContent = c.role || "\u2014";
+    tr.appendChild(tdRole);
+
+    var tdEmail = document.createElement("td");
+    if (c.email) {
+      var a = document.createElement("a");
+      a.href = "mailto:" + c.email;
+      a.textContent = c.email;
+      a.style.color = "#1a73e8";
+      a.style.textDecoration = "none";
+      a.addEventListener("click", function(e) { e.stopPropagation(); });
+      tdEmail.appendChild(a);
+    } else {
+      tdEmail.textContent = "\u2014";
+    }
+    tr.appendChild(tdEmail);
+
+    var tdProducts = document.createElement("td");
+    if (c.products) {
+      var tagsDiv = document.createElement("div");
+      tagsDiv.className = "crm-product-tags";
+      c.products.split(",").slice(0, 3).forEach(function(p) {
+        p = p.trim();
+        if (!p) return;
+        var tag = document.createElement("span");
+        tag.className = "crm-product-tag";
+        tag.textContent = p;
+        tagsDiv.appendChild(tag);
+      });
+      tdProducts.appendChild(tagsDiv);
+    } else {
+      tdProducts.textContent = "\u2014";
+    }
+    tr.appendChild(tdProducts);
+
+    var tdStage = document.createElement("td");
+    var stageBadge = document.createElement("span");
+    stageBadge.className = "crm-stage-badge crm-stage-" + (c.stage || "prospect");
+    stageBadge.textContent = (c.stage || "prospect").replace("_", " ");
+    tdStage.appendChild(stageBadge);
+    tr.appendChild(tdStage);
+
+    var tdLastContact = document.createElement("td");
+    tdLastContact.textContent = formatDate(c.lastContactDate);
+    tr.appendChild(tdLastContact);
+
+    tbody.appendChild(tr);
+  });
+}
+
+function renderCrmPipeline() {
+  var stages = ["prospect", "outreach", "negotiation", "active_partner", "inactive"];
+  var cols = {};
+  stages.forEach(function(s) { cols[s] = []; });
+
+  var contacts = getFilteredCrmContacts();
+  contacts.forEach(function(c) {
+    var s = c.stage || "prospect";
+    if (!cols[s]) s = "prospect";
+    cols[s].push(c);
+  });
+
+  stages.forEach(function(stage) {
+    var container = document.getElementById("crm-col-" + stage);
+    container.textContent = "";
+    document.getElementById("crm-count-" + stage).textContent = cols[stage].length;
+
+    cols[stage].forEach(function(c) {
+      var card = document.createElement("div");
+      card.className = "task-card";
+      card.setAttribute("data-id", c.id);
+      card.draggable = true;
+
+      var nameDiv = document.createElement("div");
+      nameDiv.className = "task-card-name";
+      nameDiv.textContent = c.name;
+      card.appendChild(nameDiv);
+
+      var metaDiv = document.createElement("div");
+      metaDiv.className = "task-card-meta";
+
+      if (c.type) {
+        var typeBadge = document.createElement("span");
+        typeBadge.className = "crm-type-badge crm-type-" + c.type.toLowerCase();
+        typeBadge.textContent = c.type;
+        metaDiv.appendChild(typeBadge);
+      }
+
+      if (c.company) {
+        var compSpan = document.createElement("span");
+        compSpan.className = "task-assignee";
+        compSpan.textContent = c.company;
+        metaDiv.appendChild(compSpan);
+      }
+
+      if (c.products) {
+        var firstProduct = c.products.split(",")[0].trim();
+        if (firstProduct) {
+          var prodTag = document.createElement("span");
+          prodTag.className = "crm-product-tag";
+          prodTag.textContent = firstProduct;
+          metaDiv.appendChild(prodTag);
+        }
+      }
+
+      card.appendChild(metaDiv);
+
+      // Click → edit modal
+      card.addEventListener("click", function() { openCrmEditModal(c.id); });
+
+      // Drag events
+      card.addEventListener("dragstart", function(e) {
+        card.classList.add("dragging");
+        e.dataTransfer.setData("text/plain", c.id);
+        e.dataTransfer.effectAllowed = "move";
+      });
+      card.addEventListener("dragend", function() {
+        card.classList.remove("dragging");
+      });
+
+      container.appendChild(card);
+    });
+  });
+}
+
+// CRM Pipeline drag & drop
+document.querySelectorAll("#crm-kanban .kanban-col").forEach(function(col) {
+  col.addEventListener("dragover", function(e) {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+    col.classList.add("drag-over");
+  });
+  col.addEventListener("dragleave", function(e) {
+    if (!col.contains(e.relatedTarget)) {
+      col.classList.remove("drag-over");
+    }
+  });
+  col.addEventListener("drop", function(e) {
+    e.preventDefault();
+    col.classList.remove("drag-over");
+    var contactId = e.dataTransfer.getData("text/plain");
+    var newStage = col.dataset.stage;
+    // Optimistic update
+    crmContacts.forEach(function(c) {
+      if (c.id === contactId) c.stage = newStage;
+    });
+    renderCrmPipeline();
+    renderHomeCrmStats();
+    // API call
+    crmApiPost({ action: "update", contact: { id: contactId, stage: newStage } })
+      .catch(function() { fetchCrmContacts(); });
+  });
+});
+
+// CRM Modal
+function openCrmCreateModal() {
+  document.getElementById("crm-modal-title").textContent = "New Contact";
+  document.getElementById("crm-modal-id").value = "";
+  document.getElementById("crm-modal-name").value = "";
+  document.getElementById("crm-modal-type").value = "Vendor";
+  document.getElementById("crm-modal-company").value = "";
+  document.getElementById("crm-modal-role").value = "";
+  document.getElementById("crm-modal-email").value = "";
+  document.getElementById("crm-modal-phone").value = "";
+  document.getElementById("crm-modal-products").value = "";
+  document.getElementById("crm-modal-location").value = "";
+  document.getElementById("crm-modal-stage").value = "prospect";
+  document.getElementById("crm-modal-workspace").value = "IVYCOAST";
+  document.getElementById("crm-modal-connected").value = "";
+  document.getElementById("crm-modal-lastcontact").value = "";
+  document.getElementById("crm-modal-notes").value = "";
+  document.getElementById("crm-modal-delete-btn").style.display = "none";
+  document.getElementById("crm-modal-overlay").classList.add("open");
+  setTimeout(function() { document.getElementById("crm-modal-name").focus(); }, 50);
+}
+
+function openCrmEditModal(contactId) {
+  var c = crmContacts.find(function(x) { return x.id === contactId; });
+  if (!c) return;
+  document.getElementById("crm-modal-title").textContent = "Edit Contact";
+  document.getElementById("crm-modal-id").value = c.id;
+  document.getElementById("crm-modal-name").value = c.name || "";
+  document.getElementById("crm-modal-type").value = c.type || "Vendor";
+  document.getElementById("crm-modal-company").value = c.company || "";
+  document.getElementById("crm-modal-role").value = c.role || "";
+  document.getElementById("crm-modal-email").value = c.email || "";
+  document.getElementById("crm-modal-phone").value = c.phone || "";
+  document.getElementById("crm-modal-products").value = c.products || "";
+  document.getElementById("crm-modal-location").value = c.location || "";
+  document.getElementById("crm-modal-stage").value = c.stage || "prospect";
+  document.getElementById("crm-modal-workspace").value = c.workspace || "IVYCOAST";
+  document.getElementById("crm-modal-connected").value = c.connectedDate || "";
+  document.getElementById("crm-modal-lastcontact").value = c.lastContactDate || "";
+  document.getElementById("crm-modal-notes").value = c.notes || "";
+  document.getElementById("crm-modal-delete-btn").style.display = "inline-block";
+  document.getElementById("crm-modal-overlay").classList.add("open");
+  setTimeout(function() { document.getElementById("crm-modal-name").focus(); }, 50);
+}
+
+function closeCrmModal() {
+  document.getElementById("crm-modal-overlay").classList.remove("open");
+}
+
+function saveCrmContact() {
+  if (!SCRIPT_URL) { closeCrmModal(); return; }
+  var id = document.getElementById("crm-modal-id").value;
+  var contact = {
+    name: document.getElementById("crm-modal-name").value.trim(),
+    type: document.getElementById("crm-modal-type").value,
+    company: document.getElementById("crm-modal-company").value.trim(),
+    role: document.getElementById("crm-modal-role").value.trim(),
+    email: document.getElementById("crm-modal-email").value.trim(),
+    phone: document.getElementById("crm-modal-phone").value.trim(),
+    products: document.getElementById("crm-modal-products").value.trim(),
+    location: document.getElementById("crm-modal-location").value.trim(),
+    stage: document.getElementById("crm-modal-stage").value,
+    workspace: document.getElementById("crm-modal-workspace").value,
+    connectedDate: document.getElementById("crm-modal-connected").value,
+    lastContactDate: document.getElementById("crm-modal-lastcontact").value,
+    notes: document.getElementById("crm-modal-notes").value.trim()
+  };
+  if (!contact.name) { alert("Contact name is required."); return; }
+
+  closeCrmModal();
+  setCrmSyncStatus("Saving\u2026");
+
+  if (id) {
+    contact.id = id;
+    crmContacts = crmContacts.map(function(c) {
+      return c.id === id ? Object.assign({}, c, contact) : c;
+    });
+    renderCrmActiveView();
+    renderHomeCrmStats();
+    crmApiPost({ action: "update", contact: contact })
+      .then(function() { setCrmSyncStatus("Saved"); fetchCrmContacts(); })
+      .catch(function() { setCrmSyncStatus("Save failed"); fetchCrmContacts(); });
+  } else {
+    var tempId = "temp-" + Date.now();
+    contact.id = tempId;
+    crmContacts.push(contact);
+    renderCrmActiveView();
+    renderHomeCrmStats();
+    crmApiPost({ action: "create", contact: contact })
+      .then(function(data) {
+        setCrmSyncStatus("Contact created");
+        if (data.contact) {
+          crmContacts = crmContacts.map(function(c) {
+            return c.id === tempId ? data.contact : c;
+          });
+          renderCrmActiveView();
+        }
+      })
+      .catch(function() { setCrmSyncStatus("Create failed"); fetchCrmContacts(); });
+  }
+}
+
+function deleteCrmContactConfirm() {
+  var id = document.getElementById("crm-modal-id").value;
+  var name = document.getElementById("crm-modal-name").value;
+  if (!id) return;
+  if (!confirm('Delete "' + name + '"? This cannot be undone.')) return;
+  closeCrmModal();
+  crmContacts = crmContacts.filter(function(c) { return c.id !== id; });
+  renderCrmActiveView();
+  renderHomeCrmStats();
+  crmApiPost({ action: "delete", id: id })
+    .catch(function() { fetchCrmContacts(); });
+}
+
+// CRM auto-refresh
+function startCrmRefresh() {
+  stopCrmRefresh();
+  crmRefreshTimer = setInterval(fetchCrmContacts, 30000);
+}
+
+function stopCrmRefresh() {
+  if (crmRefreshTimer) { clearInterval(crmRefreshTimer); crmRefreshTimer = null; }
+}
+
+// Home CRM Pipeline stats
+function renderHomeCrmStats() {
+  var grid = document.getElementById("home-crm-stats");
+  if (!grid) return;
+  grid.textContent = "";
+  var inPipeline = crmContacts.filter(function(c) {
+    return c.stage === "prospect" || c.stage === "outreach" || c.stage === "negotiation";
+  }).length;
+  var active = crmContacts.filter(function(c) { return c.stage === "active_partner"; }).length;
+  var total = crmContacts.length;
+  var stats = [
+    { num: inPipeline, label: "In Pipeline", color: "#1a73e8", action: "navigateTo('crm');switchCrmSubView('crm-pipeline')" },
+    { num: active, label: "Active", color: "#34a853", action: "navigateTo('crm');switchCrmSubView('crm-pipeline')" },
+    { num: total, label: "Total", color: "#5f6368", action: "navigateTo('crm');switchCrmSubView('crm-contacts')" }
+  ];
+  stats.forEach(function(s) {
+    var div = document.createElement("div");
+    div.className = "stat-link";
+    div.setAttribute("onclick", s.action);
+    div.title = "View " + s.label.toLowerCase();
+    var numDiv = document.createElement("div");
+    numDiv.className = "stat-num";
+    numDiv.style.color = s.color;
+    numDiv.textContent = s.num;
+    var labelDiv = document.createElement("div");
+    labelDiv.className = "stat-label";
+    labelDiv.textContent = s.label;
+    div.appendChild(numDiv);
+    div.appendChild(labelDiv);
+    grid.appendChild(div);
+  });
+}
+
+// CRM modal focus trap
+document.getElementById("crm-modal-overlay").addEventListener("keydown", function(e) {
+  if (!this.classList.contains("open")) return;
+  if (e.key !== "Tab") return;
+  var focusable = this.querySelectorAll('input:not([type="hidden"]), select, textarea, button:not([style*="display:none"]):not([style*="display: none"])');
+  var first = focusable[0];
+  var last = focusable[focusable.length - 1];
+  if (e.shiftKey && document.activeElement === first) {
+    e.preventDefault(); last.focus();
+  } else if (!e.shiftKey && document.activeElement === last) {
+    e.preventDefault(); first.focus();
+  }
+});
+
+// Extend keyboard shortcuts for CRM
+(function() {
+  document.addEventListener("keydown", function(e) {
+    if (e.key === "Escape") closeCrmModal();
+    if (e.key === "n" && !e.metaKey && !e.ctrlKey && document.activeElement.tagName !== "INPUT" && document.activeElement.tagName !== "TEXTAREA") {
+      var crmView = document.getElementById("crm");
+      if (crmView.classList.contains("active") && SCRIPT_URL) openCrmCreateModal();
+    }
+  });
+})();
+
+// Pause CRM refresh when browser tab is hidden
+document.addEventListener("visibilitychange", function() {
+  if (document.hidden) {
+    stopCrmRefresh();
+  } else {
+    var crmView = document.getElementById("crm");
+    if (crmView.classList.contains("active")) {
+      fetchCrmContacts();
+      startCrmRefresh();
+    }
+  }
+});
+
+// Fetch CRM data on startup for home stats (if Board is already connected)
+if (SCRIPT_URL) {
+  fetch(SCRIPT_URL + "?action=list&sheet=Contacts")
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      crmContacts = data.contacts || [];
+      renderHomeCrmStats();
+    })
+    .catch(function() { /* silently fail on startup */ });
+}
 </script>
 
 </div><!-- /app-container -->
