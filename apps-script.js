@@ -6,12 +6,14 @@
 //   "Contacts" — CRM contacts (id prefix: crm-)
 //   "Products" — Shopify products cache (id prefix: prod-)
 //   "Orders"   — Shopify orders cache (id prefix: ord-)
+//   "Customers" — Customer profiles from orders (id prefix: cust-)
 //
 // 1. Create a Google Sheet with sheets named "Tasks", "Contacts", "Products", "Orders"
 // 2. Tasks headers:    id | name | status | priority | assignee | due | workspace | category | description | docLink | createdAt | updatedAt
 // 3. Contacts headers: id | name | type | company | role | email | phone | products | location | stage | notes | connectedDate | lastContactDate | workspace | createdAt | updatedAt
 // 4. Products headers: id | shopifyProductId | shopifyVariantId | title | variantTitle | sku | price | compareAtPrice | inventoryQuantity | inventoryItemId | locationId | status | productType | vendor | tags | imageUrl | lastSynced
 // 5. Orders headers:   id | shopifyOrderId | orderNumber | email | totalPrice | currency | financialStatus | fulfillmentStatus | lineItems | customerName | createdAt | shippingAddress | note | lastSynced
+// 6. Customers headers: id | shopifyCustomerId | name | email | phone | totalOrders | totalSpent | firstOrderDate | lastOrderDate | tags | notes | createdAt | updatedAt
 // 6. Open Extensions → Apps Script, paste this code, deploy as web app
 // 7. Set "Execute as: Me" and "Who has access: Anyone"
 // 8. Copy the deployed URL into the dashboard (Board tab config)
@@ -39,6 +41,7 @@ function rowToObj(headers, row) {
 
 function getAllRows(sheetName) {
   var sheet = getSheet(sheetName);
+  if (!sheet) return [];
   var data = sheet.getDataRange().getValues();
   if (data.length < 2) return [];
   var headers = data[0];
@@ -69,7 +72,7 @@ function nextId(sheet, prefix) {
 
 function createRow(sheetName, item) {
   var sheet = getSheet(sheetName);
-  var prefixMap = { "Contacts": "crm-", "Products": "prod-", "Orders": "ord-" };
+  var prefixMap = { "Contacts": "crm-", "Products": "prod-", "Orders": "ord-", "Customers": "cust-" };
   var prefix = prefixMap[sheetName] || "ivy-";
   var now = new Date().toISOString();
   var id = nextId(sheet, prefix);
@@ -114,7 +117,7 @@ function doGet(e) {
   var action = (e.parameter && e.parameter.action) || "list";
   var sheetName = (e.parameter && e.parameter.sheet) || "Tasks";
   if (action === "list") {
-    var keyMap = { "Contacts": "contacts", "Products": "products", "Orders": "orders" };
+    var keyMap = { "Contacts": "contacts", "Products": "products", "Orders": "orders", "Customers": "customers" };
     var key = keyMap[sheetName] || "tasks";
     var result = {};
     result[key] = getAllRows(sheetName);
@@ -130,7 +133,7 @@ function doPost(e) {
 
   var action = body.action;
   var sheetName = body.sheet || "Tasks";
-  var itemKeyMap = { "Contacts": "contact", "Products": "product", "Orders": "order" };
+  var itemKeyMap = { "Contacts": "contact", "Products": "product", "Orders": "order", "Customers": "customer" };
   var itemKey = itemKeyMap[sheetName] || "task";
   var item = body[itemKey] || body.task || body.contact || {};
 
@@ -164,6 +167,10 @@ function doPost(e) {
   if (action === "updateInventory") {
     var result3 = updateShopifyInventory(body.inventoryItemId, body.locationId, body.quantity);
     return jsonResponse(result3);
+  }
+  if (action === "syncCustomers") {
+    var count3 = syncCustomers();
+    return jsonResponse({ success: true, synced: count3 });
   }
 
   return jsonResponse({ error: "Unknown action" });
@@ -370,6 +377,82 @@ function syncShopifyOrders() {
       updateRow("Orders", o);
     } else {
       createRow("Orders", o);
+    }
+    synced++;
+  });
+
+  // Auto-sync customer profiles from orders
+  try { syncCustomers(); } catch (e) { console.error("Customer sync failed:", e); }
+
+  return synced;
+}
+
+// ── Sync Customers from Orders → Google Sheet ─────────────────
+
+function syncCustomers() {
+  // Ensure Customers sheet exists
+  var ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  if (!ss.getSheetByName("Customers")) {
+    var newSheet = ss.insertSheet("Customers");
+    newSheet.getRange(1, 1, 1, 13).setValues([["id","shopifyCustomerId","name","email","phone","totalOrders","totalSpent","firstOrderDate","lastOrderDate","tags","notes","createdAt","updatedAt"]]);
+  }
+
+  var orders = getAllRows("Orders");
+  var existing = getAllRows("Customers");
+
+  // Build lookup by email
+  var customerMap = {};
+  existing.forEach(function(row) {
+    if (row.email) customerMap[String(row.email).toLowerCase()] = row;
+  });
+
+  // Aggregate orders by email
+  var emailAgg = {};
+  orders.forEach(function(o) {
+    var email = String(o.email || "").toLowerCase().trim();
+    if (!email) return;
+    if (!emailAgg[email]) {
+      emailAgg[email] = { name: o.customerName || "", email: email, orders: [], totalSpent: 0 };
+    }
+    emailAgg[email].orders.push(o);
+    emailAgg[email].totalSpent += parseFloat(o.totalPrice) || 0;
+    // Use the most recent non-empty name
+    if (o.customerName && !emailAgg[email].name) {
+      emailAgg[email].name = o.customerName;
+    }
+  });
+
+  var now = new Date().toISOString();
+  var synced = 0;
+
+  Object.keys(emailAgg).forEach(function(email) {
+    var agg = emailAgg[email];
+    var sortedOrders = agg.orders.sort(function(a, b) {
+      return (a.createdAt || "").localeCompare(b.createdAt || "");
+    });
+    var firstOrder = sortedOrders[0].createdAt || "";
+    var lastOrder = sortedOrders[sortedOrders.length - 1].createdAt || "";
+
+    var existingCustomer = customerMap[email];
+    var customerData = {
+      name: agg.name,
+      email: email,
+      totalOrders: String(agg.orders.length),
+      totalSpent: String(Math.round(agg.totalSpent * 100) / 100),
+      firstOrderDate: firstOrder,
+      lastOrderDate: lastOrder
+    };
+
+    if (existingCustomer) {
+      customerData.id = existingCustomer.id;
+      // Preserve user-edited fields
+      customerData.phone = existingCustomer.phone || "";
+      customerData.tags = existingCustomer.tags || "";
+      customerData.notes = existingCustomer.notes || "";
+      customerData.shopifyCustomerId = existingCustomer.shopifyCustomerId || "";
+      updateRow("Customers", customerData);
+    } else {
+      createRow("Customers", customerData);
     }
     synced++;
   });

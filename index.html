@@ -879,6 +879,163 @@ body { font-family: 'Roboto', sans-serif; background: #fff; color: #202124; line
 .products-table tr:hover td, .orders-table tr:hover td { background: #f8f9fa; }
 .orders-table tr { cursor: pointer; }
 
+/* Customer drawer */
+.customer-drawer-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.3);
+  z-index: 199;
+}
+.customer-drawer-overlay.open { display: block; }
+.customer-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 420px;
+  max-width: 92vw;
+  height: 100vh;
+  background: #fff;
+  box-shadow: -4px 0 20px rgba(0,0,0,0.15);
+  z-index: 200;
+  transform: translateX(100%);
+  transition: transform 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.customer-drawer.open { transform: translateX(0); }
+.customer-drawer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border-bottom: 1px solid #e0e0e0;
+}
+.customer-drawer-header h3 { font-size: 18px; font-weight: 500; color: #202124; }
+.customer-drawer-header button {
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: #5f6368;
+  cursor: pointer;
+  padding: 4px 8px;
+  line-height: 1;
+}
+.customer-drawer-header button:hover { color: #202124; }
+.customer-drawer-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 24px;
+}
+.customer-drawer-body .customer-info {
+  font-size: 14px;
+  color: #5f6368;
+  margin-bottom: 4px;
+}
+.customer-stat-row {
+  display: flex;
+  gap: 12px;
+  margin: 16px 0;
+}
+.customer-stat-card {
+  flex: 1;
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: 14px 16px;
+  text-align: center;
+}
+.customer-stat-card span {
+  display: block;
+  font-size: 11px;
+  color: #5f6368;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+.customer-stat-card strong {
+  font-size: 22px;
+  font-weight: 500;
+  color: #202124;
+}
+.customer-drawer-body label {
+  display: block;
+  font-size: 12px;
+  color: #5f6368;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 12px 0 4px;
+}
+.customer-drawer-body .date-field {
+  font-size: 14px;
+  color: #202124;
+  margin-bottom: 4px;
+}
+.customer-drawer-body input[type="text"],
+.customer-drawer-body textarea {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #dadce0;
+  border-radius: 6px;
+  font-size: 14px;
+  font-family: inherit;
+  resize: vertical;
+}
+.customer-drawer-body input[type="text"]:focus,
+.customer-drawer-body textarea:focus {
+  border-color: #1a73e8;
+  box-shadow: 0 0 0 2px rgba(26,115,232,0.2);
+  outline: none;
+}
+.customer-drawer-body .btn-save {
+  margin-top: 12px;
+  padding: 8px 20px;
+  background: #1a73e8;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+}
+.customer-drawer-body .btn-save:hover { background: #1558b0; }
+.customer-drawer-body h4 {
+  font-size: 14px;
+  font-weight: 500;
+  color: #202124;
+  margin: 20px 0 8px;
+  padding-top: 16px;
+  border-top: 1px solid #e0e0e0;
+}
+.customer-orders-list { max-height: 300px; overflow-y: auto; }
+.customer-order-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid #f0f0f0;
+  font-size: 13px;
+}
+.customer-order-item:last-child { border-bottom: none; }
+.customer-order-date { color: #5f6368; min-width: 80px; }
+.customer-order-items { flex: 1; margin: 0 12px; color: #202124; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.customer-order-total { font-weight: 500; color: #202124; min-width: 70px; text-align: right; }
+.customer-link {
+  color: #1a73e8;
+  text-decoration: none;
+  cursor: pointer;
+}
+.customer-link:hover { text-decoration: underline; }
+.customer-tag {
+  display: inline-block;
+  padding: 2px 8px;
+  background: #e8f0fe;
+  color: #1a73e8;
+  border-radius: 12px;
+  font-size: 12px;
+  margin: 2px 2px 2px 0;
+}
+
 /* Responsive */
 @media (max-width: 600px) {
   .header { padding: 16px 16px 0; }
@@ -1187,6 +1344,7 @@ body { font-family: 'Roboto', sans-serif; background: #fff; color: #202124; line
       <button class="tab" data-view="library" role="tab" aria-selected="false" aria-controls="library" id="tab-library">Document Library</button>
       <button class="tab" data-view="board" role="tab" aria-selected="false" aria-controls="board" id="tab-board">Board</button>
       <button class="tab" data-view="crm" role="tab" aria-selected="false" aria-controls="crm" id="tab-crm">CRM</button>
+      <button class="tab" data-view="customers" role="tab" aria-selected="false" aria-controls="customers" id="tab-customers">Customers</button>
       <button class="tab" data-view="products" role="tab" aria-selected="false" aria-controls="products" id="tab-products">Products</button>
       <button class="tab" data-view="orders" role="tab" aria-selected="false" aria-controls="orders" id="tab-orders">Orders</button>
     </nav>
@@ -1443,6 +1601,36 @@ body { font-family: 'Roboto', sans-serif; background: #fff; color: #202124; line
         </div>
       </div>
     </div>
+
+  </div>
+
+  <!-- CUSTOMERS -->
+  <div id="customers" class="view" role="tabpanel" aria-labelledby="tab-customers">
+    <h2 class="section-title">Customers</h2>
+    <p class="section-subtitle">Repeat buyers from Shopify orders — auto-synced</p>
+
+    <div class="board-toolbar">
+      <input type="text" class="search-input" id="customers-search" placeholder="Search by name, email or tag..." oninput="renderCrmCustomers()">
+      <div class="sync-indicator">
+        <span id="customers-sync-status"></span>
+        <button onclick="syncCustomersFromHub()">Sync Customers</button>
+      </div>
+    </div>
+
+    <table class="crm-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Orders</th>
+          <th>Total Spent</th>
+          <th>Last Order</th>
+          <th>Tags</th>
+        </tr>
+      </thead>
+      <tbody id="crm-customers-body"></tbody>
+    </table>
+    <p id="crm-customers-empty" style="display:none;text-align:center;padding:32px;color:#5f6368;font-size:14px;">No customers found. Sync from Shopify orders to populate.</p>
   </div>
 
   <!-- PRODUCTS -->
@@ -1539,6 +1727,40 @@ body { font-family: 'Roboto', sans-serif; background: #fff; color: #202124; line
     <div class="board-modal-actions" style="margin-top:20px">
       <button onclick="closeOrderDetailModal()">Close</button>
     </div>
+  </div>
+</div>
+
+<!-- Customer Drawer -->
+<div class="customer-drawer-overlay" id="customer-drawer-overlay" onclick="closeCustomerDrawer()"></div>
+<div class="customer-drawer" id="customer-drawer">
+  <div class="customer-drawer-header">
+    <h3 id="customer-drawer-name">Customer</h3>
+    <button onclick="closeCustomerDrawer()">&times;</button>
+  </div>
+  <div class="customer-drawer-body">
+    <div class="customer-info" id="customer-drawer-email"></div>
+    <div class="customer-info" id="customer-drawer-phone"></div>
+    <div class="customer-stat-row">
+      <div class="customer-stat-card">
+        <span>Total Orders</span>
+        <strong id="customer-drawer-orders">0</strong>
+      </div>
+      <div class="customer-stat-card">
+        <span>Total Spent</span>
+        <strong id="customer-drawer-spent">¥0</strong>
+      </div>
+    </div>
+    <label>First Order</label>
+    <div class="date-field" id="customer-drawer-first">—</div>
+    <label>Last Order</label>
+    <div class="date-field" id="customer-drawer-last">—</div>
+    <label>Tags</label>
+    <input type="text" id="customer-drawer-tags" placeholder="e.g. VIP, wholesale">
+    <label>Notes</label>
+    <textarea id="customer-drawer-notes" rows="4" placeholder="Add notes about this customer..."></textarea>
+    <button class="btn-save" onclick="saveCustomerFromDrawer()">Save</button>
+    <h4>Past Orders</h4>
+    <div class="customer-orders-list" id="customer-drawer-orders-list"></div>
   </div>
 </div>
 
@@ -2694,6 +2916,8 @@ document.querySelectorAll(".tab").forEach(function(tab) {
     } else if (tab.dataset.view === "orders") {
       if (typeof fetchShopifyOrders === "function") fetchShopifyOrders();
       if (typeof startOrdersRefresh === "function") startOrdersRefresh();
+    } else if (tab.dataset.view === "customers") {
+      if (typeof fetchCustomers === "function") fetchCustomers();
     }
   });
 });
@@ -2800,6 +3024,8 @@ function navigateTo(viewId, searchQuery, statusFilter) {
   } else if (viewId === "orders") {
     if (typeof fetchShopifyOrders === "function") fetchShopifyOrders();
     if (typeof startOrdersRefresh === "function") startOrdersRefresh();
+  } else if (viewId === "customers") {
+    if (typeof fetchCustomers === "function") fetchCustomers();
   }
   if (viewId === "library" && searchQuery) {
     var si = document.getElementById("search-input");
@@ -2908,7 +3134,13 @@ globalSearchInput.addEventListener("input", function() {
            (o.email && o.email.toLowerCase().indexOf(q) !== -1);
   }).slice(0, 5);
 
-  if (docMatches.length === 0 && taskMatches.length === 0 && crmMatches.length === 0 && productMatches.length === 0 && orderMatches.length === 0) {
+  var customerMatches = (typeof shopifyCustomers !== "undefined" ? shopifyCustomers : []).filter(function(c) {
+    return (c.name && c.name.toLowerCase().indexOf(q) !== -1) ||
+           (c.email && c.email.toLowerCase().indexOf(q) !== -1) ||
+           (c.tags && c.tags.toLowerCase().indexOf(q) !== -1);
+  }).slice(0, 5);
+
+  if (docMatches.length === 0 && taskMatches.length === 0 && crmMatches.length === 0 && productMatches.length === 0 && orderMatches.length === 0 && customerMatches.length === 0) {
     var noRes = document.createElement("div");
     noRes.className = "search-no-results";
     noRes.textContent = "No results found";
@@ -2971,6 +3203,17 @@ globalSearchInput.addEventListener("input", function() {
     });
   }
 
+  if (customerMatches.length > 0) {
+    var label6 = document.createElement("div");
+    label6.className = "search-group-label";
+    label6.textContent = "Customers";
+    searchResultsEl.appendChild(label6);
+    customerMatches.forEach(function(c) {
+      var detail = c.totalOrders ? c.totalOrders + " orders" : "Customer";
+      searchResultsEl.appendChild(createSearchItem(c.name || c.email, detail, "", "customer", c.email));
+    });
+  }
+
   searchResultsEl.classList.add("active");
 });
 
@@ -2990,6 +3233,8 @@ searchResultsEl.addEventListener("click", function(e) {
     navigateTo("products");
   } else if (item.dataset.action === "order") {
     navigateTo("orders");
+  } else if (item.dataset.action === "customer") {
+    navigateTo("customers");
   }
   globalSearchInput.value = "";
   searchResultsEl.classList.remove("active");
@@ -3490,7 +3735,8 @@ function renderHomeCrmStats() {
   var stats = [
     { num: inPipeline, label: "In Pipeline", color: "#1a73e8", action: "navigateTo('crm');switchCrmSubView('crm-pipeline')" },
     { num: active, label: "Active", color: "#34a853", action: "navigateTo('crm');switchCrmSubView('crm-pipeline')" },
-    { num: total, label: "Total", color: "#5f6368", action: "navigateTo('crm');switchCrmSubView('crm-contacts')" }
+    { num: total, label: "Total", color: "#5f6368", action: "navigateTo('crm');switchCrmSubView('crm-contacts')" },
+    { num: shopifyCustomers.length, label: "Customers", color: "#e8710a", action: "navigateTo('customers')" }
   ];
   stats.forEach(function(s) {
     var div = document.createElement("div");
@@ -3558,6 +3804,262 @@ if (SCRIPT_URL) {
     })
     .catch(function() { /* silently fail on startup */ });
 }
+
+// ===================== CUSTOMERS =====================
+
+var shopifyCustomers = [];
+
+function customersApiPost(body) {
+  body.sheet = "Customers";
+  return fetch(SCRIPT_URL, {
+    method: "POST",
+    headers: { "Content-Type": "text/plain" },
+    body: JSON.stringify(body)
+  }).then(function(r) { return r.json(); });
+}
+
+function fetchCustomers() {
+  if (!SCRIPT_URL) return;
+  fetch(SCRIPT_URL + "?action=list&sheet=Customers")
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      shopifyCustomers = data.customers || [];
+      var customersView = document.getElementById("customers");
+      if (customersView && customersView.classList.contains("active")) renderCrmCustomers();
+      renderHomeCrmStats();
+    })
+    .catch(function() {});
+}
+
+function syncCustomersFromHub() {
+  if (!SCRIPT_URL) return;
+  var btn = document.querySelector("#customers .sync-indicator button");
+  if (btn) { btn.disabled = true; btn.textContent = "Syncing\u2026"; }
+  fetch(SCRIPT_URL, {
+    method: "POST",
+    headers: { "Content-Type": "text/plain" },
+    body: JSON.stringify({ action: "syncCustomers" })
+  })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (btn) { btn.disabled = false; btn.textContent = "Sync Customers"; }
+      fetchCustomers();
+    })
+    .catch(function() {
+      if (btn) { btn.disabled = false; btn.textContent = "Sync Customers"; }
+    });
+}
+
+function renderCrmCustomers() {
+  var tbody = document.getElementById("crm-customers-body");
+  var empty = document.getElementById("crm-customers-empty");
+  tbody.textContent = "";
+
+  var searchEl = document.getElementById("customers-search");
+  var query = searchEl ? searchEl.value.toLowerCase().trim() : "";
+
+  var customers = shopifyCustomers.filter(function(c) {
+    if (!query) return true;
+    return (c.name && c.name.toLowerCase().indexOf(query) !== -1) ||
+           (c.email && c.email.toLowerCase().indexOf(query) !== -1) ||
+           (c.tags && c.tags.toLowerCase().indexOf(query) !== -1);
+  }).sort(function(a, b) {
+    return (parseFloat(b.totalSpent) || 0) - (parseFloat(a.totalSpent) || 0);
+  });
+
+  if (customers.length === 0) {
+    empty.style.display = "block";
+    return;
+  }
+  empty.style.display = "none";
+
+  customers.forEach(function(c) {
+    var tr = document.createElement("tr");
+    tr.style.cursor = "pointer";
+    tr.onclick = function() { openCustomerDrawer(c.email); };
+
+    var tdName = document.createElement("td");
+    tdName.textContent = c.name || "\u2014";
+    tdName.style.fontWeight = "500";
+    tr.appendChild(tdName);
+
+    var tdEmail = document.createElement("td");
+    tdEmail.textContent = c.email || "\u2014";
+    tdEmail.style.color = "#5f6368";
+    tr.appendChild(tdEmail);
+
+    var tdOrders = document.createElement("td");
+    tdOrders.textContent = c.totalOrders || "0";
+    tr.appendChild(tdOrders);
+
+    var tdSpent = document.createElement("td");
+    tdSpent.textContent = c.totalSpent ? "\u00A5" + Number(c.totalSpent).toLocaleString() : "\u00A50";
+    tdSpent.style.fontWeight = "500";
+    tr.appendChild(tdSpent);
+
+    var tdLast = document.createElement("td");
+    if (c.lastOrderDate) {
+      var d = new Date(c.lastOrderDate);
+      tdLast.textContent = d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+    } else {
+      tdLast.textContent = "\u2014";
+    }
+    tdLast.style.color = "#5f6368";
+    tr.appendChild(tdLast);
+
+    var tdTags = document.createElement("td");
+    if (c.tags) {
+      c.tags.split(",").forEach(function(tag) {
+        tag = tag.trim();
+        if (!tag) return;
+        var span = document.createElement("span");
+        span.className = "customer-tag";
+        span.textContent = tag;
+        tdTags.appendChild(span);
+      });
+    }
+    tr.appendChild(tdTags);
+
+    tbody.appendChild(tr);
+  });
+}
+
+function openCustomerDrawer(email) {
+  if (!email) return;
+  var emailLower = email.toLowerCase();
+
+  // Find customer in shopifyCustomers
+  var customer = shopifyCustomers.find(function(c) {
+    return c.email && c.email.toLowerCase() === emailLower;
+  });
+
+  // Filter orders for this customer
+  var customerOrders = (typeof shopifyOrders !== "undefined" ? shopifyOrders : []).filter(function(o) {
+    return o.email && o.email.toLowerCase() === emailLower;
+  }).sort(function(a, b) {
+    return (b.createdAt || "").localeCompare(a.createdAt || "");
+  });
+
+  // Build display data (from customer record or computed from orders)
+  var name = (customer && customer.name) || (customerOrders.length > 0 ? customerOrders[0].customerName : "") || email;
+  var totalOrders = customer ? (customer.totalOrders || customerOrders.length) : customerOrders.length;
+  var totalSpent = 0;
+  if (customer && customer.totalSpent) {
+    totalSpent = parseFloat(customer.totalSpent) || 0;
+  } else {
+    customerOrders.forEach(function(o) { totalSpent += parseFloat(o.totalPrice) || 0; });
+  }
+  var firstDate = customer ? customer.firstOrderDate : (customerOrders.length > 0 ? customerOrders[customerOrders.length - 1].createdAt : "");
+  var lastDate = customer ? customer.lastOrderDate : (customerOrders.length > 0 ? customerOrders[0].createdAt : "");
+
+  // Populate drawer
+  document.getElementById("customer-drawer-name").textContent = name;
+  document.getElementById("customer-drawer-email").textContent = email;
+  document.getElementById("customer-drawer-phone").textContent = (customer && customer.phone) ? customer.phone : "";
+  document.getElementById("customer-drawer-orders").textContent = totalOrders;
+  document.getElementById("customer-drawer-spent").textContent = "\u00A5" + Math.round(totalSpent).toLocaleString();
+
+  var firstEl = document.getElementById("customer-drawer-first");
+  var lastEl = document.getElementById("customer-drawer-last");
+  firstEl.textContent = firstDate ? new Date(firstDate).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "\u2014";
+  lastEl.textContent = lastDate ? new Date(lastDate).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "\u2014";
+
+  document.getElementById("customer-drawer-tags").value = (customer && customer.tags) || "";
+  document.getElementById("customer-drawer-notes").value = (customer && customer.notes) || "";
+
+  // Store email for save
+  document.getElementById("customer-drawer").dataset.email = email;
+  document.getElementById("customer-drawer").dataset.customerId = (customer && customer.id) || "";
+
+  // Render past orders
+  var ordersList = document.getElementById("customer-drawer-orders-list");
+  ordersList.textContent = "";
+  if (customerOrders.length === 0) {
+    ordersList.textContent = "No orders found.";
+  } else {
+    customerOrders.forEach(function(o) {
+      var item = document.createElement("div");
+      item.className = "customer-order-item";
+
+      var dateSpan = document.createElement("span");
+      dateSpan.className = "customer-order-date";
+      dateSpan.textContent = o.createdAt ? new Date(o.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "";
+
+      var itemsSpan = document.createElement("span");
+      itemsSpan.className = "customer-order-items";
+      var items = o.lineItems || "";
+      if (items.length > 35) items = items.substring(0, 35) + "\u2026";
+      itemsSpan.textContent = items;
+
+      var totalSpan = document.createElement("span");
+      totalSpan.className = "customer-order-total";
+      totalSpan.textContent = o.totalPrice ? "\u00A5" + Number(o.totalPrice).toLocaleString() : "";
+
+      item.appendChild(dateSpan);
+      item.appendChild(itemsSpan);
+      item.appendChild(totalSpan);
+      ordersList.appendChild(item);
+    });
+  }
+
+  // Show drawer
+  document.getElementById("customer-drawer-overlay").classList.add("open");
+  document.getElementById("customer-drawer").classList.add("open");
+}
+
+function closeCustomerDrawer() {
+  document.getElementById("customer-drawer-overlay").classList.remove("open");
+  document.getElementById("customer-drawer").classList.remove("open");
+}
+
+function saveCustomerFromDrawer() {
+  var drawer = document.getElementById("customer-drawer");
+  var customerId = drawer.dataset.customerId;
+  var email = drawer.dataset.email;
+  var tags = document.getElementById("customer-drawer-tags").value;
+  var notes = document.getElementById("customer-drawer-notes").value;
+
+  if (!SCRIPT_URL) return;
+
+  var saveBtn = drawer.querySelector(".btn-save");
+  if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = "Saving\u2026"; }
+
+  if (customerId) {
+    // Update existing customer
+    customersApiPost({ action: "update", customer: { id: customerId, tags: tags, notes: notes } })
+      .then(function() {
+        if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = "Saved!"; }
+        setTimeout(function() { if (saveBtn) saveBtn.textContent = "Save"; }, 2000);
+        fetchCustomers();
+      })
+      .catch(function() {
+        if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = "Save"; }
+      });
+  } else {
+    // Create new customer record from drawer
+    var name = document.getElementById("customer-drawer-name").textContent;
+    customersApiPost({ action: "create", customer: { name: name, email: email, tags: tags, notes: notes } })
+      .then(function(data) {
+        if (data.customer && data.customer.id) drawer.dataset.customerId = data.customer.id;
+        if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = "Saved!"; }
+        setTimeout(function() { if (saveBtn) saveBtn.textContent = "Save"; }, 2000);
+        fetchCustomers();
+      })
+      .catch(function() {
+        if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = "Save"; }
+      });
+  }
+}
+
+// Escape key closes customer drawer
+document.addEventListener("keydown", function(e) {
+  if (e.key === "Escape" && document.getElementById("customer-drawer").classList.contains("open")) {
+    closeCustomerDrawer();
+  }
+});
+
+// Fetch customers on startup
+if (SCRIPT_URL) fetchCustomers();
 
 // ===================== PRODUCTS =====================
 
@@ -3905,9 +4407,18 @@ function renderOrders() {
     }
     tr.appendChild(tdDate);
 
-    // Customer
+    // Customer (clickable → opens drawer)
     var tdCustomer = document.createElement("td");
-    tdCustomer.textContent = o.customerName || o.email || "\u2014";
+    if (o.email) {
+      var custLink = document.createElement("a");
+      custLink.className = "customer-link";
+      custLink.textContent = o.customerName || o.email;
+      custLink.href = "#";
+      custLink.onclick = (function(email) { return function(e) { e.preventDefault(); e.stopPropagation(); openCustomerDrawer(email); }; })(o.email);
+      tdCustomer.appendChild(custLink);
+    } else {
+      tdCustomer.textContent = o.customerName || "\u2014";
+    }
     tr.appendChild(tdCustomer);
 
     // Items (truncated)
