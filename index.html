@@ -97,7 +97,7 @@ body { font-family: 'DM Sans', 'Roboto', sans-serif; background: #fff; color: #1
   gap: 6px;
   flex-wrap: wrap;
 }
-.pill {
+a.pill, .pill {
   display: inline-flex;
   align-items: center;
   padding: 5px 14px;
@@ -108,6 +108,7 @@ body { font-family: 'DM Sans', 'Roboto', sans-serif; background: #fff; color: #1
   font-weight: 500;
   transition: opacity 0.15s;
 }
+a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none; }
 .pill:hover { opacity: 0.85; }
 .pill-figma { background: #1a73e8; }
 .pill-shopify { background: #5a7a00; }
