@@ -14,47 +14,60 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: 'Roboto', sans-serif; background: #fff; color: #202124; line-height: 1.6; }
+body { font-family: 'DM Sans', 'Roboto', sans-serif; background: #fff; color: #181818; line-height: 1.6; }
 
 /* Header */
 .header {
   background: #fff;
-  border-bottom: 1px solid #e0e0e0;
-  padding: 24px 24px 0;
+  padding: 0;
   position: sticky;
   top: 0;
   z-index: 100;
 }
-.header-inner { max-width: 1100px; margin: 0 auto; }
-.header h1 { font-size: 22px; font-weight: 500; color: #202124; }
-.header p { font-size: 14px; color: #5f6368; margin-top: 2px; }
+.header-inner { max-width: 1028px; margin: 0 auto; padding: 0 24px; }
 
 /* Tabs */
 .tabs {
   display: flex;
-  gap: 0;
-  margin-top: 16px;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #ebebeb;
   overflow-x: auto;
 }
+.tabs-left {
+  display: flex;
+  align-items: center;
+}
+.tabs-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.tabs-separator {
+  width: 1px;
+  height: 24px;
+  background: #ebebeb;
+}
 .tab {
-  padding: 10px 20px;
-  font-size: 14px;
+  padding: 12px 10px;
+  font-size: 12px;
   font-weight: 500;
-  color: #5f6368;
+  color: #181818;
   background: none;
   border: none;
-  border-bottom: 3px solid transparent;
+  border-bottom: 2px solid transparent;
   cursor: pointer;
   white-space: nowrap;
   font-family: inherit;
   transition: color 0.15s, border-color 0.15s;
 }
-.tab:hover { color: #1a73e8; }
-.tab.active { color: #1a73e8; border-bottom-color: #1a73e8; }
+.tab:hover { color: #0e413b; }
+.tab.active { color: #0e413b; font-weight: 700; border-bottom-color: #0e413b; }
 .tab:focus-visible,
 .btn-add-task:focus-visible,
 .board-modal-actions button:focus-visible,
@@ -1135,6 +1148,7 @@ body { font-family: 'Roboto', sans-serif; background: #fff; color: #202124; line
   display: flex;
   align-items: center;
   justify-content: space-between;
+  padding: 12px 0;
 }
 .header-user {
   display: flex;
@@ -1147,38 +1161,41 @@ body { font-family: 'Roboto', sans-serif; background: #fff; color: #202124; line
   border-radius: 50%;
 }
 .header-user span {
-  font-size: 13px;
-  color: #5f6368;
+  font-size: 12px;
+  color: rgba(0,0,0,0.5);
 }
 #sign-out-btn {
   padding: 6px 14px;
   background: none;
-  border: 1px solid #dadce0;
-  border-radius: 4px;
-  font-size: 13px;
+  border: 1px solid #7c7c7c;
+  border-radius: 6px;
+  font-size: 12px;
   font-family: inherit;
-  color: #5f6368;
+  color: rgba(0,0,0,0.5);
   cursor: pointer;
   transition: background 0.15s, border-color 0.15s;
 }
-#sign-out-btn:hover { background: #f1f3f4; border-color: #c6c6c6; }
+#sign-out-btn:hover { background: #f5f5f5; border-color: #555; }
 
 /* Global Search */
 .global-search { position: relative; flex: 1; max-width: 360px; margin: 0 20px; }
 .global-search input {
   width: 100%;
-  padding: 8px 14px;
-  border: 1px solid #dadce0;
-  border-radius: 24px;
-  font-size: 14px;
+  padding: 10px 18px;
+  border: 1px solid #ebebeb;
+  border-radius: 50px;
+  font-size: 12px;
   font-family: inherit;
-  background: #f1f3f4;
+  background: #fff;
   transition: background 0.15s, border-color 0.15s, box-shadow 0.15s;
+}
+.global-search input::placeholder {
+  color: rgba(0,0,0,0.5);
 }
 .global-search input:focus {
   background: #fff;
-  border-color: #1a73e8;
-  box-shadow: 0 0 0 2px rgba(26,115,232,0.2);
+  border-color: #0e413b;
+  box-shadow: 0 0 0 2px rgba(14,65,59,0.15);
   outline: none;
 }
 .search-results {
@@ -1328,7 +1345,7 @@ body { font-family: 'Roboto', sans-serif; background: #fff; color: #202124; line
         <img src="icons/logo.png" alt="Ivycoast" style="height:32px">
       </div>
       <div class="global-search">
-        <input type="text" id="global-search" placeholder="Search documents, tasks, contacts, products & orders..." autocomplete="off">
+        <input type="text" id="global-search" placeholder="Search..." autocomplete="off">
         <div id="search-results" class="search-results"></div>
       </div>
       <div class="header-user">
@@ -1338,15 +1355,19 @@ body { font-family: 'Roboto', sans-serif; background: #fff; color: #202124; line
       </div>
     </div>
     <nav class="tabs" role="tablist">
-      <button class="tab active" data-view="home" role="tab" aria-selected="true" aria-controls="home" id="tab-home">Home</button>
-      <button class="tab" data-view="ivycoast" role="tab" aria-selected="false" aria-controls="ivycoast" id="tab-ivycoast">IVYCOAST</button>
-      <button class="tab" data-view="boldoath" role="tab" aria-selected="false" aria-controls="boldoath" id="tab-boldoath">Boldoath</button>
-      <button class="tab" data-view="library" role="tab" aria-selected="false" aria-controls="library" id="tab-library">Document Library</button>
-      <button class="tab" data-view="board" role="tab" aria-selected="false" aria-controls="board" id="tab-board">Board</button>
-      <button class="tab" data-view="crm" role="tab" aria-selected="false" aria-controls="crm" id="tab-crm">CRM</button>
-      <button class="tab" data-view="customers" role="tab" aria-selected="false" aria-controls="customers" id="tab-customers">Customers</button>
-      <button class="tab" data-view="products" role="tab" aria-selected="false" aria-controls="products" id="tab-products">Products</button>
-      <button class="tab" data-view="orders" role="tab" aria-selected="false" aria-controls="orders" id="tab-orders">Orders</button>
+      <div class="tabs-left">
+        <button class="tab active" data-view="home" role="tab" aria-selected="true" aria-controls="home" id="tab-home">Overview</button>
+        <button class="tab" data-view="board" role="tab" aria-selected="false" aria-controls="board" id="tab-board">Tasks</button>
+        <button class="tab" data-view="library" role="tab" aria-selected="false" aria-controls="library" id="tab-library">Ivycoast Docs</button>
+        <button class="tab" data-view="products" role="tab" aria-selected="false" aria-controls="products" id="tab-products">Products</button>
+        <button class="tab" data-view="orders" role="tab" aria-selected="false" aria-controls="orders" id="tab-orders">Orders</button>
+        <button class="tab" data-view="crm" role="tab" aria-selected="false" aria-controls="crm" id="tab-crm">CRM</button>
+        <button class="tab" data-view="customers" role="tab" aria-selected="false" aria-controls="customers" id="tab-customers">Customers</button>
+      </div>
+      <div class="tabs-right">
+        <div class="tabs-separator"></div>
+        <button class="tab" data-view="boldoath" role="tab" aria-selected="false" aria-controls="boldoath" id="tab-boldoath">BOLDOATH</button>
+      </div>
     </nav>
   </div>
 </div>
@@ -1436,8 +1457,8 @@ body { font-family: 'Roboto', sans-serif; background: #fff; color: #202124; line
 
   <!-- DOCUMENT LIBRARY -->
   <div id="library" class="view" role="tabpanel" aria-labelledby="tab-library">
-    <h2 class="section-title">Document Library</h2>
-    <p class="section-subtitle">Search and filter all 34 documents</p>
+    <h2 class="section-title">Ivycoast Docs</h2>
+    <p class="section-subtitle">Search and filter all documents</p>
     <div class="search-bar">
       <input type="text" class="search-input" id="search-input" placeholder="Search by name or description...">
       <select class="filter-select" id="filter-workspace">
@@ -2605,7 +2626,7 @@ function renderBoard() {
         bi.style.cursor = "pointer";
         bi.textContent = "IVY";
         bi.title = "View IVYCOAST documents";
-        bi.addEventListener("click", function(e) { e.stopPropagation(); navigateTo("ivycoast"); });
+        bi.addEventListener("click", function(e) { e.stopPropagation(); navigateTo("library"); });
         metaDiv.appendChild(bi);
       } else if (t.workspace === "BOLDOATH") {
         var bb = document.createElement("span");
