@@ -4240,6 +4240,15 @@ function openInlineStockEdit(product, cell) {
     saveStockUpdate(product, parseInt(input.value, 10) || 0);
   });
 
+  var cancelBtn = document.createElement("button");
+  cancelBtn.className = "stock-save-btn";
+  cancelBtn.style.background = "#5f6368";
+  cancelBtn.textContent = "\u2715";
+  cancelBtn.title = "Cancel";
+  cancelBtn.addEventListener("click", function() {
+    renderProducts();
+  });
+
   input.addEventListener("keydown", function(e) {
     if (e.key === "Enter") {
       saveStockUpdate(product, parseInt(input.value, 10) || 0);
@@ -4251,6 +4260,7 @@ function openInlineStockEdit(product, cell) {
 
   cell.appendChild(input);
   cell.appendChild(saveBtn);
+  cell.appendChild(cancelBtn);
   input.focus();
   input.select();
 }
@@ -4258,7 +4268,7 @@ function openInlineStockEdit(product, cell) {
 function saveStockUpdate(product, newQty) {
   if (!SCRIPT_URL) return;
   if (!product.inventoryItemId || !product.locationId) {
-    alert("Cannot update stock: missing inventory item or location ID. Please sync products first.");
+    setProductsSyncStatus("Missing inventory data \u2014 click Sync Now first");
     renderProducts();
     return;
   }

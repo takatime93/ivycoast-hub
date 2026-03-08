@@ -34,7 +34,7 @@ function getSheet(sheetName) {
 function rowToObj(headers, row) {
   var obj = {};
   headers.forEach(function (h, i) {
-    obj[h] = row[i] || "";
+    obj[h] = (row[i] !== undefined && row[i] !== null && row[i] !== "") ? row[i] : "";
   });
   return obj;
 }
@@ -81,7 +81,7 @@ function createRow(sheetName, item) {
     if (h === "id") return id;
     if (h === "createdAt") return item[h] || now;
     if (h === "updatedAt") return now;
-    return item[h] || "";
+    return (item[h] !== undefined && item[h] !== null) ? item[h] : "";
   });
   sheet.appendRow(row);
   return rowToObj(headers, row);
@@ -99,7 +99,7 @@ function updateRow(sheetName, item) {
     obj[k] = item[k];
   });
   obj.updatedAt = new Date().toISOString();
-  var newRow = headers.map(function (h) { return obj[h] || ""; });
+  var newRow = headers.map(function (h) { return (obj[h] !== undefined && obj[h] !== null) ? obj[h] : ""; });
   sheet.getRange(rowNum, 1, 1, newRow.length).setValues([newRow]);
   return obj;
 }
