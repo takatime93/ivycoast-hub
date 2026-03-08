@@ -71,6 +71,7 @@ body { font-family: 'DM Sans', 'Roboto', sans-serif; background: #fff; color: #1
 .tab:focus-visible,
 .btn-add-task:focus-visible,
 .board-modal-actions button:focus-visible,
+.crm-modal-actions button:focus-visible,
 .sync-indicator button:focus-visible,
 .pill:focus-visible {
   outline: 2px solid #1a73e8;
@@ -93,18 +94,17 @@ body { font-family: 'DM Sans', 'Roboto', sans-serif; background: #fff; color: #1
 /* Quick Links */
 .quick-links {
   display: flex;
-  gap: 10px;
+  gap: 6px;
   flex-wrap: wrap;
-  margin-bottom: 32px;
 }
 .pill {
   display: inline-flex;
   align-items: center;
-  padding: 10px 22px;
-  border-radius: 24px;
+  padding: 5px 14px;
+  border-radius: 16px;
   color: #fff;
   text-decoration: none;
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 500;
   transition: opacity 0.15s;
 }
@@ -480,6 +480,107 @@ body { font-family: 'DM Sans', 'Roboto', sans-serif; background: #fff; color: #1
 .task-due { color: #5f6368; }
 .task-due.overdue { color: #c5221f; font-weight: 500; }
 
+/* Inline Card Composer */
+.add-card-link {
+  display: block;
+  padding: 8px 12px;
+  color: #5f6368;
+  font-size: 13px;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: background 0.15s, color 0.15s;
+}
+.add-card-link:hover {
+  background: rgba(0,0,0,0.04);
+  color: #202124;
+}
+.card-composer {
+  display: none;
+  padding: 8px;
+}
+.card-composer.open {
+  display: block;
+}
+.card-composer-textarea {
+  width: 100%;
+  min-height: 54px;
+  padding: 8px 10px;
+  border: none;
+  border-radius: 6px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.08);
+  font-size: 13px;
+  font-family: inherit;
+  resize: none;
+  outline: none;
+  line-height: 1.4;
+}
+.card-composer-textarea:focus {
+  box-shadow: 0 1px 4px rgba(0,0,0,0.18), 0 1px 3px rgba(0,0,0,0.1);
+}
+.card-composer-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+.btn-add-card {
+  padding: 6px 16px;
+  background: #1a73e8;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+}
+.btn-add-card:hover { background: #1557b0; }
+.btn-cancel-card {
+  background: none;
+  border: none;
+  font-size: 20px;
+  color: #5f6368;
+  cursor: pointer;
+  padding: 2px 6px;
+  line-height: 1;
+}
+.btn-cancel-card:hover { color: #202124; }
+
+/* @Mention Dropdown */
+.mention-dropdown {
+  display: none;
+  position: fixed;
+  width: 260px;
+  max-height: 240px;
+  overflow-y: auto;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+  z-index: 300;
+  padding: 4px 0;
+}
+.mention-dropdown.open { display: block; }
+.mention-group-label {
+  padding: 6px 12px 4px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #5f6368;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.mention-item {
+  padding: 6px 12px;
+  cursor: pointer;
+  font-size: 13px;
+  display: flex;
+  flex-direction: column;
+}
+.mention-item:hover, .mention-item.active {
+  background: #f1f3f4;
+}
+.mention-item-name { font-weight: 500; color: #202124; }
+.mention-item-detail { font-size: 11px; color: #5f6368; }
+
 /* Board Modal */
 .board-modal-overlay {
   display: none;
@@ -683,7 +784,7 @@ body { font-family: 'DM Sans', 'Roboto', sans-serif; background: #fff; color: #1
   color: #202124;
   margin-bottom: 4px;
 }
-.crm-vendor-company { font-size: 13px; color: #5f6368; margin-bottom: 8px; }
+.crm-vendor-company { font-size: 13px; color: #5f6368; margin-bottom: 0; }
 .crm-vendor-details { font-size: 13px; color: #5f6368; margin-bottom: 8px; }
 .crm-vendor-details span { display: block; margin-bottom: 2px; }
 
@@ -759,6 +860,260 @@ body { font-family: 'DM Sans', 'Roboto', sans-serif; background: #fff; color: #1
 .crm-type-vendor { background: #e8f0fe; color: #1a73e8; }
 .crm-type-contact { background: #e8eaed; color: #5f6368; }
 .crm-type-partner { background: #e6f4ea; color: #137333; }
+
+/* CRM Modal — Redesigned */
+.board-modal.crm-modal {
+  width: 600px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+.crm-modal-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 24px 28px 20px;
+  border-bottom: 1px solid #ebebeb;
+}
+.crm-avatar-wrap {
+  position: relative;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+.crm-avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: #e8f0fe;
+  color: #1a73e8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  font-weight: 700;
+  overflow: hidden;
+  user-select: none;
+}
+.crm-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.crm-avatar-upload-icon {
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #1a73e8;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  border: 2px solid #fff;
+  cursor: pointer;
+}
+.crm-avatar-upload-icon:hover { background: #1557b0; }
+.crm-header-fields {
+  flex: 1;
+  min-width: 0;
+}
+.crm-header-fields input[data-field="name"] {
+  font-size: 18px;
+  font-weight: 500;
+  border: 1px solid transparent;
+  padding: 4px 8px;
+  border-radius: 6px;
+  width: 100%;
+  margin-bottom: 6px;
+}
+.crm-header-fields input[data-field="name"]:hover { border-color: #dadce0; }
+.crm-header-fields input[data-field="name"]:focus { border-color: #1a73e8; box-shadow: 0 0 0 2px rgba(26,115,232,0.2); }
+.crm-header-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.crm-header-row input,
+.crm-header-row select {
+  font-size: 13px;
+  padding: 5px 8px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  color: #5f6368;
+}
+.crm-header-row input:hover,
+.crm-header-row select:hover { border-color: #dadce0; }
+.crm-header-row input:focus,
+.crm-header-row select:focus { border-color: #1a73e8; box-shadow: 0 0 0 2px rgba(26,115,232,0.2); }
+.crm-modal-section {
+  padding: 16px 28px;
+  border-bottom: 1px solid #ebebeb;
+}
+.crm-modal-section:last-of-type { border-bottom: none; }
+.crm-section-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: #80868b;
+  margin-bottom: 12px;
+}
+.crm-field-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px 16px;
+}
+.crm-field {
+  display: flex;
+  flex-direction: column;
+}
+.crm-field.full-width {
+  grid-column: 1 / -1;
+}
+.crm-field label {
+  font-size: 12px;
+  font-weight: 500;
+  color: #5f6368;
+  margin-bottom: 4px;
+}
+.crm-field input,
+.crm-field select,
+.crm-field textarea {
+  width: 100%;
+  padding: 7px 10px;
+  border: 1px solid #dadce0;
+  border-radius: 6px;
+  font-size: 13px;
+  font-family: inherit;
+  outline: none;
+}
+.crm-field input:focus,
+.crm-field select:focus,
+.crm-field textarea:focus {
+  border-color: #1a73e8;
+  box-shadow: 0 0 0 2px rgba(26,115,232,0.2);
+}
+.crm-field textarea { resize: vertical; min-height: 56px; }
+.crm-card-upload {
+  border: 2px dashed #dadce0;
+  border-radius: 8px;
+  padding: 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  position: relative;
+}
+.crm-card-upload:hover { border-color: #1a73e8; background: #f8f9ff; }
+.crm-card-upload.has-preview {
+  padding: 8px;
+  border-style: solid;
+  border-color: #dadce0;
+}
+.crm-card-upload-label {
+  font-size: 13px;
+  color: #5f6368;
+}
+.crm-card-upload-label svg {
+  display: block;
+  margin: 0 auto 8px;
+}
+.crm-card-preview {
+  display: none;
+  position: relative;
+}
+.crm-card-preview img {
+  max-width: 100%;
+  max-height: 200px;
+  border-radius: 6px;
+  object-fit: contain;
+}
+.crm-card-preview.visible { display: block; }
+.crm-card-remove {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: rgba(0,0,0,0.6);
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+.crm-card-remove:hover { background: rgba(0,0,0,0.8); }
+.crm-modal-actions {
+  display: flex;
+  gap: 10px;
+  padding: 16px 28px;
+  border-top: 1px solid #ebebeb;
+  background: #fafafa;
+  border-radius: 0 0 12px 12px;
+  position: sticky;
+  bottom: 0;
+}
+.crm-modal-actions button {
+  padding: 8px 20px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+  border: 1px solid #dadce0;
+  background: #fff;
+  color: #5f6368;
+}
+.crm-modal-actions .btn-save {
+  background: #1a73e8;
+  color: #fff;
+  border-color: #1a73e8;
+}
+.crm-modal-actions .btn-save:hover { background: #1557b0; }
+.crm-modal-actions .btn-delete {
+  background: #fff;
+  color: #c5221f;
+  border-color: #c5221f;
+  margin-right: auto;
+}
+.crm-modal-actions .btn-delete:hover { background: #fce8e6; }
+.crm-modal-actions .crm-actions-right {
+  display: flex;
+  gap: 10px;
+  margin-left: auto;
+}
+/* CRM Vendor Avatar */
+.crm-vendor-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #e8f0fe;
+  color: #1a73e8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+.crm-vendor-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.crm-vendor-card-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
 
 /* Products */
 .product-img {
@@ -1075,6 +1430,10 @@ body { font-family: 'DM Sans', 'Roboto', sans-serif; background: #fff; color: #1
     -webkit-overflow-scrolling: touch;
   }
   .kanban-col { scroll-snap-align: start; }
+  .card-composer-textarea { font-size: 14px; padding: 6px 8px; min-height: 48px; }
+  .card-composer-actions { gap: 6px; }
+  .btn-add-card { padding: 5px 12px; font-size: 12px; }
+  .add-card-link { padding: 6px 10px; font-size: 12px; }
   .board-modal { padding: 20px; }
   .board-setup input { width: 100%; }
   .crm-vendor-grid { grid-template-columns: 1fr; }
@@ -1087,6 +1446,12 @@ body { font-family: 'DM Sans', 'Roboto', sans-serif; background: #fff; color: #1
   .crm-kanban .kanban-col { scroll-snap-align: start; }
   .crm-table { font-size: 13px; }
   .crm-table th, .crm-table td { padding: 8px 6px; }
+  .board-modal.crm-modal { width: 100%; max-width: 100vw; border-radius: 0; max-height: 100vh; }
+  .crm-modal-header { padding: 16px 20px 14px; }
+  .crm-modal-section { padding: 14px 20px; }
+  .crm-field-row { grid-template-columns: 1fr; }
+  .crm-header-row { grid-template-columns: 1fr; }
+  .crm-modal-actions { padding: 14px 20px; }
   .products-table { font-size: 13px; }
   .products-table th, .products-table td { padding: 8px 6px; }
   .orders-table { font-size: 13px; }
@@ -1361,8 +1726,8 @@ body { font-family: 'DM Sans', 'Roboto', sans-serif; background: #fff; color: #1
         <button class="tab" data-view="library" role="tab" aria-selected="false" aria-controls="library" id="tab-library">Ivycoast Docs</button>
         <button class="tab" data-view="products" role="tab" aria-selected="false" aria-controls="products" id="tab-products">Products</button>
         <button class="tab" data-view="orders" role="tab" aria-selected="false" aria-controls="orders" id="tab-orders">Orders</button>
-        <button class="tab" data-view="crm" role="tab" aria-selected="false" aria-controls="crm" id="tab-crm">CRM</button>
         <button class="tab" data-view="customers" role="tab" aria-selected="false" aria-controls="customers" id="tab-customers">Customers</button>
+        <button class="tab" data-view="crm" role="tab" aria-selected="false" aria-controls="crm" id="tab-crm">CRM</button>
       </div>
       <div class="tabs-right">
         <div class="tabs-separator"></div>
@@ -1376,14 +1741,6 @@ body { font-family: 'DM Sans', 'Roboto', sans-serif; background: #fff; color: #1
 
   <!-- HOME -->
   <div id="home" class="view active" role="tabpanel" aria-labelledby="tab-home">
-    <div class="quick-links">
-      <a class="pill pill-figma" href="https://www.figma.com/board/oO7mtsykQVHjUdlrwdZJ3n/Ivycoast-Strategy" target="_blank" rel="noopener noreferrer">Figma</a>
-      <a class="pill pill-shopify" href="https://ivycoast.co" target="_blank" rel="noopener noreferrer">Shopify</a>
-      <a class="pill pill-instagram" href="https://www.instagram.com/ivycoast" target="_blank" rel="noopener noreferrer">Instagram</a>
-      <a class="pill pill-yamato" href="https://www.kuronekoyamato.co.jp" target="_blank" rel="noopener noreferrer">Yamato</a>
-      <a class="pill pill-drive" href="https://drive.google.com" target="_blank" rel="noopener noreferrer">Google Drive</a>
-    </div>
-
     <div class="info-card info-card-wide">
       <div class="info-card-header">
         <h3>Meeting Notes</h3>
@@ -1412,6 +1769,16 @@ body { font-family: 'DM Sans', 'Roboto', sans-serif; background: #fff; color: #1
       </div>
 
       <div class="home-sidebar">
+        <div class="info-card">
+          <h3>Quick Links</h3>
+          <div class="quick-links" style="margin-top:8px">
+            <a class="pill pill-figma" href="https://www.figma.com/board/oO7mtsykQVHjUdlrwdZJ3n/Ivycoast-Strategy" target="_blank" rel="noopener noreferrer">Figma</a>
+            <a class="pill pill-shopify" href="https://ivycoast.co" target="_blank" rel="noopener noreferrer">Shopify</a>
+            <a class="pill pill-instagram" href="https://www.instagram.com/ivycoast" target="_blank" rel="noopener noreferrer">Instagram</a>
+            <a class="pill pill-yamato" href="https://www.kuronekoyamato.co.jp" target="_blank" rel="noopener noreferrer">Yamato</a>
+            <a class="pill pill-drive" href="https://drive.google.com" target="_blank" rel="noopener noreferrer">Google Drive</a>
+          </div>
+        </div>
         <div class="info-card" id="home-key-stats">
           <h3>Key Stats</h3>
           <div class="stat-grid" id="home-stats-grid"></div>
@@ -1458,7 +1825,6 @@ body { font-family: 'DM Sans', 'Roboto', sans-serif; background: #fff; color: #1
   <!-- DOCUMENT LIBRARY -->
   <div id="library" class="view" role="tabpanel" aria-labelledby="tab-library">
     <h2 class="section-title">Ivycoast Docs</h2>
-    <p class="section-subtitle">Search and filter all documents</p>
     <div class="search-bar">
       <input type="text" class="search-input" id="search-input" placeholder="Search by name or description...">
       <select class="filter-select" id="filter-workspace">
@@ -1493,7 +1859,6 @@ body { font-family: 'DM Sans', 'Roboto', sans-serif; background: #fff; color: #1
   <!-- BOARD -->
   <div id="board" class="view" role="tabpanel" aria-labelledby="tab-board">
     <h2 class="section-title">Task Board</h2>
-    <p class="section-subtitle">Collaborative Kanban — synced via Google Sheets</p>
 
     <div id="board-setup" class="board-setup" style="display:none">
       Paste your Google Apps Script web app URL to connect the board.<br>
@@ -1505,7 +1870,7 @@ body { font-family: 'DM Sans', 'Roboto', sans-serif; background: #fff; color: #1
     </div>
 
     <div class="board-toolbar" id="board-toolbar">
-      <button class="btn-add-task" onclick="openCreateModal()">+ Add Task</button>
+      <button class="btn-add-task" onclick="openCreateModal()">+ Detailed Task</button>
       <select class="filter-select" id="board-filter-ws" onchange="renderBoard()">
         <option value="">All Workspaces</option>
         <option value="IVYCOAST">IVYCOAST</option>
@@ -1526,18 +1891,50 @@ body { font-family: 'DM Sans', 'Roboto', sans-serif; background: #fff; color: #1
       <div class="kanban-col" data-status="backlog">
         <div class="kanban-col-header">Backlog <span class="col-count" id="count-backlog">0</span></div>
         <div class="kanban-col-body" id="col-backlog"></div>
+        <div class="card-composer" id="composer-backlog">
+          <textarea class="card-composer-textarea" placeholder="Enter a title…" data-status="backlog"></textarea>
+          <div class="card-composer-actions">
+            <button class="btn-add-card" type="button">Add Card</button>
+            <button class="btn-cancel-card" type="button">&times;</button>
+          </div>
+        </div>
+        <span class="add-card-link" data-status="backlog">+ Add a card</span>
       </div>
       <div class="kanban-col" data-status="todo">
         <div class="kanban-col-header">To Do <span class="col-count" id="count-todo">0</span></div>
         <div class="kanban-col-body" id="col-todo"></div>
+        <div class="card-composer" id="composer-todo">
+          <textarea class="card-composer-textarea" placeholder="Enter a title…" data-status="todo"></textarea>
+          <div class="card-composer-actions">
+            <button class="btn-add-card" type="button">Add Card</button>
+            <button class="btn-cancel-card" type="button">&times;</button>
+          </div>
+        </div>
+        <span class="add-card-link" data-status="todo">+ Add a card</span>
       </div>
       <div class="kanban-col" data-status="in_progress">
         <div class="kanban-col-header">In Progress <span class="col-count" id="count-in_progress">0</span></div>
         <div class="kanban-col-body" id="col-in_progress"></div>
+        <div class="card-composer" id="composer-in_progress">
+          <textarea class="card-composer-textarea" placeholder="Enter a title…" data-status="in_progress"></textarea>
+          <div class="card-composer-actions">
+            <button class="btn-add-card" type="button">Add Card</button>
+            <button class="btn-cancel-card" type="button">&times;</button>
+          </div>
+        </div>
+        <span class="add-card-link" data-status="in_progress">+ Add a card</span>
       </div>
       <div class="kanban-col" data-status="done">
         <div class="kanban-col-header">Done <span class="col-count" id="count-done">0</span></div>
         <div class="kanban-col-body" id="col-done"></div>
+        <div class="card-composer" id="composer-done">
+          <textarea class="card-composer-textarea" placeholder="Enter a title…" data-status="done"></textarea>
+          <div class="card-composer-actions">
+            <button class="btn-add-card" type="button">Add Card</button>
+            <button class="btn-cancel-card" type="button">&times;</button>
+          </div>
+        </div>
+        <span class="add-card-link" data-status="done">+ Add a card</span>
       </div>
     </div>
   </div>
@@ -1545,7 +1942,6 @@ body { font-family: 'DM Sans', 'Roboto', sans-serif; background: #fff; color: #1
   <!-- CRM -->
   <div id="crm" class="view" role="tabpanel" aria-labelledby="tab-crm">
     <h2 class="section-title">CRM</h2>
-    <p class="section-subtitle">Vendor contacts & sales pipeline — synced via Google Sheets</p>
 
     <div class="board-toolbar" id="crm-toolbar">
       <button class="btn-add-task" onclick="openCrmCreateModal()">+ Add Contact</button>
@@ -1787,52 +2183,124 @@ body { font-family: 'DM Sans', 'Roboto', sans-serif; background: #fff; color: #1
 
 <!-- CRM Contact Modal -->
 <div class="board-modal-overlay" id="crm-modal-overlay" onclick="if(event.target===this)closeCrmModal()">
-  <div class="board-modal">
-    <h2 id="crm-modal-title">New Contact</h2>
+  <div class="board-modal crm-modal">
     <input type="hidden" id="crm-modal-id">
-    <label for="crm-modal-name">Name</label>
-    <input type="text" id="crm-modal-name">
-    <label for="crm-modal-type">Type</label>
-    <select id="crm-modal-type">
-      <option value="Vendor">Vendor</option>
-      <option value="Contact">Contact</option>
-      <option value="Partner">Partner</option>
-    </select>
-    <label for="crm-modal-company">Company</label>
-    <input type="text" id="crm-modal-company">
-    <label for="crm-modal-role">Role</label>
-    <input type="text" id="crm-modal-role">
-    <label for="crm-modal-email">Email</label>
-    <input type="email" id="crm-modal-email">
-    <label for="crm-modal-phone">Phone</label>
-    <input type="tel" id="crm-modal-phone">
-    <label for="crm-modal-products">Products (comma-separated)</label>
-    <input type="text" id="crm-modal-products" placeholder="soap, candles, packaging">
-    <label for="crm-modal-location">Location</label>
-    <input type="text" id="crm-modal-location">
-    <label for="crm-modal-stage">Stage</label>
-    <select id="crm-modal-stage">
-      <option value="prospect">Prospect</option>
-      <option value="outreach">Outreach</option>
-      <option value="negotiation">Negotiation</option>
-      <option value="active_partner">Active Partner</option>
-      <option value="inactive">Inactive</option>
-    </select>
-    <label for="crm-modal-workspace">Workspace</label>
-    <select id="crm-modal-workspace">
-      <option value="IVYCOAST">IVYCOAST</option>
-      <option value="BOLDOATH">BOLDOATH</option>
-    </select>
-    <label for="crm-modal-connected">Connected Date</label>
-    <input type="date" id="crm-modal-connected">
-    <label for="crm-modal-lastcontact">Last Contact Date</label>
-    <input type="date" id="crm-modal-lastcontact">
-    <label for="crm-modal-notes">Notes</label>
-    <textarea id="crm-modal-notes"></textarea>
-    <div class="board-modal-actions">
-      <button class="btn-delete" id="crm-modal-delete-btn" style="display:none" onclick="deleteCrmContactConfirm()">Delete</button>
-      <button onclick="closeCrmModal()">Cancel</button>
-      <button class="btn-save" onclick="saveCrmContact()">Save</button>
+    <input type="file" id="crm-avatar-input" accept="image/*" style="display:none" onchange="handleCrmAvatarUpload(this)">
+    <input type="file" id="crm-card-input" accept="image/*" style="display:none" onchange="handleCrmBusinessCardUpload(this)">
+
+    <!-- Profile Header -->
+    <div class="crm-modal-header">
+      <div class="crm-avatar-wrap" onclick="document.getElementById('crm-avatar-input').click()" title="Upload profile photo">
+        <div class="crm-avatar" id="crm-modal-avatar"></div>
+        <div class="crm-avatar-upload-icon">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+        </div>
+      </div>
+      <div class="crm-header-fields">
+        <input type="text" id="crm-modal-name" data-field="name" placeholder="Contact name" oninput="updateCrmAvatar(this.value)">
+        <div class="crm-header-row">
+          <input type="text" id="crm-modal-company" placeholder="Company">
+          <input type="text" id="crm-modal-role" placeholder="Role / Title">
+        </div>
+      </div>
+    </div>
+
+    <!-- Contact Info Section -->
+    <div class="crm-modal-section">
+      <div class="crm-section-title">Contact Info</div>
+      <div class="crm-field-row">
+        <div class="crm-field">
+          <label for="crm-modal-email">Email</label>
+          <input type="email" id="crm-modal-email">
+        </div>
+        <div class="crm-field">
+          <label for="crm-modal-phone">Phone</label>
+          <input type="tel" id="crm-modal-phone">
+        </div>
+        <div class="crm-field">
+          <label for="crm-modal-location">Location</label>
+          <input type="text" id="crm-modal-location">
+        </div>
+        <div class="crm-field">
+          <label for="crm-modal-workspace">Workspace</label>
+          <select id="crm-modal-workspace">
+            <option value="IVYCOAST">IVYCOAST</option>
+            <option value="BOLDOATH">BOLDOATH</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Business Details Section -->
+    <div class="crm-modal-section">
+      <div class="crm-section-title">Business Details</div>
+      <div class="crm-field-row">
+        <div class="crm-field">
+          <label for="crm-modal-type">Type</label>
+          <select id="crm-modal-type">
+            <option value="Vendor">Vendor</option>
+            <option value="Contact">Contact</option>
+            <option value="Partner">Partner</option>
+          </select>
+        </div>
+        <div class="crm-field">
+          <label for="crm-modal-stage">Stage</label>
+          <select id="crm-modal-stage">
+            <option value="prospect">Prospect</option>
+            <option value="outreach">Outreach</option>
+            <option value="negotiation">Negotiation</option>
+            <option value="active_partner">Active Partner</option>
+            <option value="inactive">Inactive</option>
+          </select>
+        </div>
+        <div class="crm-field full-width">
+          <label for="crm-modal-products">Products (comma-separated)</label>
+          <input type="text" id="crm-modal-products" placeholder="soap, candles, packaging">
+        </div>
+      </div>
+    </div>
+
+    <!-- Activity Section -->
+    <div class="crm-modal-section">
+      <div class="crm-section-title">Activity</div>
+      <div class="crm-field-row">
+        <div class="crm-field">
+          <label for="crm-modal-connected">Connected Date</label>
+          <input type="date" id="crm-modal-connected">
+        </div>
+        <div class="crm-field">
+          <label for="crm-modal-lastcontact">Last Contact Date</label>
+          <input type="date" id="crm-modal-lastcontact">
+        </div>
+        <div class="crm-field full-width">
+          <label for="crm-modal-notes">Notes</label>
+          <textarea id="crm-modal-notes"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- Business Card Section -->
+    <div class="crm-modal-section">
+      <div class="crm-section-title">Business Card</div>
+      <div class="crm-card-upload" id="crm-card-upload" onclick="document.getElementById('crm-card-input').click()">
+        <div class="crm-card-upload-label" id="crm-card-upload-label">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#9aa0a6" stroke-width="1.5"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M8 10h8M8 14h5"/><circle cx="17" cy="14" r="2"/></svg>
+          Drop or click to upload business card
+        </div>
+        <div class="crm-card-preview" id="crm-card-preview">
+          <img id="crm-card-preview-img" src="" alt="Business card">
+          <button class="crm-card-remove" onclick="event.stopPropagation();removeCrmBusinessCard()" title="Remove">&times;</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Action Bar -->
+    <div class="crm-modal-actions">
+      <button class="btn-delete" id="crm-modal-delete-btn" style="display: none" onclick="deleteCrmContactConfirm()">Delete</button>
+      <div class="crm-actions-right">
+        <button onclick="closeCrmModal()">Cancel</button>
+        <button class="btn-save" onclick="saveCrmContact()">Save</button>
+      </div>
     </div>
   </div>
 </div>
@@ -1883,6 +2351,9 @@ body { font-family: 'DM Sans', 'Roboto', sans-serif; background: #fff; color: #1
     </div>
   </div>
 </div>
+
+<!-- @Mention Dropdown -->
+<div class="mention-dropdown" id="mention-dropdown"></div>
 
 <!-- Mobile Status Picker -->
 <div class="status-picker-overlay" id="status-picker-overlay" onclick="if(event.target===this)closeStatusPicker()">
@@ -1961,9 +2432,11 @@ function init() {
   if (defaultTh) defaultTh.querySelector(".sort-arrow").textContent = " \u25B2";
 }
 
-// Tab switching
+// Tab switching — update hash on click
 document.querySelectorAll(".tab").forEach(function(tab) {
   tab.addEventListener("click", function() {
+    var viewId = tab.dataset.view;
+    location.hash = viewId === "home" ? "" : viewId;
     document.querySelectorAll(".tab").forEach(function(t) {
       t.classList.remove("active");
       t.setAttribute("aria-selected", "false");
@@ -1971,7 +2444,7 @@ document.querySelectorAll(".tab").forEach(function(tab) {
     document.querySelectorAll(".view").forEach(function(v) { v.classList.remove("active"); });
     tab.classList.add("active");
     tab.setAttribute("aria-selected", "true");
-    document.getElementById(tab.dataset.view).classList.add("active");
+    document.getElementById(viewId).classList.add("active");
   });
 });
 
@@ -2744,7 +3217,7 @@ function renderBoard() {
     emptyMsg.style.cssText = "text-align:center;padding:32px;color:#5f6368;font-size:14px;";
     document.getElementById("kanban").parentNode.insertBefore(emptyMsg, document.getElementById("kanban").nextSibling);
   }
-  emptyMsg.textContent = (totalVisible === 0 && SCRIPT_URL) ? "No tasks found. Create one with + Add Task." : "";
+  emptyMsg.textContent = (totalVisible === 0 && SCRIPT_URL) ? "No tasks found. Use + Add a card in any column." : "";
 }
 
 // Drag & Drop on columns (scoped to Board kanban only)
@@ -2802,8 +3275,136 @@ function pickStatus(newStatus) {
     .catch(function() { fetchBoardTasks(); });
 }
 
+// ── Inline Card Composer ─────────────────────────────────────
+var composerStatuses = ["backlog", "todo", "in_progress", "done"];
+
+function openComposer(status) {
+  if (!SCRIPT_URL) { checkBoardSetup(); return; }
+  // Close any other open composers
+  composerStatuses.forEach(function(s) {
+    if (s !== status) closeComposer(s);
+  });
+  var composer = document.getElementById("composer-" + status);
+  var link = composer.parentNode.querySelector(".add-card-link");
+  composer.classList.add("open");
+  if (link) link.style.display = "none";
+  var ta = composer.querySelector(".card-composer-textarea");
+  ta.value = "";
+  ta.focus();
+}
+
+function closeComposer(status) {
+  var composer = document.getElementById("composer-" + status);
+  if (!composer) return;
+  composer.classList.remove("open");
+  var ta = composer.querySelector(".card-composer-textarea");
+  if (ta) ta.value = "";
+  var link = composer.parentNode.querySelector(".add-card-link");
+  if (link) link.style.display = "";
+}
+
+function closeAllComposers() {
+  composerStatuses.forEach(function(s) { closeComposer(s); });
+}
+
+function submitComposer(status) {
+  if (!SCRIPT_URL) return;
+  var composer = document.getElementById("composer-" + status);
+  var ta = composer.querySelector(".card-composer-textarea");
+  var name = ta.value.trim();
+  if (!name) return;
+
+  var wsFilter = document.getElementById("board-filter-ws").value;
+  var task = {
+    name: name,
+    description: "",
+    status: status,
+    priority: "",
+    assignee: "",
+    due: "",
+    workspace: wsFilter || "IVYCOAST",
+    category: "",
+    docLink: ""
+  };
+
+  // Optimistic UI
+  var tempId = "temp-" + Date.now();
+  task.id = tempId;
+  boardTasks.push(task);
+  renderBoard();
+  setSyncStatus("Saving\u2026");
+
+  // Keep composer open for rapid adding
+  var comp = document.getElementById("composer-" + status);
+  comp.classList.add("open");
+  var link = comp.parentNode.querySelector(".add-card-link");
+  if (link) link.style.display = "none";
+  var nextTa = comp.querySelector(".card-composer-textarea");
+  nextTa.value = "";
+  nextTa.focus();
+
+  apiPost({ action: "create", task: task })
+    .then(function(data) {
+      setSyncStatus("Task created");
+      if (data.task) {
+        boardTasks = boardTasks.map(function(t) {
+          return t.id === tempId ? data.task : t;
+        });
+        renderBoard();
+        // Re-open composer after render
+        var c = document.getElementById("composer-" + status);
+        c.classList.add("open");
+        var l = c.parentNode.querySelector(".add-card-link");
+        if (l) l.style.display = "none";
+      }
+    })
+    .catch(function() { setSyncStatus("Create failed"); fetchBoardTasks(); });
+}
+
+// Composer event listeners
+document.querySelectorAll(".add-card-link").forEach(function(link) {
+  link.addEventListener("click", function() {
+    openComposer(this.dataset.status);
+  });
+});
+
+document.querySelectorAll(".card-composer .btn-add-card").forEach(function(btn) {
+  btn.addEventListener("click", function() {
+    var status = this.closest(".card-composer").querySelector(".card-composer-textarea").dataset.status;
+    submitComposer(status);
+  });
+});
+
+document.querySelectorAll(".card-composer .btn-cancel-card").forEach(function(btn) {
+  btn.addEventListener("click", function() {
+    var status = this.closest(".card-composer").querySelector(".card-composer-textarea").dataset.status;
+    closeComposer(status);
+  });
+});
+
+// Keyboard handling for composer textareas
+document.querySelectorAll(".card-composer-textarea").forEach(function(ta) {
+  ta.addEventListener("keydown", function(e) {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      submitComposer(this.dataset.status);
+    }
+    if (e.key === "Escape") {
+      e.preventDefault();
+      closeComposer(this.dataset.status);
+    }
+  });
+});
+
+// Click-outside closes open composers
+document.addEventListener("mousedown", function(e) {
+  if (e.target.closest(".card-composer") || e.target.closest(".add-card-link")) return;
+  closeAllComposers();
+});
+
 // Modal: Create
 function openCreateModal() {
+  closeAllComposers();
   document.getElementById("modal-title").textContent = "New Task";
   document.getElementById("modal-task-id").value = "";
   document.getElementById("modal-name").value = "";
@@ -2822,6 +3423,7 @@ function openCreateModal() {
 
 // Modal: Edit
 function openEditModal(taskId) {
+  closeAllComposers();
   var t = boardTasks.find(function(task) { return task.id === taskId; });
   if (!t) return;
   document.getElementById("modal-title").textContent = "Edit Task";
@@ -2949,6 +3551,8 @@ document.addEventListener("keydown", function(e) {
   if (e.key === "Escape") {
     closeModal();
     closeStatusPicker();
+    closeAllComposers();
+    closeMentionDropdown();
     if (typeof closeOrderDetailModal === "function") closeOrderDetailModal();
   }
   // "/" focuses search on Library tab
@@ -2979,6 +3583,176 @@ document.getElementById("task-modal-overlay").addEventListener("keydown", functi
     e.preventDefault(); first.focus();
   }
 });
+
+// ── @Mention System ─────────────────────────────────────────
+var mentionDropdown = document.getElementById("mention-dropdown");
+var mentionCandidates = [];
+var mentionFiltered = [];
+var mentionActiveIndex = -1;
+var mentionStartPos = -1;
+
+function getMentionCandidates() {
+  var candidates = [];
+  var contacts = (typeof crmContacts !== "undefined" ? crmContacts : []);
+  contacts.forEach(function(c) {
+    if (c.name) candidates.push({ name: c.name, detail: c.company || "", group: "CRM Contacts" });
+  });
+  var customers = (typeof shopifyCustomers !== "undefined" ? shopifyCustomers : []);
+  customers.forEach(function(c) {
+    var name = (c.firstName || "") + " " + (c.lastName || "");
+    name = name.trim();
+    if (!name && c.name) name = c.name;
+    if (name) candidates.push({ name: name, detail: c.email || "", group: "Customers" });
+  });
+  return candidates;
+}
+
+function filterMentionCandidates(query) {
+  var q = query.toLowerCase();
+  return getMentionCandidates().filter(function(c) {
+    return c.name.toLowerCase().indexOf(q) !== -1 || c.detail.toLowerCase().indexOf(q) !== -1;
+  });
+}
+
+function renderMentionDropdown(filtered) {
+  mentionDropdown.textContent = "";
+  if (!filtered.length) {
+    mentionDropdown.classList.remove("open");
+    return;
+  }
+  mentionFiltered = filtered;
+  mentionActiveIndex = 0;
+
+  var lastGroup = "";
+  filtered.forEach(function(c, i) {
+    if (c.group !== lastGroup) {
+      lastGroup = c.group;
+      var label = document.createElement("div");
+      label.className = "mention-group-label";
+      label.textContent = c.group;
+      mentionDropdown.appendChild(label);
+    }
+    var item = document.createElement("div");
+    item.className = "mention-item" + (i === 0 ? " active" : "");
+    item.dataset.index = i;
+
+    var nameSpan = document.createElement("span");
+    nameSpan.className = "mention-item-name";
+    nameSpan.textContent = c.name;
+    item.appendChild(nameSpan);
+
+    if (c.detail) {
+      var detailSpan = document.createElement("span");
+      detailSpan.className = "mention-item-detail";
+      detailSpan.textContent = c.detail;
+      item.appendChild(detailSpan);
+    }
+
+    // mousedown fires before blur
+    item.addEventListener("mousedown", function(e) {
+      e.preventDefault();
+      selectMention(i);
+    });
+    mentionDropdown.appendChild(item);
+  });
+  mentionDropdown.classList.add("open");
+}
+
+function positionMentionDropdown(textarea) {
+  var rect = textarea.getBoundingClientRect();
+  mentionDropdown.style.left = rect.left + "px";
+  mentionDropdown.style.top = (rect.bottom + 4) + "px";
+  mentionDropdown.style.width = Math.max(260, rect.width) + "px";
+}
+
+function selectMention(index) {
+  var ta = document.getElementById("modal-desc");
+  var selected = mentionFiltered[index];
+  if (!selected) return;
+
+  var val = ta.value;
+  var before = val.substring(0, mentionStartPos);
+  var after = val.substring(ta.selectionStart);
+  ta.value = before + "@" + selected.name + " " + after;
+  var newPos = before.length + selected.name.length + 2; // @ + name + space
+  ta.selectionStart = ta.selectionEnd = newPos;
+  ta.focus();
+
+  closeMentionDropdown();
+}
+
+function closeMentionDropdown() {
+  mentionDropdown.classList.remove("open");
+  mentionDropdown.textContent = "";
+  mentionFiltered = [];
+  mentionActiveIndex = -1;
+  mentionStartPos = -1;
+}
+
+// Attach listeners to modal description textarea
+(function() {
+  var descTA = document.getElementById("modal-desc");
+
+  descTA.addEventListener("input", function() {
+    var val = this.value;
+    var pos = this.selectionStart;
+    // Find @ before cursor
+    var textBefore = val.substring(0, pos);
+    var atIndex = textBefore.lastIndexOf("@");
+    if (atIndex === -1 || (atIndex > 0 && textBefore[atIndex - 1] !== " " && textBefore[atIndex - 1] !== "\n")) {
+      closeMentionDropdown();
+      return;
+    }
+    var query = textBefore.substring(atIndex + 1);
+    // Don't trigger if there's a space in the query (mention already completed)
+    if (query.indexOf(" ") !== -1 && query.length > 20) {
+      closeMentionDropdown();
+      return;
+    }
+    mentionStartPos = atIndex;
+    var filtered = filterMentionCandidates(query);
+    if (filtered.length) {
+      positionMentionDropdown(this);
+      renderMentionDropdown(filtered);
+    } else {
+      closeMentionDropdown();
+    }
+  });
+
+  descTA.addEventListener("keydown", function(e) {
+    if (!mentionDropdown.classList.contains("open")) return;
+
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      mentionActiveIndex = Math.min(mentionActiveIndex + 1, mentionFiltered.length - 1);
+      updateMentionActive();
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      mentionActiveIndex = Math.max(mentionActiveIndex - 1, 0);
+      updateMentionActive();
+    } else if (e.key === "Enter" || e.key === "Tab") {
+      e.preventDefault();
+      if (mentionActiveIndex >= 0) selectMention(mentionActiveIndex);
+    } else if (e.key === "Escape") {
+      e.preventDefault();
+      closeMentionDropdown();
+    }
+  });
+
+  descTA.addEventListener("blur", function() {
+    // Small delay to allow mousedown on dropdown items
+    setTimeout(closeMentionDropdown, 150);
+  });
+})();
+
+function updateMentionActive() {
+  mentionDropdown.querySelectorAll(".mention-item").forEach(function(item) {
+    item.classList.toggle("active", +item.dataset.index === mentionActiveIndex);
+  });
+  // Scroll active into view
+  var active = mentionDropdown.querySelector(".mention-item.active");
+  if (active) active.scrollIntoView({ block: "nearest" });
+}
 
 // Pause auto-refresh when browser tab is hidden
 document.addEventListener("visibilitychange", function() {
@@ -3011,6 +3785,7 @@ document.addEventListener("visibilitychange", function() {
 
 // ── Navigation helper ─────────────────────────────────────────
 function navigateTo(viewId, searchQuery, statusFilter) {
+  location.hash = viewId === "home" ? "" : viewId;
   document.querySelectorAll(".tab").forEach(function(t) {
     t.classList.remove("active");
     t.setAttribute("aria-selected", "false");
@@ -3374,17 +4149,33 @@ function renderCrmVendors() {
     card.className = "crm-vendor-card";
     card.addEventListener("click", function() { openCrmEditModal(c.id); });
 
+    // Avatar + Name header
+    var cardHeader = document.createElement("div");
+    cardHeader.className = "crm-vendor-card-header";
+    var avatarDiv = document.createElement("div");
+    avatarDiv.className = "crm-vendor-avatar";
+    if (c.profileImageUrl) {
+      var avatarImg = document.createElement("img");
+      avatarImg.src = c.profileImageUrl;
+      avatarImg.alt = c.name;
+      avatarDiv.appendChild(avatarImg);
+    } else {
+      avatarDiv.textContent = getCrmInitials(c.name);
+    }
+    cardHeader.appendChild(avatarDiv);
+    var nameWrap = document.createElement("div");
     var nameDiv = document.createElement("div");
     nameDiv.className = "crm-vendor-name";
     nameDiv.textContent = c.name;
-    card.appendChild(nameDiv);
-
+    nameWrap.appendChild(nameDiv);
     if (c.company) {
       var companyDiv = document.createElement("div");
       companyDiv.className = "crm-vendor-company";
       companyDiv.textContent = c.company;
-      card.appendChild(companyDiv);
+      nameWrap.appendChild(companyDiv);
     }
+    cardHeader.appendChild(nameWrap);
+    card.appendChild(cardHeader);
 
     var details = document.createElement("div");
     details.className = "crm-vendor-details";
@@ -3607,9 +4398,125 @@ document.querySelectorAll("#crm-kanban .kanban-col").forEach(function(col) {
   });
 });
 
+// CRM Modal — Image state
+var crmPendingAvatar = null; // { base64, mimeType, dataUrl }
+var crmPendingCard = null;   // { base64, mimeType, dataUrl }
+var crmRemoveCard = false;
+var crmExistingAvatarUrl = "";
+var crmExistingCardUrl = "";
+
+function getCrmInitials(name) {
+  if (!name) return "";
+  var parts = name.trim().split(/\s+/);
+  if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
+  return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
+}
+
+function setCrmAvatarImage(el, src) {
+  el.textContent = "";
+  var img = document.createElement("img");
+  img.src = src;
+  img.alt = "Avatar";
+  el.appendChild(img);
+}
+
+function updateCrmAvatar(name, imageUrl) {
+  var el = document.getElementById("crm-modal-avatar");
+  if (imageUrl) {
+    setCrmAvatarImage(el, imageUrl);
+  } else if (crmPendingAvatar) {
+    setCrmAvatarImage(el, crmPendingAvatar.dataUrl);
+  } else if (crmExistingAvatarUrl) {
+    setCrmAvatarImage(el, crmExistingAvatarUrl);
+  } else {
+    el.textContent = getCrmInitials(name || document.getElementById("crm-modal-name").value) || "+";
+  }
+}
+
+function resizeImageBase64(file, maxDim, callback) {
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    var img = new Image();
+    img.onload = function() {
+      var w = img.width, h = img.height;
+      if (w > maxDim || h > maxDim) {
+        if (w > h) { h = Math.round(h * maxDim / w); w = maxDim; }
+        else { w = Math.round(w * maxDim / h); h = maxDim; }
+      }
+      var canvas = document.createElement("canvas");
+      canvas.width = w; canvas.height = h;
+      canvas.getContext("2d").drawImage(img, 0, 0, w, h);
+      var dataUrl = canvas.toDataURL(file.type || "image/jpeg", 0.85);
+      var base64 = dataUrl.split(",")[1];
+      callback({ base64: base64, mimeType: file.type || "image/jpeg", dataUrl: dataUrl });
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function uploadCrmFile(base64, mimeType, fileName, callback) {
+  if (!SCRIPT_URL) { callback(null); return; }
+  fetch(SCRIPT_URL, {
+    method: "POST",
+    headers: { "Content-Type": "text/plain" },
+    body: JSON.stringify({ action: "uploadFile", fileName: fileName, mimeType: mimeType, base64Data: base64 })
+  })
+    .then(function(r) { return r.json(); })
+    .then(function(data) { callback(data.success ? data.fileUrl : null); })
+    .catch(function() { callback(null); });
+}
+
+function handleCrmAvatarUpload(input) {
+  if (!input.files || !input.files[0]) return;
+  resizeImageBase64(input.files[0], 400, function(result) {
+    crmPendingAvatar = result;
+    updateCrmAvatar(null);
+  });
+  input.value = "";
+}
+
+function handleCrmBusinessCardUpload(input) {
+  if (!input.files || !input.files[0]) return;
+  resizeImageBase64(input.files[0], 1200, function(result) {
+    crmPendingCard = result;
+    crmRemoveCard = false;
+    var preview = document.getElementById("crm-card-preview");
+    document.getElementById("crm-card-preview-img").src = result.dataUrl;
+    preview.classList.add("visible");
+    document.getElementById("crm-card-upload-label").style.display = "none";
+    document.getElementById("crm-card-upload").classList.add("has-preview");
+  });
+  input.value = "";
+}
+
+function removeCrmBusinessCard() {
+  crmPendingCard = null;
+  crmRemoveCard = true;
+  crmExistingCardUrl = "";
+  var preview = document.getElementById("crm-card-preview");
+  preview.classList.remove("visible");
+  document.getElementById("crm-card-preview-img").src = "";
+  document.getElementById("crm-card-upload-label").style.display = "";
+  document.getElementById("crm-card-upload").classList.remove("has-preview");
+}
+
+function resetCrmCardPreview() {
+  var preview = document.getElementById("crm-card-preview");
+  preview.classList.remove("visible");
+  document.getElementById("crm-card-preview-img").src = "";
+  document.getElementById("crm-card-upload-label").style.display = "";
+  document.getElementById("crm-card-upload").classList.remove("has-preview");
+}
+
 // CRM Modal
 function openCrmCreateModal() {
-  document.getElementById("crm-modal-title").textContent = "New Contact";
+  crmPendingAvatar = null;
+  crmPendingCard = null;
+  crmRemoveCard = false;
+  crmExistingAvatarUrl = "";
+  crmExistingCardUrl = "";
+
   document.getElementById("crm-modal-id").value = "";
   document.getElementById("crm-modal-name").value = "";
   document.getElementById("crm-modal-type").value = "Vendor";
@@ -3625,6 +4532,8 @@ function openCrmCreateModal() {
   document.getElementById("crm-modal-lastcontact").value = "";
   document.getElementById("crm-modal-notes").value = "";
   document.getElementById("crm-modal-delete-btn").style.display = "none";
+  updateCrmAvatar("");
+  resetCrmCardPreview();
   document.getElementById("crm-modal-overlay").classList.add("open");
   setTimeout(function() { document.getElementById("crm-modal-name").focus(); }, 50);
 }
@@ -3632,7 +4541,12 @@ function openCrmCreateModal() {
 function openCrmEditModal(contactId) {
   var c = crmContacts.find(function(x) { return x.id === contactId; });
   if (!c) return;
-  document.getElementById("crm-modal-title").textContent = "Edit Contact";
+  crmPendingAvatar = null;
+  crmPendingCard = null;
+  crmRemoveCard = false;
+  crmExistingAvatarUrl = c.profileImageUrl || "";
+  crmExistingCardUrl = c.businessCardUrl || "";
+
   document.getElementById("crm-modal-id").value = c.id;
   document.getElementById("crm-modal-name").value = c.name || "";
   document.getElementById("crm-modal-type").value = c.type || "Vendor";
@@ -3648,6 +4562,20 @@ function openCrmEditModal(contactId) {
   document.getElementById("crm-modal-lastcontact").value = c.lastContactDate || "";
   document.getElementById("crm-modal-notes").value = c.notes || "";
   document.getElementById("crm-modal-delete-btn").style.display = "inline-block";
+
+  // Avatar
+  updateCrmAvatar(c.name, crmExistingAvatarUrl || undefined);
+
+  // Business card preview
+  if (crmExistingCardUrl) {
+    document.getElementById("crm-card-preview-img").src = crmExistingCardUrl;
+    document.getElementById("crm-card-preview").classList.add("visible");
+    document.getElementById("crm-card-upload-label").style.display = "none";
+    document.getElementById("crm-card-upload").classList.add("has-preview");
+  } else {
+    resetCrmCardPreview();
+  }
+
   document.getElementById("crm-modal-overlay").classList.add("open");
   setTimeout(function() { document.getElementById("crm-modal-name").focus(); }, 50);
 }
@@ -3679,34 +4607,68 @@ function saveCrmContact() {
   closeCrmModal();
   setCrmSyncStatus("Saving\u2026");
 
-  if (id) {
-    contact.id = id;
-    crmContacts = crmContacts.map(function(c) {
-      return c.id === id ? Object.assign({}, c, contact) : c;
+  // Upload pending files sequentially, then save contact
+  var uploadAvatar = function(cb) {
+    if (crmPendingAvatar) {
+      var fname = "avatar-" + contact.name.replace(/\s+/g, "-").toLowerCase() + "-" + Date.now() + ".jpg";
+      uploadCrmFile(crmPendingAvatar.base64, crmPendingAvatar.mimeType, fname, function(url) {
+        if (url) contact.profileImageUrl = url;
+        cb();
+      });
+    } else {
+      if (crmExistingAvatarUrl) contact.profileImageUrl = crmExistingAvatarUrl;
+      cb();
+    }
+  };
+
+  var uploadCard = function(cb) {
+    if (crmPendingCard) {
+      var fname = "card-" + contact.name.replace(/\s+/g, "-").toLowerCase() + "-" + Date.now() + ".jpg";
+      uploadCrmFile(crmPendingCard.base64, crmPendingCard.mimeType, fname, function(url) {
+        if (url) contact.businessCardUrl = url;
+        cb();
+      });
+    } else if (crmRemoveCard) {
+      contact.businessCardUrl = "";
+      cb();
+    } else {
+      if (crmExistingCardUrl) contact.businessCardUrl = crmExistingCardUrl;
+      cb();
+    }
+  };
+
+  uploadAvatar(function() {
+    uploadCard(function() {
+      if (id) {
+        contact.id = id;
+        crmContacts = crmContacts.map(function(c) {
+          return c.id === id ? Object.assign({}, c, contact) : c;
+        });
+        renderCrmActiveView();
+        renderHomeCrmStats();
+        crmApiPost({ action: "update", contact: contact })
+          .then(function() { setCrmSyncStatus("Saved"); fetchCrmContacts(); })
+          .catch(function() { setCrmSyncStatus("Save failed"); fetchCrmContacts(); });
+      } else {
+        var tempId = "temp-" + Date.now();
+        contact.id = tempId;
+        crmContacts.push(contact);
+        renderCrmActiveView();
+        renderHomeCrmStats();
+        crmApiPost({ action: "create", contact: contact })
+          .then(function(data) {
+            setCrmSyncStatus("Contact created");
+            if (data.contact) {
+              crmContacts = crmContacts.map(function(c) {
+                return c.id === tempId ? data.contact : c;
+              });
+              renderCrmActiveView();
+            }
+          })
+          .catch(function() { setCrmSyncStatus("Create failed"); fetchCrmContacts(); });
+      }
     });
-    renderCrmActiveView();
-    renderHomeCrmStats();
-    crmApiPost({ action: "update", contact: contact })
-      .then(function() { setCrmSyncStatus("Saved"); fetchCrmContacts(); })
-      .catch(function() { setCrmSyncStatus("Save failed"); fetchCrmContacts(); });
-  } else {
-    var tempId = "temp-" + Date.now();
-    contact.id = tempId;
-    crmContacts.push(contact);
-    renderCrmActiveView();
-    renderHomeCrmStats();
-    crmApiPost({ action: "create", contact: contact })
-      .then(function(data) {
-        setCrmSyncStatus("Contact created");
-        if (data.contact) {
-          crmContacts = crmContacts.map(function(c) {
-            return c.id === tempId ? data.contact : c;
-          });
-          renderCrmActiveView();
-        }
-      })
-      .catch(function() { setCrmSyncStatus("Create failed"); fetchCrmContacts(); });
-  }
+  });
 }
 
 function deleteCrmContactConfirm() {
@@ -4677,7 +5639,20 @@ function showApp(user) {
     document.getElementById("user-avatar").style.display = "none";
   }
   document.getElementById("user-name").textContent = user.displayName || user.email;
+  // Restore tab from URL hash
+  restoreTabFromHash();
 }
+
+function restoreTabFromHash() {
+  var hash = location.hash.replace("#", "");
+  if (hash && document.getElementById(hash)) {
+    navigateTo(hash);
+  }
+}
+
+window.addEventListener("hashchange", function() {
+  restoreTabFromHash();
+});
 
 function showLogin() {
   document.getElementById("login-screen").style.display = "";
