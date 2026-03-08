@@ -79,7 +79,8 @@ function createRow(sheetName, item) {
   var headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
   var row = headers.map(function(h) {
     if (h === "id") return id;
-    if (h === "createdAt" || h === "updatedAt") return now;
+    if (h === "createdAt") return item[h] || now;
+    if (h === "updatedAt") return now;
     return item[h] || "";
   });
   sheet.appendRow(row);
@@ -93,9 +94,9 @@ function updateRow(sheetName, item) {
   var headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
   var existing = sheet.getRange(rowNum, 1, 1, headers.length).getValues()[0];
   var obj = rowToObj(headers, existing);
-  // Merge provided fields
+  // Merge provided fields (createdAt is only updated if explicitly provided)
   Object.keys(item).forEach(function (k) {
-    if (k !== "createdAt") obj[k] = item[k];
+    obj[k] = item[k];
   });
   obj.updatedAt = new Date().toISOString();
   var newRow = headers.map(function (h) { return obj[h] || ""; });

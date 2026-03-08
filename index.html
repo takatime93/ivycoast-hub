@@ -1541,7 +1541,7 @@ body { font-family: 'Roboto', sans-serif; background: #fff; color: #202124; line
       </select>
       <div class="sync-indicator">
         <span id="crm-sync-status"></span>
-        <button onclick="fetchCrmContacts()">Refresh</button>
+        <button onclick="fetchCrmContacts(true)">Refresh</button>
       </div>
     </div>
 
@@ -2369,6 +2369,8 @@ document.querySelectorAll(".doc-table th").forEach(function(th) {
 // ===================== BOARD =====================
 
 var SCRIPT_URL = localStorage.getItem("boardScriptUrl") || "https://script.google.com/macros/s/AKfycbwC0gPe5EQRbk6ld99DMMg5UgmfjTrqE0UpRnBJqLRtqHWfHb_M4DSxt5ZWlg8KOrj2Dw/exec";
+var CACHE_TTL = 60000; // 60 seconds — skip re-fetch if data is fresher than this
+var lastFetched = { board: 0, crm: 0, products: 0, orders: 0, customers: 0 };
 var boardTasks = [];
 var boardRefreshTimer = null;
 var isMobile = window.matchMedia("(max-width: 600px)").matches;
@@ -2504,14 +2506,16 @@ function showLastSynced() {
 }
 
 // Fetch tasks from API
-function fetchBoardTasks() {
+function fetchBoardTasks(force) {
   if (!SCRIPT_URL) { checkBoardSetup(); return; }
+  if (!force && boardTasks.length > 0 && Date.now() - lastFetched.board < CACHE_TTL) { renderBoard(); return; }
   setSyncStatus("Syncing\u2026");
   document.getElementById("board-loading").style.display = boardTasks.length === 0 ? "block" : "none";
   fetch(SCRIPT_URL + "?action=list&sheet=Tasks")
     .then(function(r) { return r.json(); })
     .then(function(data) {
       boardTasks = data.tasks || [];
+      lastFetched.board = Date.now();
       renderBoard();
       renderHomeActiveTasks();
       renderHomeKeyStats();
@@ -2899,23 +2903,15 @@ function stopBoardRefresh() {
 // Hook into tab switching (Board + CRM + Products + Orders coordination)
 document.querySelectorAll(".tab").forEach(function(tab) {
   tab.addEventListener("click", function() {
-    stopBoardRefresh();
-    if (typeof stopCrmRefresh === "function") stopCrmRefresh();
-    if (typeof stopProductsRefresh === "function") stopProductsRefresh();
-    if (typeof stopOrdersRefresh === "function") stopOrdersRefresh();
     if (tab.dataset.view === "board") {
       checkBoardSetup();
       fetchBoardTasks();
-      startBoardRefresh();
     } else if (tab.dataset.view === "crm") {
       if (typeof fetchCrmContacts === "function") fetchCrmContacts();
-      if (typeof startCrmRefresh === "function") startCrmRefresh();
     } else if (tab.dataset.view === "products") {
       if (typeof fetchShopifyProducts === "function") fetchShopifyProducts();
-      if (typeof startProductsRefresh === "function") startProductsRefresh();
     } else if (tab.dataset.view === "orders") {
       if (typeof fetchShopifyOrders === "function") fetchShopifyOrders();
-      if (typeof startOrdersRefresh === "function") startOrdersRefresh();
     } else if (tab.dataset.view === "customers") {
       if (typeof fetchCustomers === "function") fetchCustomers();
     }
@@ -3005,25 +3001,16 @@ function navigateTo(viewId, searchQuery, statusFilter) {
     tab.setAttribute("aria-selected", "true");
   }
   document.getElementById(viewId).classList.add("active");
-  // Stop all auto-refresh timers
-  stopBoardRefresh();
-  if (typeof stopCrmRefresh === "function") stopCrmRefresh();
-  if (typeof stopProductsRefresh === "function") stopProductsRefresh();
-  if (typeof stopOrdersRefresh === "function") stopOrdersRefresh();
-  // Trigger fetch/refresh for target tab
+  // Trigger fetch for target tab (cache prevents unnecessary network calls)
   if (viewId === "board") {
     checkBoardSetup();
     fetchBoardTasks();
-    startBoardRefresh();
   } else if (viewId === "crm") {
     if (typeof fetchCrmContacts === "function") fetchCrmContacts();
-    if (typeof startCrmRefresh === "function") startCrmRefresh();
   } else if (viewId === "products") {
     if (typeof fetchShopifyProducts === "function") fetchShopifyProducts();
-    if (typeof startProductsRefresh === "function") startProductsRefresh();
   } else if (viewId === "orders") {
     if (typeof fetchShopifyOrders === "function") fetchShopifyOrders();
-    if (typeof startOrdersRefresh === "function") startOrdersRefresh();
   } else if (viewId === "customers") {
     if (typeof fetchCustomers === "function") fetchCustomers();
   }
@@ -3303,13 +3290,15 @@ function crmApiPost(body) {
   }).then(function(r) { return r.json(); });
 }
 
-function fetchCrmContacts() {
+function fetchCrmContacts(force) {
   if (!SCRIPT_URL) return;
+  if (!force && crmContacts.length > 0 && Date.now() - lastFetched.crm < CACHE_TTL) { renderCrmActiveView(); return; }
   setCrmSyncStatus("Syncing\u2026");
   fetch(SCRIPT_URL + "?action=list&sheet=Contacts")
     .then(function(r) { return r.json(); })
     .then(function(data) {
       crmContacts = data.contacts || [];
+      lastFetched.crm = Date.now();
       renderCrmActiveView();
       renderHomeCrmStats();
       showCrmLastSynced();
@@ -3818,12 +3807,14 @@ function customersApiPost(body) {
   }).then(function(r) { return r.json(); });
 }
 
-function fetchCustomers() {
+function fetchCustomers(force) {
   if (!SCRIPT_URL) return;
+  if (!force && shopifyCustomers.length > 0 && Date.now() - lastFetched.customers < CACHE_TTL) { renderCrmCustomers(); return; }
   fetch(SCRIPT_URL + "?action=list&sheet=Customers")
     .then(function(r) { return r.json(); })
     .then(function(data) {
       shopifyCustomers = data.customers || [];
+      lastFetched.customers = Date.now();
       var customersView = document.getElementById("customers");
       if (customersView && customersView.classList.contains("active")) renderCrmCustomers();
       renderHomeCrmStats();
@@ -4084,13 +4075,15 @@ function productsApiPost(body) {
   }).then(function(r) { return r.json(); });
 }
 
-function fetchShopifyProducts() {
+function fetchShopifyProducts(force) {
   if (!SCRIPT_URL) return;
+  if (!force && shopifyProducts.length > 0 && Date.now() - lastFetched.products < CACHE_TTL) { renderProducts(); return; }
   setProductsSyncStatus("Loading\u2026");
   fetch(SCRIPT_URL + "?action=list&sheet=Products")
     .then(function(r) { return r.json(); })
     .then(function(data) {
       shopifyProducts = data.products || [];
+      lastFetched.products = Date.now();
       renderProducts();
       renderHomeShopifyStats();
       showProductsLastSynced();
@@ -4327,13 +4320,15 @@ function showOrdersLastSynced() {
   setOrdersSyncStatus("Last synced " + hhmm);
 }
 
-function fetchShopifyOrders() {
+function fetchShopifyOrders(force) {
   if (!SCRIPT_URL) return;
+  if (!force && shopifyOrders.length > 0 && Date.now() - lastFetched.orders < CACHE_TTL) { renderOrders(); return; }
   setOrdersSyncStatus("Loading\u2026");
   fetch(SCRIPT_URL + "?action=list&sheet=Orders")
     .then(function(r) { return r.json(); })
     .then(function(data) {
       shopifyOrders = data.orders || [];
+      lastFetched.orders = Date.now();
       renderOrders();
       renderHomeShopifyStats();
       showOrdersLastSynced();
@@ -4582,6 +4577,16 @@ if (SCRIPT_URL) {
     })
     .catch(function() {});
 }
+
+// ── Background auto-sync (all data, every 2 minutes) ─────────
+setInterval(function() {
+  if (!SCRIPT_URL || document.hidden) return;
+  fetchBoardTasks(true);
+  fetchCrmContacts(true);
+  fetchCustomers(true);
+  fetchShopifyProducts(true);
+  fetchShopifyOrders(true);
+}, 120000);
 </script>
 
 </div><!-- /app-container -->
