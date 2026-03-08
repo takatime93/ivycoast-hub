@@ -747,6 +747,138 @@ body { font-family: 'Roboto', sans-serif; background: #fff; color: #202124; line
 .crm-type-contact { background: #e8eaed; color: #5f6368; }
 .crm-type-partner { background: #e6f4ea; color: #137333; }
 
+/* Products */
+.product-img {
+  width: 40px;
+  height: 40px;
+  border-radius: 6px;
+  object-fit: cover;
+  vertical-align: middle;
+}
+.product-img-placeholder {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 6px;
+  background: #f1f3f4;
+  color: #9aa0a6;
+  font-size: 16px;
+  vertical-align: middle;
+}
+.stock-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+}
+.stock-ok { background: #e6f4ea; color: #137333; }
+.stock-low { background: #fef7e0; color: #b06000; }
+.stock-out { background: #fce8e6; color: #c5221f; }
+.stock-edit-input {
+  width: 60px;
+  padding: 4px 8px;
+  border: 1px solid #1a73e8;
+  border-radius: 4px;
+  font-size: 13px;
+  font-family: inherit;
+  text-align: center;
+}
+.stock-save-btn {
+  padding: 4px 10px;
+  background: #1a73e8;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+  margin-left: 4px;
+}
+.stock-save-btn:hover { background: #1557b0; }
+.status-badge-active { background: #e6f4ea; color: #137333; }
+.status-badge-draft { background: #e8eaed; color: #5f6368; }
+.status-badge-archived { background: #fce8e6; color: #c5221f; }
+
+/* Orders */
+.fin-badge, .ful-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: capitalize;
+}
+.fin-paid { background: #e6f4ea; color: #137333; }
+.fin-pending { background: #fef7e0; color: #b06000; }
+.fin-refunded { background: #e8eaed; color: #5f6368; }
+.fin-authorized { background: #e8f0fe; color: #1a73e8; }
+.fin-voided { background: #fce8e6; color: #c5221f; }
+.ful-fulfilled { background: #e6f4ea; color: #137333; }
+.ful-unfulfilled { background: #fef7e0; color: #b06000; }
+.ful-partial { background: #e8f0fe; color: #1a73e8; }
+
+/* Order detail modal */
+.order-detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.order-detail-field label {
+  font-size: 12px;
+  color: #5f6368;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 2px;
+}
+.order-detail-field p {
+  font-size: 14px;
+  color: #202124;
+  margin-top: 2px;
+}
+.order-items-list {
+  border-top: 1px solid #e0e0e0;
+  padding-top: 12px;
+  margin-top: 8px;
+}
+.order-item-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 0;
+  font-size: 14px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+/* Products & Orders tables */
+.products-table, .orders-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+.products-table th, .orders-table th {
+  text-align: left;
+  padding: 10px 12px;
+  border-bottom: 2px solid #e0e0e0;
+  font-weight: 500;
+  color: #5f6368;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+.products-table td, .orders-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid #f0f0f0;
+  vertical-align: middle;
+}
+.products-table tr:hover td, .orders-table tr:hover td { background: #f8f9fa; }
+.orders-table tr { cursor: pointer; }
+
 /* Responsive */
 @media (max-width: 600px) {
   .header { padding: 16px 16px 0; }
@@ -785,6 +917,11 @@ body { font-family: 'Roboto', sans-serif; background: #fff; color: #202124; line
   .crm-kanban .kanban-col { scroll-snap-align: start; }
   .crm-table { font-size: 13px; }
   .crm-table th, .crm-table td { padding: 8px 6px; }
+  .products-table { font-size: 13px; }
+  .products-table th, .products-table td { padding: 8px 6px; }
+  .orders-table { font-size: 13px; }
+  .orders-table th, .orders-table td { padding: 8px 6px; }
+  .order-detail-grid { grid-template-columns: 1fr; }
 }
 
 /* Login Screen */
@@ -1034,7 +1171,7 @@ body { font-family: 'Roboto', sans-serif; background: #fff; color: #202124; line
         <img src="icons/logo.png" alt="Ivycoast" style="height:32px">
       </div>
       <div class="global-search">
-        <input type="text" id="global-search" placeholder="Search documents, tasks & contacts..." autocomplete="off">
+        <input type="text" id="global-search" placeholder="Search documents, tasks, contacts, products & orders..." autocomplete="off">
         <div id="search-results" class="search-results"></div>
       </div>
       <div class="header-user">
@@ -1050,6 +1187,8 @@ body { font-family: 'Roboto', sans-serif; background: #fff; color: #202124; line
       <button class="tab" data-view="library" role="tab" aria-selected="false" aria-controls="library" id="tab-library">Document Library</button>
       <button class="tab" data-view="board" role="tab" aria-selected="false" aria-controls="board" id="tab-board">Board</button>
       <button class="tab" data-view="crm" role="tab" aria-selected="false" aria-controls="crm" id="tab-crm">CRM</button>
+      <button class="tab" data-view="products" role="tab" aria-selected="false" aria-controls="products" id="tab-products">Products</button>
+      <button class="tab" data-view="orders" role="tab" aria-selected="false" aria-controls="orders" id="tab-orders">Orders</button>
     </nav>
   </div>
 </div>
@@ -1107,6 +1246,11 @@ body { font-family: 'Roboto', sans-serif; background: #fff; color: #202124; line
         <div class="info-card" id="home-crm-pipeline">
           <h3>CRM Pipeline</h3>
           <div class="stat-grid" id="home-crm-stats"></div>
+        </div>
+
+        <div class="info-card" id="home-shopify-stats">
+          <h3>Shopify</h3>
+          <div class="stat-grid" id="home-shopify-stats-grid"></div>
         </div>
 
         <div class="info-card">
@@ -1298,6 +1442,102 @@ body { font-family: 'Roboto', sans-serif; background: #fff; color: #202124; line
           <div class="kanban-col-body" id="crm-col-inactive"></div>
         </div>
       </div>
+    </div>
+  </div>
+
+  <!-- PRODUCTS -->
+  <div id="products" class="view" role="tabpanel" aria-labelledby="tab-products">
+    <h2 class="section-title">Products</h2>
+    <p class="section-subtitle">Shopify inventory — synced via Google Sheets</p>
+
+    <div class="board-toolbar" id="products-toolbar">
+      <select class="filter-select" id="products-filter-status" onchange="renderProducts()">
+        <option value="">All Statuses</option>
+        <option value="active">Active</option>
+        <option value="draft">Draft</option>
+        <option value="archived">Archived</option>
+      </select>
+      <select class="filter-select" id="products-filter-type" onchange="renderProducts()">
+        <option value="">All Types</option>
+      </select>
+      <input type="text" class="search-input" id="products-search" placeholder="Search products..." style="max-width:240px" oninput="renderProducts()">
+      <div class="sync-indicator">
+        <span id="products-sync-status"></span>
+        <button onclick="syncShopifyProductsFromHub()">Sync Now</button>
+      </div>
+    </div>
+
+    <table class="products-table">
+      <thead>
+        <tr>
+          <th></th>
+          <th>Product</th>
+          <th>SKU</th>
+          <th>Price</th>
+          <th>Stock</th>
+          <th>Status</th>
+          <th>Type</th>
+        </tr>
+      </thead>
+      <tbody id="products-body"></tbody>
+    </table>
+    <div class="no-results" id="products-no-results" style="display:none">No products found.</div>
+  </div>
+
+  <!-- ORDERS -->
+  <div id="orders" class="view" role="tabpanel" aria-labelledby="tab-orders">
+    <h2 class="section-title">Orders</h2>
+    <p class="section-subtitle">Shopify orders (last 30 days) — synced via Google Sheets</p>
+
+    <div class="board-toolbar" id="orders-toolbar">
+      <select class="filter-select" id="orders-filter-payment" onchange="renderOrders()">
+        <option value="">All Payments</option>
+        <option value="paid">Paid</option>
+        <option value="pending">Pending</option>
+        <option value="refunded">Refunded</option>
+        <option value="authorized">Authorized</option>
+        <option value="voided">Voided</option>
+      </select>
+      <select class="filter-select" id="orders-filter-fulfillment" onchange="renderOrders()">
+        <option value="">All Fulfillment</option>
+        <option value="fulfilled">Fulfilled</option>
+        <option value="unfulfilled">Unfulfilled</option>
+        <option value="partial">Partial</option>
+      </select>
+      <input type="text" class="search-input" id="orders-search" placeholder="Search orders..." style="max-width:240px" oninput="renderOrders()">
+      <div class="sync-indicator">
+        <span id="orders-sync-status"></span>
+        <button onclick="syncShopifyOrdersFromHub()">Sync Now</button>
+      </div>
+    </div>
+
+    <table class="orders-table">
+      <thead>
+        <tr>
+          <th>Order #</th>
+          <th>Date</th>
+          <th>Customer</th>
+          <th>Items</th>
+          <th>Total</th>
+          <th>Payment</th>
+          <th>Fulfillment</th>
+        </tr>
+      </thead>
+      <tbody id="orders-body"></tbody>
+    </table>
+    <div class="no-results" id="orders-no-results" style="display:none">No orders found.</div>
+  </div>
+
+</div>
+
+<!-- Order Detail Modal -->
+<div class="board-modal-overlay" id="order-detail-overlay" onclick="if(event.target===this)closeOrderDetailModal()">
+  <div class="board-modal" style="width:560px">
+    <h2 id="order-detail-title">Order Details</h2>
+    <div class="order-detail-grid" id="order-detail-grid"></div>
+    <div class="order-items-list" id="order-detail-items"></div>
+    <div class="board-modal-actions" style="margin-top:20px">
+      <button onclick="closeOrderDetailModal()">Close</button>
     </div>
   </div>
 </div>
@@ -2046,7 +2286,7 @@ function fetchBoardTasks() {
   if (!SCRIPT_URL) { checkBoardSetup(); return; }
   setSyncStatus("Syncing\u2026");
   document.getElementById("board-loading").style.display = boardTasks.length === 0 ? "block" : "none";
-  fetch(SCRIPT_URL + "?action=list")
+  fetch(SCRIPT_URL + "?action=list&sheet=Tasks")
     .then(function(r) { return r.json(); })
     .then(function(data) {
       boardTasks = data.tasks || [];
@@ -2434,11 +2674,13 @@ function stopBoardRefresh() {
   if (boardRefreshTimer) { clearInterval(boardRefreshTimer); boardRefreshTimer = null; }
 }
 
-// Hook into tab switching (Board + CRM coordination)
+// Hook into tab switching (Board + CRM + Products + Orders coordination)
 document.querySelectorAll(".tab").forEach(function(tab) {
   tab.addEventListener("click", function() {
     stopBoardRefresh();
     if (typeof stopCrmRefresh === "function") stopCrmRefresh();
+    if (typeof stopProductsRefresh === "function") stopProductsRefresh();
+    if (typeof stopOrdersRefresh === "function") stopOrdersRefresh();
     if (tab.dataset.view === "board") {
       checkBoardSetup();
       fetchBoardTasks();
@@ -2446,6 +2688,12 @@ document.querySelectorAll(".tab").forEach(function(tab) {
     } else if (tab.dataset.view === "crm") {
       if (typeof fetchCrmContacts === "function") fetchCrmContacts();
       if (typeof startCrmRefresh === "function") startCrmRefresh();
+    } else if (tab.dataset.view === "products") {
+      if (typeof fetchShopifyProducts === "function") fetchShopifyProducts();
+      if (typeof startProductsRefresh === "function") startProductsRefresh();
+    } else if (tab.dataset.view === "orders") {
+      if (typeof fetchShopifyOrders === "function") fetchShopifyOrders();
+      if (typeof startOrdersRefresh === "function") startOrdersRefresh();
     }
   });
 });
@@ -2460,6 +2708,7 @@ document.addEventListener("keydown", function(e) {
   if (e.key === "Escape") {
     closeModal();
     closeStatusPicker();
+    if (typeof closeOrderDetailModal === "function") closeOrderDetailModal();
   }
   // "/" focuses search on Library tab
   if (e.key === "/" && document.activeElement.tagName !== "INPUT" && document.activeElement.tagName !== "TEXTAREA") {
@@ -2494,11 +2743,27 @@ document.getElementById("task-modal-overlay").addEventListener("keydown", functi
 document.addEventListener("visibilitychange", function() {
   if (document.hidden) {
     stopBoardRefresh();
+    if (typeof stopProductsRefresh === "function") stopProductsRefresh();
+    if (typeof stopOrdersRefresh === "function") stopOrdersRefresh();
   } else {
     var boardView = document.getElementById("board");
     if (boardView.classList.contains("active")) {
       fetchBoardTasks();
       startBoardRefresh();
+    }
+    if (typeof fetchShopifyProducts === "function") {
+      var productsView = document.getElementById("products");
+      if (productsView && productsView.classList.contains("active")) {
+        fetchShopifyProducts();
+        startProductsRefresh();
+      }
+    }
+    if (typeof fetchShopifyOrders === "function") {
+      var ordersView = document.getElementById("orders");
+      if (ordersView && ordersView.classList.contains("active")) {
+        fetchShopifyOrders();
+        startOrdersRefresh();
+      }
     }
   }
 });
@@ -2519,6 +2784,8 @@ function navigateTo(viewId, searchQuery, statusFilter) {
   // Stop all auto-refresh timers
   stopBoardRefresh();
   if (typeof stopCrmRefresh === "function") stopCrmRefresh();
+  if (typeof stopProductsRefresh === "function") stopProductsRefresh();
+  if (typeof stopOrdersRefresh === "function") stopOrdersRefresh();
   // Trigger fetch/refresh for target tab
   if (viewId === "board") {
     checkBoardSetup();
@@ -2527,6 +2794,12 @@ function navigateTo(viewId, searchQuery, statusFilter) {
   } else if (viewId === "crm") {
     if (typeof fetchCrmContacts === "function") fetchCrmContacts();
     if (typeof startCrmRefresh === "function") startCrmRefresh();
+  } else if (viewId === "products") {
+    if (typeof fetchShopifyProducts === "function") fetchShopifyProducts();
+    if (typeof startProductsRefresh === "function") startProductsRefresh();
+  } else if (viewId === "orders") {
+    if (typeof fetchShopifyOrders === "function") fetchShopifyOrders();
+    if (typeof startOrdersRefresh === "function") startOrdersRefresh();
   }
   if (viewId === "library" && searchQuery) {
     var si = document.getElementById("search-input");
@@ -2622,7 +2895,20 @@ globalSearchInput.addEventListener("input", function() {
            (c.email && c.email.toLowerCase().indexOf(q) !== -1);
   }).slice(0, 5);
 
-  if (docMatches.length === 0 && taskMatches.length === 0 && crmMatches.length === 0) {
+  var productMatches = (typeof shopifyProducts !== "undefined" ? shopifyProducts : []).filter(function(p) {
+    return (p.title && p.title.toLowerCase().indexOf(q) !== -1) ||
+           (p.sku && p.sku.toLowerCase().indexOf(q) !== -1) ||
+           (p.vendor && p.vendor.toLowerCase().indexOf(q) !== -1) ||
+           (p.variantTitle && p.variantTitle.toLowerCase().indexOf(q) !== -1);
+  }).slice(0, 5);
+
+  var orderMatches = (typeof shopifyOrders !== "undefined" ? shopifyOrders : []).filter(function(o) {
+    return (o.orderNumber && String(o.orderNumber).indexOf(q) !== -1) ||
+           (o.customerName && o.customerName.toLowerCase().indexOf(q) !== -1) ||
+           (o.email && o.email.toLowerCase().indexOf(q) !== -1);
+  }).slice(0, 5);
+
+  if (docMatches.length === 0 && taskMatches.length === 0 && crmMatches.length === 0 && productMatches.length === 0 && orderMatches.length === 0) {
     var noRes = document.createElement("div");
     noRes.className = "search-no-results";
     noRes.textContent = "No results found";
@@ -2663,6 +2949,28 @@ globalSearchInput.addEventListener("input", function() {
     });
   }
 
+  if (productMatches.length > 0) {
+    var label4 = document.createElement("div");
+    label4.className = "search-group-label";
+    label4.textContent = "Products";
+    searchResultsEl.appendChild(label4);
+    productMatches.forEach(function(p) {
+      var name = p.title + (p.variantTitle ? " \u2014 " + p.variantTitle : "");
+      searchResultsEl.appendChild(createSearchItem(name, p.sku || "Product", "", "product", p.id));
+    });
+  }
+
+  if (orderMatches.length > 0) {
+    var label5 = document.createElement("div");
+    label5.className = "search-group-label";
+    label5.textContent = "Orders";
+    searchResultsEl.appendChild(label5);
+    orderMatches.forEach(function(o) {
+      var name = "#" + (o.orderNumber || o.shopifyOrderId) + " \u2014 " + (o.customerName || o.email || "");
+      searchResultsEl.appendChild(createSearchItem(name, o.financialStatus || "Order", "", "order", o.id));
+    });
+  }
+
   searchResultsEl.classList.add("active");
 });
 
@@ -2678,6 +2986,10 @@ searchResultsEl.addEventListener("click", function(e) {
     navigateTo("board");
   } else if (item.dataset.action === "crm") {
     navigateTo("crm");
+  } else if (item.dataset.action === "product") {
+    navigateTo("products");
+  } else if (item.dataset.action === "order") {
+    navigateTo("orders");
   }
   globalSearchInput.value = "";
   searchResultsEl.classList.remove("active");
@@ -3229,7 +3541,7 @@ document.addEventListener("visibilitychange", function() {
     stopCrmRefresh();
   } else {
     var crmView = document.getElementById("crm");
-    if (crmView.classList.contains("active")) {
+    if (crmView && crmView.classList.contains("active")) {
       fetchCrmContacts();
       startCrmRefresh();
     }
@@ -3245,6 +3557,519 @@ if (SCRIPT_URL) {
       renderHomeCrmStats();
     })
     .catch(function() { /* silently fail on startup */ });
+}
+
+// ===================== PRODUCTS =====================
+
+var shopifyProducts = [];
+var productsRefreshTimer = null;
+
+function setProductsSyncStatus(msg) {
+  document.getElementById("products-sync-status").textContent = msg;
+}
+
+function showProductsLastSynced() {
+  var now = new Date();
+  var hhmm = String(now.getHours()).padStart(2,"0") + ":" + String(now.getMinutes()).padStart(2,"0");
+  setProductsSyncStatus("Last synced " + hhmm);
+}
+
+function productsApiPost(body) {
+  return fetch(SCRIPT_URL, {
+    method: "POST",
+    headers: { "Content-Type": "text/plain" },
+    body: JSON.stringify(body)
+  }).then(function(r) { return r.json(); });
+}
+
+function fetchShopifyProducts() {
+  if (!SCRIPT_URL) return;
+  setProductsSyncStatus("Loading\u2026");
+  fetch(SCRIPT_URL + "?action=list&sheet=Products")
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      shopifyProducts = data.products || [];
+      renderProducts();
+      renderHomeShopifyStats();
+      showProductsLastSynced();
+      populateProductTypeFilter();
+    })
+    .catch(function(err) {
+      setProductsSyncStatus("Load failed");
+      console.error("Products fetch error:", err);
+    });
+}
+
+function syncShopifyProductsFromHub() {
+  if (!SCRIPT_URL) return;
+  setProductsSyncStatus("Syncing from Shopify\u2026");
+  productsApiPost({ action: "syncProducts" })
+    .then(function(data) {
+      setProductsSyncStatus("Synced " + (data.synced || 0) + " products");
+      fetchShopifyProducts();
+    })
+    .catch(function(err) {
+      setProductsSyncStatus("Sync failed");
+      console.error("Products sync error:", err);
+    });
+}
+
+function populateProductTypeFilter() {
+  var sel = document.getElementById("products-filter-type");
+  var current = sel.value;
+  // Clear existing options beyond first
+  while (sel.options.length > 1) sel.remove(1);
+  var types = {};
+  shopifyProducts.forEach(function(p) {
+    if (p.productType) types[p.productType] = true;
+  });
+  Object.keys(types).sort().forEach(function(t) {
+    var opt = document.createElement("option");
+    opt.value = t;
+    opt.textContent = t;
+    sel.appendChild(opt);
+  });
+  sel.value = current;
+}
+
+function renderProducts() {
+  var statusFilter = document.getElementById("products-filter-status").value;
+  var typeFilter = document.getElementById("products-filter-type").value;
+  var query = document.getElementById("products-search").value.toLowerCase().trim();
+  var tbody = document.getElementById("products-body");
+  var noResults = document.getElementById("products-no-results");
+  tbody.textContent = "";
+
+  var filtered = shopifyProducts.filter(function(p) {
+    if (statusFilter && p.status !== statusFilter) return false;
+    if (typeFilter && p.productType !== typeFilter) return false;
+    if (query) {
+      var searchable = ((p.title || "") + " " + (p.variantTitle || "") + " " + (p.sku || "") + " " + (p.vendor || "")).toLowerCase();
+      if (searchable.indexOf(query) === -1) return false;
+    }
+    return true;
+  });
+
+  if (filtered.length === 0) {
+    noResults.style.display = "block";
+    return;
+  }
+  noResults.style.display = "none";
+
+  filtered.forEach(function(p) {
+    var tr = document.createElement("tr");
+
+    // Image
+    var tdImg = document.createElement("td");
+    tdImg.style.width = "50px";
+    if (p.imageUrl) {
+      var img = document.createElement("img");
+      img.className = "product-img";
+      img.src = p.imageUrl;
+      img.alt = p.title;
+      img.loading = "lazy";
+      tdImg.appendChild(img);
+    } else {
+      var placeholder = document.createElement("span");
+      placeholder.className = "product-img-placeholder";
+      placeholder.textContent = "\uD83D\uDDBC";
+      tdImg.appendChild(placeholder);
+    }
+    tr.appendChild(tdImg);
+
+    // Product name + variant
+    var tdName = document.createElement("td");
+    var nameText = p.title || "";
+    if (p.variantTitle) nameText += " \u2014 " + p.variantTitle;
+    tdName.textContent = nameText;
+    tr.appendChild(tdName);
+
+    // SKU
+    var tdSku = document.createElement("td");
+    tdSku.textContent = p.sku || "\u2014";
+    tdSku.style.fontFamily = "monospace";
+    tdSku.style.fontSize = "13px";
+    tr.appendChild(tdSku);
+
+    // Price
+    var tdPrice = document.createElement("td");
+    var price = p.price ? "\u00A5" + Number(p.price).toLocaleString() : "\u2014";
+    tdPrice.textContent = price;
+    tr.appendChild(tdPrice);
+
+    // Stock (clickable for inline edit)
+    var tdStock = document.createElement("td");
+    var qty = parseInt(p.inventoryQuantity, 10) || 0;
+    var stockSpan = document.createElement("span");
+    stockSpan.className = "stock-badge " + (qty <= 0 ? "stock-out" : qty <= 5 ? "stock-low" : "stock-ok");
+    stockSpan.textContent = qty;
+    stockSpan.title = "Click to edit stock";
+    stockSpan.addEventListener("click", (function(product, cell) {
+      return function(e) {
+        e.stopPropagation();
+        openInlineStockEdit(product, cell);
+      };
+    })(p, tdStock));
+    tdStock.appendChild(stockSpan);
+    tr.appendChild(tdStock);
+
+    // Status
+    var tdStatus = document.createElement("td");
+    var statusBadge = document.createElement("span");
+    statusBadge.className = "badge status-badge-" + (p.status || "draft");
+    statusBadge.textContent = p.status || "draft";
+    tdStatus.appendChild(statusBadge);
+    tr.appendChild(tdStatus);
+
+    // Type
+    var tdType = document.createElement("td");
+    tdType.textContent = p.productType || "\u2014";
+    tr.appendChild(tdType);
+
+    tbody.appendChild(tr);
+  });
+}
+
+function openInlineStockEdit(product, cell) {
+  cell.textContent = "";
+  var input = document.createElement("input");
+  input.type = "number";
+  input.className = "stock-edit-input";
+  input.value = parseInt(product.inventoryQuantity, 10) || 0;
+  input.min = "0";
+
+  var saveBtn = document.createElement("button");
+  saveBtn.className = "stock-save-btn";
+  saveBtn.textContent = "Save";
+  saveBtn.addEventListener("click", function() {
+    saveStockUpdate(product, parseInt(input.value, 10) || 0);
+  });
+
+  input.addEventListener("keydown", function(e) {
+    if (e.key === "Enter") {
+      saveStockUpdate(product, parseInt(input.value, 10) || 0);
+    }
+    if (e.key === "Escape") {
+      renderProducts();
+    }
+  });
+
+  cell.appendChild(input);
+  cell.appendChild(saveBtn);
+  input.focus();
+  input.select();
+}
+
+function saveStockUpdate(product, newQty) {
+  if (!SCRIPT_URL) return;
+  if (!product.inventoryItemId || !product.locationId) {
+    alert("Cannot update stock: missing inventory item or location ID. Please sync products first.");
+    renderProducts();
+    return;
+  }
+  setProductsSyncStatus("Updating stock\u2026");
+  // Optimistic update
+  product.inventoryQuantity = String(newQty);
+  renderProducts();
+
+  productsApiPost({
+    action: "updateInventory",
+    inventoryItemId: product.inventoryItemId,
+    locationId: product.locationId,
+    quantity: newQty
+  })
+    .then(function(data) {
+      if (data.success) {
+        setProductsSyncStatus("Stock updated");
+        setTimeout(showProductsLastSynced, 2000);
+      } else {
+        setProductsSyncStatus("Update failed: " + (data.error || ""));
+        fetchShopifyProducts(); // Revert
+      }
+    })
+    .catch(function() {
+      setProductsSyncStatus("Update failed");
+      fetchShopifyProducts(); // Revert
+    });
+}
+
+function startProductsRefresh() {
+  stopProductsRefresh();
+  productsRefreshTimer = setInterval(fetchShopifyProducts, 60000);
+}
+
+function stopProductsRefresh() {
+  if (productsRefreshTimer) { clearInterval(productsRefreshTimer); productsRefreshTimer = null; }
+}
+
+// ===================== ORDERS =====================
+
+var shopifyOrders = [];
+var ordersRefreshTimer = null;
+
+function ordersApiPost(body) {
+  return fetch(SCRIPT_URL, {
+    method: "POST",
+    headers: { "Content-Type": "text/plain" },
+    body: JSON.stringify(body)
+  }).then(function(r) { return r.json(); });
+}
+
+function setOrdersSyncStatus(msg) {
+  document.getElementById("orders-sync-status").textContent = msg;
+}
+
+function showOrdersLastSynced() {
+  var now = new Date();
+  var hhmm = String(now.getHours()).padStart(2,"0") + ":" + String(now.getMinutes()).padStart(2,"0");
+  setOrdersSyncStatus("Last synced " + hhmm);
+}
+
+function fetchShopifyOrders() {
+  if (!SCRIPT_URL) return;
+  setOrdersSyncStatus("Loading\u2026");
+  fetch(SCRIPT_URL + "?action=list&sheet=Orders")
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      shopifyOrders = data.orders || [];
+      renderOrders();
+      renderHomeShopifyStats();
+      showOrdersLastSynced();
+    })
+    .catch(function(err) {
+      setOrdersSyncStatus("Load failed");
+      console.error("Orders fetch error:", err);
+    });
+}
+
+function syncShopifyOrdersFromHub() {
+  if (!SCRIPT_URL) return;
+  setOrdersSyncStatus("Syncing from Shopify\u2026");
+  ordersApiPost({ action: "syncOrders" })
+    .then(function(data) {
+      setOrdersSyncStatus("Synced " + (data.synced || 0) + " orders");
+      fetchShopifyOrders();
+    })
+    .catch(function(err) {
+      setOrdersSyncStatus("Sync failed");
+      console.error("Orders sync error:", err);
+    });
+}
+
+function renderOrders() {
+  var paymentFilter = document.getElementById("orders-filter-payment").value;
+  var fulfillmentFilter = document.getElementById("orders-filter-fulfillment").value;
+  var query = document.getElementById("orders-search").value.toLowerCase().trim();
+  var tbody = document.getElementById("orders-body");
+  var noResults = document.getElementById("orders-no-results");
+  tbody.textContent = "";
+
+  var filtered = shopifyOrders.filter(function(o) {
+    if (paymentFilter && o.financialStatus !== paymentFilter) return false;
+    if (fulfillmentFilter && o.fulfillmentStatus !== fulfillmentFilter) return false;
+    if (query) {
+      var searchable = ((o.orderNumber || "") + " " + (o.customerName || "") + " " + (o.email || "")).toLowerCase();
+      if (searchable.indexOf(query) === -1) return false;
+    }
+    return true;
+  });
+
+  // Sort newest first
+  filtered.sort(function(a, b) {
+    return (b.createdAt || "").localeCompare(a.createdAt || "");
+  });
+
+  if (filtered.length === 0) {
+    noResults.style.display = "block";
+    return;
+  }
+  noResults.style.display = "none";
+
+  filtered.forEach(function(o) {
+    var tr = document.createElement("tr");
+    tr.addEventListener("click", function() { openOrderDetailModal(o); });
+
+    // Order #
+    var tdNum = document.createElement("td");
+    tdNum.textContent = "#" + (o.orderNumber || o.shopifyOrderId || "\u2014");
+    tdNum.style.fontWeight = "500";
+    tr.appendChild(tdNum);
+
+    // Date
+    var tdDate = document.createElement("td");
+    if (o.createdAt) {
+      var d = new Date(o.createdAt);
+      tdDate.textContent = d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+    } else {
+      tdDate.textContent = "\u2014";
+    }
+    tr.appendChild(tdDate);
+
+    // Customer
+    var tdCustomer = document.createElement("td");
+    tdCustomer.textContent = o.customerName || o.email || "\u2014";
+    tr.appendChild(tdCustomer);
+
+    // Items (truncated)
+    var tdItems = document.createElement("td");
+    var itemsText = o.lineItems || "";
+    if (itemsText.length > 40) itemsText = itemsText.substring(0, 40) + "\u2026";
+    tdItems.textContent = itemsText || "\u2014";
+    tdItems.style.color = "#5f6368";
+    tdItems.style.fontSize = "13px";
+    tr.appendChild(tdItems);
+
+    // Total
+    var tdTotal = document.createElement("td");
+    var total = o.totalPrice ? "\u00A5" + Number(o.totalPrice).toLocaleString() : "\u2014";
+    tdTotal.textContent = total;
+    tdTotal.style.fontWeight = "500";
+    tr.appendChild(tdTotal);
+
+    // Payment badge
+    var tdPayment = document.createElement("td");
+    var finBadge = document.createElement("span");
+    finBadge.className = "fin-badge fin-" + (o.financialStatus || "pending");
+    finBadge.textContent = o.financialStatus || "pending";
+    tdPayment.appendChild(finBadge);
+    tr.appendChild(tdPayment);
+
+    // Fulfillment badge
+    var tdFulfill = document.createElement("td");
+    var fulBadge = document.createElement("span");
+    fulBadge.className = "ful-badge ful-" + (o.fulfillmentStatus || "unfulfilled");
+    fulBadge.textContent = (o.fulfillmentStatus || "unfulfilled").replace("_", " ");
+    tdFulfill.appendChild(fulBadge);
+    tr.appendChild(tdFulfill);
+
+    tbody.appendChild(tr);
+  });
+}
+
+function openOrderDetailModal(order) {
+  document.getElementById("order-detail-title").textContent = "Order #" + (order.orderNumber || order.shopifyOrderId || "");
+  var grid = document.getElementById("order-detail-grid");
+  grid.textContent = "";
+
+  var fields = [
+    { label: "Date", value: order.createdAt ? new Date(order.createdAt).toLocaleString() : "\u2014" },
+    { label: "Total", value: order.totalPrice ? "\u00A5" + Number(order.totalPrice).toLocaleString() + " " + (order.currency || "JPY") : "\u2014" },
+    { label: "Customer", value: order.customerName || "\u2014" },
+    { label: "Email", value: order.email || "\u2014" },
+    { label: "Payment", value: order.financialStatus || "\u2014" },
+    { label: "Fulfillment", value: (order.fulfillmentStatus || "unfulfilled").replace("_", " ") },
+    { label: "Shipping Address", value: order.shippingAddress || "\u2014" },
+    { label: "Note", value: order.note || "\u2014" }
+  ];
+
+  fields.forEach(function(f) {
+    var div = document.createElement("div");
+    div.className = "order-detail-field";
+    var lbl = document.createElement("label");
+    lbl.textContent = f.label;
+    var p = document.createElement("p");
+    p.textContent = f.value;
+    div.appendChild(lbl);
+    div.appendChild(p);
+    grid.appendChild(div);
+  });
+
+  // Line items
+  var itemsDiv = document.getElementById("order-detail-items");
+  itemsDiv.textContent = "";
+  if (order.lineItems) {
+    var lbl2 = document.createElement("label");
+    lbl2.textContent = "Items";
+    lbl2.style.cssText = "font-size:12px;color:#5f6368;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:8px";
+    itemsDiv.appendChild(lbl2);
+
+    order.lineItems.split(";").forEach(function(item) {
+      item = item.trim();
+      if (!item) return;
+      var row = document.createElement("div");
+      row.className = "order-item-row";
+      row.textContent = item;
+      itemsDiv.appendChild(row);
+    });
+  }
+
+  document.getElementById("order-detail-overlay").classList.add("open");
+}
+
+function closeOrderDetailModal() {
+  document.getElementById("order-detail-overlay").classList.remove("open");
+}
+
+function startOrdersRefresh() {
+  stopOrdersRefresh();
+  ordersRefreshTimer = setInterval(fetchShopifyOrders, 60000);
+}
+
+function stopOrdersRefresh() {
+  if (ordersRefreshTimer) { clearInterval(ordersRefreshTimer); ordersRefreshTimer = null; }
+}
+
+// ── Home Shopify Stats ────────────────────────────────────────
+
+function renderHomeShopifyStats() {
+  var grid = document.getElementById("home-shopify-stats-grid");
+  if (!grid) return;
+  grid.textContent = "";
+
+  var inStock = shopifyProducts.filter(function(p) {
+    return p.status === "active" && parseInt(p.inventoryQuantity, 10) > 5;
+  }).length;
+  var lowStock = shopifyProducts.filter(function(p) {
+    return p.status === "active" && parseInt(p.inventoryQuantity, 10) > 0 && parseInt(p.inventoryQuantity, 10) <= 5;
+  }).length;
+
+  // Orders today
+  var todayStr = new Date().toISOString().slice(0, 10);
+  var ordersToday = shopifyOrders.filter(function(o) {
+    return o.createdAt && o.createdAt.slice(0, 10) === todayStr;
+  }).length;
+
+  var stats = [
+    { num: inStock, label: "In Stock", color: "#34a853", action: "navigateTo('products')" },
+    { num: lowStock, label: "Low Stock", color: lowStock > 0 ? "#b06000" : "#5f6368", action: "navigateTo('products')" },
+    { num: ordersToday, label: "Orders Today", color: "#1a73e8", action: "navigateTo('orders')" }
+  ];
+  stats.forEach(function(s) {
+    var div = document.createElement("div");
+    div.className = "stat-link";
+    div.setAttribute("onclick", s.action);
+    div.title = "View " + s.label.toLowerCase();
+    var numDiv = document.createElement("div");
+    numDiv.className = "stat-num";
+    numDiv.style.color = s.color;
+    numDiv.textContent = s.num;
+    var labelDiv = document.createElement("div");
+    labelDiv.className = "stat-label";
+    labelDiv.textContent = s.label;
+    div.appendChild(numDiv);
+    div.appendChild(labelDiv);
+    grid.appendChild(div);
+  });
+}
+
+// ── Fetch Products + Orders on startup ────────────────────────
+if (SCRIPT_URL) {
+  fetch(SCRIPT_URL + "?action=list&sheet=Products")
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      shopifyProducts = data.products || [];
+      renderHomeShopifyStats();
+      populateProductTypeFilter();
+    })
+    .catch(function() {});
+
+  fetch(SCRIPT_URL + "?action=list&sheet=Orders")
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      shopifyOrders = data.orders || [];
+      renderHomeShopifyStats();
+    })
+    .catch(function() {});
 }
 </script>
 
