@@ -2786,8 +2786,8 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
           <label for="crm-modal-type">Type</label>
           <select id="crm-modal-type">
             <option value="Vendor">Vendor</option>
-            <option value="Contact">Contact</option>
-            <option value="Partner">Partner</option>
+            <option value="Business">Business</option>
+            <option value="Customer">Customer</option>
           </select>
         </div>
         <div class="crm-field">
@@ -2911,6 +2911,14 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
       <div>
         <label for="inv-modal-contact-name">Contact Name</label>
         <input type="text" id="inv-modal-contact-name" placeholder="Full name">
+      </div>
+      <div>
+        <label for="inv-modal-contact-type">Add to CRM as</label>
+        <select id="inv-modal-contact-type">
+          <option value="Vendor">Vendor</option>
+          <option value="Business">Business</option>
+          <option value="Customer">Customer</option>
+        </select>
       </div>
     </div>
     <div class="inv-field-row">
@@ -5944,6 +5952,7 @@ function setInvPricingType(type) {
   invPricingType = type;
   document.getElementById("inv-pricing-wholesale").classList.toggle("active", type === "wholesale");
   document.getElementById("inv-pricing-consignment").classList.toggle("active", type === "consignment");
+  if (invSplitActive) updateInvSplitPreview();
 }
 
 function openInvoiceCreateModal() {
@@ -5976,6 +5985,7 @@ function openInvoiceCreateModal() {
   addInvoiceLineItem();
   recalcInvoiceTotals();
   document.getElementById("inv-modal-overlay").classList.add("open");
+  if (!invSplitActive) toggleInvSplitPreview();
 }
 
 function openInvoiceEditModal(invId) {
@@ -6289,8 +6299,28 @@ function saveInvoice() {
 
   if (!invoice.invoiceNumber) { alert("Invoice number is required."); return; }
 
+  // Capture new contact type before modal closes
+  var isNewContact = !contactId && contactName;
+  var newContactType = isNewContact ? document.getElementById("inv-modal-contact-type").value : "";
+
   closeInvoiceModal();
   setInvSyncStatus("Saving\u2026");
+
+  // Auto-add new contact to CRM
+  if (isNewContact) {
+    var newContact = {
+      name: contactName,
+      type: newContactType,
+      company: invoice.contactCompany,
+      email: invoice.contactEmail,
+      workspace: invoice.workspace,
+      stage: "active_partner"
+    };
+    if (invPricingType === "wholesale" && invoice.pricingPercent) newContact.wholesalePercent = invoice.pricingPercent;
+    if (invPricingType === "consignment" && invoice.pricingPercent) newContact.consignmentPercent = invoice.pricingPercent;
+    crmApiPost({ action: "create", contact: newContact })
+      .then(function(data) { if (data.contact) crmContacts.push(data.contact); });
+  }
 
   if (id) {
     invoice.id = id;
