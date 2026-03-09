@@ -7,6 +7,7 @@
 //   "Products" — Shopify products cache (id prefix: prod-)
 //   "Orders"   — Shopify orders cache (id prefix: ord-)
 //   "Customers" — Customer profiles from orders (id prefix: cust-)
+//   "Invoices"  — Invoice records (id prefix: inv-)
 //
 // 1. Create a Google Sheet with sheets named "Tasks", "Contacts", "Products", "Orders"
 // 2. Tasks headers:    id | name | status | priority | assignee | due | workspace | category | description | docLink | createdAt | updatedAt
@@ -72,7 +73,7 @@ function nextId(sheet, prefix) {
 
 function createRow(sheetName, item) {
   var sheet = getSheet(sheetName);
-  var prefixMap = { "Contacts": "crm-", "Products": "prod-", "Orders": "ord-", "Customers": "cust-" };
+  var prefixMap = { "Contacts": "crm-", "Products": "prod-", "Orders": "ord-", "Customers": "cust-", "Invoices": "inv-" };
   var prefix = prefixMap[sheetName] || "ivy-";
   var now = new Date().toISOString();
   var id = nextId(sheet, prefix);
@@ -118,7 +119,7 @@ function doGet(e) {
   var action = (e.parameter && e.parameter.action) || "list";
   var sheetName = (e.parameter && e.parameter.sheet) || "Tasks";
   if (action === "list") {
-    var keyMap = { "Contacts": "contacts", "Products": "products", "Orders": "orders", "Customers": "customers" };
+    var keyMap = { "Contacts": "contacts", "Products": "products", "Orders": "orders", "Customers": "customers", "Invoices": "invoices" };
     var key = keyMap[sheetName] || "tasks";
     var result = {};
     result[key] = getAllRows(sheetName);
@@ -134,9 +135,9 @@ function doPost(e) {
 
   var action = body.action;
   var sheetName = body.sheet || "Tasks";
-  var itemKeyMap = { "Contacts": "contact", "Products": "product", "Orders": "order", "Customers": "customer" };
+  var itemKeyMap = { "Contacts": "contact", "Products": "product", "Orders": "order", "Customers": "customer", "Invoices": "invoice" };
   var itemKey = itemKeyMap[sheetName] || "task";
-  var item = body[itemKey] || body.task || body.contact || {};
+  var item = body[itemKey] || body.task || body.contact || body.invoice || {};
 
   if (action === "create") {
     var created = createRow(sheetName, item);
@@ -174,7 +175,45 @@ function doPost(e) {
     return jsonResponse({ success: true, synced: count3 });
   }
 
+  if (action === "uploadFile") {
+    var result4 = uploadFileToDrive(body.fileName, body.mimeType, body.base64Data);
+    return jsonResponse(result4);
+  }
+
   return jsonResponse({ error: "Unknown action" });
+}
+
+// ── Upload file to Google Drive ────────────────────────────────
+
+function uploadFileToDrive(fileName, mimeType, base64Data) {
+  if (!fileName || !mimeType || !base64Data) {
+    return { success: false, error: "Missing fileName, mimeType, or base64Data" };
+  }
+  try {
+    // Find or create folder
+    var folderName = "IvycoastHub-CRM";
+    var folders = DriveApp.getFoldersByName(folderName);
+    var folder;
+    if (folders.hasNext()) {
+      folder = folders.next();
+    } else {
+      folder = DriveApp.createFolder(folderName);
+    }
+
+    // Decode base64 and create file
+    var decoded = Utilities.base64Decode(base64Data);
+    var blob = Utilities.newBlob(decoded, mimeType, fileName);
+    var file = folder.createFile(blob);
+
+    // Set sharing to anyone with link can view
+    file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+
+    var fileId = file.getId();
+    var fileUrl = "https://drive.google.com/uc?id=" + fileId;
+    return { success: true, fileUrl: fileUrl, fileId: fileId };
+  } catch (e) {
+    return { success: false, error: e.message };
+  }
 }
 
 function jsonResponse(obj) {
