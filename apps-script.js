@@ -217,7 +217,7 @@ function uploadFileToDrive(fileName, mimeType, base64Data) {
     file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
 
     var fileId = file.getId();
-    var fileUrl = "https://drive.google.com/uc?id=" + fileId;
+    var fileUrl = "https://lh3.googleusercontent.com/d/" + fileId;
     return { success: true, fileUrl: fileUrl, fileId: fileId };
   } catch (e) {
     return { success: false, error: e.message };
