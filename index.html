@@ -1691,10 +1691,16 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
 .inv-prev-event { font-size: 12px; color: #5f6368; margin-bottom: 8px; }
 .inv-prev-addr { font-size: 12px; color: #5f6368; line-height: 1.7; white-space: pre-line; margin-bottom: 12px; }
 .inv-prev-poref { font-size: 12px; color: #5f6368; margin-bottom: 0; }
-.inv-prev-payment { margin-top: 40px; }
+.inv-prev-payment { margin-top: 64px; }
 .inv-prev-payment h4 { font-size: 12px; font-weight: 700; text-decoration: underline; margin: 0 0 10px 0; color: #202124; }
 .inv-prev-payment .inv-prev-bank { font-size: 11px; color: #202124; line-height: 1.8; margin: 0 0 12px 0; white-space: pre-line; }
 .inv-prev-payment .inv-prev-bank-note { font-size: 11px; color: #5f6368; line-height: 1.6; margin: 0; }
+/* Cost breakdown (consignment/wholesale) */
+.inv-prev-costbreak { margin-top: 32px; }
+.inv-prev-costbreak h4 { font-size: 13px; font-weight: 700; color: #0e413b; margin: 0 0 10px 0; }
+.inv-prev-costbreak .inv-prev-costbreak-desc { font-size: 11px; color: #5f6368; margin: 0 0 12px 0; line-height: 1.6; }
+.inv-prev-costbreak .inv-prev-costbreak-lines { font-size: 11px; color: #202124; line-height: 1.8; margin: 0 0 10px 0; white-space: pre-line; }
+.inv-prev-costbreak .inv-prev-costbreak-note { font-size: 11px; color: #5f6368; margin: 0; }
 /* Right column: items table + totals */
 .inv-prev-right {}
 .inv-prev-items { width: 100%; border-collapse: collapse; font-size: 13px; }
@@ -6128,6 +6134,42 @@ function buildInvoicePreview(data) {
   noteP.textContent = "Please make a direct deposit\nto the listed Mitsui Sumitomo\naccount on the left.";
   paySection.appendChild(noteP);
   left.appendChild(paySection);
+
+  // Cost breakdown section (consignment/wholesale only)
+  if (data.pricingType && data.pricingType !== "general" && data.pricingPercent) {
+    var costBreak = document.createElement("div");
+    costBreak.className = "inv-prev-costbreak";
+    var cbTitle = document.createElement("h4");
+    var pctNum = parseFloat(data.pricingPercent) || 0;
+    var splitLabel = data.pricingType === "consignment"
+      ? pctNum + "/" + (100 - pctNum) + " consignment split calculation."
+      : pctNum + "% wholesale pricing.";
+    cbTitle.textContent = (data.pricingType === "consignment" ? "Consignment" : "Wholesale") + " cost break";
+    costBreak.appendChild(cbTitle);
+    var cbDesc = document.createElement("p");
+    cbDesc.className = "inv-prev-costbreak-desc";
+    cbDesc.textContent = splitLabel;
+    costBreak.appendChild(cbDesc);
+    // Show per-item original -> discounted price
+    if (data.items && data.items.length) {
+      var lines = data.items.map(function(it) {
+        var origPrice = it.unitPrice || 0;
+        var finalPrice = it.amount && it.qty ? Math.round(it.amount / it.qty) : origPrice;
+        var name = (it.description || "").split(" — ")[0].split(" @ ")[0];
+        return name + ": \u00a5" + Number(origPrice).toLocaleString() + " -> \u00a5" + Number(finalPrice).toLocaleString();
+      }).join("\n");
+      var cbLines = document.createElement("p");
+      cbLines.className = "inv-prev-costbreak-lines";
+      cbLines.textContent = lines;
+      costBreak.appendChild(cbLines);
+    }
+    var cbNote = document.createElement("p");
+    cbNote.className = "inv-prev-costbreak-note";
+    cbNote.textContent = "Tax included in product cost";
+    costBreak.appendChild(cbNote);
+    left.appendChild(costBreak);
+  }
+
   body.appendChild(left);
 
   // Right column: items table + totals
@@ -6250,7 +6292,9 @@ function previewInvoice() {
     shipping: shipping,
     taxType: taxType,
     tax: tax,
-    total: total
+    total: total,
+    pricingType: invPricingType,
+    pricingPercent: document.getElementById("inv-modal-percent").value || ""
   });
 }
 
@@ -6273,7 +6317,9 @@ function previewInvoiceFromData(inv) {
     shipping: parseFloat(inv.shipping) || 0,
     taxType: inv.taxType || "included",
     tax: parseFloat(inv.tax) || 0,
-    total: parseFloat(inv.total) || 0
+    total: parseFloat(inv.total) || 0,
+    pricingType: inv.pricingType || "",
+    pricingPercent: inv.pricingPercent || ""
   });
 }
 
