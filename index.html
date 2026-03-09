@@ -1621,19 +1621,19 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
   background: rgba(0,0,0,0.5);
   z-index: 250;
   justify-content: center;
-  align-items: center;
+  align-items: flex-start;
   padding: 20px;
+  overflow-y: auto;
 }
 .inv-preview-overlay.open { display: flex; }
 .inv-preview-container {
   background: #fff;
   width: 210mm;
   max-width: 96vw;
-  max-height: 90vh;
-  overflow-y: auto;
   box-shadow: 0 8px 30px rgba(0,0,0,0.2);
   border-radius: 4px;
   position: relative;
+  flex-shrink: 0;
 }
 .inv-preview-actions {
   position: sticky;
@@ -1655,36 +1655,107 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
   cursor: pointer;
   background: #fff;
 }
+/* A4 page: 210mm x 297mm ratio */
 .inv-preview-page {
-  padding: 40px;
-  font-family: 'DM Sans', sans-serif;
+  position: relative;
+  width: 100%;
+  /* Enforce A4 aspect ratio: 297/210 ≈ 1.4143 */
+  aspect-ratio: 210 / 297;
+  padding: 48px 56px;
+  font-family: 'DM Sans', 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', sans-serif;
   color: #202124;
-  font-size: 14px;
+  font-size: 13px;
   line-height: 1.5;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
 }
-.inv-preview-page .inv-prev-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid #e0e0e0; }
-.inv-preview-page .inv-prev-brand { font-size: 28px; font-weight: 700; color: #0e413b; letter-spacing: 2px; }
-.inv-preview-page .inv-prev-invnum { font-size: 14px; color: #202124; text-align: right; }
-.inv-preview-page .inv-prev-date { font-size: 11px; color: #5f6368; text-align: right; margin-top: 2px; }
-.inv-preview-page .inv-prev-body { display: grid; grid-template-columns: 1fr 1.2fr; gap: 32px; }
-.inv-preview-page .inv-prev-billto h4 { font-size: 12px; color: #5f6368; text-transform: uppercase; margin: 0 0 8px 0; font-weight: 500; }
-.inv-preview-page .inv-prev-billto .inv-prev-company { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
-.inv-preview-page .inv-prev-billto .inv-prev-po { font-size: 11px; color: #5f6368; margin-bottom: 4px; }
-.inv-preview-page .inv-prev-billto .inv-prev-addr { font-size: 11px; color: #5f6368; line-height: 1.6; white-space: pre-line; }
-.inv-preview-page .inv-prev-items { width: 100%; border-collapse: collapse; font-size: 13px; }
-.inv-preview-page .inv-prev-items th { text-align: left; font-size: 10px; font-weight: 500; color: #5f6368; text-transform: uppercase; padding: 4px 6px; border-bottom: 1px solid #e0e0e0; }
-.inv-preview-page .inv-prev-items td { padding: 6px 6px; border-bottom: 1px solid #f0f0f0; }
-.inv-preview-page .inv-prev-items .col-count { text-align: center; width: 60px; }
-.inv-preview-page .inv-prev-items .col-price { text-align: right; width: 90px; }
-.inv-preview-page .inv-prev-payment { margin-top: 24px; }
-.inv-preview-page .inv-prev-payment h4 { font-size: 12px; font-weight: 700; margin: 0 0 6px 0; }
-.inv-preview-page .inv-prev-payment p { font-size: 10px; color: #5f6368; margin: 0; line-height: 1.6; }
-.inv-preview-page .inv-prev-totals { margin-top: 16px; display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
-.inv-preview-page .inv-prev-totals-row { display: flex; gap: 16px; font-size: 12px; }
-.inv-preview-page .inv-prev-totals-row .label { color: #5f6368; min-width: 70px; text-align: right; }
-.inv-preview-page .inv-prev-totals-row .value { min-width: 80px; text-align: right; }
-.inv-preview-page .inv-prev-total-final { font-size: 14px; font-weight: 700; border-top: 2px solid #202124; padding-top: 8px; margin-top: 4px; }
-.inv-preview-page .inv-prev-footer { margin-top: 40px; padding-top: 12px; border-top: 1px solid #e0e0e0; font-size: 10px; color: #5f6368; display: flex; gap: 32px; }
+/* Header: logo left, invoice # right */
+.inv-prev-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 48px;
+}
+.inv-prev-logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.inv-prev-logo svg { width: 40px; height: 40px; }
+.inv-prev-brand {
+  font-size: 32px;
+  font-weight: 800;
+  color: #0e413b;
+  letter-spacing: 4px;
+}
+.inv-prev-invnum { font-size: 16px; font-weight: 600; color: #202124; text-align: right; font-style: italic; }
+.inv-prev-date { font-size: 12px; color: #5f6368; text-align: right; margin-top: 2px; }
+/* Body: 2-column layout */
+.inv-prev-body {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 0;
+  flex: 1;
+}
+/* Left column: bill-to + payment */
+.inv-prev-left { display: flex; flex-direction: column; }
+.inv-prev-company { font-size: 16px; font-weight: 700; margin-bottom: 2px; }
+.inv-prev-event { font-size: 12px; color: #5f6368; margin-bottom: 8px; }
+.inv-prev-addr { font-size: 12px; color: #5f6368; line-height: 1.7; white-space: pre-line; margin-bottom: 16px; }
+.inv-prev-poref { font-size: 12px; color: #5f6368; margin-bottom: 0; }
+.inv-prev-payment { margin-top: auto; padding-bottom: 60px; }
+.inv-prev-payment h4 { font-size: 12px; font-weight: 700; margin: 0 0 8px 0; color: #202124; }
+.inv-prev-payment .inv-prev-bank { font-size: 11px; color: #202124; line-height: 1.7; margin: 0 0 12px 0; white-space: pre-line; }
+.inv-prev-payment .inv-prev-bank-note { font-size: 11px; color: #5f6368; line-height: 1.6; margin: 0; }
+/* Right column: items table + totals */
+.inv-prev-right { display: flex; flex-direction: column; }
+.inv-prev-items { width: 100%; border-collapse: collapse; font-size: 13px; }
+.inv-prev-items th {
+  text-align: left;
+  font-size: 11px;
+  font-weight: 400;
+  color: #5f6368;
+  padding: 0 8px 8px 8px;
+  border-bottom: 1px solid #c0c0c0;
+}
+.inv-prev-items th.col-count { text-align: center; width: 50px; }
+.inv-prev-items th.col-price { text-align: right; width: 80px; }
+.inv-prev-items td { padding: 10px 8px; font-size: 13px; color: #202124; }
+.inv-prev-items td.col-count { text-align: center; }
+.inv-prev-items td.col-price { text-align: right; }
+.inv-prev-totals { margin-top: auto; display: flex; flex-direction: column; align-items: flex-end; gap: 6px; padding-bottom: 60px; }
+.inv-prev-totals-row { display: flex; gap: 20px; font-size: 13px; }
+.inv-prev-totals-row .label { color: #5f6368; min-width: 80px; text-align: right; font-weight: 500; }
+.inv-prev-totals-row .value { min-width: 100px; text-align: right; color: #202124; }
+.inv-prev-total-final {
+  font-size: 15px;
+  font-weight: 700;
+  border-top: 2px solid #202124;
+  padding-top: 10px;
+  margin-top: 6px;
+}
+/* Footer: absolute bottom */
+.inv-prev-footer {
+  position: absolute;
+  bottom: 48px;
+  left: 56px;
+  right: 56px;
+  font-size: 11px;
+  color: #202124;
+  display: flex;
+  gap: 48px;
+}
+.inv-prev-footer .inv-prev-site { font-weight: 700; }
+/* Bottom-right illustration */
+.inv-prev-illustration {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  width: 140px;
+  height: auto;
+  opacity: 0.12;
+}
 
 /* CRM Documents Checklist */
 .crm-checklist-list { display: flex; flex-direction: column; gap: 8px; }
@@ -1811,8 +1882,9 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
   .invoices-table th, .invoices-table td { padding: 8px 6px; }
   .inv-address-grid { grid-template-columns: 1fr; }
   .inv-preview-container { width: 100%; max-width: 100vw; border-radius: 0; }
-  .inv-preview-page { padding: 20px; }
-  .inv-preview-page .inv-prev-body { grid-template-columns: 1fr; gap: 16px; }
+  .inv-preview-page { padding: 24px; aspect-ratio: auto; }
+  .inv-prev-body { grid-template-columns: 1fr !important; gap: 24px !important; }
+  .inv-prev-footer { position: static !important; margin-top: 32px; }
 }
 
 /* Login Screen */
@@ -5396,6 +5468,26 @@ if (SCRIPT_URL) {
 var invoices = [];
 var invPricingType = "wholesale";
 
+// Preload invoice assets for PDF and preview
+var invLogoDataUrl = "";
+var invIllusDataUrl = "";
+(function preloadInvAssets() {
+  function toDataUrl(src, cb) {
+    var img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = function() {
+      var c = document.createElement("canvas");
+      c.width = img.naturalWidth;
+      c.height = img.naturalHeight;
+      c.getContext("2d").drawImage(img, 0, 0);
+      cb(c.toDataURL("image/png"));
+    };
+    img.src = src;
+  }
+  toDataUrl("icons/logo.png", function(d) { invLogoDataUrl = d; });
+  toDataUrl("icons/illustration.png", function(d) { invIllusDataUrl = d; });
+})();
+
 function invApiPost(body) {
   body.sheet = "Invoices";
   return fetch(SCRIPT_URL, {
@@ -5972,45 +6064,31 @@ function deleteInvoiceConfirm() {
 }
 
 // ── Invoice Preview ────────────────────────────────────────────
-function previewInvoice() {
-  var items = getInvoiceLineItems();
-  var subtotal = items.reduce(function(s, it) { return s + it.amount; }, 0);
-  var discount = parseFloat(document.getElementById("inv-modal-discount").value) || 0;
-  var shipping = parseFloat(document.getElementById("inv-modal-shipping").value) || 0;
-  var taxType = document.getElementById("inv-modal-tax-type").value;
-  var afterDiscount = subtotal - discount;
-  var tax = taxType === "10" ? Math.round(afterDiscount * 0.1) : 0;
-  var total = afterDiscount + tax + shipping;
-
-  var invNumber = document.getElementById("inv-modal-number").value || "";
-  var invDate = document.getElementById("inv-modal-date").value || "";
-  var company = document.getElementById("inv-modal-company").value || "";
-  var poRef = document.getElementById("inv-modal-po").value || "";
-  var addressJSON = getInvAddressJSON();
-  var addrLines = formatInvAddress(addressJSON);
+// Shared builder: renders LongForme-style invoice into #inv-preview-page
+function buildInvoicePreview(data) {
+  var page = document.getElementById("inv-preview-page");
+  page.textContent = "";
 
   // Format date
-  var dateDisplay = invDate;
-  if (invDate) {
-    var dp = invDate.split("-");
+  var dateDisplay = data.date || "";
+  if (dateDisplay) {
+    var dp = dateDisplay.split("-");
     var months = ["January","February","March","April","May","June","July","August","September","October","November","December"];
     dateDisplay = months[parseInt(dp[1],10)-1] + " " + parseInt(dp[2],10) + ", " + dp[0];
   }
 
-  var page = document.getElementById("inv-preview-page");
-  page.textContent = "";
-
-  // Header
+  // ── Header: Bird logo + IVYCOAST wordmark (left), Invoice # + date (right) ──
   var header = document.createElement("div");
   header.className = "inv-prev-header";
-  var brand = document.createElement("div");
-  brand.className = "inv-prev-brand";
-  brand.textContent = "IVYCOAST";
-  header.appendChild(brand);
+  var logoImg = document.createElement("img");
+  logoImg.src = "icons/logo.png";
+  logoImg.alt = "IVYCOAST";
+  logoImg.style.cssText = "height:48px;width:auto;";
+  header.appendChild(logoImg);
   var rightDiv = document.createElement("div");
   var numDiv = document.createElement("div");
   numDiv.className = "inv-prev-invnum";
-  numDiv.textContent = "Invoice " + invNumber.replace("INV-", "");
+  numDiv.textContent = "Invoice " + (data.number || "").replace("INV-", "");
   rightDiv.appendChild(numDiv);
   var dateDiv = document.createElement("div");
   dateDiv.className = "inv-prev-date";
@@ -6019,43 +6097,55 @@ function previewInvoice() {
   header.appendChild(rightDiv);
   page.appendChild(header);
 
-  // Body grid
+  // ── Body: 2-column grid ──
   var body = document.createElement("div");
   body.className = "inv-prev-body";
 
-  // Left: Bill-to + Payment
-  var billto = document.createElement("div");
-  billto.className = "inv-prev-billto";
+  // Left column: bill-to + payment direction
+  var left = document.createElement("div");
+  left.className = "inv-prev-left";
   var companyDiv = document.createElement("div");
   companyDiv.className = "inv-prev-company";
-  companyDiv.textContent = company;
-  billto.appendChild(companyDiv);
-  if (poRef) {
-    var poDiv = document.createElement("div");
-    poDiv.className = "inv-prev-po";
-    poDiv.textContent = "for " + poRef;
-    billto.appendChild(poDiv);
+  companyDiv.textContent = data.company || "";
+  left.appendChild(companyDiv);
+  if (data.event) {
+    var eventDiv = document.createElement("div");
+    eventDiv.className = "inv-prev-event";
+    eventDiv.textContent = "for " + data.event;
+    left.appendChild(eventDiv);
   }
-  var addrDiv = document.createElement("div");
-  addrDiv.className = "inv-prev-addr";
-  addrDiv.textContent = addrLines.join("\n");
-  billto.appendChild(addrDiv);
-
+  if (data.addrLines.length) {
+    var addrDiv = document.createElement("div");
+    addrDiv.className = "inv-prev-addr";
+    addrDiv.textContent = data.addrLines.join("\n");
+    left.appendChild(addrDiv);
+  }
+  if (data.poRef) {
+    var poDiv = document.createElement("div");
+    poDiv.className = "inv-prev-poref";
+    poDiv.textContent = "Invoice for " + data.poRef;
+    left.appendChild(poDiv);
+  }
+  // Payment Direction
   var paySection = document.createElement("div");
   paySection.className = "inv-prev-payment";
-  paySection.style.marginTop = "32px";
   var payH4 = document.createElement("h4");
   payH4.textContent = "Payment Direction";
   paySection.appendChild(payH4);
-  var payP = document.createElement("p");
-  payP.textContent = "Boldoath 株式会社\n三井住友銀行　名古屋\n普通　(481) 8089351\n\nPlease make a direct deposit\nto the listed Mitsui Sumitomo\naccount on the left.";
-  payP.style.whiteSpace = "pre-line";
-  paySection.appendChild(payP);
-  billto.appendChild(paySection);
-  body.appendChild(billto);
+  var bankP = document.createElement("p");
+  bankP.className = "inv-prev-bank";
+  bankP.textContent = "Boldoath \u682A\u5F0F\u4F1A\u793E\n\u4E09\u4E95\u4F4F\u53CB\u9280\u884C\u3000\u540D\u53E4\u5C4B\n\u666E\u901A\u3000(481) 8089351";
+  paySection.appendChild(bankP);
+  var noteP = document.createElement("p");
+  noteP.className = "inv-prev-bank-note";
+  noteP.textContent = "Please make a direct deposit\nto the listed Mitsui Sumitomo\naccount on the left.";
+  paySection.appendChild(noteP);
+  left.appendChild(paySection);
+  body.appendChild(left);
 
-  // Right: Items table + Totals
-  var rightCol = document.createElement("div");
+  // Right column: items table + totals
+  var right = document.createElement("div");
+  right.className = "inv-prev-right";
   var table = document.createElement("table");
   table.className = "inv-prev-items";
   var thead = document.createElement("thead");
@@ -6070,7 +6160,7 @@ function previewInvoice() {
   thead.appendChild(headTr);
   table.appendChild(thead);
   var tbod = document.createElement("tbody");
-  items.forEach(function(it) {
+  data.items.forEach(function(it) {
     var row = document.createElement("tr");
     var td1 = document.createElement("td");
     td1.textContent = it.description || "";
@@ -6081,24 +6171,23 @@ function previewInvoice() {
     row.appendChild(td2);
     var td3 = document.createElement("td");
     td3.className = "col-price";
-    td3.textContent = "¥" + Number(it.amount || 0).toLocaleString();
+    td3.textContent = "\u00a5" + Number(it.amount || 0).toLocaleString();
     row.appendChild(td3);
     tbod.appendChild(row);
   });
   table.appendChild(tbod);
-  rightCol.appendChild(table);
+  right.appendChild(table);
 
   // Totals
   var totals = document.createElement("div");
   totals.className = "inv-prev-totals";
-  var taxDisplay = taxType === "included" ? "included in product" : (taxType === "10" ? "¥" + tax.toLocaleString() : "—");
-  var totalsData = [
-    { label: "Subtotal", value: "¥" + subtotal.toLocaleString() },
-    { label: "Discount", value: discount ? "¥" + discount.toLocaleString() : "—" },
-    { label: "Shipping", value: shipping ? "¥" + shipping.toLocaleString() : "—" },
+  var taxDisplay = data.taxType === "included" ? "included in product" : (data.taxType === "10" ? "\u00a5" + data.tax.toLocaleString() : "\u2014");
+  [
+    { label: "Subtotal", value: "\u00a5" + data.subtotal.toLocaleString() },
+    { label: "Discount", value: data.discount ? "\u00a5" + data.discount.toLocaleString() : "\u2014" },
+    { label: "Shipping", value: data.shipping ? "\u00a5" + data.shipping.toLocaleString() : "\u2014" },
     { label: "Tax 10%", value: taxDisplay }
-  ];
-  totalsData.forEach(function(r) {
+  ].forEach(function(r) {
     var row = document.createElement("div");
     row.className = "inv-prev-totals-row";
     var lbl = document.createElement("span");
@@ -6119,17 +6208,18 @@ function previewInvoice() {
   finalRow.appendChild(finalLbl);
   var finalVal = document.createElement("span");
   finalVal.className = "value";
-  finalVal.textContent = "¥" + total.toLocaleString();
+  finalVal.textContent = "\u00a5" + data.total.toLocaleString();
   finalRow.appendChild(finalVal);
   totals.appendChild(finalRow);
-  rightCol.appendChild(totals);
-  body.appendChild(rightCol);
+  right.appendChild(totals);
+  body.appendChild(right);
   page.appendChild(body);
 
-  // Footer
+  // Footer (absolute positioned at bottom of A4 page)
   var footer = document.createElement("div");
   footer.className = "inv-prev-footer";
   var f1 = document.createElement("span");
+  f1.className = "inv-prev-site";
   f1.textContent = "ivycoast.co";
   footer.appendChild(f1);
   var f2 = document.createElement("span");
@@ -6137,134 +6227,67 @@ function previewInvoice() {
   footer.appendChild(f2);
   page.appendChild(footer);
 
+  // Bottom-right illustration (decorative, faded)
+  var illus = document.createElement("img");
+  illus.src = "icons/illustration.png";
+  illus.className = "inv-prev-illustration";
+  illus.alt = "";
+  page.appendChild(illus);
+
   document.getElementById("inv-preview-overlay").classList.add("open");
 }
 
+// Preview from modal (current form fields)
+function previewInvoice() {
+  var items = getInvoiceLineItems();
+  var subtotal = items.reduce(function(s, it) { return s + it.amount; }, 0);
+  var discount = parseFloat(document.getElementById("inv-modal-discount").value) || 0;
+  var shipping = parseFloat(document.getElementById("inv-modal-shipping").value) || 0;
+  var taxType = document.getElementById("inv-modal-tax-type").value;
+  var afterDiscount = subtotal - discount;
+  var tax = taxType === "10" ? Math.round(afterDiscount * 0.1) : 0;
+  var total = afterDiscount + tax + shipping;
+  var addrLines = formatInvAddress(getInvAddressJSON());
+  var poRaw = document.getElementById("inv-modal-po").value || "";
+
+  buildInvoicePreview({
+    number: document.getElementById("inv-modal-number").value || "",
+    date: document.getElementById("inv-modal-date").value || "",
+    company: document.getElementById("inv-modal-company").value || "",
+    event: "",
+    poRef: poRaw,
+    addrLines: addrLines,
+    items: items,
+    subtotal: subtotal,
+    discount: discount,
+    shipping: shipping,
+    taxType: taxType,
+    tax: tax,
+    total: total
+  });
+}
+
+// Preview from saved invoice data
 function previewInvoiceFromData(inv) {
   var items = [];
   try { items = JSON.parse(inv.items); } catch(e) { items = []; }
-  var subtotal = parseFloat(inv.subtotal) || 0;
-  var discount = parseFloat(inv.discount) || 0;
-  var shipping = parseFloat(inv.shipping) || 0;
-  var tax = parseFloat(inv.tax) || 0;
-  var total = parseFloat(inv.total) || 0;
-  var taxType = inv.taxType || "included";
   var addrLines = formatInvAddress(inv.contactAddress || "");
 
-  var invDate = inv.invoiceDate || "";
-  var dateDisplay = invDate;
-  if (invDate) {
-    var dp = invDate.split("-");
-    var months = ["January","February","March","April","May","June","July","August","September","October","November","December"];
-    dateDisplay = months[parseInt(dp[1],10)-1] + " " + parseInt(dp[2],10) + ", " + dp[0];
-  }
-
-  var page = document.getElementById("inv-preview-page");
-  page.textContent = "";
-
-  var header = document.createElement("div");
-  header.className = "inv-prev-header";
-  var brand = document.createElement("div");
-  brand.className = "inv-prev-brand";
-  brand.textContent = "IVYCOAST";
-  header.appendChild(brand);
-  var rightDiv = document.createElement("div");
-  var numDiv = document.createElement("div");
-  numDiv.className = "inv-prev-invnum";
-  numDiv.textContent = "Invoice " + (inv.invoiceNumber || "").replace("INV-", "");
-  rightDiv.appendChild(numDiv);
-  var dateDiv = document.createElement("div");
-  dateDiv.className = "inv-prev-date";
-  dateDiv.textContent = dateDisplay;
-  rightDiv.appendChild(dateDiv);
-  header.appendChild(rightDiv);
-  page.appendChild(header);
-
-  var body = document.createElement("div");
-  body.className = "inv-prev-body";
-  var billto = document.createElement("div");
-  billto.className = "inv-prev-billto";
-  var companyDiv = document.createElement("div");
-  companyDiv.className = "inv-prev-company";
-  companyDiv.textContent = inv.contactCompany || "";
-  billto.appendChild(companyDiv);
-  if (inv.poReference) {
-    var poDiv = document.createElement("div");
-    poDiv.className = "inv-prev-po";
-    poDiv.textContent = "for " + inv.poReference;
-    billto.appendChild(poDiv);
-  }
-  var addrDiv = document.createElement("div");
-  addrDiv.className = "inv-prev-addr";
-  addrDiv.textContent = addrLines.join("\n");
-  billto.appendChild(addrDiv);
-  var paySection = document.createElement("div");
-  paySection.className = "inv-prev-payment";
-  paySection.style.marginTop = "32px";
-  var payH4 = document.createElement("h4");
-  payH4.textContent = "Payment Direction";
-  paySection.appendChild(payH4);
-  var payP = document.createElement("p");
-  payP.textContent = "Boldoath \u682A\u5F0F\u4F1A\u793E\n\u4E09\u4E95\u4F4F\u53CB\u9280\u884C\u3000\u540D\u53E4\u5C4B\n\u666E\u901A\u3000(481) 8089351\n\nPlease make a direct deposit\nto the listed Mitsui Sumitomo\naccount on the left.";
-  payP.style.whiteSpace = "pre-line";
-  paySection.appendChild(payP);
-  billto.appendChild(paySection);
-  body.appendChild(billto);
-
-  var rightCol = document.createElement("div");
-  var table = document.createElement("table");
-  table.className = "inv-prev-items";
-  var thead = document.createElement("thead");
-  var headTr = document.createElement("tr");
-  ["Description", "Count", "Price"].forEach(function(txt, i) {
-    var th = document.createElement("th");
-    th.textContent = txt;
-    if (i === 1) th.className = "col-count";
-    if (i === 2) th.className = "col-price";
-    headTr.appendChild(th);
+  buildInvoicePreview({
+    number: inv.invoiceNumber || "",
+    date: inv.invoiceDate || "",
+    company: inv.contactCompany || "",
+    event: "",
+    poRef: inv.poReference || "",
+    addrLines: addrLines,
+    items: items,
+    subtotal: parseFloat(inv.subtotal) || 0,
+    discount: parseFloat(inv.discount) || 0,
+    shipping: parseFloat(inv.shipping) || 0,
+    taxType: inv.taxType || "included",
+    tax: parseFloat(inv.tax) || 0,
+    total: parseFloat(inv.total) || 0
   });
-  thead.appendChild(headTr);
-  table.appendChild(thead);
-  var tbod = document.createElement("tbody");
-  items.forEach(function(it) {
-    var row = document.createElement("tr");
-    var td1 = document.createElement("td"); td1.textContent = it.description || ""; row.appendChild(td1);
-    var td2 = document.createElement("td"); td2.className = "col-count"; td2.textContent = "x" + (it.qty || 0); row.appendChild(td2);
-    var td3 = document.createElement("td"); td3.className = "col-price"; td3.textContent = "\u00a5" + Number(it.amount || 0).toLocaleString(); row.appendChild(td3);
-    tbod.appendChild(row);
-  });
-  table.appendChild(tbod);
-  rightCol.appendChild(table);
-
-  var totals = document.createElement("div");
-  totals.className = "inv-prev-totals";
-  var taxDisplay = taxType === "included" ? "included in product" : (taxType === "10" ? "\u00a5" + tax.toLocaleString() : "\u2014");
-  [
-    { label: "Subtotal", value: "\u00a5" + subtotal.toLocaleString() },
-    { label: "Discount", value: discount ? "\u00a5" + discount.toLocaleString() : "\u2014" },
-    { label: "Shipping", value: shipping ? "\u00a5" + shipping.toLocaleString() : "\u2014" },
-    { label: "Tax 10%", value: taxDisplay }
-  ].forEach(function(r) {
-    var row = document.createElement("div"); row.className = "inv-prev-totals-row";
-    var lbl = document.createElement("span"); lbl.className = "label"; lbl.textContent = r.label; row.appendChild(lbl);
-    var val = document.createElement("span"); val.className = "value"; val.textContent = r.value; row.appendChild(val);
-    totals.appendChild(row);
-  });
-  var finalRow = document.createElement("div"); finalRow.className = "inv-prev-totals-row inv-prev-total-final";
-  var finalLbl = document.createElement("span"); finalLbl.className = "label"; finalLbl.textContent = "Total"; finalRow.appendChild(finalLbl);
-  var finalVal = document.createElement("span"); finalVal.className = "value"; finalVal.textContent = "\u00a5" + total.toLocaleString(); finalRow.appendChild(finalVal);
-  totals.appendChild(finalRow);
-  rightCol.appendChild(totals);
-  body.appendChild(rightCol);
-  page.appendChild(body);
-
-  var footer = document.createElement("div");
-  footer.className = "inv-prev-footer";
-  var f1 = document.createElement("span"); f1.textContent = "ivycoast.co"; footer.appendChild(f1);
-  var f2 = document.createElement("span"); f2.textContent = "yoko@ivycoast.co"; footer.appendChild(f2);
-  page.appendChild(footer);
-
-  document.getElementById("inv-preview-overlay").classList.add("open");
 }
 
 function closeInvoicePreview() {
@@ -6315,17 +6338,22 @@ function downloadInvoicePdf(invData) {
   var textDark = [32, 33, 36];
   var textMuted = [95, 99, 104];
 
-  // Header: IVYCOAST wordmark
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(28);
-  doc.setTextColor.apply(doc, brandGreen);
-  doc.text("IVYCOAST", marginL, 30);
+  // Header: IVYCOAST logo image
+  if (invLogoDataUrl) {
+    // Logo aspect ratio: ~6.5:1 — at height 12mm, width ~78mm
+    doc.addImage(invLogoDataUrl, "PNG", marginL, 16, 78, 12);
+  } else {
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(28);
+    doc.setTextColor.apply(doc, brandGreen);
+    doc.text("IVYCOAST", marginL, 30);
+  }
 
   // Invoice # and date (right side)
-  doc.setFont("helvetica", "normal");
+  doc.setFont("helvetica", "bolditalic");
   doc.setFontSize(14);
   doc.setTextColor.apply(doc, textDark);
-  doc.text("Invoice " + (inv.invoiceNumber || "").replace("INV-", ""), pageW - marginR, 25, { align: "right" });
+  doc.text("Invoice " + (inv.invoiceNumber || "").replace("INV-", ""), pageW - marginR, 22, { align: "right" });
   doc.setFontSize(11);
   doc.setTextColor.apply(doc, textMuted);
   var dateStr = inv.invoiceDate || "";
@@ -6472,11 +6500,18 @@ function downloadInvoicePdf(invData) {
   doc.text("\u00a5" + total.toLocaleString(), totalsX, totalsY, { align: "right" });
 
   // Footer
-  doc.setFont("helvetica", "normal");
+  doc.setFont("helvetica", "bold");
   doc.setFontSize(9);
-  doc.setTextColor.apply(doc, textMuted);
+  doc.setTextColor.apply(doc, textDark);
   doc.text("ivycoast.co", marginL, 280);
-  doc.text("yoko@ivycoast.co", 80, 280);
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor.apply(doc, textMuted);
+  doc.text("yoko@ivycoast.co", 55, 280);
+
+  // Bottom-right illustration
+  if (invIllusDataUrl) {
+    doc.addImage(invIllusDataUrl, "PNG", pageW - marginR - 40, 297 - 50, 40, 40);
+  }
 
   // Save
   var fileName = (inv.invoiceNumber || "invoice") + "_" + (inv.contactCompany || "").replace(/\s+/g, "_") + ".pdf";
