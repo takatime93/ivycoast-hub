@@ -5498,6 +5498,8 @@ function setInvSyncStatus(msg) {
 function fetchInvoices(force) {
   if (!SCRIPT_URL) return;
   if (!force && invoices.length > 0 && Date.now() - lastFetched.invoices < CACHE_TTL) { renderInvoices(); return; }
+  // Show stale data immediately while we refresh
+  if (invoices.length > 0) renderInvoices();
   setInvSyncStatus("Loading\u2026");
   fetch(SCRIPT_URL + "?action=list&sheet=Invoices")
     .then(function(r) { return r.json(); })
@@ -7578,6 +7580,8 @@ function showApp(user) {
     document.getElementById("user-avatar").style.display = "none";
   }
   document.getElementById("user-name").textContent = user.displayName || user.email;
+  // Prefetch invoices in background so Tools tab loads instantly
+  if (SCRIPT_URL) fetchInvoices();
   // Restore tab from URL hash
   restoreTabFromHash();
 }
