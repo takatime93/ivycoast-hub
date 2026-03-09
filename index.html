@@ -4128,8 +4128,6 @@ document.querySelectorAll(".tab").forEach(function(tab) {
       if (typeof fetchShopifyOrders === "function") fetchShopifyOrders();
     } else if (tab.dataset.view === "customers") {
       if (typeof fetchCustomers === "function") fetchCustomers();
-    } else if (tab.dataset.view === "tools") {
-      openToolInvoices();
     }
   });
 });
@@ -4380,41 +4378,38 @@ document.addEventListener("visibilitychange", function() {
 
 // ── Navigation helper ─────────────────────────────────────────
 function navigateTo(viewId, searchQuery, statusFilter) {
-  location.hash = viewId === "home" ? "" : viewId;
+  // Handle tools sub-routes
+  var isToolsRoute = viewId === "tools" || viewId.indexOf("tools/") === 0;
+  var actualViewId = isToolsRoute ? "tools" : viewId;
+  var toolId = isToolsRoute ? (viewId.indexOf("tools/") === 0 ? viewId.split("/")[1] : "invoices") : null;
+  var hashVal = isToolsRoute ? "tools/" + (toolId || "invoices") : (viewId === "home" ? "" : viewId);
+
+  location.hash = hashVal;
   document.querySelectorAll(".tab").forEach(function(t) {
     t.classList.remove("active");
     t.setAttribute("aria-selected", "false");
   });
   document.querySelectorAll(".view").forEach(function(v) { v.classList.remove("active"); });
-  var tab = document.querySelector('.tab[data-view="' + viewId + '"]');
+  var tab = document.querySelector('.tab[data-view="' + actualViewId + '"]');
   if (tab) {
     tab.classList.add("active");
     tab.setAttribute("aria-selected", "true");
   }
-  document.getElementById(viewId).classList.add("active");
+  document.getElementById(actualViewId).classList.add("active");
   // Trigger fetch for target tab (cache prevents unnecessary network calls)
-  if (viewId === "board") {
+  if (actualViewId === "board") {
     checkBoardSetup();
     fetchBoardTasks();
-  } else if (viewId === "crm") {
+  } else if (actualViewId === "crm") {
     if (typeof fetchCrmContacts === "function") fetchCrmContacts();
-  } else if (viewId === "products") {
+  } else if (actualViewId === "products") {
     if (typeof fetchShopifyProducts === "function") fetchShopifyProducts();
-  } else if (viewId === "orders") {
+  } else if (actualViewId === "orders") {
     if (typeof fetchShopifyOrders === "function") fetchShopifyOrders();
-  } else if (viewId === "customers") {
+  } else if (actualViewId === "customers") {
     if (typeof fetchCustomers === "function") fetchCustomers();
-  } else if (viewId === "tools" || viewId.indexOf("tools/") === 0) {
-    var toolId = viewId.indexOf("tools/") === 0 ? viewId.split("/")[1] : "invoices";
-    // Activate the tools view
-    document.querySelectorAll(".view").forEach(function(v) { v.classList.remove("active"); });
-    document.getElementById("tools").classList.add("active");
-    // Activate the tools tab
-    document.querySelectorAll(".tab").forEach(function(t) { t.classList.remove("active"); t.setAttribute("aria-selected", "false"); });
-    var toolsTab = document.querySelector('.tab[data-view="tools"]');
-    if (toolsTab) { toolsTab.classList.add("active"); toolsTab.setAttribute("aria-selected", "true"); }
-    switchTool(toolId);
-    return;
+  } else if (actualViewId === "tools") {
+    switchTool(toolId || "invoices");
   }
   if (viewId === "library" && searchQuery) {
     var si = document.getElementById("search-input");
@@ -5432,7 +5427,7 @@ function fetchInvoices(force) {
 }
 
 // ── Tools tab navigation ──────────────────────────────────────
-function switchTool(toolId) {
+function switchTool(toolId, skipHash) {
   // Hide all tool subviews, show the selected one
   document.querySelectorAll("#tools .tools-subview").forEach(function(v) { v.classList.remove("active"); });
   var target = document.getElementById("tools-" + toolId);
@@ -5441,8 +5436,6 @@ function switchTool(toolId) {
   document.querySelectorAll(".tools-subnav-tab").forEach(function(t) {
     t.classList.toggle("active", t.dataset.tool === toolId);
   });
-  // Update URL hash
-  location.hash = "tools/" + toolId;
   // Fetch data for the tool
   if (toolId === "invoices") fetchInvoices();
 }
