@@ -1489,6 +1489,17 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
 .customer-order-date { color: #5f6368; min-width: 80px; }
 .customer-order-items { flex: 1; margin: 0 12px; color: #202124; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .customer-order-total { font-weight: 500; color: #202124; min-width: 70px; text-align: right; }
+.customer-products-list { margin-bottom: 4px; }
+.customer-product-item { display: flex; justify-content: space-between; align-items: center; padding: 4px 0; font-size: 13px; }
+.customer-product-name { color: #202124; }
+.customer-product-count { color: #5f6368; font-size: 12px; }
+.customer-order-row { display: flex; justify-content: space-between; align-items: center; font-size: 13px; }
+.customer-order-items-text { font-size: 12px; color: #5f6368; margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.customer-order-docs { display: flex; gap: 6px; margin-top: 4px; flex-wrap: wrap; }
+.customer-order-doc-chip { font-size: 11px; padding: 2px 8px; border-radius: 4px; background: #e8f0fe; color: #1a73e8; cursor: pointer; border: none; font-family: inherit; }
+.customer-order-doc-chip:hover { background: #d2e3fc; }
+.customer-order-doc-chip.receipt { background: #e6f4ea; color: #137333; }
+.customer-order-doc-chip.receipt:hover { background: #ceead6; }
 .customer-link {
   color: #1a73e8;
   text-decoration: none;
@@ -3057,6 +3068,7 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
   <div class="customer-drawer-body">
     <div class="customer-info" id="customer-drawer-email"></div>
     <div class="customer-info" id="customer-drawer-phone"></div>
+    <div class="customer-info" id="customer-drawer-address"></div>
     <div class="customer-stat-row">
       <div class="customer-stat-card">
         <span>Total Orders</span>
@@ -3074,11 +3086,11 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
     <label>Tags</label>
     <input type="text" id="customer-drawer-tags" placeholder="e.g. VIP, wholesale">
     <label>Notes</label>
-    <textarea id="customer-drawer-notes" rows="4" placeholder="Add notes about this customer..."></textarea>
-    <label>Invoices</label>
-    <div id="customer-drawer-invoices-list" style="margin-bottom:12px;font-size:13px;color:#5f6368"></div>
+    <textarea id="customer-drawer-notes" rows="3" placeholder="Add notes about this customer..."></textarea>
     <button class="btn-save" onclick="saveCustomerFromDrawer()">Save</button>
-    <h4>Past Orders</h4>
+    <h4>Top Products</h4>
+    <div id="customer-drawer-products" class="customer-products-list"></div>
+    <h4>Orders</h4>
     <div class="customer-orders-list" id="customer-drawer-orders-list"></div>
   </div>
 </div>
@@ -9834,63 +9846,151 @@ function openCustomerDrawer(email) {
   document.getElementById("customer-drawer").dataset.email = email;
   document.getElementById("customer-drawer").dataset.customerId = (customer && customer.id) || "";
 
-  // Render past orders
+  // Address from latest order
+  var addrEl = document.getElementById("customer-drawer-address");
+  addrEl.textContent = "";
+  if (customerOrders.length > 0) {
+    var latestAddr = "";
+    for (var ai = 0; ai < customerOrders.length; ai++) {
+      if (customerOrders[ai].shippingAddress) {
+        latestAddr = customerOrders[ai].shippingAddress;
+        break;
+      }
+    }
+    if (latestAddr) {
+      var parsedStr = typeof parseOrderShippingAddress === "function" ? parseOrderShippingAddress(latestAddr) : "";
+      if (parsedStr) {
+        try {
+          var parsed = JSON.parse(parsedStr);
+          var parts = [parsed.city, parsed.prefecture].filter(Boolean);
+          addrEl.textContent = parts.length ? parts.join(", ") : String(latestAddr).substring(0, 60);
+        } catch(e) {
+          addrEl.textContent = String(latestAddr).substring(0, 60);
+        }
+      } else {
+        addrEl.textContent = String(latestAddr).substring(0, 60);
+      }
+    }
+  }
+
+  // Top Products — aggregate from order lineItems
+  var prodCounts = {};
+  customerOrders.forEach(function(o) {
+    if (!o.lineItems) return;
+    o.lineItems.split(";").forEach(function(seg) {
+      seg = seg.trim();
+      if (!seg) return;
+      var m = seg.match(/^(\d+)x\s+(.+)/);
+      if (m) {
+        var qty = parseInt(m[1], 10) || 1;
+        var pname = m[2].trim();
+        prodCounts[pname] = (prodCounts[pname] || 0) + qty;
+      } else {
+        prodCounts[seg] = (prodCounts[seg] || 0) + 1;
+      }
+    });
+  });
+  var topProducts = Object.keys(prodCounts).map(function(k) { return { name: k, count: prodCounts[k] }; })
+    .sort(function(a, b) { return b.count - a.count; }).slice(0, 5);
+
+  var prodList = document.getElementById("customer-drawer-products");
+  prodList.textContent = "";
+  if (topProducts.length === 0) {
+    prodList.textContent = "No product data.";
+    prodList.style.color = "#5f6368";
+    prodList.style.fontSize = "13px";
+  } else {
+    topProducts.forEach(function(tp) {
+      var row = document.createElement("div");
+      row.className = "customer-product-item";
+      var nameEl = document.createElement("span");
+      nameEl.className = "customer-product-name";
+      nameEl.textContent = tp.name;
+      row.appendChild(nameEl);
+      var countEl = document.createElement("span");
+      countEl.className = "customer-product-count";
+      countEl.textContent = "\u00D7 " + tp.count;
+      row.appendChild(countEl);
+      prodList.appendChild(row);
+    });
+  }
+
+  // Orders with nested invoice/receipt chips
   var ordersList = document.getElementById("customer-drawer-orders-list");
   ordersList.textContent = "";
   if (customerOrders.length === 0) {
     ordersList.textContent = "No orders found.";
+    ordersList.style.color = "#5f6368";
+    ordersList.style.fontSize = "13px";
   } else {
     customerOrders.forEach(function(o) {
       var item = document.createElement("div");
       item.className = "customer-order-item";
+      item.addEventListener("click", function(e) {
+        if (e.target.classList.contains("customer-order-doc-chip")) return;
+        closeCustomerDrawer();
+        openOrderDetailModal(o);
+      });
 
-      var dateSpan = document.createElement("span");
-      dateSpan.className = "customer-order-date";
-      dateSpan.textContent = o.createdAt ? new Date(o.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "";
-
-      var itemsSpan = document.createElement("span");
-      itemsSpan.className = "customer-order-items";
-      var items = o.lineItems || "";
-      if (items.length > 35) items = items.substring(0, 35) + "\u2026";
-      itemsSpan.textContent = items;
-
-      var totalSpan = document.createElement("span");
-      totalSpan.className = "customer-order-total";
-      totalSpan.textContent = o.totalPrice ? "\u00A5" + Number(o.totalPrice).toLocaleString() : "";
-
-      item.appendChild(dateSpan);
-      item.appendChild(itemsSpan);
-      item.appendChild(totalSpan);
-      ordersList.appendChild(item);
-    });
-  }
-
-  // Render linked invoices
-  var invList = document.getElementById("customer-drawer-invoices-list");
-  invList.textContent = "";
-  var customerInvoices = invoices.filter(function(inv) {
-    return inv.contactEmail && inv.contactEmail.toLowerCase() === emailLower;
-  });
-  if (customerInvoices.length === 0) {
-    invList.textContent = "No invoices found.";
-  } else {
-    customerInvoices.forEach(function(inv) {
-      var row = document.createElement("div");
-      row.style.cssText = "display:flex;justify-content:space-between;align-items:center;padding:6px 0;cursor:pointer;border-bottom:1px solid #f1f3f4;";
-      row.addEventListener("click", function() { closeCustomerDrawer(); openInvoiceEditModal(inv.id); });
+      // Top row: order number, date, total
+      var topRow = document.createElement("div");
+      topRow.className = "customer-order-row";
       var numSpan = document.createElement("span");
       numSpan.style.fontWeight = "500";
-      numSpan.textContent = inv.invoiceNumber || inv.id;
-      row.appendChild(numSpan);
+      var prefix = String(o.orderNumber || "").indexOf("M-") === 0 ? "" : "#";
+      numSpan.textContent = prefix + (o.orderNumber || "");
+      topRow.appendChild(numSpan);
       var dateSpan = document.createElement("span");
-      dateSpan.style.cssText = "font-size:12px;color:#5f6368;";
-      dateSpan.textContent = inv.invoiceDate ? formatDate(inv.invoiceDate) : "";
-      row.appendChild(dateSpan);
-      var totalSpan = document.createElement("span");
-      totalSpan.style.fontWeight = "500";
-      totalSpan.textContent = "\u00a5" + Number(inv.total || 0).toLocaleString();
-      row.appendChild(totalSpan);
-      invList.appendChild(row);
+      dateSpan.style.cssText = "color:#5f6368;font-size:12px;";
+      dateSpan.textContent = o.createdAt ? new Date(o.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "";
+      topRow.appendChild(dateSpan);
+      var totalSpn = document.createElement("span");
+      totalSpn.style.fontWeight = "500";
+      totalSpn.textContent = o.totalPrice ? "\u00A5" + Number(o.totalPrice).toLocaleString() : "";
+      topRow.appendChild(totalSpn);
+      item.appendChild(topRow);
+
+      // Items text
+      if (o.lineItems) {
+        var itemsDiv = document.createElement("div");
+        itemsDiv.className = "customer-order-items-text";
+        var itemsText = o.lineItems;
+        if (itemsText.length > 60) itemsText = itemsText.substring(0, 60) + "\u2026";
+        itemsDiv.textContent = itemsText;
+        item.appendChild(itemsDiv);
+      }
+
+      // Invoice/Receipt chips (only if linked)
+      var orderNum = String(o.orderNumber || "");
+      var orderId = o.shopifyOrderId || "";
+      var linkedInv = invoices.find(function(inv) {
+        return (orderId && inv.orderId === orderId) || (orderNum && inv.orderNumber === orderNum);
+      });
+      var linkedRec = receipts.find(function(rec) {
+        return (orderId && rec.orderId === orderId) || (orderNum && rec.orderNumber === orderNum);
+      });
+
+      if (linkedInv || linkedRec) {
+        var docsDiv = document.createElement("div");
+        docsDiv.className = "customer-order-docs";
+        if (linkedInv) {
+          var invChip = document.createElement("button");
+          invChip.className = "customer-order-doc-chip";
+          invChip.textContent = linkedInv.invoiceNumber || "Invoice";
+          invChip.addEventListener("click", function(e) { e.stopPropagation(); closeCustomerDrawer(); openInvoiceEditModal(linkedInv.id); });
+          docsDiv.appendChild(invChip);
+        }
+        if (linkedRec) {
+          var recChip = document.createElement("button");
+          recChip.className = "customer-order-doc-chip receipt";
+          recChip.textContent = linkedRec.receiptNumber || "Receipt";
+          recChip.addEventListener("click", function(e) { e.stopPropagation(); closeCustomerDrawer(); openReceiptEditModal(linkedRec.id); });
+          docsDiv.appendChild(recChip);
+        }
+        item.appendChild(docsDiv);
+      }
+
+      ordersList.appendChild(item);
     });
   }
 
