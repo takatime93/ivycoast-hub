@@ -2693,11 +2693,10 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
     <h2 id="order-detail-title">Order Details</h2>
     <div class="order-detail-grid" id="order-detail-grid"></div>
     <div class="order-items-list" id="order-detail-items"></div>
+    <div id="order-linked-docs" style="display:none;margin-top:16px;padding-top:16px;border-top:1px solid #ebebeb"></div>
     <div class="board-modal-actions" style="margin-top:20px">
       <button id="order-create-invoice-btn" onclick="createInvoiceFromOrder()" style="color:#1a73e8;border-color:#1a73e8;display:none">Create Invoice</button>
-      <button id="order-view-invoice-btn" onclick="viewLinkedInvoice()" style="color:#34a853;border-color:#34a853;display:none">View Invoice</button>
       <button id="order-create-receipt-btn" onclick="createReceiptFromOrder()" style="color:#1a73e8;border-color:#1a73e8;display:none">Create Receipt</button>
-      <button id="order-view-receipt-btn" onclick="viewLinkedReceipt()" style="color:#34a853;border-color:#34a853;display:none">View Receipt</button>
       <button onclick="closeOrderDetailModal()">Close</button>
     </div>
   </div>
@@ -6937,13 +6936,6 @@ function createInvoiceFromOrder() {
   recalcInvoiceTotals();
 }
 
-function viewLinkedInvoice() {
-  var invoiceId = document.getElementById("order-view-invoice-btn").dataset.invoiceId;
-  if (!invoiceId) return;
-  closeOrderDetailModal();
-  openInvoiceEditModal(invoiceId);
-}
-
 function autoCreateInvoicesForPaidOrders() {
   if (!SCRIPT_URL) return;
   var paidWithoutInvoice = shopifyOrders.filter(function(o) {
@@ -8197,13 +8189,6 @@ function createReceiptFromOrder() {
   recalcReceiptTotals();
 }
 
-function viewLinkedReceipt() {
-  var recId = document.getElementById("order-view-receipt-btn").dataset.receiptId;
-  if (!recId) return;
-  closeOrderDetailModal();
-  openReceiptEditModal(recId);
-}
-
 // ── CRM Checklist System ──────────────────────────────────────
 var CRM_CHECKLIST_DEFAULTS = ["Brand Book", "Product Listing Page", "Contract"];
 var checklistUploadIndex = -1;
@@ -9120,40 +9105,81 @@ function openOrderDetailModal(order) {
   // Store order data for invoice creation
   document.getElementById("order-detail-overlay").dataset.orderJson = JSON.stringify(order);
 
-  // Check if this order already has a linked invoice
+  // Find linked invoice and receipt
   var linkedInv = invoices.find(function(inv) {
     return inv.orderId === order.shopifyOrderId || inv.orderNumber === String(order.orderNumber);
   });
-  var createBtn = document.getElementById("order-create-invoice-btn");
-  var viewBtn = document.getElementById("order-view-invoice-btn");
-  if (linkedInv) {
-    createBtn.style.display = "none";
-    viewBtn.style.display = "";
-    viewBtn.dataset.invoiceId = linkedInv.id;
-  } else if (order.financialStatus === "paid") {
-    createBtn.style.display = "";
-    viewBtn.style.display = "none";
-  } else {
-    createBtn.style.display = "none";
-    viewBtn.style.display = "none";
-  }
-
-  // Check if this order already has a linked receipt
   var linkedRec = receipts.find(function(r) {
     return r.orderId === order.shopifyOrderId || r.orderNumber === String(order.orderNumber);
   });
-  var createRecBtn = document.getElementById("order-create-receipt-btn");
-  var viewRecBtn = document.getElementById("order-view-receipt-btn");
-  if (linkedRec) {
-    createRecBtn.style.display = "none";
-    viewRecBtn.style.display = "";
-    viewRecBtn.dataset.receiptId = linkedRec.id;
-  } else if (order.financialStatus === "paid") {
-    createRecBtn.style.display = "";
-    viewRecBtn.style.display = "none";
+
+  // Show/hide create buttons — hide if linked document already exists
+  document.getElementById("order-create-invoice-btn").style.display = linkedInv ? "none" : "";
+  document.getElementById("order-create-receipt-btn").style.display = linkedRec ? "none" : "";
+
+  // Build linked documents section
+  var docsDiv = document.getElementById("order-linked-docs");
+  docsDiv.textContent = "";
+  if (linkedInv || linkedRec) {
+    docsDiv.style.display = "";
+    var docsLabel = document.createElement("label");
+    docsLabel.textContent = "Linked Documents";
+    docsLabel.style.cssText = "font-size:12px;color:#5f6368;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:8px";
+    docsDiv.appendChild(docsLabel);
+
+    if (linkedInv) {
+      var invCard = document.createElement("div");
+      invCard.style.cssText = "display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#f8f9fa;border:1px solid #ebebeb;border-radius:8px;margin-bottom:8px;cursor:pointer";
+      invCard.onmouseover = function() { invCard.style.background = "#e8f0fe"; };
+      invCard.onmouseout = function() { invCard.style.background = "#f8f9fa"; };
+      invCard.onclick = function() { closeOrderDetailModal(); openInvoiceEditModal(linkedInv.id); };
+      var invLeft = document.createElement("div");
+      var invNum = document.createElement("div");
+      invNum.style.cssText = "font-weight:600;font-size:14px;color:#202124";
+      invNum.textContent = linkedInv.invoiceNumber || "Invoice";
+      invLeft.appendChild(invNum);
+      var invMeta = document.createElement("div");
+      invMeta.style.cssText = "font-size:12px;color:#5f6368;margin-top:2px";
+      var invParts = [];
+      if (linkedInv.date) invParts.push(linkedInv.date);
+      if (linkedInv.grandTotal) invParts.push("\u00A5" + Number(linkedInv.grandTotal).toLocaleString());
+      invMeta.textContent = invParts.join(" \u00B7 ");
+      invLeft.appendChild(invMeta);
+      invCard.appendChild(invLeft);
+      var invBadge = document.createElement("span");
+      invBadge.style.cssText = "font-size:11px;font-weight:500;padding:2px 8px;border-radius:4px;background:" + (linkedInv.status === "paid" ? "#e6f4ea;color:#137333" : "#fef7e0;color:#b06000");
+      invBadge.textContent = (linkedInv.status || "draft").charAt(0).toUpperCase() + (linkedInv.status || "draft").slice(1);
+      invCard.appendChild(invBadge);
+      docsDiv.appendChild(invCard);
+    }
+
+    if (linkedRec) {
+      var recCard = document.createElement("div");
+      recCard.style.cssText = "display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#f8f9fa;border:1px solid #ebebeb;border-radius:8px;margin-bottom:8px;cursor:pointer";
+      recCard.onmouseover = function() { recCard.style.background = "#e8f0fe"; };
+      recCard.onmouseout = function() { recCard.style.background = "#f8f9fa"; };
+      recCard.onclick = function() { closeOrderDetailModal(); openReceiptEditModal(linkedRec.id); };
+      var recLeft = document.createElement("div");
+      var recNum = document.createElement("div");
+      recNum.style.cssText = "font-weight:600;font-size:14px;color:#202124";
+      recNum.textContent = linkedRec.receiptNumber || "Receipt";
+      recLeft.appendChild(recNum);
+      var recMeta = document.createElement("div");
+      recMeta.style.cssText = "font-size:12px;color:#5f6368;margin-top:2px";
+      var recParts = [];
+      if (linkedRec.date) recParts.push(linkedRec.date);
+      if (linkedRec.grandTotal) recParts.push("\u00A5" + Number(linkedRec.grandTotal).toLocaleString());
+      recMeta.textContent = recParts.join(" \u00B7 ");
+      recLeft.appendChild(recMeta);
+      recCard.appendChild(recLeft);
+      var recBadge = document.createElement("span");
+      recBadge.style.cssText = "font-size:11px;font-weight:500;padding:2px 8px;border-radius:4px;background:#e6f4ea;color:#137333";
+      recBadge.textContent = "Receipt";
+      recCard.appendChild(recBadge);
+      docsDiv.appendChild(recCard);
+    }
   } else {
-    createRecBtn.style.display = "none";
-    viewRecBtn.style.display = "none";
+    docsDiv.style.display = "none";
   }
 
   document.getElementById("order-detail-overlay").classList.add("open");
