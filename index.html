@@ -1752,6 +1752,11 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
 .inv-product-option .inv-prod-name { color: #202124; }
 .inv-product-option .inv-prod-price { color: #5f6368; font-size: 12px; white-space: nowrap; margin-left: 8px; }
 
+/* Manual Order Discount Cell */
+.mo-discount-cell { display: flex; align-items: center; gap: 2px; }
+.mo-discount-cell input { width: 52px; border: 1px solid #dadce0; border-radius: 4px; padding: 6px 4px; font-size: 13px; text-align: right; font-family: inherit; }
+.mo-discount-cell select { width: 38px; border: 1px solid #dadce0; border-radius: 4px; padding: 5px 2px; font-size: 12px; font-family: inherit; background: #fff; }
+
 /* Invoice Preview Overlay */
 .inv-preview-overlay {
   display: none;
@@ -3005,7 +3010,7 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
     <div class="inv-modal-section">
       <div class="crm-section-title">Line Items</div>
       <table class="inv-line-items-table" style="width:100%;margin-bottom:8px">
-        <thead><tr><th>Description</th><th style="width:60px">Qty</th><th style="width:90px">Price</th><th style="width:90px">Amount</th><th style="width:30px"></th></tr></thead>
+        <thead><tr><th>Product</th><th style="width:55px">Qty</th><th style="width:85px">Unit Price</th><th style="width:105px">Discount</th><th style="width:85px">Amount</th><th style="width:30px"></th></tr></thead>
         <tbody id="mo-line-items"></tbody>
       </table>
       <button type="button" class="btn-add-task" onclick="addManualOrderLineItem()" style="font-size:12px;padding:4px 10px">+ Add Item</button>
@@ -10628,6 +10633,7 @@ function generateManualOrderNumber() {
 }
 
 function openManualOrderModal() {
+  if (!shopifyProducts || !shopifyProducts.length) fetchShopifyProducts();
   document.getElementById("mo-customer-name").value = "";
   document.getElementById("mo-email").value = "";
   document.getElementById("mo-date").value = new Date().toISOString().split("T")[0];
@@ -10652,14 +10658,78 @@ function addManualOrderLineItem() {
   var tbody = document.getElementById("mo-line-items");
   var tr = document.createElement("tr");
 
+  // Product cell with autocomplete dropdown
   var tdDesc = document.createElement("td");
+  tdDesc.style.position = "relative";
+  var wrapper = document.createElement("div");
+  wrapper.className = "inv-product-wrapper";
   var descInput = document.createElement("input");
   descInput.type = "text";
-  descInput.placeholder = "Item description";
-  descInput.style.cssText = "width:100%;border:1px solid #dadce0;border-radius:4px;padding:6px 8px;font-size:13px;font-family:inherit;";
-  tdDesc.appendChild(descInput);
+  descInput.placeholder = "Search products\u2026";
+  descInput.className = "inv-desc";
+  var dropdown = document.createElement("div");
+  dropdown.className = "inv-product-dropdown";
+  var ddIndex = -1;
+
+  function showProductDropdown(query) {
+    var products = typeof shopifyProducts !== "undefined" ? shopifyProducts : [];
+    if (!products.length) { dropdown.classList.remove("open"); return; }
+    var matches;
+    if (!query) {
+      matches = products.slice(0, 20);
+    } else {
+      var q = query.toLowerCase();
+      matches = products.filter(function(p) {
+        return (p.title && p.title.toLowerCase().indexOf(q) !== -1) ||
+               (p.variantTitle && p.variantTitle.toLowerCase().indexOf(q) !== -1) ||
+               (p.sku && p.sku.toLowerCase().indexOf(q) !== -1);
+      }).slice(0, 20);
+    }
+    if (!matches.length) { dropdown.classList.remove("open"); return; }
+    dropdown.textContent = "";
+    ddIndex = -1;
+    matches.forEach(function(p, i) {
+      var opt = document.createElement("div");
+      opt.className = "inv-product-option";
+      opt.dataset.index = i;
+      var nameSpan = document.createElement("span");
+      nameSpan.className = "inv-prod-name";
+      nameSpan.textContent = p.title + (p.variantTitle ? " \u2014 " + p.variantTitle : "");
+      opt.appendChild(nameSpan);
+      var priceSpan = document.createElement("span");
+      priceSpan.className = "inv-prod-price";
+      priceSpan.textContent = "\u00A5" + Number(p.price || 0).toLocaleString();
+      opt.appendChild(priceSpan);
+      opt.addEventListener("mousedown", function(e) {
+        e.preventDefault();
+        descInput.value = p.title + (p.variantTitle ? " \u2014 " + p.variantTitle : "");
+        priceInput.value = p.price || "";
+        dropdown.classList.remove("open");
+        recalcManualOrderTotal();
+      });
+      dropdown.appendChild(opt);
+    });
+    dropdown.classList.add("open");
+  }
+
+  descInput.addEventListener("input", function() { showProductDropdown(descInput.value.trim()); });
+  descInput.addEventListener("focus", function() { showProductDropdown(descInput.value.trim()); });
+  descInput.addEventListener("blur", function() { setTimeout(function() { dropdown.classList.remove("open"); }, 150); });
+  descInput.addEventListener("keydown", function(e) {
+    var opts = dropdown.querySelectorAll(".inv-product-option");
+    if (!opts.length || !dropdown.classList.contains("open")) return;
+    if (e.key === "ArrowDown") { e.preventDefault(); ddIndex = Math.min(ddIndex + 1, opts.length - 1); opts.forEach(function(o,i) { o.classList.toggle("active", i === ddIndex); }); }
+    else if (e.key === "ArrowUp") { e.preventDefault(); ddIndex = Math.max(ddIndex - 1, 0); opts.forEach(function(o,i) { o.classList.toggle("active", i === ddIndex); }); }
+    else if (e.key === "Enter" && ddIndex >= 0) { e.preventDefault(); opts[ddIndex].dispatchEvent(new Event("mousedown")); }
+    else if (e.key === "Escape") { dropdown.classList.remove("open"); }
+  });
+
+  wrapper.appendChild(descInput);
+  wrapper.appendChild(dropdown);
+  tdDesc.appendChild(wrapper);
   tr.appendChild(tdDesc);
 
+  // Qty cell
   var tdQty = document.createElement("td");
   var qtyInput = document.createElement("input");
   qtyInput.type = "number";
@@ -10670,6 +10740,7 @@ function addManualOrderLineItem() {
   tdQty.appendChild(qtyInput);
   tr.appendChild(tdQty);
 
+  // Unit Price cell
   var tdPrice = document.createElement("td");
   var priceInput = document.createElement("input");
   priceInput.type = "number";
@@ -10680,12 +10751,33 @@ function addManualOrderLineItem() {
   tdPrice.appendChild(priceInput);
   tr.appendChild(tdPrice);
 
+  // Discount cell (value + type toggle)
+  var tdDisc = document.createElement("td");
+  var discWrap = document.createElement("div");
+  discWrap.className = "mo-discount-cell";
+  var discInput = document.createElement("input");
+  discInput.type = "number";
+  discInput.value = "";
+  discInput.min = "0";
+  discInput.placeholder = "0";
+  discInput.addEventListener("input", recalcManualOrderTotal);
+  var discType = document.createElement("select");
+  var optPct = document.createElement("option"); optPct.value = "%"; optPct.textContent = "%"; discType.appendChild(optPct);
+  var optYen = document.createElement("option"); optYen.value = "yen"; optYen.textContent = "\u00A5"; discType.appendChild(optYen);
+  discType.addEventListener("change", recalcManualOrderTotal);
+  discWrap.appendChild(discInput);
+  discWrap.appendChild(discType);
+  tdDisc.appendChild(discWrap);
+  tr.appendChild(tdDisc);
+
+  // Amount cell
   var tdAmt = document.createElement("td");
   tdAmt.className = "mo-line-amount";
   tdAmt.style.cssText = "text-align:right;font-size:13px;font-weight:500;padding:6px 4px;";
   tdAmt.textContent = "\u00A50";
   tr.appendChild(tdAmt);
 
+  // Delete cell
   var tdDel = document.createElement("td");
   var delBtn = document.createElement("button");
   delBtn.textContent = "\u00D7";
@@ -10704,13 +10796,17 @@ function recalcManualOrderTotal() {
     var inputs = tr.querySelectorAll("input");
     var qty = parseFloat(inputs[1].value) || 0;
     var price = parseFloat(inputs[2].value) || 0;
-    var amt = qty * price;
-    tr.querySelector(".mo-line-amount").textContent = "\u00A5" + amt.toLocaleString();
+    var discVal = parseFloat(inputs[3].value) || 0;
+    var discType = tr.querySelector(".mo-discount-cell select").value;
+    var lineAmt = qty * price;
+    var discount = discType === "%" ? lineAmt * discVal / 100 : discVal;
+    var amt = Math.max(0, lineAmt - discount);
+    tr.querySelector(".mo-line-amount").textContent = "\u00A5" + Math.round(amt).toLocaleString();
     subtotal += amt;
   });
   var shipping = parseFloat(document.getElementById("mo-shipping").value) || 0;
-  document.getElementById("mo-subtotal").value = "\u00A5" + subtotal.toLocaleString();
-  document.getElementById("mo-total").value = "\u00A5" + (subtotal + shipping).toLocaleString();
+  document.getElementById("mo-subtotal").value = "\u00A5" + Math.round(subtotal).toLocaleString();
+  document.getElementById("mo-total").value = "\u00A5" + Math.round(subtotal + shipping).toLocaleString();
 }
 
 function saveManualOrder() {
@@ -10725,9 +10821,16 @@ function saveManualOrder() {
     var desc = inputs[0].value.trim();
     var qty = parseFloat(inputs[1].value) || 0;
     var price = parseFloat(inputs[2].value) || 0;
+    var discVal = parseFloat(inputs[3].value) || 0;
+    var discType = tr.querySelector(".mo-discount-cell select").value;
     if (desc && qty > 0) {
-      lineItems.push(desc + " x" + qty);
-      totalPrice += qty * price;
+      var lineAmt = qty * price;
+      var discount = discType === "%" ? lineAmt * discVal / 100 : discVal;
+      var amt = Math.max(0, lineAmt - discount);
+      var itemStr = desc + " x" + qty + " @\u00A5" + price.toLocaleString();
+      if (discVal > 0) itemStr += " -" + (discType === "%" ? discVal + "%" : "\u00A5" + discVal.toLocaleString());
+      lineItems.push(itemStr);
+      totalPrice += amt;
     }
   });
   var shipping = parseFloat(document.getElementById("mo-shipping").value) || 0;
