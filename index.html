@@ -2926,6 +2926,7 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
     </div>
 
     <div class="board-toolbar" id="orders-toolbar">
+      <button class="btn-add-task" onclick="openManualOrderModal()">+ Manual Order</button>
       <select class="filter-select" id="orders-filter-payment" onchange="renderOrders()">
         <option value="">All Payments</option>
         <option value="paid">Paid</option>
@@ -2980,6 +2981,63 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
       <button id="order-create-invoice-btn" onclick="createInvoiceFromOrder()" style="color:#1a73e8;border-color:#1a73e8;display:none">Create Invoice</button>
       <button id="order-create-receipt-btn" onclick="createReceiptFromOrder()" style="color:#1a73e8;border-color:#1a73e8;display:none">Create Receipt</button>
       <button onclick="closeOrderDetailModal()">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- Manual Order Modal -->
+<div class="board-modal-overlay" id="manual-order-overlay" onclick="if(event.target===this)closeManualOrderModal()">
+  <div class="board-modal" style="width:560px;max-height:90vh;overflow-y:auto">
+    <h2>New Manual Order</h2>
+    <div class="inv-modal-section">
+      <div class="crm-field-row">
+        <div class="crm-field"><label>Customer Name</label><input type="text" id="mo-customer-name"></div>
+        <div class="crm-field"><label>Email</label><input type="email" id="mo-email"></div>
+      </div>
+      <div class="crm-field-row">
+        <div class="crm-field"><label>Date</label><input type="date" id="mo-date"></div>
+        <div class="crm-field">
+          <label>Workspace</label>
+          <select id="mo-workspace"><option value="IVYCOAST">IVYCOAST</option><option value="BOLDOATH">BOLDOATH</option></select>
+        </div>
+      </div>
+    </div>
+    <div class="inv-modal-section">
+      <div class="crm-section-title">Line Items</div>
+      <table class="inv-line-items-table" style="width:100%;margin-bottom:8px">
+        <thead><tr><th>Description</th><th style="width:60px">Qty</th><th style="width:90px">Price</th><th style="width:90px">Amount</th><th style="width:30px"></th></tr></thead>
+        <tbody id="mo-line-items"></tbody>
+      </table>
+      <button type="button" class="btn-add-task" onclick="addManualOrderLineItem()" style="font-size:12px;padding:4px 10px">+ Add Item</button>
+    </div>
+    <div class="inv-modal-section">
+      <div class="crm-field-row">
+        <div class="crm-field"><label>Subtotal</label><input type="text" id="mo-subtotal" readonly style="background:#f8f9fa"></div>
+        <div class="crm-field"><label>Shipping</label><input type="number" id="mo-shipping" value="0" min="0" oninput="recalcManualOrderTotal()"></div>
+        <div class="crm-field"><label>Total</label><input type="text" id="mo-total" readonly style="background:#f8f9fa;font-weight:600"></div>
+      </div>
+    </div>
+    <div class="inv-modal-section">
+      <div class="crm-field-row">
+        <div class="crm-field">
+          <label>Payment Status</label>
+          <select id="mo-financial-status"><option value="draft">Draft</option><option value="pending">Pending</option><option value="paid">Paid</option></select>
+        </div>
+        <div class="crm-field">
+          <label>Fulfillment</label>
+          <select id="mo-fulfillment-status"><option value="unfulfilled">Unfulfilled</option><option value="fulfilled">Fulfilled</option></select>
+        </div>
+      </div>
+      <div class="crm-field-row">
+        <div class="crm-field full-width"><label>Shipping Address</label><textarea id="mo-address" rows="2" style="font-family:inherit;font-size:13px;width:100%;border:1px solid #dadce0;border-radius:6px;padding:8px;resize:vertical"></textarea></div>
+      </div>
+      <div class="crm-field-row">
+        <div class="crm-field full-width"><label>Notes</label><textarea id="mo-notes" rows="2" style="font-family:inherit;font-size:13px;width:100%;border:1px solid #dadce0;border-radius:6px;padding:8px;resize:vertical"></textarea></div>
+      </div>
+    </div>
+    <div class="board-modal-actions" style="margin-top:16px">
+      <button onclick="closeManualOrderModal()">Cancel</button>
+      <button class="btn-add-task" onclick="saveManualOrder()">Save Order</button>
     </div>
   </div>
 </div>
@@ -3044,7 +3102,10 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
         </div>
       </div>
       <div class="crm-header-fields">
-        <input type="text" id="crm-modal-name" data-field="name" placeholder="Contact name" oninput="updateCrmAvatar(this.value)">
+        <div class="crm-header-row">
+          <input type="text" id="crm-modal-name" data-field="name" placeholder="名前 (JP)" oninput="updateCrmAvatar(this.value)" style="flex:1">
+          <input type="text" id="crm-modal-name-en" placeholder="Name (EN)" style="flex:1">
+        </div>
         <div class="crm-header-row">
           <input type="text" id="crm-modal-company" placeholder="Company">
           <input type="text" id="crm-modal-role" placeholder="Role / Title">
@@ -3102,8 +3163,8 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
           </select>
         </div>
         <div class="crm-field full-width">
-          <label for="crm-modal-products">Products (comma-separated)</label>
-          <input type="text" id="crm-modal-products" placeholder="soap, candles, packaging">
+          <label for="crm-modal-products">Shop Type</label>
+          <input type="text" id="crm-modal-products" placeholder="e.g. Lifestyle shop, Cosmetics">
         </div>
       </div>
     </div>
@@ -5419,8 +5480,14 @@ function renderCrmVendors() {
     var nameWrap = document.createElement("div");
     var nameDiv = document.createElement("div");
     nameDiv.className = "crm-vendor-name";
-    nameDiv.textContent = c.name;
+    nameDiv.textContent = c.name || c.nameEn || "Unnamed";
     nameWrap.appendChild(nameDiv);
+    if (c.nameEn && c.name) {
+      var nameEnDiv = document.createElement("div");
+      nameEnDiv.style.cssText = "font-size:12px;color:#5f6368;";
+      nameEnDiv.textContent = c.nameEn;
+      nameWrap.appendChild(nameEnDiv);
+    }
     if (c.company) {
       var companyDiv = document.createElement("div");
       companyDiv.className = "crm-vendor-company";
@@ -5572,8 +5639,14 @@ function renderCrmPipeline() {
 
       var nameDiv = document.createElement("div");
       nameDiv.className = "task-card-name";
-      nameDiv.textContent = c.name;
+      nameDiv.textContent = c.name || c.nameEn || "Unnamed";
       card.appendChild(nameDiv);
+      if (c.nameEn && c.name) {
+        var nameEnSmall = document.createElement("div");
+        nameEnSmall.style.cssText = "font-size:11px;color:#5f6368;margin-top:1px;";
+        nameEnSmall.textContent = c.nameEn;
+        card.appendChild(nameEnSmall);
+      }
 
       var metaDiv = document.createElement("div");
       metaDiv.className = "task-card-meta";
@@ -5719,8 +5792,11 @@ function uploadCrmFile(base64, mimeType, fileName, callback) {
     body: JSON.stringify({ action: "uploadFile", fileName: fileName, mimeType: mimeType, base64Data: base64 })
   })
     .then(function(r) { return r.json(); })
-    .then(function(data) { callback(data.success ? data.fileUrl : null); })
-    .catch(function() { callback(null); });
+    .then(function(data) {
+      if (!data.success) console.error("CRM file upload failed:", data.error);
+      callback(data.success ? data.fileUrl : null);
+    })
+    .catch(function(err) { console.error("CRM file upload error:", err); callback(null); });
 }
 
 function handleCrmAvatarUpload(input) {
@@ -5806,6 +5882,7 @@ function openCrmCreateModal() {
 
   document.getElementById("crm-modal-id").value = "";
   document.getElementById("crm-modal-name").value = "";
+  document.getElementById("crm-modal-name-en").value = "";
   document.getElementById("crm-modal-type").value = "Vendor";
   document.getElementById("crm-modal-company").value = "";
   document.getElementById("crm-modal-role").value = "";
@@ -5849,6 +5926,7 @@ function openCrmEditModal(contactId) {
 
   document.getElementById("crm-modal-id").value = c.id;
   document.getElementById("crm-modal-name").value = c.name || "";
+  document.getElementById("crm-modal-name-en").value = c.nameEn || "";
   document.getElementById("crm-modal-type").value = c.type || "Vendor";
   document.getElementById("crm-modal-company").value = c.company || "";
   document.getElementById("crm-modal-role").value = c.role || "";
@@ -5937,8 +6015,14 @@ function openCrmDetailView(contactId) {
   infoDiv.className = "crm-detail-header-info";
   var nameEl = document.createElement("h2");
   nameEl.className = "crm-detail-name";
-  nameEl.textContent = c.name || "Unnamed";
+  nameEl.textContent = c.name || c.nameEn || "Unnamed";
   infoDiv.appendChild(nameEl);
+  if (c.nameEn && c.name) {
+    var nameEnEl = document.createElement("div");
+    nameEnEl.style.cssText = "font-size:14px;color:#5f6368;margin-top:2px;";
+    nameEnEl.textContent = c.nameEn;
+    infoDiv.appendChild(nameEnEl);
+  }
 
   var subtitleParts = [c.company, c.role].filter(Boolean);
   if (subtitleParts.length) {
@@ -6015,11 +6099,11 @@ function openCrmDetailView(contactId) {
   bizFields.className = "crm-detail-fields";
   bizFields.appendChild(makeField("Type", c.type));
   bizFields.appendChild(makeField("Stage", (c.stage || "").replace(/_/g, " ")));
-  // Products as tags
+  // Shop Type as tags
   var prodField = document.createElement("div");
   prodField.className = "crm-detail-field full-width";
   var prodLabel = document.createElement("label");
-  prodLabel.textContent = "Products";
+  prodLabel.textContent = "Shop Type";
   prodField.appendChild(prodLabel);
   if (c.products && c.products.trim()) {
     var tagsDiv = document.createElement("div");
@@ -6264,6 +6348,7 @@ function saveCrmContact() {
   var id = document.getElementById("crm-modal-id").value;
   var contact = {
     name: document.getElementById("crm-modal-name").value.trim(),
+    nameEn: document.getElementById("crm-modal-name-en").value.trim(),
     type: document.getElementById("crm-modal-type").value,
     company: document.getElementById("crm-modal-company").value.trim(),
     role: document.getElementById("crm-modal-role").value.trim(),
@@ -6303,14 +6388,15 @@ function saveCrmContact() {
     if (crmPendingCardFront) {
       var fname = "card-front-" + contact.name.replace(/\s+/g, "-").toLowerCase() + "-" + Date.now() + ".jpg";
       uploadCrmFile(crmPendingCardFront.base64, crmPendingCardFront.mimeType, fname, function(url) {
-        if (url) contact.businessCardFrontUrl = url;
+        if (url) { contact.businessCardFrontUrl = url; contact.businessCardUrl = url; }
+        else { setCrmSyncStatus("Card front upload failed"); }
         cb();
       });
     } else if (crmRemoveCardFront) {
-      contact.businessCardFrontUrl = "";
+      contact.businessCardFrontUrl = ""; contact.businessCardUrl = "";
       cb();
     } else {
-      if (crmExistingCardFrontUrl) contact.businessCardFrontUrl = crmExistingCardFrontUrl;
+      if (crmExistingCardFrontUrl) { contact.businessCardFrontUrl = crmExistingCardFrontUrl; contact.businessCardUrl = crmExistingCardFrontUrl; }
       cb();
     }
   };
@@ -6319,6 +6405,7 @@ function saveCrmContact() {
       var fname = "card-back-" + contact.name.replace(/\s+/g, "-").toLowerCase() + "-" + Date.now() + ".jpg";
       uploadCrmFile(crmPendingCardBack.base64, crmPendingCardBack.mimeType, fname, function(url) {
         if (url) contact.businessCardBackUrl = url;
+        else { setCrmSyncStatus("Card back upload failed"); }
         cb();
       });
     } else if (crmRemoveCardBack) {
@@ -10241,7 +10328,8 @@ function renderOrders() {
 
     // Order #
     var tdNum = document.createElement("td");
-    tdNum.textContent = "#" + (o.orderNumber || o.shopifyOrderId || "\u2014");
+    var oNum = o.orderNumber || o.shopifyOrderId || "\u2014";
+    tdNum.textContent = String(oNum).indexOf("M-") === 0 ? oNum : "#" + oNum;
     tdNum.style.fontWeight = "500";
     tr.appendChild(tdNum);
 
@@ -10344,7 +10432,8 @@ function renderOrders() {
 }
 
 function openOrderDetailModal(order) {
-  document.getElementById("order-detail-title").textContent = "Order #" + (order.orderNumber || order.shopifyOrderId || "");
+  var detailNum = order.orderNumber || order.shopifyOrderId || "";
+  document.getElementById("order-detail-title").textContent = (String(detailNum).indexOf("M-") === 0 ? "Order " : "Order #") + detailNum;
   var grid = document.getElementById("order-detail-grid");
   grid.textContent = "";
 
@@ -10522,6 +10611,167 @@ function openOrderDetailModal(order) {
 
 function closeOrderDetailModal() {
   document.getElementById("order-detail-overlay").classList.remove("open");
+}
+
+// ── Manual Order Creation ────────────────────────────────────
+function generateManualOrderNumber() {
+  var year = new Date().getFullYear();
+  var maxSeq = 0;
+  shopifyOrders.forEach(function(o) {
+    var num = String(o.orderNumber || "");
+    if (num.indexOf("M-" + year + "-") === 0) {
+      var seq = parseInt(num.split("-")[2], 10) || 0;
+      if (seq > maxSeq) maxSeq = seq;
+    }
+  });
+  return "M-" + year + "-" + String(maxSeq + 1).padStart(3, "0");
+}
+
+function openManualOrderModal() {
+  document.getElementById("mo-customer-name").value = "";
+  document.getElementById("mo-email").value = "";
+  document.getElementById("mo-date").value = new Date().toISOString().split("T")[0];
+  document.getElementById("mo-workspace").value = "IVYCOAST";
+  document.getElementById("mo-line-items").textContent = "";
+  document.getElementById("mo-subtotal").value = "";
+  document.getElementById("mo-shipping").value = "0";
+  document.getElementById("mo-total").value = "";
+  document.getElementById("mo-financial-status").value = "draft";
+  document.getElementById("mo-fulfillment-status").value = "unfulfilled";
+  document.getElementById("mo-address").value = "";
+  document.getElementById("mo-notes").value = "";
+  addManualOrderLineItem();
+  document.getElementById("manual-order-overlay").classList.add("open");
+}
+
+function closeManualOrderModal() {
+  document.getElementById("manual-order-overlay").classList.remove("open");
+}
+
+function addManualOrderLineItem() {
+  var tbody = document.getElementById("mo-line-items");
+  var tr = document.createElement("tr");
+
+  var tdDesc = document.createElement("td");
+  var descInput = document.createElement("input");
+  descInput.type = "text";
+  descInput.placeholder = "Item description";
+  descInput.style.cssText = "width:100%;border:1px solid #dadce0;border-radius:4px;padding:6px 8px;font-size:13px;font-family:inherit;";
+  tdDesc.appendChild(descInput);
+  tr.appendChild(tdDesc);
+
+  var tdQty = document.createElement("td");
+  var qtyInput = document.createElement("input");
+  qtyInput.type = "number";
+  qtyInput.value = "1";
+  qtyInput.min = "1";
+  qtyInput.style.cssText = "width:100%;border:1px solid #dadce0;border-radius:4px;padding:6px 4px;font-size:13px;text-align:center;font-family:inherit;";
+  qtyInput.addEventListener("input", recalcManualOrderTotal);
+  tdQty.appendChild(qtyInput);
+  tr.appendChild(tdQty);
+
+  var tdPrice = document.createElement("td");
+  var priceInput = document.createElement("input");
+  priceInput.type = "number";
+  priceInput.value = "0";
+  priceInput.min = "0";
+  priceInput.style.cssText = "width:100%;border:1px solid #dadce0;border-radius:4px;padding:6px 4px;font-size:13px;text-align:right;font-family:inherit;";
+  priceInput.addEventListener("input", recalcManualOrderTotal);
+  tdPrice.appendChild(priceInput);
+  tr.appendChild(tdPrice);
+
+  var tdAmt = document.createElement("td");
+  tdAmt.className = "mo-line-amount";
+  tdAmt.style.cssText = "text-align:right;font-size:13px;font-weight:500;padding:6px 4px;";
+  tdAmt.textContent = "\u00A50";
+  tr.appendChild(tdAmt);
+
+  var tdDel = document.createElement("td");
+  var delBtn = document.createElement("button");
+  delBtn.textContent = "\u00D7";
+  delBtn.style.cssText = "background:none;border:none;color:#d93025;font-size:16px;cursor:pointer;padding:2px 6px;";
+  delBtn.addEventListener("click", function() { tr.remove(); recalcManualOrderTotal(); });
+  tdDel.appendChild(delBtn);
+  tr.appendChild(tdDel);
+
+  tbody.appendChild(tr);
+}
+
+function recalcManualOrderTotal() {
+  var rows = document.getElementById("mo-line-items").querySelectorAll("tr");
+  var subtotal = 0;
+  rows.forEach(function(tr) {
+    var inputs = tr.querySelectorAll("input");
+    var qty = parseFloat(inputs[1].value) || 0;
+    var price = parseFloat(inputs[2].value) || 0;
+    var amt = qty * price;
+    tr.querySelector(".mo-line-amount").textContent = "\u00A5" + amt.toLocaleString();
+    subtotal += amt;
+  });
+  var shipping = parseFloat(document.getElementById("mo-shipping").value) || 0;
+  document.getElementById("mo-subtotal").value = "\u00A5" + subtotal.toLocaleString();
+  document.getElementById("mo-total").value = "\u00A5" + (subtotal + shipping).toLocaleString();
+}
+
+function saveManualOrder() {
+  var customerName = document.getElementById("mo-customer-name").value.trim();
+  if (!customerName) { alert("Customer name is required."); return; }
+
+  var rows = document.getElementById("mo-line-items").querySelectorAll("tr");
+  var lineItems = [];
+  var totalPrice = 0;
+  rows.forEach(function(tr) {
+    var inputs = tr.querySelectorAll("input");
+    var desc = inputs[0].value.trim();
+    var qty = parseFloat(inputs[1].value) || 0;
+    var price = parseFloat(inputs[2].value) || 0;
+    if (desc && qty > 0) {
+      lineItems.push(desc + " x" + qty);
+      totalPrice += qty * price;
+    }
+  });
+  var shipping = parseFloat(document.getElementById("mo-shipping").value) || 0;
+  totalPrice += shipping;
+
+  var orderNumber = generateManualOrderNumber();
+  var order = {
+    orderNumber: orderNumber,
+    shopifyOrderId: "",
+    customerName: customerName,
+    email: document.getElementById("mo-email").value.trim(),
+    createdAt: document.getElementById("mo-date").value + "T00:00:00Z",
+    lineItems: lineItems.join("; "),
+    totalPrice: String(totalPrice),
+    currency: "JPY",
+    financialStatus: document.getElementById("mo-financial-status").value,
+    fulfillmentStatus: document.getElementById("mo-fulfillment-status").value,
+    shippingAddress: document.getElementById("mo-address").value.trim(),
+    note: document.getElementById("mo-notes").value.trim(),
+    workspace: document.getElementById("mo-workspace").value
+  };
+
+  closeManualOrderModal();
+  shopifyOrders.unshift(order);
+  renderOrders();
+  renderDocuments();
+  setOrdersSyncStatus("Saving\u2026");
+
+  fetch(SCRIPT_URL, {
+    method: "POST",
+    headers: { "Content-Type": "text/plain" },
+    body: JSON.stringify({ action: "create", sheet: "Orders", order: order })
+  })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data.order) {
+        shopifyOrders = shopifyOrders.map(function(o) {
+          return o.orderNumber === orderNumber && !o.id ? data.order : o;
+        });
+        renderOrders();
+      }
+      setOrdersSyncStatus("Order created");
+    })
+    .catch(function() { setOrdersSyncStatus("Save failed"); fetchShopifyOrders(true); });
 }
 
 function startOrdersRefresh() {
