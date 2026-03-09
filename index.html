@@ -864,14 +864,27 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
 .crm-type-contact { background: #e8eaed; color: #5f6368; }
 .crm-type-partner { background: #e6f4ea; color: #137333; }
 
-/* CRM Modal — Redesigned */
+/* CRM Modal — Side Panel Drawer */
 .board-modal.crm-modal {
-  width: 600px;
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 680px;
+  max-width: 92vw;
+  height: 100vh;
+  max-height: 100vh;
+  border-radius: 0;
   padding: 0;
   display: flex;
   flex-direction: column;
   overflow-y: hidden;
+  transform: translateX(100%);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: -4px 0 24px rgba(0,0,0,0.15);
+  z-index: 201;
 }
+#crm-modal-overlay.open { display: block; }
+#crm-modal-overlay.open .crm-modal { transform: translateX(0); }
 .crm-modal-body {
   flex: 1;
   overflow-y: auto;
@@ -1070,7 +1083,7 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
   padding: 16px 28px;
   border-top: 1px solid #ebebeb;
   background: #fafafa;
-  border-radius: 0 0 12px 12px;
+  border-radius: 0;
   flex-shrink: 0;
 }
 .crm-modal-actions button {
@@ -2010,26 +2023,51 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
   background: #fff;
   display: flex;
   flex-direction: column;
-  border-radius: 12px;
   z-index: 2;
 }
 .crm-detail-header {
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid #ebebeb;
+  flex-shrink: 0;
+}
+.crm-detail-header-top {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  margin-bottom: 12px;
+}
+.crm-detail-header-actions {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+  margin-left: auto;
+}
+.crm-detail-header-actions button {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+  background: #fff;
+  cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 16px;
-  padding: 28px 28px 20px;
-  border-bottom: 1px solid #ebebeb;
+  justify-content: center;
+  color: #5f6368;
+  transition: all 0.15s;
 }
+.crm-detail-header-actions button:hover { background: #f1f3f4; color: #202124; }
+.crm-detail-header-actions .crm-edit-btn { color: #1a73e8; border-color: #c2d7f5; }
+.crm-detail-header-actions .crm-edit-btn:hover { background: #e8f0fe; }
 .crm-detail-avatar {
-  width: 72px;
-  height: 72px;
+  width: 56px;
+  height: 56px;
   border-radius: 50%;
   background: #e8f0fe;
   color: #1a73e8;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 26px;
+  font-size: 22px;
   font-weight: 700;
   overflow: hidden;
   flex-shrink: 0;
@@ -2044,21 +2082,27 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
   min-width: 0;
 }
 .crm-detail-name {
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 600;
   color: #202124;
-  margin: 0 0 2px;
+  margin: 0;
   line-height: 1.3;
+}
+.crm-detail-name-en {
+  font-size: 13px;
+  color: #5f6368;
+  margin-top: 1px;
 }
 .crm-detail-subtitle {
   font-size: 13px;
   color: #5f6368;
-  margin-bottom: 8px;
+  margin-top: 4px;
 }
 .crm-detail-badges {
   display: flex;
   gap: 6px;
   flex-wrap: wrap;
+  margin-top: 8px;
 }
 .crm-detail-badge {
   display: inline-block;
@@ -2076,14 +2120,36 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
   color: #5f6368;
   text-transform: capitalize;
 }
+/* Contact chips in header */
+.crm-detail-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+.crm-detail-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #3c4043;
+  background: #f1f3f4;
+  padding: 4px 12px;
+  border-radius: 16px;
+  text-decoration: none;
+  transition: background 0.15s;
+}
+.crm-detail-chip:hover { background: #e0e3e6; }
+.crm-detail-chip svg { flex-shrink: 0; color: #5f6368; }
 .crm-detail-body {
   flex: 1;
   overflow-y: auto;
   min-height: 0;
+  padding-bottom: 16px;
 }
 .crm-detail-section {
-  padding: 16px 28px;
-  border-bottom: 1px solid #ebebeb;
+  padding: 14px 24px;
+  border-bottom: 1px solid #f0f0f0;
 }
 .crm-detail-section:last-child { border-bottom: none; }
 .crm-detail-section-title {
@@ -2092,18 +2158,18 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
   text-transform: uppercase;
   letter-spacing: 0.8px;
   color: #80868b;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
 }
 .crm-detail-fields {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 12px 16px;
+  gap: 10px 16px;
 }
 .crm-detail-field label {
   display: block;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 500;
-  color: #5f6368;
+  color: #80868b;
   margin-bottom: 2px;
 }
 .crm-detail-field p {
@@ -2136,6 +2202,74 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
   border-radius: 12px;
   color: #3c4043;
 }
+/* Pricing stat cards */
+.crm-detail-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.crm-detail-stat {
+  background: #f8f9fa;
+  border: 1px solid #ebebeb;
+  border-radius: 10px;
+  padding: 14px 16px;
+  text-align: center;
+}
+.crm-detail-stat-value {
+  font-size: 22px;
+  font-weight: 700;
+  color: #202124;
+  line-height: 1.2;
+}
+.crm-detail-stat-label {
+  font-size: 11px;
+  font-weight: 500;
+  color: #80868b;
+  margin-top: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+/* Compact business detail cards */
+.crm-detail-biz-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+}
+.crm-detail-biz-card {
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+.crm-detail-biz-card label {
+  display: block;
+  font-size: 10px;
+  font-weight: 600;
+  color: #80868b;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 3px;
+}
+.crm-detail-biz-card p {
+  font-size: 13px;
+  font-weight: 500;
+  color: #202124;
+  margin: 0;
+  text-transform: capitalize;
+}
+/* Delete link at bottom */
+.crm-detail-delete-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: #c5221f;
+  cursor: pointer;
+  padding: 4px 0;
+  border: none;
+  background: none;
+  font-family: inherit;
+}
+.crm-detail-delete-link:hover { text-decoration: underline; }
 .crm-detail-cards {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -2170,20 +2304,6 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
 }
 .crm-detail-checklist-item.checked { color: #5f6368; text-decoration: line-through; }
 .crm-detail-checklist-item svg { flex-shrink: 0; }
-.crm-detail-actions {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 14px 28px;
-  border-top: 1px solid #ebebeb;
-  background: #fff;
-  border-radius: 0 0 12px 12px;
-}
-.crm-detail-actions .crm-actions-right {
-  display: flex;
-  gap: 8px;
-  margin-left: auto;
-}
 
 /* Responsive */
 @media (max-width: 600px) {
@@ -2227,12 +2347,16 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
   .crm-kanban .kanban-col { scroll-snap-align: start; }
   .crm-table { font-size: 13px; }
   .crm-table th, .crm-table td { padding: 8px 6px; }
-  .board-modal.crm-modal { width: 100%; max-width: 100vw; border-radius: 0; max-height: 100vh; }
+  .board-modal.crm-modal { width: 100vw; max-width: 100vw; }
   .crm-modal-header { padding: 16px 20px 14px; }
   .crm-modal-section { padding: 14px 20px; }
   .crm-field-row { grid-template-columns: 1fr; }
   .crm-header-row { grid-template-columns: 1fr; }
   .crm-modal-actions { padding: 14px 20px; }
+  .crm-detail-header { padding: 16px 18px 12px; }
+  .crm-detail-section { padding: 12px 18px; }
+  .crm-detail-biz-row { grid-template-columns: 1fr; }
+  .crm-detail-fields { grid-template-columns: 1fr; }
   .products-table { font-size: 13px; }
   .products-table th, .products-table td { padding: 8px 6px; }
   .orders-table { font-size: 13px; }
@@ -3107,7 +3231,6 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
     <div class="crm-detail-view" id="crm-detail-view" style="display:none">
       <div class="crm-detail-header" id="crm-detail-header"></div>
       <div class="crm-detail-body" id="crm-detail-body"></div>
-      <div class="crm-detail-actions" id="crm-detail-actions"></div>
     </div>
 
     <!-- Profile Header (edit mode) -->
@@ -5999,6 +6122,39 @@ function closeCrmModal() {
   document.getElementById("crm-edit-actions").style.display = "";
 }
 
+function _crmSvgIcon(paths, w, h, strokeW) {
+  w = w || 16; h = h || 16; strokeW = strokeW || 2;
+  var svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  svg.setAttribute("width", String(w));
+  svg.setAttribute("height", String(h));
+  svg.setAttribute("viewBox", "0 0 24 24");
+  svg.setAttribute("fill", "none");
+  svg.setAttribute("stroke", "currentColor");
+  svg.setAttribute("stroke-width", String(strokeW));
+  paths.forEach(function(d) {
+    var el;
+    if (d.indexOf("cx=") === 0) {
+      // circle: "cx=12 cy=10 r=3"
+      el = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+      d.split(" ").forEach(function(attr) { var kv = attr.split("="); el.setAttribute(kv[0], kv[1]); });
+    } else if (d.indexOf("points=") === 0) {
+      el = document.createElementNS("http://www.w3.org/2000/svg", "polyline");
+      el.setAttribute("points", d.replace("points=", ""));
+    } else if (d.indexOf("rect=") === 0) {
+      el = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+      var parts = d.replace("rect=", "").split(" ");
+      el.setAttribute("x", parts[0]); el.setAttribute("y", parts[1]);
+      el.setAttribute("width", parts[2]); el.setAttribute("height", parts[3]);
+      if (parts[4]) el.setAttribute("rx", parts[4]);
+    } else {
+      el = document.createElementNS("http://www.w3.org/2000/svg", "path");
+      el.setAttribute("d", d);
+    }
+    svg.appendChild(el);
+  });
+  return svg;
+}
+
 function openCrmDetailView(contactId) {
   var c = crmContacts.find(function(x) { return x.id === contactId; });
   if (!c) return;
@@ -6011,12 +6167,13 @@ function openCrmDetailView(contactId) {
   var detailView = document.getElementById("crm-detail-view");
   var header = document.getElementById("crm-detail-header");
   var body = document.getElementById("crm-detail-body");
-  var actions = document.getElementById("crm-detail-actions");
   header.textContent = "";
   body.textContent = "";
-  actions.textContent = "";
 
-  // --- HEADER ---
+  // --- HEADER TOP ROW (avatar + info + action buttons) ---
+  var headerTop = document.createElement("div");
+  headerTop.className = "crm-detail-header-top";
+
   var avatarDiv = document.createElement("div");
   avatarDiv.className = "crm-detail-avatar";
   if (c.profileImageUrl) {
@@ -6027,7 +6184,7 @@ function openCrmDetailView(contactId) {
   } else {
     avatarDiv.textContent = (c.name || "?").charAt(0).toUpperCase();
   }
-  header.appendChild(avatarDiv);
+  headerTop.appendChild(avatarDiv);
 
   var infoDiv = document.createElement("div");
   infoDiv.className = "crm-detail-header-info";
@@ -6037,7 +6194,7 @@ function openCrmDetailView(contactId) {
   infoDiv.appendChild(nameEl);
   if (c.nameEn && c.name) {
     var nameEnEl = document.createElement("div");
-    nameEnEl.style.cssText = "font-size:14px;color:#5f6368;margin-top:2px;";
+    nameEnEl.className = "crm-detail-name-en";
     nameEnEl.textContent = c.nameEn;
     infoDiv.appendChild(nameEnEl);
   }
@@ -6049,7 +6206,26 @@ function openCrmDetailView(contactId) {
     sub.textContent = subtitleParts.join(" \u00B7 ");
     infoDiv.appendChild(sub);
   }
+  headerTop.appendChild(infoDiv);
 
+  // Header action buttons (Edit + Close)
+  var headerActions = document.createElement("div");
+  headerActions.className = "crm-detail-header-actions";
+  var editBtn = document.createElement("button");
+  editBtn.className = "crm-edit-btn";
+  editBtn.title = "Edit";
+  editBtn.appendChild(_crmSvgIcon(["M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7","M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"]));
+  editBtn.onclick = function() { switchToCrmEditMode(contactId); };
+  headerActions.appendChild(editBtn);
+  var closeBtn = document.createElement("button");
+  closeBtn.title = "Close";
+  closeBtn.appendChild(_crmSvgIcon(["M18 6L6 18","M6 6l12 12"], 16, 16, 2.5));
+  closeBtn.onclick = closeCrmModal;
+  headerActions.appendChild(closeBtn);
+  headerTop.appendChild(headerActions);
+  header.appendChild(headerTop);
+
+  // Badges
   var badges = document.createElement("div");
   badges.className = "crm-detail-badges";
   if (c.type) {
@@ -6064,8 +6240,47 @@ function openCrmDetailView(contactId) {
     sb.textContent = (c.stage || "").replace(/_/g, " ");
     badges.appendChild(sb);
   }
-  infoDiv.appendChild(badges);
-  header.appendChild(infoDiv);
+  if (c.workspace) {
+    var wb = document.createElement("span");
+    wb.className = "crm-detail-badge stage";
+    wb.textContent = c.workspace;
+    badges.appendChild(wb);
+  }
+  header.appendChild(badges);
+
+  // Contact chips (email, phone, location)
+  var hasChips = c.email || c.phone || c.location;
+  if (hasChips) {
+    var chips = document.createElement("div");
+    chips.className = "crm-detail-chips";
+    if (c.email) {
+      var emailChip = document.createElement("a");
+      emailChip.className = "crm-detail-chip";
+      emailChip.href = "mailto:" + c.email;
+      emailChip.appendChild(_crmSvgIcon(["M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z","points=22,6 12,13 2,6"], 14, 14));
+      var emailText = document.createTextNode(c.email);
+      emailChip.appendChild(emailText);
+      chips.appendChild(emailChip);
+    }
+    if (c.phone) {
+      var phoneChip = document.createElement("a");
+      phoneChip.className = "crm-detail-chip";
+      phoneChip.href = "tel:" + c.phone;
+      phoneChip.appendChild(_crmSvgIcon(["M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.13.81.36 1.6.66 2.36a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.76.3 1.55.53 2.36.66A2 2 0 0122 16.92z"], 14, 14));
+      var phoneText = document.createTextNode(c.phone);
+      phoneChip.appendChild(phoneText);
+      chips.appendChild(phoneChip);
+    }
+    if (c.location) {
+      var locChip = document.createElement("span");
+      locChip.className = "crm-detail-chip";
+      locChip.appendChild(_crmSvgIcon(["M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z","cx=12 cy=10 r=3"], 14, 14));
+      var locText = document.createTextNode(c.location);
+      locChip.appendChild(locText);
+      chips.appendChild(locChip);
+    }
+    header.appendChild(chips);
+  }
 
   // Helper to create a section
   function makeSection(title) {
@@ -6100,49 +6315,65 @@ function openCrmDetailView(contactId) {
     return div;
   }
 
-  // --- CONTACT INFO ---
-  var contactSec = makeSection("Contact Info");
-  var contactFields = document.createElement("div");
-  contactFields.className = "crm-detail-fields";
-  contactFields.appendChild(makeField("Email", c.email, { linkType: "email" }));
-  contactFields.appendChild(makeField("Phone", c.phone, { linkType: "phone" }));
-  contactFields.appendChild(makeField("Location", c.location));
-  contactFields.appendChild(makeField("Workspace", c.workspace));
-  contactSec.appendChild(contactFields);
-  body.appendChild(contactSec);
-
-  // --- BUSINESS DETAILS ---
-  var bizSec = makeSection("Business Details");
-  var bizFields = document.createElement("div");
-  bizFields.className = "crm-detail-fields";
-  bizFields.appendChild(makeField("Type", c.type));
-  bizFields.appendChild(makeField("Stage", (c.stage || "").replace(/_/g, " ")));
-  // Shop Type as tags
-  var prodField = document.createElement("div");
-  prodField.className = "crm-detail-field full-width";
-  var prodLabel = document.createElement("label");
-  prodLabel.textContent = "Shop Type";
-  prodField.appendChild(prodLabel);
-  if (c.products && c.products.trim()) {
-    var tagsDiv = document.createElement("div");
-    tagsDiv.className = "crm-detail-tags";
-    c.products.split(",").forEach(function(prod) {
-      prod = prod.trim();
-      if (!prod) return;
-      var tag = document.createElement("span");
-      tag.className = "crm-detail-tag";
-      tag.textContent = prod;
-      tagsDiv.appendChild(tag);
-    });
-    prodField.appendChild(tagsDiv);
-  } else {
-    var noP = document.createElement("p");
-    noP.textContent = "\u2014";
-    prodField.appendChild(noP);
+  // Helper to create a biz card element
+  function makeBizCard(labelText, valueText) {
+    var card = document.createElement("div");
+    card.className = "crm-detail-biz-card";
+    var lbl = document.createElement("label");
+    lbl.textContent = labelText;
+    card.appendChild(lbl);
+    var p = document.createElement("p");
+    p.textContent = valueText || "\u2014";
+    card.appendChild(p);
+    return card;
   }
-  bizFields.appendChild(prodField);
-  bizSec.appendChild(bizFields);
+
+  // --- BUSINESS DETAILS (compact cards) ---
+  var bizSec = makeSection("Business Details");
+  var bizRow = document.createElement("div");
+  bizRow.className = "crm-detail-biz-row";
+  bizRow.appendChild(makeBizCard("Type", c.type));
+  bizRow.appendChild(makeBizCard("Stage", (c.stage || "").replace(/_/g, " ")));
+  bizRow.appendChild(makeBizCard("Shop Type", c.products && c.products.trim() ? c.products : null));
+  bizSec.appendChild(bizRow);
   body.appendChild(bizSec);
+
+  // --- PRICING (stat cards) ---
+  var ws = c.wholesalePercent;
+  var cs = c.consignmentPercent;
+  if (ws || cs) {
+    var priceSec = makeSection("Pricing");
+    var statsRow = document.createElement("div");
+    statsRow.className = "crm-detail-stats";
+    if (ws) {
+      var wsStat = document.createElement("div");
+      wsStat.className = "crm-detail-stat";
+      var wsVal = document.createElement("div");
+      wsVal.className = "crm-detail-stat-value";
+      wsVal.textContent = ws + "%";
+      wsStat.appendChild(wsVal);
+      var wsLbl = document.createElement("div");
+      wsLbl.className = "crm-detail-stat-label";
+      wsLbl.textContent = "Wholesale";
+      wsStat.appendChild(wsLbl);
+      statsRow.appendChild(wsStat);
+    }
+    if (cs) {
+      var csStat = document.createElement("div");
+      csStat.className = "crm-detail-stat";
+      var csVal = document.createElement("div");
+      csVal.className = "crm-detail-stat-value";
+      csVal.textContent = cs + "%";
+      csStat.appendChild(csVal);
+      var csLbl = document.createElement("div");
+      csLbl.className = "crm-detail-stat-label";
+      csLbl.textContent = "Consignment";
+      csStat.appendChild(csLbl);
+      statsRow.appendChild(csStat);
+    }
+    priceSec.appendChild(statsRow);
+    body.appendChild(priceSec);
+  }
 
   // --- ACTIVITY ---
   var actSec = makeSection("Activity");
@@ -6150,7 +6381,9 @@ function openCrmDetailView(contactId) {
   actFields.className = "crm-detail-fields";
   actFields.appendChild(makeField("Connected", c.connectedDate ? formatDate(c.connectedDate) : ""));
   actFields.appendChild(makeField("Last Contact", c.lastContactDate ? formatDate(c.lastContactDate) : ""));
-  actFields.appendChild(makeField("Notes", c.notes, { fullWidth: true, className: "detail-notes" }));
+  if (c.notes) {
+    actFields.appendChild(makeField("Notes", c.notes, { fullWidth: true, className: "detail-notes" }));
+  }
   actSec.appendChild(actFields);
   body.appendChild(actSec);
 
@@ -6193,19 +6426,6 @@ function openCrmDetailView(contactId) {
     body.appendChild(cardSec);
   }
 
-  // --- PRICING ---
-  var ws = c.wholesalePercent;
-  var cs = c.consignmentPercent;
-  if (ws || cs) {
-    var priceSec = makeSection("Pricing");
-    var priceFields = document.createElement("div");
-    priceFields.className = "crm-detail-fields";
-    priceFields.appendChild(makeField("Wholesale", ws ? ws + "%" : "\u2014"));
-    priceFields.appendChild(makeField("Consignment", cs ? cs + "%" : "\u2014"));
-    priceSec.appendChild(priceFields);
-    body.appendChild(priceSec);
-  }
-
   // --- DOCUMENTS CHECKLIST ---
   var checklist = null;
   try { checklist = JSON.parse(c.checklist); } catch(e) { checklist = null; }
@@ -6214,7 +6434,6 @@ function openCrmDetailView(contactId) {
     checklist.forEach(function(item) {
       var row = document.createElement("div");
       row.className = "crm-detail-checklist-item" + (item.checked ? " checked" : "");
-      // Checkbox icon
       var svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
       svg.setAttribute("width", "16");
       svg.setAttribute("height", "16");
@@ -6283,25 +6502,19 @@ function openCrmDetailView(contactId) {
     body.appendChild(invSec);
   }
 
-  // --- ACTIONS ---
-  var delBtn = document.createElement("button");
-  delBtn.className = "btn-delete";
-  delBtn.textContent = "Delete";
-  delBtn.onclick = function() { document.getElementById("crm-modal-id").value = contactId; deleteCrmContactConfirm(); };
-  actions.appendChild(delBtn);
-
-  var rightDiv = document.createElement("div");
-  rightDiv.className = "crm-actions-right";
-  var closeBtn = document.createElement("button");
-  closeBtn.textContent = "Close";
-  closeBtn.onclick = closeCrmModal;
-  rightDiv.appendChild(closeBtn);
-  var editBtn = document.createElement("button");
-  editBtn.className = "btn-save";
-  editBtn.textContent = "Edit";
-  editBtn.onclick = function() { switchToCrmEditMode(contactId); };
-  rightDiv.appendChild(editBtn);
-  actions.appendChild(rightDiv);
+  // --- DELETE LINK (subtle, at bottom of body) ---
+  var deleteSec = document.createElement("div");
+  deleteSec.className = "crm-detail-section";
+  deleteSec.style.borderBottom = "none";
+  var delLink = document.createElement("button");
+  delLink.className = "crm-detail-delete-link";
+  var delIcon = _crmSvgIcon(["points=3,6 5,6 21,6","M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"], 14, 14);
+  delLink.appendChild(delIcon);
+  var delText = document.createTextNode("Delete contact");
+  delLink.appendChild(delText);
+  delLink.onclick = function() { document.getElementById("crm-modal-id").value = contactId; deleteCrmContactConfirm(); };
+  deleteSec.appendChild(delLink);
+  body.appendChild(deleteSec);
 
   detailView.style.display = "flex";
   document.getElementById("crm-modal-overlay").classList.add("open");
@@ -6325,6 +6538,7 @@ function switchToCrmEditMode(contactId) {
   crmExistingCardBackUrl = c.businessCardBackUrl || "";
   document.getElementById("crm-modal-id").value = c.id;
   document.getElementById("crm-modal-name").value = c.name || "";
+  document.getElementById("crm-modal-name-en").value = c.nameEn || "";
   document.getElementById("crm-modal-type").value = c.type || "Vendor";
   document.getElementById("crm-modal-company").value = c.company || "";
   document.getElementById("crm-modal-role").value = c.role || "";
@@ -6473,8 +6687,9 @@ function saveCrmContact() {
 
 function deleteCrmContactConfirm() {
   var id = document.getElementById("crm-modal-id").value;
-  var name = document.getElementById("crm-modal-name").value;
   if (!id) return;
+  var foundContact = crmContacts.find(function(x) { return x.id === id; });
+  var name = foundContact ? (foundContact.name || foundContact.nameEn || "this contact") : document.getElementById("crm-modal-name").value;
   if (!confirm('Delete "' + name + '"? This cannot be undone.')) return;
   closeCrmModal();
   crmContacts = crmContacts.filter(function(c) { return c.id !== id; });
