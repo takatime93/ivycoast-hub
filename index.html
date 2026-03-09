@@ -1006,10 +1006,15 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
   box-shadow: 0 0 0 2px rgba(26,115,232,0.2);
 }
 .crm-field textarea { resize: vertical; min-height: 56px; }
+.crm-card-pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
 .crm-card-upload {
   border: 2px dashed #dadce0;
   border-radius: 8px;
-  padding: 20px;
+  padding: 16px;
   text-align: center;
   cursor: pointer;
   transition: border-color 0.15s, background 0.15s;
@@ -2738,7 +2743,8 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
   <div class="board-modal crm-modal">
     <input type="hidden" id="crm-modal-id">
     <input type="file" id="crm-avatar-input" accept="image/*" style="display:none" onchange="handleCrmAvatarUpload(this)">
-    <input type="file" id="crm-card-input" accept="image/*" style="display:none" onchange="handleCrmBusinessCardUpload(this)">
+    <input type="file" id="crm-card-front-input" accept="image/*" style="display:none" onchange="handleCrmCardUpload('front',this)">
+    <input type="file" id="crm-card-back-input" accept="image/*" style="display:none" onchange="handleCrmCardUpload('back',this)">
 
     <!-- Profile Header -->
     <div class="crm-modal-header">
@@ -2835,14 +2841,26 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
     <!-- Business Card Section -->
     <div class="crm-modal-section">
       <div class="crm-section-title">Business Card</div>
-      <div class="crm-card-upload" id="crm-card-upload" onclick="document.getElementById('crm-card-input').click()">
-        <div class="crm-card-upload-label" id="crm-card-upload-label">
-          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#9aa0a6" stroke-width="1.5"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M8 10h8M8 14h5"/><circle cx="17" cy="14" r="2"/></svg>
-          Drop or click to upload business card
+      <div class="crm-card-pair">
+        <div class="crm-card-upload" id="crm-card-front-upload" onclick="document.getElementById('crm-card-front-input').click()">
+          <div class="crm-card-upload-label" id="crm-card-front-label">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#9aa0a6" stroke-width="1.5"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M8 10h8M8 14h5"/><circle cx="17" cy="14" r="2"/></svg>
+            Front
+          </div>
+          <div class="crm-card-preview" id="crm-card-front-preview">
+            <img id="crm-card-front-img" src="" alt="Front">
+            <button class="crm-card-remove" onclick="event.stopPropagation();removeCrmCard('front')" title="Remove">&times;</button>
+          </div>
         </div>
-        <div class="crm-card-preview" id="crm-card-preview">
-          <img id="crm-card-preview-img" src="" alt="Business card">
-          <button class="crm-card-remove" onclick="event.stopPropagation();removeCrmBusinessCard()" title="Remove">&times;</button>
+        <div class="crm-card-upload" id="crm-card-back-upload" onclick="document.getElementById('crm-card-back-input').click()">
+          <div class="crm-card-upload-label" id="crm-card-back-label">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#9aa0a6" stroke-width="1.5"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M8 10h8M8 14h5"/><circle cx="17" cy="14" r="2"/></svg>
+            Back
+          </div>
+          <div class="crm-card-preview" id="crm-card-back-preview">
+            <img id="crm-card-back-img" src="" alt="Back">
+            <button class="crm-card-remove" onclick="event.stopPropagation();removeCrmCard('back')" title="Remove">&times;</button>
+          </div>
         </div>
       </div>
     </div>
@@ -5328,10 +5346,13 @@ document.querySelectorAll("#crm-kanban .kanban-col").forEach(function(col) {
 
 // CRM Modal — Image state
 var crmPendingAvatar = null; // { base64, mimeType, dataUrl }
-var crmPendingCard = null;   // { base64, mimeType, dataUrl }
-var crmRemoveCard = false;
+var crmPendingCardFront = null;
+var crmPendingCardBack = null;
+var crmRemoveCardFront = false;
+var crmRemoveCardBack = false;
 var crmExistingAvatarUrl = "";
-var crmExistingCardUrl = "";
+var crmExistingCardFrontUrl = "";
+var crmExistingCardBackUrl = "";
 
 function getCrmInitials(name) {
   if (!name) return "";
@@ -5404,46 +5425,45 @@ function handleCrmAvatarUpload(input) {
   input.value = "";
 }
 
-function handleCrmBusinessCardUpload(input) {
+function handleCrmCardUpload(side, input) {
   if (!input.files || !input.files[0]) return;
   resizeImageBase64(input.files[0], 1200, function(result) {
-    crmPendingCard = result;
-    crmRemoveCard = false;
-    var preview = document.getElementById("crm-card-preview");
-    document.getElementById("crm-card-preview-img").src = result.dataUrl;
-    preview.classList.add("visible");
-    document.getElementById("crm-card-upload-label").style.display = "none";
-    document.getElementById("crm-card-upload").classList.add("has-preview");
+    if (side === "front") { crmPendingCardFront = result; crmRemoveCardFront = false; }
+    else { crmPendingCardBack = result; crmRemoveCardBack = false; }
+    document.getElementById("crm-card-" + side + "-img").src = result.dataUrl;
+    document.getElementById("crm-card-" + side + "-preview").classList.add("visible");
+    document.getElementById("crm-card-" + side + "-label").style.display = "none";
+    document.getElementById("crm-card-" + side + "-upload").classList.add("has-preview");
   });
   input.value = "";
 }
 
-function removeCrmBusinessCard() {
-  crmPendingCard = null;
-  crmRemoveCard = true;
-  crmExistingCardUrl = "";
-  var preview = document.getElementById("crm-card-preview");
-  preview.classList.remove("visible");
-  document.getElementById("crm-card-preview-img").src = "";
-  document.getElementById("crm-card-upload-label").style.display = "";
-  document.getElementById("crm-card-upload").classList.remove("has-preview");
+function removeCrmCard(side) {
+  if (side === "front") { crmPendingCardFront = null; crmRemoveCardFront = true; crmExistingCardFrontUrl = ""; }
+  else { crmPendingCardBack = null; crmRemoveCardBack = true; crmExistingCardBackUrl = ""; }
+  document.getElementById("crm-card-" + side + "-preview").classList.remove("visible");
+  document.getElementById("crm-card-" + side + "-img").src = "";
+  document.getElementById("crm-card-" + side + "-label").style.display = "";
+  document.getElementById("crm-card-" + side + "-upload").classList.remove("has-preview");
 }
 
-function resetCrmCardPreview() {
-  var preview = document.getElementById("crm-card-preview");
-  preview.classList.remove("visible");
-  document.getElementById("crm-card-preview-img").src = "";
-  document.getElementById("crm-card-upload-label").style.display = "";
-  document.getElementById("crm-card-upload").classList.remove("has-preview");
+function resetCrmCardPreview(side) {
+  document.getElementById("crm-card-" + side + "-preview").classList.remove("visible");
+  document.getElementById("crm-card-" + side + "-img").src = "";
+  document.getElementById("crm-card-" + side + "-label").style.display = "";
+  document.getElementById("crm-card-" + side + "-upload").classList.remove("has-preview");
 }
 
 // CRM Modal
 function openCrmCreateModal() {
   crmPendingAvatar = null;
-  crmPendingCard = null;
-  crmRemoveCard = false;
+  crmPendingCardFront = null;
+  crmPendingCardBack = null;
+  crmRemoveCardFront = false;
+  crmRemoveCardBack = false;
   crmExistingAvatarUrl = "";
-  crmExistingCardUrl = "";
+  crmExistingCardFrontUrl = "";
+  crmExistingCardBackUrl = "";
 
   document.getElementById("crm-modal-id").value = "";
   document.getElementById("crm-modal-name").value = "";
@@ -5465,7 +5485,8 @@ function openCrmCreateModal() {
   renderCrmChecklist(null);
   document.getElementById("crm-modal-invoices-section").style.display = "none";
   updateCrmAvatar("");
-  resetCrmCardPreview();
+  resetCrmCardPreview("front");
+  resetCrmCardPreview("back");
   document.getElementById("crm-modal-overlay").classList.add("open");
   setTimeout(function() { document.getElementById("crm-modal-name").focus(); }, 50);
 }
@@ -5474,10 +5495,13 @@ function openCrmEditModal(contactId) {
   var c = crmContacts.find(function(x) { return x.id === contactId; });
   if (!c) return;
   crmPendingAvatar = null;
-  crmPendingCard = null;
-  crmRemoveCard = false;
+  crmPendingCardFront = null;
+  crmPendingCardBack = null;
+  crmRemoveCardFront = false;
+  crmRemoveCardBack = false;
   crmExistingAvatarUrl = c.profileImageUrl || "";
-  crmExistingCardUrl = c.businessCardUrl || "";
+  crmExistingCardFrontUrl = c.businessCardUrl || c.businessCardFrontUrl || "";
+  crmExistingCardBackUrl = c.businessCardBackUrl || "";
 
   document.getElementById("crm-modal-id").value = c.id;
   document.getElementById("crm-modal-name").value = c.name || "";
@@ -5504,14 +5528,22 @@ function openCrmEditModal(contactId) {
   // Avatar
   updateCrmAvatar(c.name, crmExistingAvatarUrl || undefined);
 
-  // Business card preview
-  if (crmExistingCardUrl) {
-    document.getElementById("crm-card-preview-img").src = crmExistingCardUrl;
-    document.getElementById("crm-card-preview").classList.add("visible");
-    document.getElementById("crm-card-upload-label").style.display = "none";
-    document.getElementById("crm-card-upload").classList.add("has-preview");
+  // Business card previews (front + back)
+  if (crmExistingCardFrontUrl) {
+    document.getElementById("crm-card-front-img").src = crmExistingCardFrontUrl;
+    document.getElementById("crm-card-front-preview").classList.add("visible");
+    document.getElementById("crm-card-front-label").style.display = "none";
+    document.getElementById("crm-card-front-upload").classList.add("has-preview");
   } else {
-    resetCrmCardPreview();
+    resetCrmCardPreview("front");
+  }
+  if (crmExistingCardBackUrl) {
+    document.getElementById("crm-card-back-img").src = crmExistingCardBackUrl;
+    document.getElementById("crm-card-back-preview").classList.add("visible");
+    document.getElementById("crm-card-back-label").style.display = "none";
+    document.getElementById("crm-card-back-upload").classList.add("has-preview");
+  } else {
+    resetCrmCardPreview("back");
   }
 
   document.getElementById("crm-modal-overlay").classList.add("open");
@@ -5562,24 +5594,40 @@ function saveCrmContact() {
     }
   };
 
-  var uploadCard = function(cb) {
-    if (crmPendingCard) {
-      var fname = "card-" + contact.name.replace(/\s+/g, "-").toLowerCase() + "-" + Date.now() + ".jpg";
-      uploadCrmFile(crmPendingCard.base64, crmPendingCard.mimeType, fname, function(url) {
-        if (url) contact.businessCardUrl = url;
+  var uploadCardFront = function(cb) {
+    if (crmPendingCardFront) {
+      var fname = "card-front-" + contact.name.replace(/\s+/g, "-").toLowerCase() + "-" + Date.now() + ".jpg";
+      uploadCrmFile(crmPendingCardFront.base64, crmPendingCardFront.mimeType, fname, function(url) {
+        if (url) contact.businessCardFrontUrl = url;
         cb();
       });
-    } else if (crmRemoveCard) {
-      contact.businessCardUrl = "";
+    } else if (crmRemoveCardFront) {
+      contact.businessCardFrontUrl = "";
       cb();
     } else {
-      if (crmExistingCardUrl) contact.businessCardUrl = crmExistingCardUrl;
+      if (crmExistingCardFrontUrl) contact.businessCardFrontUrl = crmExistingCardFrontUrl;
+      cb();
+    }
+  };
+  var uploadCardBack = function(cb) {
+    if (crmPendingCardBack) {
+      var fname = "card-back-" + contact.name.replace(/\s+/g, "-").toLowerCase() + "-" + Date.now() + ".jpg";
+      uploadCrmFile(crmPendingCardBack.base64, crmPendingCardBack.mimeType, fname, function(url) {
+        if (url) contact.businessCardBackUrl = url;
+        cb();
+      });
+    } else if (crmRemoveCardBack) {
+      contact.businessCardBackUrl = "";
+      cb();
+    } else {
+      if (crmExistingCardBackUrl) contact.businessCardBackUrl = crmExistingCardBackUrl;
       cb();
     }
   };
 
   uploadAvatar(function() {
-    uploadCard(function() {
+    uploadCardFront(function() {
+    uploadCardBack(function() {
       if (id) {
         contact.id = id;
         crmContacts = crmContacts.map(function(c) {
@@ -5608,6 +5656,7 @@ function saveCrmContact() {
           })
           .catch(function() { setCrmSyncStatus("Create failed"); fetchCrmContacts(); });
       }
+    });
     });
   });
 }
