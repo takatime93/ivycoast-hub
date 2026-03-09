@@ -494,6 +494,11 @@ function syncShopifyProducts() {
 
 // ── Sync Shopify Orders → Google Sheet ─────────────────────────
 
+function mapDraftStatus(status) {
+  var map = { "open": "draft", "completed": "paid", "invoice_sent": "pending", "expired": "voided" };
+  return map[status] || "draft";
+}
+
 function syncShopifyOrders() {
   var sheet = getSheet("Orders");
   var headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
@@ -585,11 +590,11 @@ function syncShopifyOrders() {
 
       allOrders.push({
         shopifyOrderId: draftId,
-        orderNumber: d.name || ("D" + d.order_number || ""),
+        orderNumber: d.name || ("D-" + d.id),
         email: d.email || "",
         totalPrice: d.total_price || "",
         currency: d.currency || "JPY",
-        financialStatus: d.status || "draft",
+        financialStatus: mapDraftStatus(d.status),
         fulfillmentStatus: "unfulfilled",
         lineItems: lineItemsSummary,
         customerName: customerName,

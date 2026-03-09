@@ -1203,6 +1203,78 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
 .ful-fulfilled { background: #e6f4ea; color: #137333; }
 .ful-unfulfilled { background: #fef7e0; color: #b06000; }
 .ful-partial { background: #e8f0fe; color: #1a73e8; }
+.fin-draft { background: #e8eaed; color: #5f6368; }
+
+/* Order doc status icons */
+.order-doc-icons { display: flex; gap: 3px; align-items: center; }
+.order-doc-icon {
+  display: inline-block;
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+.order-doc-icon.doc-missing { background: #f1f3f4; color: #bdc1c6; }
+.order-doc-icon.doc-created { background: #e8f0fe; color: #1a73e8; }
+.order-doc-icon.doc-sent { background: #e6f4ea; color: #137333; }
+
+/* Order document progress checklist */
+.order-doc-checklist {
+  margin-top: 16px;
+  padding: 14px 16px;
+  background: #f8f9fa;
+  border: 1px solid #ebebeb;
+  border-radius: 8px;
+}
+.order-doc-checklist-label {
+  font-size: 12px;
+  color: #5f6368;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 10px;
+  display: block;
+}
+.order-doc-track {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 6px;
+  flex-wrap: wrap;
+}
+.order-doc-track:last-child { margin-bottom: 0; }
+.order-doc-step {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  color: #5f6368;
+}
+.order-doc-step.done { color: #137333; font-weight: 500; }
+.order-doc-step-check { font-size: 14px; }
+.order-doc-arrow { color: #dadce0; font-size: 12px; margin: 0 2px; }
+
+/* Orders sub-tabs */
+.orders-subtabs {
+  display: flex;
+  gap: 0;
+  margin-bottom: 16px;
+  border-bottom: 1px solid #e0e0e0;
+}
+.orders-subtab {
+  padding: 8px 18px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #5f6368;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  font-family: inherit;
+  transition: color 0.15s, border-color 0.15s;
+}
+.orders-subtab:hover { color: #1a73e8; }
+.orders-subtab.active { color: #1a73e8; border-bottom-color: #1a73e8; }
 
 /* Order detail modal */
 .order-detail-grid {
@@ -2892,6 +2964,12 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
     <h2 class="section-title">Orders</h2>
     <p class="section-subtitle">Shopify orders (last 30 days) — synced via Google Sheets</p>
 
+    <div class="orders-subtabs">
+      <button class="orders-subtab active" data-filter="all" onclick="switchOrdersSubFilter('all')">All</button>
+      <button class="orders-subtab" data-filter="customer" onclick="switchOrdersSubFilter('customer')">Customer</button>
+      <button class="orders-subtab" data-filter="business" onclick="switchOrdersSubFilter('business')">Business</button>
+    </div>
+
     <div class="board-toolbar" id="orders-toolbar">
       <select class="filter-select" id="orders-filter-payment" onchange="renderOrders()">
         <option value="">All Payments</option>
@@ -2900,6 +2978,7 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
         <option value="refunded">Refunded</option>
         <option value="authorized">Authorized</option>
         <option value="voided">Voided</option>
+        <option value="draft">Draft</option>
       </select>
       <select class="filter-select" id="orders-filter-fulfillment" onchange="renderOrders()">
         <option value="">All Fulfillment</option>
@@ -2924,6 +3003,7 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
           <th>Total</th>
           <th>Payment</th>
           <th>Fulfillment</th>
+          <th>Docs</th>
         </tr>
       </thead>
       <tbody id="orders-body"></tbody>
@@ -2939,6 +3019,7 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
     <h2 id="order-detail-title">Order Details</h2>
     <div class="order-detail-grid" id="order-detail-grid"></div>
     <div class="order-items-list" id="order-detail-items"></div>
+    <div id="order-doc-checklist" style="display:none"></div>
     <div id="order-linked-docs" style="display:none;margin-top:16px;padding-top:16px;border-top:1px solid #ebebeb"></div>
     <div class="board-modal-actions" style="margin-top:20px">
       <button id="order-create-invoice-btn" onclick="createInvoiceFromOrder()" style="color:#1a73e8;border-color:#1a73e8;display:none">Create Invoice</button>
@@ -9981,6 +10062,7 @@ function stopProductsRefresh() {
 // ===================== ORDERS =====================
 
 var shopifyOrders = [];
+var ordersSubFilter = "all";
 var ordersRefreshTimer = null;
 
 function ordersApiPost(body) {
@@ -10038,6 +10120,29 @@ function syncShopifyOrdersFromHub() {
     });
 }
 
+function switchOrdersSubFilter(filter) {
+  ordersSubFilter = filter;
+  document.querySelectorAll(".orders-subtab").forEach(function(t) {
+    t.classList.toggle("active", t.dataset.filter === filter);
+  });
+  renderOrders();
+}
+
+function getOrderCategory(order) {
+  if (!order.email && !order.customerName) return "customer";
+  var emailLower = (order.email || "").toLowerCase();
+  var nameLower = (order.customerName || "").toLowerCase();
+  var match = crmContacts.find(function(c) {
+    if (c.email && c.email.toLowerCase() === emailLower) return true;
+    if (c.name && c.name.toLowerCase() === nameLower) return true;
+    return false;
+  });
+  if (!match) return "customer";
+  var type = (match.type || "").toLowerCase();
+  if (type === "vendor" || type === "business" || type === "partner") return "business";
+  return "customer";
+}
+
 function renderOrders() {
   var paymentFilter = document.getElementById("orders-filter-payment").value;
   var fulfillmentFilter = document.getElementById("orders-filter-fulfillment").value;
@@ -10055,6 +10160,13 @@ function renderOrders() {
     }
     return true;
   });
+
+  // Sub-tab category filter
+  if (ordersSubFilter !== "all") {
+    filtered = filtered.filter(function(o) {
+      return getOrderCategory(o) === ordersSubFilter;
+    });
+  }
 
   // Sort newest first
   filtered.sort(function(a, b) {
@@ -10133,6 +10245,44 @@ function renderOrders() {
     tdFulfill.appendChild(fulBadge);
     tr.appendChild(tdFulfill);
 
+    // Docs column — invoice & receipt status icons
+    var tdDocs = document.createElement("td");
+    var docsContainer = document.createElement("div");
+    docsContainer.className = "order-doc-icons";
+    var linkedInv = invoices.find(function(inv) {
+      return inv.orderId === o.shopifyOrderId || inv.orderNumber === String(o.orderNumber);
+    });
+    var linkedRec = receipts.find(function(r) {
+      return r.orderId === o.shopifyOrderId || r.orderNumber === String(o.orderNumber);
+    });
+    var invIcon = document.createElement("span");
+    invIcon.className = "order-doc-icon";
+    invIcon.textContent = "INV";
+    if (!linkedInv) {
+      invIcon.classList.add("doc-missing");
+      invIcon.title = "No invoice";
+    } else if (linkedInv.status === "sent" || linkedInv.status === "paid") {
+      invIcon.classList.add("doc-sent");
+      invIcon.title = "Invoice " + linkedInv.status;
+    } else {
+      invIcon.classList.add("doc-created");
+      invIcon.title = "Invoice created (draft)";
+    }
+    docsContainer.appendChild(invIcon);
+    var recIcon = document.createElement("span");
+    recIcon.className = "order-doc-icon";
+    recIcon.textContent = "REC";
+    if (!linkedRec) {
+      recIcon.classList.add("doc-missing");
+      recIcon.title = "No receipt";
+    } else {
+      recIcon.classList.add("doc-sent");
+      recIcon.title = "Receipt created";
+    }
+    docsContainer.appendChild(recIcon);
+    tdDocs.appendChild(docsContainer);
+    tr.appendChild(tdDocs);
+
     tbody.appendChild(tr);
   });
 }
@@ -10194,6 +10344,53 @@ function openOrderDetailModal(order) {
   var linkedRec = receipts.find(function(r) {
     return r.orderId === order.shopifyOrderId || r.orderNumber === String(order.orderNumber);
   });
+
+  // Document progress checklist
+  var checklistDiv = document.getElementById("order-doc-checklist");
+  checklistDiv.textContent = "";
+  checklistDiv.className = "order-doc-checklist";
+  checklistDiv.style.display = "";
+
+  var invCreated = !!linkedInv;
+  var invSent = linkedInv && (linkedInv.status === "sent" || linkedInv.status === "paid");
+  var invPaid = linkedInv && linkedInv.status === "paid";
+  var recCreated = !!linkedRec;
+
+  var clLabel = document.createElement("span");
+  clLabel.className = "order-doc-checklist-label";
+  clLabel.textContent = "Document Progress";
+  checklistDiv.appendChild(clLabel);
+
+  function makeDocStep(isDone, text) {
+    var step = document.createElement("span");
+    step.className = "order-doc-step" + (isDone ? " done" : "");
+    var check = document.createElement("span");
+    check.className = "order-doc-step-check";
+    check.textContent = isDone ? "\u2611" : "\u2610";
+    step.appendChild(check);
+    step.appendChild(document.createTextNode(" " + text));
+    return step;
+  }
+  function makeDocArrow() {
+    var arrow = document.createElement("span");
+    arrow.className = "order-doc-arrow";
+    arrow.textContent = "\u2192";
+    return arrow;
+  }
+
+  var invTrack = document.createElement("div");
+  invTrack.className = "order-doc-track";
+  invTrack.appendChild(makeDocStep(invCreated, "Invoice Created"));
+  invTrack.appendChild(makeDocArrow());
+  invTrack.appendChild(makeDocStep(invSent, "Invoice Sent"));
+  invTrack.appendChild(makeDocArrow());
+  invTrack.appendChild(makeDocStep(invPaid, "Invoice Paid"));
+  checklistDiv.appendChild(invTrack);
+
+  var recTrack = document.createElement("div");
+  recTrack.className = "order-doc-track";
+  recTrack.appendChild(makeDocStep(recCreated, "Receipt Created"));
+  checklistDiv.appendChild(recTrack);
 
   // Show/hide create buttons — hide if linked document already exists
   document.getElementById("order-create-invoice-btn").style.display = linkedInv ? "none" : "";
