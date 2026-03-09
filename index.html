@@ -2670,14 +2670,20 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
       </div>
     </div>
 
+    <div class="inv-field-row" id="inv-new-contact-row" style="display:none">
+      <div>
+        <label for="inv-modal-contact-name">Contact Name</label>
+        <input type="text" id="inv-modal-contact-name" placeholder="Full name">
+      </div>
+    </div>
     <div class="inv-field-row three-col">
       <div>
         <label for="inv-modal-company">Company</label>
-        <input type="text" id="inv-modal-company">
+        <input type="text" id="inv-modal-company" placeholder="Company name">
       </div>
       <div>
         <label for="inv-modal-email">Email</label>
-        <input type="email" id="inv-modal-email">
+        <input type="email" id="inv-modal-email" placeholder="Email address">
       </div>
       <div>
         <label for="inv-modal-address">Address</label>
@@ -5411,6 +5417,10 @@ function populateInvoiceContactDropdown() {
   opt0.value = "";
   opt0.textContent = "-- Select Contact --";
   sel.appendChild(opt0);
+  var optNew = document.createElement("option");
+  optNew.value = "__new__";
+  optNew.textContent = "+ New Contact";
+  sel.appendChild(optNew);
   var contacts = (typeof crmContacts !== "undefined" ? crmContacts : []);
   contacts.forEach(function(c) {
     var opt = document.createElement("option");
@@ -5423,6 +5433,21 @@ function populateInvoiceContactDropdown() {
 function onInvoiceContactChange() {
   var sel = document.getElementById("inv-modal-contact");
   var contactId = sel.value;
+  var newRow = document.getElementById("inv-new-contact-row");
+
+  if (contactId === "__new__") {
+    // New contact mode — show name field, clear others
+    newRow.style.display = "";
+    document.getElementById("inv-modal-contact-name").value = "";
+    document.getElementById("inv-modal-company").value = "";
+    document.getElementById("inv-modal-email").value = "";
+    document.getElementById("inv-modal-percent").value = "";
+    document.getElementById("inv-modal-contact-name").focus();
+    return;
+  }
+
+  newRow.style.display = "none";
+
   if (!contactId) {
     document.getElementById("inv-modal-company").value = "";
     document.getElementById("inv-modal-email").value = "";
@@ -5471,6 +5496,8 @@ function openInvoiceCreateModal() {
   setInvPricingType("wholesale");
   populateInvoiceContactDropdown();
   document.getElementById("inv-modal-contact").value = "";
+  document.getElementById("inv-new-contact-row").style.display = "none";
+  document.getElementById("inv-modal-contact-name").value = "";
   addInvoiceLineItem();
   recalcInvoiceTotals();
   document.getElementById("inv-modal-overlay").classList.add("open");
@@ -5498,7 +5525,16 @@ function openInvoiceEditModal(invId) {
   document.getElementById("inv-modal-delete-btn").style.display = "inline-block";
   setInvPricingType(inv.pricingType || "wholesale");
   populateInvoiceContactDropdown();
-  document.getElementById("inv-modal-contact").value = inv.contactId || "";
+  // If invoice has no contactId but has a contactName, it was a new contact entry
+  if (!inv.contactId && inv.contactName) {
+    document.getElementById("inv-modal-contact").value = "__new__";
+    document.getElementById("inv-new-contact-row").style.display = "";
+    document.getElementById("inv-modal-contact-name").value = inv.contactName || "";
+  } else {
+    document.getElementById("inv-modal-contact").value = inv.contactId || "";
+    document.getElementById("inv-new-contact-row").style.display = "none";
+    document.getElementById("inv-modal-contact-name").value = "";
+  }
 
   // Parse and render line items
   document.getElementById("inv-line-items-body").textContent = "";
@@ -5624,7 +5660,13 @@ function saveInvoice() {
 
   var contactSel = document.getElementById("inv-modal-contact");
   var contactId = contactSel.value;
-  var contactName = contactId ? contactSel.options[contactSel.selectedIndex].textContent.split(" (")[0] : "";
+  var contactName = "";
+  if (contactId === "__new__") {
+    contactName = document.getElementById("inv-modal-contact-name").value.trim();
+    contactId = "";
+  } else if (contactId) {
+    contactName = contactSel.options[contactSel.selectedIndex].textContent.split(" (")[0];
+  }
 
   var invoice = {
     invoiceNumber: document.getElementById("inv-modal-number").value.trim(),
