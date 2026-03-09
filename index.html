@@ -1219,6 +1219,21 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
 .order-doc-icon.doc-created { background: #e8f0fe; color: #1a73e8; }
 .order-doc-icon.doc-sent { background: #e6f4ea; color: #137333; }
 
+/* Documents table — clickable doc cells */
+.doc-cell {
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: background 0.15s;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.doc-cell:hover { background: #e8f0fe; }
+.doc-cell-empty { color: #bdc1c6; font-size: 13px; }
+.doc-cell-number { font-weight: 500; font-size: 13px; color: #202124; }
+.doc-cell-badge { margin-left: 2px; }
+
 /* Order document progress checklist */
 .order-doc-checklist {
   margin-top: 16px;
@@ -1491,29 +1506,6 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
 }
 
 /* Tools Tab */
-.tools-subnav {
-  display: flex;
-  gap: 0;
-  border-bottom: 1px solid #e0e0e0;
-  margin-bottom: 20px;
-}
-.tools-subnav-tab {
-  padding: 10px 16px;
-  font-size: 13px;
-  font-weight: 500;
-  color: #5f6368;
-  background: none;
-  border: none;
-  border-bottom: 2px solid transparent;
-  cursor: pointer;
-  white-space: nowrap;
-  font-family: inherit;
-  transition: color 0.15s, border-color 0.15s;
-}
-.tools-subnav-tab:hover { color: #202124; }
-.tools-subnav-tab.active { color: #0e413b; font-weight: 600; border-bottom-color: #0e413b; }
-.tools-subview { display: none; }
-.tools-subview.active { display: block; }
 .section-subtitle { font-size: 14px; color: #5f6368; margin-top: 4px; }
 
 /* Invoice Table */
@@ -2230,7 +2222,6 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
   .orders-table { font-size: 13px; }
   .orders-table th, .orders-table td { padding: 8px 6px; }
   .order-detail-grid { grid-template-columns: 1fr; }
-  .tools-subnav-tab { padding: 8px 12px; font-size: 12px; }
   .board-modal.inv-modal { width: 100%; max-width: 100vw; border-radius: 0; max-height: 100vh; }
   .board-modal.inv-modal.inv-split-mode { flex-direction: column; width: 100%; }
   .inv-split-editor { max-width: 100% !important; flex: none !important; max-height: 55vh; border-right: none; border-bottom: 1px solid #e0e0e0; }
@@ -2810,84 +2801,48 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
 
   </div>
 
-  <!-- TOOLS -->
+  <!-- TOOLS / DOCUMENTS -->
   <div id="tools" class="view" role="tabpanel" aria-labelledby="tab-tools">
-    <h2 class="section-title">Tools</h2>
-    <nav class="tools-subnav" id="tools-subnav">
-      <button class="tools-subnav-tab active" data-tool="invoices" onclick="switchTool('invoices')">Invoices</button>
-      <button class="tools-subnav-tab" data-tool="receipts" onclick="switchTool('receipts')">Receipts</button>
-    </nav>
+    <h2 class="section-title">Documents</h2>
+    <p class="section-subtitle">Order-centric view of invoices and receipts</p>
 
-    <!-- Invoice Generator -->
-    <div id="tools-invoices" class="tools-subview active">
-      <h2 class="section-title" style="font-size:18px;margin-bottom:4px">Invoice Generator</h2>
-      <div class="board-toolbar" id="invoices-toolbar">
-        <button class="btn-add-task" onclick="openInvoiceCreateModal()">+ Create Invoice</button>
-        <button class="btn-add-task" onclick="generateMissingInvoices()" style="background:#f1f3f4;color:#202124;border:1px solid #dadce0">Generate Missing Invoices</button>
-        <select class="filter-select" id="invoices-filter-status" onchange="renderInvoices()">
+    <div id="tools-documents">
+      <div class="board-toolbar" id="documents-toolbar">
+        <button class="btn-add-task" onclick="openInvoiceCreateModal()">+ Invoice</button>
+        <button class="btn-add-task" onclick="openReceiptCreateModal()">+ Receipt</button>
+        <button class="btn-add-task" onclick="generateMissingInvoices()" style="background:#f1f3f4;color:#202124;border:1px solid #dadce0">Generate Missing</button>
+        <select class="filter-select" id="docs-filter-status" onchange="renderDocuments()">
           <option value="">All Statuses</option>
           <option value="draft">Draft</option>
           <option value="sent">Sent</option>
           <option value="paid">Paid</option>
         </select>
-        <select class="filter-select" id="invoices-filter-ws" onchange="renderInvoices()">
+        <select class="filter-select" id="docs-filter-ws" onchange="renderDocuments()">
           <option value="">All Workspaces</option>
           <option value="IVYCOAST">IVYCOAST</option>
           <option value="BOLDOATH">BOLDOATH</option>
         </select>
-        <input type="text" class="search-input" id="invoices-search" placeholder="Search invoices..." style="max-width:240px" oninput="renderInvoices()">
+        <input type="text" class="search-input" id="docs-search" placeholder="Search orders, invoices, receipts..." style="max-width:260px" oninput="renderDocuments()">
         <div class="sync-indicator">
-          <span id="invoices-sync-status"></span>
-          <button onclick="fetchInvoices(true)">Refresh</button>
+          <span id="docs-sync-status"></span>
+          <button onclick="fetchDocuments(true)">Refresh</button>
         </div>
       </div>
       <table class="invoices-table">
         <thead>
           <tr>
-            <th>Invoice #</th>
+            <th>Order #</th>
             <th>Date</th>
-            <th>Contact / Company</th>
+            <th>Contact</th>
             <th>Total</th>
-            <th>Status</th>
-            <th>Order</th>
+            <th>Invoice</th>
+            <th>Receipt</th>
             <th>Actions</th>
           </tr>
         </thead>
-        <tbody id="invoices-body"></tbody>
+        <tbody id="documents-body"></tbody>
       </table>
-      <p id="invoices-no-results" style="display:none;text-align:center;padding:32px;color:#5f6368;font-size:14px;">No invoices found.</p>
-    </div>
-
-    <!-- Receipts -->
-    <div id="tools-receipts" class="tools-subview">
-      <h2 class="section-title" style="font-size:18px;margin-bottom:4px">Receipts</h2>
-      <div class="board-toolbar" id="receipts-toolbar">
-        <button class="btn-add-task" onclick="openReceiptCreateModal()">+ Create Receipt</button>
-        <select class="filter-select" id="receipts-filter-ws" onchange="renderReceipts()">
-          <option value="">All Workspaces</option>
-          <option value="IVYCOAST">IVYCOAST</option>
-          <option value="BOLDOATH">BOLDOATH</option>
-        </select>
-        <input type="text" class="search-input" id="receipts-search" placeholder="Search receipts..." style="max-width:240px" oninput="renderReceipts()">
-        <div class="sync-indicator">
-          <span id="receipts-sync-status"></span>
-          <button onclick="fetchReceipts(true)">Refresh</button>
-        </div>
-      </div>
-      <table class="invoices-table">
-        <thead>
-          <tr>
-            <th>Receipt #</th>
-            <th>Date</th>
-            <th>Contact / Company</th>
-            <th>Invoice Ref</th>
-            <th>Total</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody id="receipts-body"></tbody>
-      </table>
-      <p id="receipts-no-results" style="display:none;text-align:center;padding:32px;color:#5f6368;font-size:14px;">No receipts found.</p>
+      <p id="documents-no-results" style="display:none;text-align:center;padding:32px;color:#5f6368;font-size:14px;">No documents found.</p>
     </div>
   </div>
 
@@ -5078,8 +5033,8 @@ function navigateTo(viewId, searchQuery, statusFilter) {
   // Handle tools sub-routes
   var isToolsRoute = viewId === "tools" || viewId.indexOf("tools/") === 0;
   var actualViewId = isToolsRoute ? "tools" : viewId;
-  var toolId = isToolsRoute ? (viewId.indexOf("tools/") === 0 ? viewId.split("/")[1] : "invoices") : null;
-  var hashVal = isToolsRoute ? "tools/" + (toolId || "invoices") : (viewId === "home" ? "" : viewId);
+  var toolId = isToolsRoute ? (viewId.indexOf("tools/") === 0 ? viewId.split("/")[1] : "documents") : null;
+  var hashVal = isToolsRoute ? "tools/" + (toolId || "documents") : (viewId === "home" ? "" : viewId);
 
   location.hash = hashVal;
   document.querySelectorAll(".tab").forEach(function(t) {
@@ -5106,7 +5061,7 @@ function navigateTo(viewId, searchQuery, statusFilter) {
   } else if (actualViewId === "customers") {
     if (typeof fetchCustomers === "function") fetchCustomers();
   } else if (actualViewId === "tools") {
-    switchTool(toolId || "invoices");
+    switchTool(toolId || "documents");
   }
   if (viewId === "library" && searchQuery) {
     var si = document.getElementById("search-input");
@@ -6561,23 +6516,20 @@ function invApiPost(body) {
   }).then(function(r) { return r.json(); });
 }
 
-function setInvSyncStatus(msg) {
-  var el = document.getElementById("invoices-sync-status");
-  if (el) el.textContent = msg;
-}
+function setInvSyncStatus(msg) { setDocsSyncStatus(msg); }
 
 function fetchInvoices(force) {
   if (!SCRIPT_URL) return;
-  if (!force && invoices.length > 0 && Date.now() - lastFetched.invoices < CACHE_TTL) { renderInvoices(); return; }
+  if (!force && invoices.length > 0 && Date.now() - lastFetched.invoices < CACHE_TTL) { renderDocuments(); return; }
   // Show stale data immediately while we refresh
-  if (invoices.length > 0) renderInvoices();
+  if (invoices.length > 0) renderDocuments();
   setInvSyncStatus("Loading\u2026");
   fetch(SCRIPT_URL + "?action=list&sheet=Invoices")
     .then(function(r) { return r.json(); })
     .then(function(data) {
       invoices = data.invoices || [];
       lastFetched.invoices = Date.now();
-      renderInvoices();
+      renderDocuments();
       var now = new Date();
       setInvSyncStatus("Last synced " + String(now.getHours()).padStart(2,"0") + ":" + String(now.getMinutes()).padStart(2,"0"));
     })
@@ -6585,23 +6537,13 @@ function fetchInvoices(force) {
 }
 
 // ── Tools tab navigation ──────────────────────────────────────
-function switchTool(toolId, skipHash) {
-  // Hide all tool subviews, show the selected one
-  document.querySelectorAll("#tools .tools-subview").forEach(function(v) { v.classList.remove("active"); });
-  var target = document.getElementById("tools-" + toolId);
-  if (target) target.classList.add("active");
-  // Update sub-nav tabs
-  document.querySelectorAll(".tools-subnav-tab").forEach(function(t) {
-    t.classList.toggle("active", t.dataset.tool === toolId);
-  });
-  // Fetch data for the tool
-  if (toolId === "invoices") fetchInvoices();
-  if (toolId === "receipts") fetchReceipts();
+function switchTool(toolId) {
+  fetchDocuments();
 }
 
 // Backwards-compat aliases
-function openToolInvoices() { switchTool("invoices"); }
-function showToolsHome() { switchTool("invoices"); }
+function openToolInvoices() { switchTool("documents"); }
+function showToolsHome() { switchTool("documents"); }
 
 // ── Invoice Number Generation ─────────────────────────────────
 function generateInvoiceNumber() {
@@ -6618,89 +6560,238 @@ function generateInvoiceNumber() {
   return "INV-" + year + "-" + String(maxSeq + 1).padStart(3, "0");
 }
 
-// ── Invoice Rendering ─────────────────────────────────────────
-function renderInvoices() {
-  var statusFilter = document.getElementById("invoices-filter-status").value;
-  var wsFilter = document.getElementById("invoices-filter-ws").value;
-  var query = (document.getElementById("invoices-search").value || "").toLowerCase().trim();
-  var tbody = document.getElementById("invoices-body");
-  var noResults = document.getElementById("invoices-no-results");
+// ── Unified Documents View ───────────────────────────────────
+function setDocsSyncStatus(msg) {
+  var el = document.getElementById("docs-sync-status");
+  if (el) el.textContent = msg;
+}
+
+function buildDocumentRows() {
+  var rows = [];
+  var usedInvIds = {};
+  var usedRecIds = {};
+
+  // Phase A: One row per shopify order
+  shopifyOrders.forEach(function(order) {
+    var inv = invoices.find(function(i) {
+      return i.orderId === order.shopifyOrderId || i.orderNumber === String(order.orderNumber);
+    });
+    var rec = receipts.find(function(r) {
+      return r.orderId === order.shopifyOrderId || r.orderNumber === String(order.orderNumber);
+    });
+    if (inv) usedInvIds[inv.id] = true;
+    if (rec) usedRecIds[rec.id] = true;
+
+    rows.push({
+      type: "order",
+      orderNumber: "#" + (order.orderNumber || order.shopifyOrderId || "\u2014"),
+      date: order.createdAt || "",
+      contact: order.customerName || order.email || "",
+      total: order.totalPrice || 0,
+      workspace: order.workspace || (inv ? inv.workspace : ""),
+      invoice: inv || null,
+      receipt: rec || null,
+      sortDate: order.createdAt || ""
+    });
+  });
+
+  // Phase B: Standalone invoices (not linked to any order)
+  invoices.forEach(function(inv) {
+    if (usedInvIds[inv.id]) return;
+    var rec = receipts.find(function(r) {
+      return r.invoiceNumber && r.invoiceNumber === inv.invoiceNumber;
+    });
+    if (rec) usedRecIds[rec.id] = true;
+    usedInvIds[inv.id] = true;
+
+    rows.push({
+      type: "standalone-invoice",
+      orderNumber: "",
+      date: inv.invoiceDate || inv.createdAt || "",
+      contact: (inv.contactName || "") + (inv.contactCompany ? " / " + inv.contactCompany : ""),
+      total: inv.total || 0,
+      workspace: inv.workspace || "",
+      invoice: inv,
+      receipt: rec || null,
+      sortDate: inv.invoiceDate || inv.createdAt || ""
+    });
+  });
+
+  // Phase C: Standalone receipts
+  receipts.forEach(function(rec) {
+    if (usedRecIds[rec.id]) return;
+    rows.push({
+      type: "standalone-receipt",
+      orderNumber: "",
+      date: rec.receiptDate || rec.createdAt || "",
+      contact: (rec.contactName || "") + (rec.contactCompany ? " / " + rec.contactCompany : ""),
+      total: rec.total || 0,
+      workspace: rec.workspace || "",
+      invoice: null,
+      receipt: rec,
+      sortDate: rec.receiptDate || rec.createdAt || ""
+    });
+  });
+
+  return rows;
+}
+
+function renderDocuments() {
+  var statusFilter = (document.getElementById("docs-filter-status") || {}).value || "";
+  var wsFilter = (document.getElementById("docs-filter-ws") || {}).value || "";
+  var query = ((document.getElementById("docs-search") || {}).value || "").toLowerCase().trim();
+  var tbody = document.getElementById("documents-body");
+  var noResults = document.getElementById("documents-no-results");
+  if (!tbody) return;
   tbody.textContent = "";
 
-  var filtered = invoices.filter(function(inv) {
-    if (statusFilter && inv.status !== statusFilter) return false;
-    if (wsFilter && inv.workspace !== wsFilter) return false;
+  var rows = buildDocumentRows();
+
+  var filtered = rows.filter(function(row) {
+    if (statusFilter) {
+      if (!row.invoice || row.invoice.status !== statusFilter) return false;
+    }
+    if (wsFilter && row.workspace !== wsFilter) return false;
     if (query) {
-      var s = ((inv.invoiceNumber || "") + " " + (inv.contactName || "") + " " + (inv.contactCompany || "")).toLowerCase();
-      if (s.indexOf(query) === -1) return false;
+      var hay = (row.orderNumber + " " + row.contact + " " +
+        (row.invoice ? row.invoice.invoiceNumber || "" : "") + " " +
+        (row.receipt ? row.receipt.receiptNumber || "" : "")).toLowerCase();
+      if (hay.indexOf(query) === -1) return false;
     }
     return true;
   });
 
   filtered.sort(function(a, b) {
-    return (b.invoiceDate || b.createdAt || "").localeCompare(a.invoiceDate || a.createdAt || "");
+    return (b.sortDate || "").localeCompare(a.sortDate || "");
   });
 
-  if (filtered.length === 0) { noResults.style.display = "block"; return; }
-  noResults.style.display = "none";
+  if (filtered.length === 0) {
+    if (noResults) noResults.style.display = "block";
+    return;
+  }
+  if (noResults) noResults.style.display = "none";
 
-  filtered.forEach(function(inv) {
+  filtered.forEach(function(row) {
     var tr = document.createElement("tr");
-    tr.addEventListener("click", function() { openInvoiceEditModal(inv.id); });
 
-    var tdNum = document.createElement("td");
-    tdNum.textContent = inv.invoiceNumber || inv.id;
-    tdNum.style.fontWeight = "500";
-    tr.appendChild(tdNum);
+    var tdOrder = document.createElement("td");
+    tdOrder.textContent = row.orderNumber || "\u2014";
+    tdOrder.style.fontWeight = row.orderNumber ? "500" : "normal";
+    if (!row.orderNumber) tdOrder.style.color = "#bdc1c6";
+    tr.appendChild(tdOrder);
 
     var tdDate = document.createElement("td");
-    tdDate.textContent = inv.invoiceDate ? formatDate(inv.invoiceDate) : "";
+    if (row.type === "order" && row.date) {
+      var d = new Date(row.date);
+      tdDate.textContent = d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+    } else if (row.date) {
+      tdDate.textContent = formatDate(row.date);
+    }
     tr.appendChild(tdDate);
 
     var tdContact = document.createElement("td");
-    tdContact.textContent = (inv.contactName || "") + (inv.contactCompany ? " / " + inv.contactCompany : "");
+    tdContact.textContent = row.contact || "\u2014";
     tr.appendChild(tdContact);
 
     var tdTotal = document.createElement("td");
-    tdTotal.textContent = "\u00a5" + Number(inv.total || 0).toLocaleString();
+    tdTotal.textContent = row.total ? "\u00A5" + Number(row.total).toLocaleString() : "\u2014";
     tdTotal.style.fontWeight = "500";
     tr.appendChild(tdTotal);
 
-    var tdStatus = document.createElement("td");
-    var badge = document.createElement("span");
-    badge.className = "inv-badge inv-" + (inv.status || "draft");
-    badge.textContent = inv.status || "draft";
-    tdStatus.appendChild(badge);
-    tr.appendChild(tdStatus);
-
-    var tdOrder = document.createElement("td");
-    if (inv.orderNumber) {
-      tdOrder.textContent = "#" + inv.orderNumber;
-      tdOrder.style.cssText = "font-size:12px;color:#5f6368;";
+    var tdInv = document.createElement("td");
+    if (row.invoice) {
+      var invCell = document.createElement("span");
+      invCell.className = "doc-cell";
+      var invNum = document.createElement("span");
+      invNum.className = "doc-cell-number";
+      invNum.textContent = row.invoice.invoiceNumber || row.invoice.id;
+      invCell.appendChild(invNum);
+      var invBadge = document.createElement("span");
+      invBadge.className = "inv-badge inv-" + (row.invoice.status || "draft") + " doc-cell-badge";
+      invBadge.textContent = row.invoice.status || "draft";
+      invCell.appendChild(invBadge);
+      invCell.addEventListener("click", (function(invId) {
+        return function(e) { e.stopPropagation(); openInvoiceEditModal(invId); };
+      })(row.invoice.id));
+      tdInv.appendChild(invCell);
+    } else {
+      var emptyInv = document.createElement("span");
+      emptyInv.className = "doc-cell-empty";
+      emptyInv.textContent = "\u2014";
+      tdInv.appendChild(emptyInv);
     }
-    tr.appendChild(tdOrder);
+    tr.appendChild(tdInv);
+
+    var tdRec = document.createElement("td");
+    if (row.receipt) {
+      var recCell = document.createElement("span");
+      recCell.className = "doc-cell";
+      var recNum = document.createElement("span");
+      recNum.className = "doc-cell-number";
+      recNum.textContent = row.receipt.receiptNumber || row.receipt.id;
+      recCell.appendChild(recNum);
+      var recBadge = document.createElement("span");
+      recBadge.className = "inv-badge inv-paid doc-cell-badge";
+      recBadge.textContent = "\u2713";
+      recCell.appendChild(recBadge);
+      recCell.addEventListener("click", (function(recId) {
+        return function(e) { e.stopPropagation(); openReceiptEditModal(recId); };
+      })(row.receipt.id));
+      tdRec.appendChild(recCell);
+    } else {
+      var emptyRec = document.createElement("span");
+      emptyRec.className = "doc-cell-empty";
+      emptyRec.textContent = "\u2014";
+      tdRec.appendChild(emptyRec);
+    }
+    tr.appendChild(tdRec);
 
     var tdActions = document.createElement("td");
     tdActions.style.cssText = "display:flex;gap:4px;";
-    var prevBtn = document.createElement("button");
-    prevBtn.textContent = "Preview";
-    prevBtn.style.cssText = "background:none;border:1px solid #dadce0;border-radius:4px;padding:3px 8px;font-size:12px;color:#1a73e8;cursor:pointer;font-family:inherit;";
-    prevBtn.addEventListener("click", function(e) {
-      e.stopPropagation();
-      previewInvoiceFromData(inv);
-    });
-    tdActions.appendChild(prevBtn);
-    var dlBtn = document.createElement("button");
-    dlBtn.textContent = "PDF";
-    dlBtn.style.cssText = "background:none;border:1px solid #dadce0;border-radius:4px;padding:3px 8px;font-size:12px;color:#5f6368;cursor:pointer;font-family:inherit;";
-    dlBtn.addEventListener("click", function(e) {
-      e.stopPropagation();
-      downloadInvoicePdf(inv);
-    });
-    tdActions.appendChild(dlBtn);
+    if (row.invoice) {
+      var prevBtn = document.createElement("button");
+      prevBtn.textContent = "Preview";
+      prevBtn.style.cssText = "background:none;border:1px solid #dadce0;border-radius:4px;padding:3px 8px;font-size:12px;color:#1a73e8;cursor:pointer;font-family:inherit;";
+      prevBtn.addEventListener("click", (function(inv) {
+        return function(e) { e.stopPropagation(); previewInvoiceFromData(inv); };
+      })(row.invoice));
+      tdActions.appendChild(prevBtn);
+      var dlBtn = document.createElement("button");
+      dlBtn.textContent = "PDF";
+      dlBtn.style.cssText = "background:none;border:1px solid #dadce0;border-radius:4px;padding:3px 8px;font-size:12px;color:#5f6368;cursor:pointer;font-family:inherit;";
+      dlBtn.addEventListener("click", (function(inv) {
+        return function(e) { e.stopPropagation(); downloadInvoicePdf(inv); };
+      })(row.invoice));
+      tdActions.appendChild(dlBtn);
+    }
     tr.appendChild(tdActions);
 
     tbody.appendChild(tr);
+  });
+}
+
+function fetchDocuments(force) {
+  if (!SCRIPT_URL) return;
+  setDocsSyncStatus("Loading\u2026");
+  renderDocuments();
+  var invP = fetch(SCRIPT_URL + "?action=list&sheet=Invoices").then(function(r) { return r.json(); });
+  var recP = fetch(SCRIPT_URL + "?action=list&sheet=Receipts").then(function(r) { return r.json(); });
+  var ordP = (shopifyOrders.length > 0 && !force) ? Promise.resolve(null) :
+    fetch(SCRIPT_URL + "?action=list&sheet=Orders").then(function(r) { return r.json(); });
+  Promise.all([invP, recP, ordP]).then(function(results) {
+    invoices = results[0].invoices || [];
+    lastFetched.invoices = Date.now();
+    receipts = results[1].receipts || [];
+    lastFetched.receipts = Date.now();
+    if (results[2]) {
+      shopifyOrders = results[2].orders || [];
+      lastFetched.orders = Date.now();
+    }
+    renderDocuments();
+    var now = new Date();
+    setDocsSyncStatus("Synced " + String(now.getHours()).padStart(2,"0") + ":" + String(now.getMinutes()).padStart(2,"0"));
+  }).catch(function() {
+    setDocsSyncStatus("Load failed");
   });
 }
 
@@ -7310,7 +7401,7 @@ function saveInvoice() {
   if (id) {
     invoice.id = id;
     invoices = invoices.map(function(inv) { return inv.id === id ? Object.assign({}, inv, invoice) : inv; });
-    renderInvoices();
+    renderDocuments();
     invApiPost({ action: "update", invoice: invoice })
       .then(function() {
         setInvSyncStatus("Saved"); fetchInvoices(true);
@@ -7321,13 +7412,13 @@ function saveInvoice() {
     var tempId = "temp-" + Date.now();
     invoice.id = tempId;
     invoices.push(invoice);
-    renderInvoices();
+    renderDocuments();
     invApiPost({ action: "create", invoice: invoice })
       .then(function(data) {
         setInvSyncStatus("Invoice created");
         if (data.invoice) {
           invoices = invoices.map(function(inv) { return inv.id === tempId ? data.invoice : inv; });
-          renderInvoices();
+          renderDocuments();
           if (data.invoice.status === "paid") autoCreateReceiptFromInvoice(data.invoice);
         }
       })
@@ -7342,7 +7433,7 @@ function deleteInvoiceConfirm() {
   if (!confirm('Delete invoice "' + num + '"? This cannot be undone.')) return;
   closeInvoiceModal();
   invoices = invoices.filter(function(inv) { return inv.id !== id; });
-  renderInvoices();
+  renderDocuments();
   invApiPost({ action: "delete", id: id }).catch(function() { fetchInvoices(true); });
 }
 
@@ -7952,7 +8043,7 @@ function autoCreateInvoicesForPaidOrders() {
   });
 
   if (created > 0) {
-    renderInvoices();
+    renderDocuments();
     setInvSyncStatus(created + " invoice(s) auto-created from orders");
   }
   return created;
@@ -8206,17 +8297,14 @@ function recApiPost(body) {
     .then(function(r) { return r.json(); });
 }
 
-function setRecSyncStatus(msg) {
-  var el = document.getElementById("receipts-sync-status");
-  if (el) el.textContent = msg;
-}
+function setRecSyncStatus(msg) { setDocsSyncStatus(msg); }
 
 // ── Fetch & Render ────────────────────────────────────────────
 
 function fetchReceipts(force) {
   if (!SCRIPT_URL) return;
   var now = Date.now();
-  if (!force && receipts.length && (now - lastFetched.receipts < 120000)) { renderReceipts(); return; }
+  if (!force && receipts.length && (now - lastFetched.receipts < 120000)) { renderDocuments(); return; }
   setRecSyncStatus("Loading\u2026");
   fetch(SCRIPT_URL + "?sheet=Receipts")
     .then(function(r) { return r.json(); })
@@ -8224,41 +8312,9 @@ function fetchReceipts(force) {
       receipts = data.receipts || [];
       lastFetched.receipts = Date.now();
       setRecSyncStatus("Loaded " + receipts.length + " receipts");
-      renderReceipts();
+      renderDocuments();
     })
     .catch(function() { setRecSyncStatus("Load failed"); });
-}
-
-function renderReceipts() {
-  var body = document.getElementById("receipts-body");
-  if (!body) return;
-  body.textContent = "";
-  var ws = (document.getElementById("receipts-filter-ws") || {}).value || "";
-  var q = (document.getElementById("receipts-search") || {}).value.toLowerCase();
-  var filtered = receipts.filter(function(r) {
-    if (ws && r.workspace !== ws) return false;
-    if (q) {
-      var hay = ((r.receiptNumber || "") + " " + (r.contactName || "") + " " + (r.contactCompany || "") + " " + (r.invoiceNumber || "")).toLowerCase();
-      if (hay.indexOf(q) === -1) return false;
-    }
-    return true;
-  });
-  var noRes = document.getElementById("receipts-no-results");
-  if (!filtered.length) { if (noRes) noRes.style.display = ""; return; }
-  if (noRes) noRes.style.display = "none";
-
-  filtered.sort(function(a, b) { return (b.receiptDate || "").localeCompare(a.receiptDate || ""); });
-  filtered.forEach(function(rec) {
-    var tr = document.createElement("tr");
-    tr.innerHTML = "<td>" + (rec.receiptNumber || "") + "</td>"
-      + "<td>" + formatDate(rec.receiptDate) + "</td>"
-      + "<td>" + (rec.contactName || "") + (rec.contactCompany ? " / " + rec.contactCompany : "") + "</td>"
-      + "<td>" + (rec.invoiceNumber || "\u2014") + "</td>"
-      + "<td>\u00a5" + Number(rec.total || 0).toLocaleString() + "</td>"
-      + "<td><button class='btn-edit-task' onclick='openReceiptEditModal(\"" + rec.id + "\")'>Edit</button>"
-      + " <button class='btn-edit-task' onclick='previewReceiptFromData(receipts.find(function(r){return r.id===\"" + rec.id + "\";}))'>Preview</button></td>";
-    body.appendChild(tr);
-  });
 }
 
 // ── Receipt Number ────────────────────────────────────────────
@@ -8803,7 +8859,7 @@ function saveReceipt() {
   if (id) {
     receipt.id = id;
     receipts = receipts.map(function(r) { return r.id === id ? Object.assign({}, r, receipt) : r; });
-    renderReceipts();
+    renderDocuments();
     recApiPost({ action: "update", receipt: receipt })
       .then(function() { setRecSyncStatus("Saved"); fetchReceipts(true); })
       .catch(function() { setRecSyncStatus("Save failed"); });
@@ -8811,13 +8867,13 @@ function saveReceipt() {
     var tempId = "temp-" + Date.now();
     receipt.id = tempId;
     receipts.push(receipt);
-    renderReceipts();
+    renderDocuments();
     recApiPost({ action: "create", receipt: receipt })
       .then(function(data) {
         setRecSyncStatus("Receipt created");
         if (data.receipt) {
           receipts = receipts.map(function(r) { return r.id === tempId ? data.receipt : r; });
-          renderReceipts();
+          renderDocuments();
         }
       })
       .catch(function() { setRecSyncStatus("Create failed"); fetchReceipts(true); });
@@ -8831,7 +8887,7 @@ function deleteReceiptConfirm() {
   closeReceiptModal();
   setRecSyncStatus("Deleting\u2026");
   receipts = receipts.filter(function(r) { return r.id !== id; });
-  renderReceipts();
+  renderDocuments();
   recApiPost({ action: "delete", id: id }).catch(function() { fetchReceipts(true); });
 }
 
@@ -9324,7 +9380,7 @@ function autoCreateReceiptFromInvoice(invoice) {
   var tempId = "temp-rec-" + Date.now();
   receipt.id = tempId;
   receipts.push(receipt);
-  renderReceipts();
+  renderDocuments();
   setRecSyncStatus("Auto-creating receipt\u2026");
 
   recApiPost({ action: "create", receipt: receipt })
@@ -9332,7 +9388,7 @@ function autoCreateReceiptFromInvoice(invoice) {
       setRecSyncStatus("Receipt auto-created");
       if (data.receipt) {
         receipts = receipts.map(function(r) { return r.id === tempId ? data.receipt : r; });
-        renderReceipts();
+        renderDocuments();
       }
     })
     .catch(function() { setRecSyncStatus("Auto-create failed"); fetchReceipts(true); });
@@ -10608,8 +10664,8 @@ function showApp(user) {
     document.getElementById("user-avatar").style.display = "none";
   }
   document.getElementById("user-name").textContent = user.displayName || user.email;
-  // Prefetch invoices in background so Tools tab loads instantly
-  if (SCRIPT_URL) fetchInvoices();
+  // Prefetch documents in background so Tools tab loads instantly
+  if (SCRIPT_URL) fetchDocuments();
   // Restore tab from URL hash
   restoreTabFromHash();
 }
