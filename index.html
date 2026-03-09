@@ -6609,6 +6609,7 @@ function closeInvoicePreview() {
   if (invPreviewingId) {
     openInvoiceEditModal(invPreviewingId);
     invPreviewingId = "";
+    if (!invSplitActive) toggleInvSplitPreview();
   }
 }
 
