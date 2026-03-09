@@ -2916,6 +2916,15 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
     <input type="hidden" id="inv-modal-order-id">
     <input type="hidden" id="inv-modal-order-number">
 
+    <div class="inv-field-row" id="inv-from-order-row">
+      <div style="grid-column:1/-1">
+        <label for="inv-from-order">From Order</label>
+        <select id="inv-from-order" onchange="onInvFromOrderChange()">
+          <option value="">-- None --</option>
+        </select>
+      </div>
+    </div>
+
     <div class="inv-field-row">
       <div>
         <label for="inv-modal-contact">Vendor / Contact</label>
@@ -3092,18 +3101,29 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
     <input type="hidden" id="rec-modal-order-id">
     <input type="hidden" id="rec-modal-order-number">
 
-    <div class="inv-field-row" id="rec-from-source-row">
-      <div>
-        <label>Create from Invoice</label>
-        <select id="rec-from-invoice" onchange="onRecFromInvoiceChange()">
-          <option value="">-- None --</option>
-        </select>
+    <div id="rec-from-source-row">
+      <div class="inv-field-row" style="margin-bottom:0">
+        <div>
+          <label>From Order</label>
+          <select id="rec-from-order" onchange="onRecFromOrderChange()">
+            <option value="">-- None --</option>
+          </select>
+        </div>
+        <div>
+          <label>Or from Invoice</label>
+          <select id="rec-from-invoice" onchange="onRecFromInvoiceChange()">
+            <option value="">-- None --</option>
+          </select>
+        </div>
       </div>
-      <div>
-        <label>Or from Contact</label>
-        <select id="rec-from-contact" onchange="onRecFromContactChange()">
-          <option value="">-- None --</option>
-        </select>
+      <div class="inv-field-row">
+        <div>
+          <label>Or from Contact</label>
+          <select id="rec-from-contact" onchange="onRecFromContactChange()">
+            <option value="">-- None --</option>
+          </select>
+        </div>
+        <div></div>
       </div>
     </div>
 
@@ -6065,6 +6085,9 @@ function openInvoiceCreateModal() {
   document.getElementById("inv-line-items-body").textContent = "";
   setInvPricingType("wholesale");
   populateInvoiceContactDropdown();
+  populateInvOrderDropdown();
+  document.getElementById("inv-from-order").value = "";
+  document.getElementById("inv-from-order-row").style.display = "";
   document.getElementById("inv-modal-contact").value = "";
   document.getElementById("inv-new-contact-row").style.display = "none";
   document.getElementById("inv-modal-contact-name").value = "";
@@ -6078,6 +6101,7 @@ function openInvoiceEditModal(invId) {
   var inv = invoices.find(function(x) { return x.id === invId; });
   if (!inv) return;
   document.getElementById("inv-modal-title").textContent = "Edit Invoice";
+  document.getElementById("inv-from-order-row").style.display = "none";
   document.getElementById("inv-modal-id").value = inv.id;
   document.getElementById("inv-modal-order-id").value = inv.orderId || "";
   document.getElementById("inv-modal-order-number").value = inv.orderNumber || "";
@@ -6885,13 +6909,7 @@ function parseOrderShippingAddress(addrStr) {
   return JSON.stringify(addr);
 }
 
-function createInvoiceFromOrder() {
-  var orderJson = document.getElementById("order-detail-overlay").dataset.orderJson;
-  if (!orderJson) return;
-  var order = JSON.parse(orderJson);
-  closeOrderDetailModal();
-  openInvoiceCreateModal();
-
+function populateInvFromOrder(order) {
   document.getElementById("inv-modal-order-id").value = order.shopifyOrderId || "";
   document.getElementById("inv-modal-order-number").value = order.orderNumber || "";
   document.getElementById("inv-modal-po").value = "Order #" + (order.orderNumber || order.shopifyOrderId || "");
@@ -6934,6 +6952,45 @@ function createInvoiceFromOrder() {
   }
   document.getElementById("inv-modal-tax-type").value = "included";
   recalcInvoiceTotals();
+}
+
+function populateInvOrderDropdown() {
+  var sel = document.getElementById("inv-from-order");
+  sel.textContent = "";
+  var opt0 = document.createElement("option");
+  opt0.value = "";
+  opt0.textContent = "-- None --";
+  sel.appendChild(opt0);
+  shopifyOrders.forEach(function(o) {
+    var opt = document.createElement("option");
+    opt.value = o.shopifyOrderId;
+    var label = "#" + (o.orderNumber || o.shopifyOrderId);
+    if (o.customerName) label += " \u2014 " + o.customerName;
+    if (o.totalPrice) label += " (\u00A5" + Number(o.totalPrice).toLocaleString() + ")";
+    if (o.financialStatus) label += " [" + o.financialStatus + "]";
+    opt.textContent = label;
+    sel.appendChild(opt);
+  });
+}
+
+function onInvFromOrderChange() {
+  var orderId = document.getElementById("inv-from-order").value;
+  if (!orderId) return;
+  var order = shopifyOrders.find(function(o) { return o.shopifyOrderId === orderId; });
+  if (!order) return;
+  populateInvFromOrder(order);
+  if (invSplitActive) updateInvSplitPreview();
+}
+
+function createInvoiceFromOrder() {
+  var orderJson = document.getElementById("order-detail-overlay").dataset.orderJson;
+  if (!orderJson) return;
+  var order = JSON.parse(orderJson);
+  closeOrderDetailModal();
+  openInvoiceCreateModal();
+  populateInvFromOrder(order);
+  // Select the order in the dropdown
+  document.getElementById("inv-from-order").value = order.shopifyOrderId || "";
 }
 
 function autoCreateInvoicesForPaidOrders() {
@@ -7462,6 +7519,22 @@ function recalcReceiptTotals() {
 // ── Source Dropdowns (From Invoice / From Contact) ────────────
 
 function populateRecSourceDropdowns() {
+  // Order dropdown
+  var oSel = document.getElementById("rec-from-order");
+  oSel.textContent = "";
+  var oOpt0 = document.createElement("option");
+  oOpt0.value = ""; oOpt0.textContent = "-- None --";
+  oSel.appendChild(oOpt0);
+  shopifyOrders.forEach(function(o) {
+    var opt = document.createElement("option");
+    opt.value = o.shopifyOrderId;
+    var label = "#" + (o.orderNumber || o.shopifyOrderId);
+    if (o.customerName) label += " \u2014 " + o.customerName;
+    if (o.totalPrice) label += " (\u00A5" + Number(o.totalPrice).toLocaleString() + ")";
+    if (o.financialStatus) label += " [" + o.financialStatus + "]";
+    opt.textContent = label;
+    oSel.appendChild(opt);
+  });
   // Invoice dropdown
   var invSel = document.getElementById("rec-from-invoice");
   invSel.textContent = "";
@@ -7494,7 +7567,8 @@ function onRecFromInvoiceChange() {
   if (!invId) return;
   var inv = invoices.find(function(i) { return i.id === invId; });
   if (!inv) return;
-  // Reset contact dropdown
+  // Reset other dropdowns
+  document.getElementById("rec-from-order").value = "";
   document.getElementById("rec-from-contact").value = "";
   // Fill fields from invoice
   document.getElementById("rec-modal-invoice-id").value = inv.id;
@@ -7531,7 +7605,8 @@ function onRecFromContactChange() {
   if (!cId) return;
   var c = (typeof crmContacts !== "undefined" ? crmContacts : []).find(function(x) { return x.id === cId; });
   if (!c) return;
-  // Reset invoice dropdown
+  // Reset other dropdowns
+  document.getElementById("rec-from-order").value = "";
   document.getElementById("rec-from-invoice").value = "";
   document.getElementById("rec-linked-invoice-row").style.display = "none";
   document.getElementById("rec-modal-invoice-id").value = "";
@@ -7547,6 +7622,39 @@ function onRecFromContactChange() {
     document.getElementById("rec-modal-percent").value = c.consignmentPercent;
     setRecPricingType("consignment");
   }
+}
+
+function onRecFromOrderChange() {
+  var orderId = document.getElementById("rec-from-order").value;
+  if (!orderId) return;
+  var order = shopifyOrders.find(function(o) { return o.shopifyOrderId === orderId; });
+  if (!order) return;
+  // Reset other source dropdowns
+  document.getElementById("rec-from-invoice").value = "";
+  document.getElementById("rec-from-contact").value = "";
+  document.getElementById("rec-linked-invoice-row").style.display = "none";
+  document.getElementById("rec-modal-invoice-id").value = "";
+  document.getElementById("rec-modal-invoice-number").value = "";
+  // Fill fields from order
+  document.getElementById("rec-modal-order-id").value = order.shopifyOrderId || "";
+  document.getElementById("rec-modal-order-number").value = order.orderNumber || "";
+  document.getElementById("rec-modal-contact-name").value = order.customerName || "";
+  document.getElementById("rec-modal-company").value = "";
+  document.getElementById("rec-modal-email").value = order.email || "";
+  // Parse address
+  if (order.shippingAddress) {
+    var addr = parseOrderShippingAddress(order.shippingAddress);
+    if (addr) populateRecAddressFields(addr);
+  }
+  // Parse line items
+  document.getElementById("rec-line-items-body").textContent = "";
+  var items = parseOrderLineItems(order.lineItems, order.totalPrice);
+  if (items.length) {
+    items.forEach(function(it) { addReceiptLineItem(it.description, it.qty, it.unitPrice); });
+  } else {
+    addReceiptLineItem();
+  }
+  recalcReceiptTotals();
 }
 
 // ── Modal Open / Close / Save ─────────────────────────────────
@@ -8164,29 +8272,10 @@ function createReceiptFromOrder() {
   if (!orderJson) return;
   var order = JSON.parse(orderJson);
   closeOrderDetailModal();
-
   openReceiptCreateModal();
-  document.getElementById("rec-modal-contact-name").value = order.customerName || "";
-  document.getElementById("rec-modal-company").value = "";
-  document.getElementById("rec-modal-email").value = order.email || "";
-  document.getElementById("rec-modal-order-id").value = order.shopifyOrderId || "";
-  document.getElementById("rec-modal-order-number").value = order.orderNumber || "";
-
-  // Parse address
-  if (order.shippingAddress) {
-    var addr = parseOrderShippingAddress(order.shippingAddress);
-    if (addr) populateRecAddressFields(JSON.stringify(addr));
-  }
-
-  // Parse line items
-  document.getElementById("rec-line-items-body").textContent = "";
-  var items = parseOrderLineItems(order.lineItems, order.totalPrice);
-  if (items.length) {
-    items.forEach(function(it) { addReceiptLineItem(it.description, it.qty, it.unitPrice); });
-  } else {
-    addReceiptLineItem();
-  }
-  recalcReceiptTotals();
+  // Select the order in the dropdown and trigger populate
+  document.getElementById("rec-from-order").value = order.shopifyOrderId || "";
+  onRecFromOrderChange();
 }
 
 // ── CRM Checklist System ──────────────────────────────────────
