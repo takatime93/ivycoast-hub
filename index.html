@@ -1575,6 +1575,70 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
 }
 .inv-pricing-toggle button.active { background: #e8f0fe; border-color: #1a73e8; color: #1a73e8; font-weight: 500; }
 
+/* Pricing Parties */
+.inv-pricing-parties { margin-top: 6px; }
+.inv-pricing-party-row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  margin-bottom: 6px;
+}
+.inv-pricing-party-row select {
+  flex: 1;
+  min-width: 0;
+  padding: 6px 8px;
+  border: 1px solid #dadce0;
+  border-radius: 6px;
+  font-size: 13px;
+  font-family: inherit;
+}
+.inv-pricing-party-row .inv-party-name-input {
+  flex: 1;
+  min-width: 0;
+  padding: 6px 8px;
+  border: 1px solid #dadce0;
+  border-radius: 6px;
+  font-size: 13px;
+  font-family: inherit;
+}
+.inv-pricing-party-row input[type="number"] {
+  width: 55px;
+  padding: 6px 8px;
+  border: 1px solid #dadce0;
+  border-radius: 6px;
+  font-size: 13px;
+  font-family: inherit;
+  text-align: right;
+  flex-shrink: 0;
+}
+.inv-party-remove {
+  background: none;
+  border: none;
+  color: #c5221f;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 4px;
+  flex-shrink: 0;
+}
+.inv-party-remove:hover { background: #fce8e6; border-radius: 4px; }
+.inv-add-party-btn {
+  background: none;
+  border: 1px dashed #dadce0;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 12px;
+  color: #1a73e8;
+  cursor: pointer;
+  font-family: inherit;
+  margin-top: 4px;
+  width: 100%;
+}
+.inv-add-party-btn:hover { background: #f8f9ff; border-color: #1a73e8; }
+.inv-line-items .inv-applied-price,
+.inv-line-items .rec-applied-price { text-align: right; font-size: 12px; color: #0e413b; padding: 6px 4px; }
+.inv-line-items .inv-applied-amount,
+.inv-line-items .rec-applied-amount { text-align: right; font-weight: 500; color: #0e413b; padding: 6px 4px; }
+
 /* Invoice Address Grid */
 .inv-address-grid {
   display: grid;
@@ -2998,13 +3062,10 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
         <label for="inv-modal-po">PO / Reference</label>
         <input type="text" id="inv-modal-po" placeholder="e.g. #PO-00276 or event name">
       </div>
-      <div>
-        <label>Pricing Type</label>
-        <div class="inv-pricing-toggle" style="margin-top:4px">
-          <button type="button" id="inv-pricing-wholesale" class="active" onclick="setInvPricingType('wholesale')">Wholesale</button>
-          <button type="button" id="inv-pricing-consignment" onclick="setInvPricingType('consignment')">Consignment</button>
-          <input type="number" id="inv-modal-percent" placeholder="%" style="width:70px;padding:6px 8px;border:1px solid #dadce0;border-radius:6px;font-size:13px;font-family:inherit">
-        </div>
+      <div style="grid-column:1/-1">
+        <label>Pricing Parties</label>
+        <div id="inv-pricing-parties" class="inv-pricing-parties"></div>
+        <button type="button" class="inv-add-party-btn" onclick="addInvPricingParty()">+ Add Party</button>
       </div>
     </div>
 
@@ -3012,11 +3073,13 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
     <table class="inv-line-items">
       <thead>
         <tr>
-          <th style="width:45%">Description</th>
-          <th style="width:12%">Qty</th>
-          <th style="width:18%">Unit Price</th>
-          <th style="width:18%">Amount</th>
-          <th style="width:7%"></th>
+          <th style="width:30%">Description</th>
+          <th style="width:8%">Qty</th>
+          <th style="width:14%">Price</th>
+          <th style="width:14%">Applied</th>
+          <th style="width:14%">Amount</th>
+          <th style="width:14%">Net Amt</th>
+          <th style="width:6%"></th>
         </tr>
       </thead>
       <tbody id="inv-line-items-body"></tbody>
@@ -3182,13 +3245,10 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
     </div>
 
     <div class="inv-field-row">
-      <div>
-        <label>Pricing Type</label>
-        <div class="inv-pricing-toggle" style="margin-top:4px">
-          <button type="button" id="rec-pricing-wholesale" class="active" onclick="setRecPricingType('wholesale')">Wholesale</button>
-          <button type="button" id="rec-pricing-consignment" onclick="setRecPricingType('consignment')">Consignment</button>
-          <input type="number" id="rec-modal-percent" placeholder="%" style="width:70px;padding:6px 8px;border:1px solid #dadce0;border-radius:6px;font-size:13px;font-family:inherit">
-        </div>
+      <div style="grid-column:1/-1">
+        <label>Pricing Parties</label>
+        <div id="rec-pricing-parties" class="inv-pricing-parties"></div>
+        <button type="button" class="inv-add-party-btn" onclick="addRecPricingParty()">+ Add Party</button>
       </div>
     </div>
 
@@ -3196,11 +3256,13 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
     <table class="inv-line-items">
       <thead>
         <tr>
-          <th style="width:45%">Description</th>
-          <th style="width:12%">Qty</th>
-          <th style="width:18%">Unit Price</th>
-          <th style="width:18%">Amount</th>
-          <th style="width:7%"></th>
+          <th style="width:30%">Description</th>
+          <th style="width:8%">Qty</th>
+          <th style="width:14%">Price</th>
+          <th style="width:14%">Applied</th>
+          <th style="width:14%">Amount</th>
+          <th style="width:14%">Net Amt</th>
+          <th style="width:6%"></th>
         </tr>
       </thead>
       <tbody id="rec-line-items-body"></tbody>
@@ -5820,7 +5882,17 @@ if (SCRIPT_URL) {
 // ===================== INVOICES =====================
 
 var invoices = [];
-var invPricingType = "wholesale";
+
+function calcPricingSummary(unitPrice, parties) {
+  var totalPct = 0;
+  var breakdown = [];
+  (parties || []).forEach(function(p) {
+    var pct = parseFloat(p.percent) || 0;
+    totalPct += pct;
+    breakdown.push({ name: p.name, type: p.type, percent: pct, share: Math.round(unitPrice * pct / 100) });
+  });
+  return { appliedPrice: Math.round(unitPrice * (100 - totalPct) / 100), totalPercent: totalPct, breakdown: breakdown };
+}
 
 // Preload invoice assets for PDF and preview
 var invLogoDataUrl = "";
@@ -6021,12 +6093,10 @@ function onInvoiceContactChange() {
   var newRow = document.getElementById("inv-new-contact-row");
 
   if (contactId === "__new__") {
-    // New contact mode — show name field, clear others
     newRow.style.display = "";
     document.getElementById("inv-modal-contact-name").value = "";
     document.getElementById("inv-modal-company").value = "";
     document.getElementById("inv-modal-email").value = "";
-    document.getElementById("inv-modal-percent").value = "";
     clearInvAddressFields();
     document.getElementById("inv-modal-contact-name").focus();
     return;
@@ -6037,7 +6107,6 @@ function onInvoiceContactChange() {
   if (!contactId) {
     document.getElementById("inv-modal-company").value = "";
     document.getElementById("inv-modal-email").value = "";
-    document.getElementById("inv-modal-percent").value = "";
     clearInvAddressFields();
     return;
   }
@@ -6045,20 +6114,155 @@ function onInvoiceContactChange() {
   if (!c) return;
   document.getElementById("inv-modal-company").value = c.company || "";
   document.getElementById("inv-modal-email").value = c.email || "";
-  if (c.wholesalePercent) {
-    document.getElementById("inv-modal-percent").value = c.wholesalePercent;
-    setInvPricingType("wholesale");
-  } else if (c.consignmentPercent) {
-    document.getElementById("inv-modal-percent").value = c.consignmentPercent;
-    setInvPricingType("consignment");
+  // Auto-add party row from contact's saved rate if no parties yet
+  if (document.getElementById("inv-pricing-parties").children.length === 0) {
+    if (c.wholesalePercent) {
+      addInvPricingParty(c.name, c.id, "wholesale", c.wholesalePercent);
+    } else if (c.consignmentPercent) {
+      addInvPricingParty(c.name, c.id, "consignment", c.consignmentPercent);
+    }
   }
 }
 
-function setInvPricingType(type) {
-  invPricingType = type;
-  document.getElementById("inv-pricing-wholesale").classList.toggle("active", type === "wholesale");
-  document.getElementById("inv-pricing-consignment").classList.toggle("active", type === "consignment");
-  if (invSplitActive) updateInvSplitPreview();
+function addInvPricingParty(name, contactId, type, percent) {
+  var container = document.getElementById("inv-pricing-parties");
+  var row = document.createElement("div");
+  row.className = "inv-pricing-party-row";
+
+  // CRM contact dropdown
+  var sel = document.createElement("select");
+  var opt0 = document.createElement("option");
+  opt0.value = ""; opt0.textContent = "-- Select Contact --";
+  sel.appendChild(opt0);
+  var optNew = document.createElement("option");
+  optNew.value = "__free__"; optNew.textContent = "+ Type Name";
+  sel.appendChild(optNew);
+  (typeof crmContacts !== "undefined" ? crmContacts : []).forEach(function(c) {
+    var opt = document.createElement("option");
+    opt.value = c.id;
+    opt.textContent = c.name + (c.company ? " (" + c.company + ")" : "");
+    sel.appendChild(opt);
+  });
+
+  // Free text input (hidden by default)
+  var nameInput = document.createElement("input");
+  nameInput.type = "text";
+  nameInput.className = "inv-party-name-input";
+  nameInput.placeholder = "Party name";
+  nameInput.style.display = "none";
+
+  // Wholesale/Consignment toggle
+  var toggle = document.createElement("div");
+  toggle.className = "inv-pricing-toggle";
+  var btnW = document.createElement("button");
+  btnW.type = "button"; btnW.textContent = "W";
+  btnW.title = "Wholesale";
+  var btnC = document.createElement("button");
+  btnC.type = "button"; btnC.textContent = "C";
+  btnC.title = "Consignment";
+
+  function setToggle(t) {
+    btnW.classList.toggle("active", t === "wholesale");
+    btnC.classList.toggle("active", t === "consignment");
+    row.dataset.type = t;
+    recalcInvoiceTotals();
+    if (invSplitActive) updateInvSplitPreview();
+  }
+  btnW.addEventListener("click", function() { setToggle("wholesale"); });
+  btnC.addEventListener("click", function() { setToggle("consignment"); });
+  toggle.appendChild(btnW);
+  toggle.appendChild(btnC);
+
+  // Percent input
+  var pctInput = document.createElement("input");
+  pctInput.type = "number"; pctInput.placeholder = "%";
+  pctInput.min = "0"; pctInput.max = "100";
+  pctInput.addEventListener("input", function() {
+    recalcInvoiceTotals();
+    if (invSplitActive) updateInvSplitPreview();
+  });
+
+  // Remove button
+  var removeBtn = document.createElement("button");
+  removeBtn.type = "button";
+  removeBtn.className = "inv-party-remove";
+  removeBtn.textContent = "\u00d7";
+  removeBtn.addEventListener("click", function() {
+    row.remove();
+    recalcInvoiceTotals();
+    if (invSplitActive) updateInvSplitPreview();
+  });
+
+  // Contact dropdown change
+  sel.addEventListener("change", function() {
+    if (sel.value === "__free__") {
+      nameInput.style.display = "";
+      nameInput.focus();
+    } else {
+      nameInput.style.display = "none";
+      nameInput.value = "";
+    }
+    if (sel.value && sel.value !== "__free__") {
+      var c = (typeof crmContacts !== "undefined" ? crmContacts : []).find(function(x) { return x.id === sel.value; });
+      if (c) {
+        if (c.wholesalePercent) { pctInput.value = c.wholesalePercent; setToggle("wholesale"); }
+        else if (c.consignmentPercent) { pctInput.value = c.consignmentPercent; setToggle("consignment"); }
+      }
+    }
+    recalcInvoiceTotals();
+    if (invSplitActive) updateInvSplitPreview();
+  });
+
+  nameInput.addEventListener("input", function() {
+    if (invSplitActive) updateInvSplitPreview();
+  });
+
+  row.appendChild(sel);
+  row.appendChild(nameInput);
+  row.appendChild(toggle);
+  row.appendChild(pctInput);
+  row.appendChild(removeBtn);
+  container.appendChild(row);
+
+  // Set initial values
+  if (contactId && contactId !== "__free__") {
+    sel.value = contactId;
+    nameInput.style.display = "none";
+  } else if (name && !contactId) {
+    sel.value = "__free__";
+    nameInput.style.display = "";
+    nameInput.value = name;
+  }
+  setToggle(type || "wholesale");
+  if (percent) pctInput.value = percent;
+  recalcInvoiceTotals();
+}
+
+function getInvPricingParties() {
+  var parties = [];
+  document.querySelectorAll("#inv-pricing-parties .inv-pricing-party-row").forEach(function(row) {
+    var sel = row.querySelector("select");
+    var nameInput = row.querySelector(".inv-party-name-input");
+    var pctInput = row.querySelector("input[type='number']");
+    var contactId = sel.value === "__free__" ? "" : sel.value;
+    var name = "";
+    if (sel.value === "__free__") {
+      name = nameInput.value.trim();
+    } else if (sel.value) {
+      name = sel.options[sel.selectedIndex].textContent;
+    }
+    parties.push({
+      name: name,
+      contactId: contactId,
+      type: row.dataset.type || "wholesale",
+      percent: parseFloat(pctInput.value) || 0
+    });
+  });
+  return parties;
+}
+
+function clearInvPricingParties() {
+  document.getElementById("inv-pricing-parties").textContent = "";
 }
 
 function openInvoiceCreateModal() {
@@ -6074,7 +6278,7 @@ function openInvoiceCreateModal() {
   document.getElementById("inv-modal-email").value = "";
   clearInvAddressFields();
   document.getElementById("inv-modal-po").value = "";
-  document.getElementById("inv-modal-percent").value = "";
+  clearInvPricingParties();
   document.getElementById("inv-modal-discount").value = "0";
   document.getElementById("inv-modal-shipping").value = "0";
   document.getElementById("inv-modal-tax-type").value = "included";
@@ -6083,7 +6287,6 @@ function openInvoiceCreateModal() {
   document.getElementById("inv-modal-workspace").value = "IVYCOAST";
   document.getElementById("inv-modal-delete-btn").style.display = "none";
   document.getElementById("inv-line-items-body").textContent = "";
-  setInvPricingType("wholesale");
   populateInvoiceContactDropdown();
   populateInvOrderDropdown();
   document.getElementById("inv-from-order").value = "";
@@ -6112,7 +6315,6 @@ function openInvoiceEditModal(invId) {
   document.getElementById("inv-modal-email").value = inv.contactEmail || "";
   populateInvAddressFields(inv.contactAddress);
   document.getElementById("inv-modal-po").value = inv.poReference || "";
-  document.getElementById("inv-modal-percent").value = inv.pricingPercent || "";
   document.getElementById("inv-modal-discount").value = inv.discount || "0";
   document.getElementById("inv-modal-shipping").value = inv.shipping || "0";
   document.getElementById("inv-modal-tax-type").value = inv.taxType || "included";
@@ -6120,7 +6322,13 @@ function openInvoiceEditModal(invId) {
   document.getElementById("inv-modal-notes").value = inv.notes || "";
   document.getElementById("inv-modal-workspace").value = inv.workspace || "IVYCOAST";
   document.getElementById("inv-modal-delete-btn").style.display = "inline-block";
-  setInvPricingType(inv.pricingType || "wholesale");
+  // Load pricing parties
+  clearInvPricingParties();
+  if (inv.pricingParties) {
+    try { JSON.parse(inv.pricingParties).forEach(function(p) { addInvPricingParty(p.name, p.contactId, p.type, p.percent); }); } catch(e) {}
+  } else if (inv.pricingType && inv.pricingPercent) {
+    addInvPricingParty(inv.contactName || "", inv.contactId || "", inv.pricingType, inv.pricingPercent);
+  }
   populateInvoiceContactDropdown();
   // If invoice has no contactId but has a contactName, it was a new contact entry
   if (!inv.contactId && inv.contactName) {
@@ -6301,10 +6509,20 @@ function addInvoiceLineItem(desc, qty, price) {
   tdPrice.appendChild(inPrice);
   tr.appendChild(tdPrice);
 
+  var tdApplied = document.createElement("td");
+  tdApplied.className = "inv-applied-price";
+  tdApplied.textContent = "\u2014";
+  tr.appendChild(tdApplied);
+
   var tdAmt = document.createElement("td");
   tdAmt.className = "inv-amount";
   tdAmt.textContent = "\u00a50";
   tr.appendChild(tdAmt);
+
+  var tdNetAmt = document.createElement("td");
+  tdNetAmt.className = "inv-applied-amount";
+  tdNetAmt.textContent = "\u2014";
+  tr.appendChild(tdNetAmt);
 
   var tdDel = document.createElement("td");
   var delBtn = document.createElement("button");
@@ -6336,6 +6554,8 @@ function getInvoiceLineItems() {
 }
 
 function recalcInvoiceTotals() {
+  var parties = getInvPricingParties();
+  var hasParties = parties.length > 0;
   var rows = document.getElementById("inv-line-items-body").querySelectorAll("tr");
   var subtotal = 0;
   rows.forEach(function(tr) {
@@ -6343,6 +6563,18 @@ function recalcInvoiceTotals() {
     var price = parseFloat(tr.querySelector(".inv-price").value) || 0;
     var amt = qty * price;
     tr.querySelector(".inv-amount").textContent = "\u00a5" + amt.toLocaleString();
+    var appliedCell = tr.querySelector(".inv-applied-price");
+    var netCell = tr.querySelector(".inv-applied-amount");
+    if (appliedCell && netCell) {
+      if (hasParties) {
+        var s = calcPricingSummary(price, parties);
+        appliedCell.textContent = "\u00a5" + s.appliedPrice.toLocaleString();
+        netCell.textContent = "\u00a5" + (qty * s.appliedPrice).toLocaleString();
+      } else {
+        appliedCell.textContent = "\u2014";
+        netCell.textContent = "\u2014";
+      }
+    }
     subtotal += amt;
   });
 
@@ -6398,8 +6630,9 @@ function saveInvoice() {
     taxType: taxType,
     tax: String(tax),
     total: String(total),
-    pricingType: invPricingType,
-    pricingPercent: document.getElementById("inv-modal-percent").value,
+    pricingType: (function() { var p = getInvPricingParties(); return p.length ? p[0].type : ""; })(),
+    pricingPercent: (function() { var p = getInvPricingParties(); return p.length ? String(p[0].percent) : ""; })(),
+    pricingParties: JSON.stringify(getInvPricingParties()),
     status: document.getElementById("inv-modal-status").value,
     workspace: document.getElementById("inv-modal-workspace").value,
     notes: document.getElementById("inv-modal-notes").value.trim(),
@@ -6426,8 +6659,12 @@ function saveInvoice() {
       workspace: invoice.workspace,
       stage: "active_partner"
     };
-    if (invPricingType === "wholesale" && invoice.pricingPercent) newContact.wholesalePercent = invoice.pricingPercent;
-    if (invPricingType === "consignment" && invoice.pricingPercent) newContact.consignmentPercent = invoice.pricingPercent;
+    var _parties = getInvPricingParties();
+    if (_parties.length) {
+      var fp = _parties[0];
+      if (fp.type === "wholesale" && fp.percent) newContact.wholesalePercent = String(fp.percent);
+      if (fp.type === "consignment" && fp.percent) newContact.consignmentPercent = String(fp.percent);
+    }
     crmApiPost({ action: "create", contact: newContact })
       .then(function(data) { if (data.contact) crmContacts.push(data.contact); });
   }
@@ -6554,37 +6791,46 @@ function buildInvoicePreviewTo(page, data) {
   paySection.appendChild(noteP);
   left.appendChild(paySection);
 
-  // Cost breakdown section (consignment/wholesale only)
-  if (data.pricingType && data.pricingType !== "general" && data.pricingPercent) {
+  // Cost breakdown section (multi-party)
+  var parties = data.pricingParties || [];
+  if (parties.length > 0) {
     var costBreak = document.createElement("div");
     costBreak.className = "inv-prev-costbreak";
     var cbTitle = document.createElement("h4");
-    var pctNum = parseFloat(data.pricingPercent) || 0;
-    var splitLabel = data.pricingType === "consignment"
-      ? pctNum + "/" + (100 - pctNum) + " consignment split calculation."
-      : pctNum + "% wholesale pricing.";
-    cbTitle.textContent = (data.pricingType === "consignment" ? "Consignment" : "Wholesale") + " cost break";
+    cbTitle.textContent = "Cost Breakdown";
     costBreak.appendChild(cbTitle);
-    var cbDesc = document.createElement("p");
-    cbDesc.className = "inv-prev-costbreak-desc";
-    cbDesc.textContent = splitLabel;
-    costBreak.appendChild(cbDesc);
-    // Show per-item original -> discounted price
-    if (data.items && data.items.length) {
-      var lines = data.items.map(function(it) {
-        var origPrice = it.unitPrice || 0;
-        var finalPrice = it.amount && it.qty ? Math.round(it.amount / it.qty) : origPrice;
-        var name = (it.description || "").split(" — ")[0].split(" @ ")[0];
-        return name + ": \u00a5" + Number(origPrice).toLocaleString() + " -> \u00a5" + Number(finalPrice).toLocaleString();
-      }).join("\n");
-      var cbLines = document.createElement("p");
-      cbLines.className = "inv-prev-costbreak-lines";
-      cbLines.textContent = lines;
-      costBreak.appendChild(cbLines);
-    }
+
+    parties.forEach(function(party) {
+      var pctNum = parseFloat(party.percent) || 0;
+      var partyDiv = document.createElement("div");
+      partyDiv.style.marginBottom = "10px";
+      var partyTitle = document.createElement("p");
+      partyTitle.className = "inv-prev-costbreak-desc";
+      var typeLabel = party.type === "consignment"
+        ? pctNum + "/" + (100 - pctNum) + " consignment"
+        : pctNum + "% wholesale";
+      partyTitle.textContent = (party.name ? party.name + " \u2014 " : "") + typeLabel;
+      partyDiv.appendChild(partyTitle);
+
+      if (data.items && data.items.length) {
+        var lines = data.items.map(function(it) {
+          var origPrice = it.unitPrice || 0;
+          var partyShare = Math.round(origPrice * pctNum / 100);
+          var name = (it.description || "").split(" \u2014 ")[0].split(" @ ")[0];
+          return name + ": \u00a5" + Number(origPrice).toLocaleString() + " \u2192 \u00a5" + Number(partyShare).toLocaleString();
+        }).join("\n");
+        var cbLines = document.createElement("p");
+        cbLines.className = "inv-prev-costbreak-lines";
+        cbLines.textContent = lines;
+        partyDiv.appendChild(cbLines);
+      }
+      costBreak.appendChild(partyDiv);
+    });
+
+    var totalPct = parties.reduce(function(s, p) { return s + (parseFloat(p.percent) || 0); }, 0);
     var cbNote = document.createElement("p");
     cbNote.className = "inv-prev-costbreak-note";
-    cbNote.textContent = "Tax included in product cost";
+    cbNote.textContent = "IVYCOAST margin: " + (100 - totalPct) + "% \u00B7 Tax included in product cost";
     costBreak.appendChild(cbNote);
     left.appendChild(costBreak);
   }
@@ -6713,8 +6959,7 @@ function previewInvoice() {
     taxType: taxType,
     tax: tax,
     total: total,
-    pricingType: invPricingType,
-    pricingPercent: document.getElementById("inv-modal-percent").value || ""
+    pricingParties: getInvPricingParties()
   });
 }
 
@@ -6739,8 +6984,11 @@ function previewInvoiceFromData(inv) {
     taxType: inv.taxType || "included",
     tax: parseFloat(inv.tax) || 0,
     total: parseFloat(inv.total) || 0,
-    pricingType: inv.pricingType || "",
-    pricingPercent: inv.pricingPercent || ""
+    pricingParties: (function() {
+      if (inv.pricingParties) { try { return JSON.parse(inv.pricingParties); } catch(e) {} }
+      if (inv.pricingType && inv.pricingPercent) return [{ name: inv.contactName || "", contactId: inv.contactId || "", type: inv.pricingType, percent: inv.pricingPercent }];
+      return [];
+    })()
   });
 }
 
@@ -6805,8 +7053,7 @@ function updateInvSplitPreview() {
     taxType: taxType,
     tax: tax,
     total: total,
-    pricingType: invPricingType,
-    pricingPercent: document.getElementById("inv-modal-percent").value || ""
+    pricingParties: getInvPricingParties()
   });
 }
 
@@ -7314,7 +7561,6 @@ function downloadInvoicePdf(invData) {
 // ══════════════════════════════════════════════════════════════
 
 var receipts = [];
-var recPricingType = "wholesale";
 
 function recApiPost(body) {
   body.sheet = "Receipts";
@@ -7397,10 +7643,126 @@ function generateReceiptNumber() {
 
 // ── Pricing Toggle ────────────────────────────────────────────
 
-function setRecPricingType(type) {
-  recPricingType = type;
-  document.getElementById("rec-pricing-wholesale").classList.toggle("active", type === "wholesale");
-  document.getElementById("rec-pricing-consignment").classList.toggle("active", type === "consignment");
+function addRecPricingParty(name, contactId, type, percent) {
+  var container = document.getElementById("rec-pricing-parties");
+  var row = document.createElement("div");
+  row.className = "inv-pricing-party-row";
+
+  var sel = document.createElement("select");
+  var opt0 = document.createElement("option");
+  opt0.value = ""; opt0.textContent = "-- Select Contact --";
+  sel.appendChild(opt0);
+  var optNew = document.createElement("option");
+  optNew.value = "__free__"; optNew.textContent = "+ Type Name";
+  sel.appendChild(optNew);
+  (typeof crmContacts !== "undefined" ? crmContacts : []).forEach(function(c) {
+    var opt = document.createElement("option");
+    opt.value = c.id;
+    opt.textContent = c.name + (c.company ? " (" + c.company + ")" : "");
+    sel.appendChild(opt);
+  });
+
+  var nameInput = document.createElement("input");
+  nameInput.type = "text";
+  nameInput.className = "inv-party-name-input";
+  nameInput.placeholder = "Party name";
+  nameInput.style.display = "none";
+
+  var toggle = document.createElement("div");
+  toggle.className = "inv-pricing-toggle";
+  var btnW = document.createElement("button");
+  btnW.type = "button"; btnW.textContent = "W"; btnW.title = "Wholesale";
+  var btnC = document.createElement("button");
+  btnC.type = "button"; btnC.textContent = "C"; btnC.title = "Consignment";
+
+  function setToggle(t) {
+    btnW.classList.toggle("active", t === "wholesale");
+    btnC.classList.toggle("active", t === "consignment");
+    row.dataset.type = t;
+    recalcReceiptTotals();
+  }
+  btnW.addEventListener("click", function() { setToggle("wholesale"); });
+  btnC.addEventListener("click", function() { setToggle("consignment"); });
+  toggle.appendChild(btnW);
+  toggle.appendChild(btnC);
+
+  var pctInput = document.createElement("input");
+  pctInput.type = "number"; pctInput.placeholder = "%";
+  pctInput.min = "0"; pctInput.max = "100";
+  pctInput.addEventListener("input", function() { recalcReceiptTotals(); });
+
+  var removeBtn = document.createElement("button");
+  removeBtn.type = "button";
+  removeBtn.className = "inv-party-remove";
+  removeBtn.textContent = "\u00d7";
+  removeBtn.addEventListener("click", function() {
+    row.remove();
+    recalcReceiptTotals();
+  });
+
+  sel.addEventListener("change", function() {
+    if (sel.value === "__free__") {
+      nameInput.style.display = "";
+      nameInput.focus();
+    } else {
+      nameInput.style.display = "none";
+      nameInput.value = "";
+    }
+    if (sel.value && sel.value !== "__free__") {
+      var c = (typeof crmContacts !== "undefined" ? crmContacts : []).find(function(x) { return x.id === sel.value; });
+      if (c) {
+        if (c.wholesalePercent) { pctInput.value = c.wholesalePercent; setToggle("wholesale"); }
+        else if (c.consignmentPercent) { pctInput.value = c.consignmentPercent; setToggle("consignment"); }
+      }
+    }
+    recalcReceiptTotals();
+  });
+
+  row.appendChild(sel);
+  row.appendChild(nameInput);
+  row.appendChild(toggle);
+  row.appendChild(pctInput);
+  row.appendChild(removeBtn);
+  container.appendChild(row);
+
+  if (contactId && contactId !== "__free__") {
+    sel.value = contactId;
+    nameInput.style.display = "none";
+  } else if (name && !contactId) {
+    sel.value = "__free__";
+    nameInput.style.display = "";
+    nameInput.value = name;
+  }
+  setToggle(type || "wholesale");
+  if (percent) pctInput.value = percent;
+  recalcReceiptTotals();
+}
+
+function getRecPricingParties() {
+  var parties = [];
+  document.querySelectorAll("#rec-pricing-parties .inv-pricing-party-row").forEach(function(row) {
+    var sel = row.querySelector("select");
+    var nameInput = row.querySelector(".inv-party-name-input");
+    var pctInput = row.querySelector("input[type='number']");
+    var contactId = sel.value === "__free__" ? "" : sel.value;
+    var name = "";
+    if (sel.value === "__free__") {
+      name = nameInput.value.trim();
+    } else if (sel.value) {
+      name = sel.options[sel.selectedIndex].textContent;
+    }
+    parties.push({
+      name: name,
+      contactId: contactId,
+      type: row.dataset.type || "wholesale",
+      percent: parseFloat(pctInput.value) || 0
+    });
+  });
+  return parties;
+}
+
+function clearRecPricingParties() {
+  document.getElementById("rec-pricing-parties").textContent = "";
 }
 
 // ── Address Helpers ───────────────────────────────────────────
@@ -7469,14 +7831,16 @@ function addReceiptLineItem(desc, qty, price) {
   var td1 = document.createElement("td"); td1.appendChild(descInput);
   var td2 = document.createElement("td"); td2.appendChild(qtyInput);
   var td3 = document.createElement("td"); td3.appendChild(priceInput);
+  var tdApplied = document.createElement("td"); tdApplied.className = "rec-applied-price"; tdApplied.textContent = "\u2014";
   var td4 = document.createElement("td"); td4.className = "rec-line-amount"; td4.textContent = "\u00a50";
+  var tdNetAmt = document.createElement("td"); tdNetAmt.className = "rec-applied-amount"; tdNetAmt.textContent = "\u2014";
   var td5 = document.createElement("td");
   var removeBtn = document.createElement("button");
   removeBtn.type = "button"; removeBtn.textContent = "\u00d7";
   removeBtn.style.cssText = "background:none;border:none;font-size:18px;color:#d93025;cursor:pointer";
   removeBtn.onclick = function() { tr.remove(); recalcReceiptTotals(); };
   td5.appendChild(removeBtn);
-  tr.appendChild(td1); tr.appendChild(td2); tr.appendChild(td3); tr.appendChild(td4); tr.appendChild(td5);
+  tr.appendChild(td1); tr.appendChild(td2); tr.appendChild(td3); tr.appendChild(tdApplied); tr.appendChild(td4); tr.appendChild(tdNetAmt); tr.appendChild(td5);
   tbody.appendChild(tr);
   recalcReceiptTotals();
 }
@@ -7497,6 +7861,8 @@ function getReceiptLineItems() {
 }
 
 function recalcReceiptTotals() {
+  var parties = getRecPricingParties();
+  var hasParties = parties.length > 0;
   var items = getReceiptLineItems();
   var subtotal = items.reduce(function(s, it) { return s + it.amount; }, 0);
   var discount = parseFloat(document.getElementById("rec-modal-discount").value) || 0;
@@ -7507,12 +7873,24 @@ function recalcReceiptTotals() {
   var total = afterDiscount + tax + shipping;
   document.getElementById("rec-modal-subtotal").textContent = "\u00a5" + subtotal.toLocaleString();
   document.getElementById("rec-modal-total").textContent = "\u00a5" + total.toLocaleString();
-  // Update per-row amounts
+  // Update per-row amounts + applied
   document.querySelectorAll("#rec-line-items-body tr").forEach(function(tr) {
     var q = parseInt((tr.querySelector(".rec-line-qty") || {}).value, 10) || 0;
     var p = parseFloat((tr.querySelector(".rec-line-price") || {}).value) || 0;
     var amt = tr.querySelector(".rec-line-amount");
     if (amt) amt.textContent = "\u00a5" + (q * p).toLocaleString();
+    var appliedCell = tr.querySelector(".rec-applied-price");
+    var netCell = tr.querySelector(".rec-applied-amount");
+    if (appliedCell && netCell) {
+      if (hasParties) {
+        var s = calcPricingSummary(p, parties);
+        appliedCell.textContent = "\u00a5" + s.appliedPrice.toLocaleString();
+        netCell.textContent = "\u00a5" + (q * s.appliedPrice).toLocaleString();
+      } else {
+        appliedCell.textContent = "\u2014";
+        netCell.textContent = "\u2014";
+      }
+    }
   });
 }
 
@@ -7586,8 +7964,13 @@ function onRecFromInvoiceChange() {
   document.getElementById("rec-modal-notes").value = "";
   document.getElementById("rec-modal-order-id").value = inv.orderId || "";
   document.getElementById("rec-modal-order-number").value = inv.orderNumber || "";
-  if (inv.pricingType) setRecPricingType(inv.pricingType);
-  document.getElementById("rec-modal-percent").value = inv.pricingPercent || "";
+  // Load pricing parties from invoice
+  clearRecPricingParties();
+  if (inv.pricingParties) {
+    try { JSON.parse(inv.pricingParties).forEach(function(p) { addRecPricingParty(p.name, p.contactId, p.type, p.percent); }); } catch(e) {}
+  } else if (inv.pricingType && inv.pricingPercent) {
+    addRecPricingParty(inv.contactName || "", inv.contactId || "", inv.pricingType, inv.pricingPercent);
+  }
   // Line items
   document.getElementById("rec-line-items-body").textContent = "";
   var items = [];
@@ -7615,12 +7998,12 @@ function onRecFromContactChange() {
   document.getElementById("rec-modal-contact-name").value = c.name || "";
   document.getElementById("rec-modal-company").value = c.company || "";
   document.getElementById("rec-modal-email").value = c.email || "";
+  // Auto-add party row from contact's saved rate
+  clearRecPricingParties();
   if (c.wholesalePercent) {
-    document.getElementById("rec-modal-percent").value = c.wholesalePercent;
-    setRecPricingType("wholesale");
+    addRecPricingParty(c.name, c.id, "wholesale", c.wholesalePercent);
   } else if (c.consignmentPercent) {
-    document.getElementById("rec-modal-percent").value = c.consignmentPercent;
-    setRecPricingType("consignment");
+    addRecPricingParty(c.name, c.id, "consignment", c.consignmentPercent);
   }
 }
 
@@ -7679,9 +8062,8 @@ function openReceiptCreateModal() {
   document.getElementById("rec-modal-shipping").value = "0";
   document.getElementById("rec-modal-tax-type").value = "included";
   document.getElementById("rec-modal-notes").value = "";
-  document.getElementById("rec-modal-percent").value = "";
+  clearRecPricingParties();
   document.getElementById("rec-modal-workspace").value = "IVYCOAST";
-  setRecPricingType("wholesale");
   document.getElementById("rec-line-items-body").textContent = "";
   addReceiptLineItem();
   document.getElementById("rec-modal-delete-btn").style.display = "none";
@@ -7714,9 +8096,14 @@ function openReceiptEditModal(recId) {
   document.getElementById("rec-modal-shipping").value = rec.shipping || "0";
   document.getElementById("rec-modal-tax-type").value = rec.taxType || "included";
   document.getElementById("rec-modal-notes").value = rec.notes || "";
-  document.getElementById("rec-modal-percent").value = rec.pricingPercent || "";
   document.getElementById("rec-modal-workspace").value = rec.workspace || "IVYCOAST";
-  setRecPricingType(rec.pricingType || "wholesale");
+  // Load pricing parties
+  clearRecPricingParties();
+  if (rec.pricingParties) {
+    try { JSON.parse(rec.pricingParties).forEach(function(p) { addRecPricingParty(p.name, p.contactId, p.type, p.percent); }); } catch(e) {}
+  } else if (rec.pricingType && rec.pricingPercent) {
+    addRecPricingParty(rec.contactName || "", "", rec.pricingType, rec.pricingPercent);
+  }
   document.getElementById("rec-line-items-body").textContent = "";
   var items = [];
   try { items = JSON.parse(rec.items); } catch(e) {}
@@ -7761,8 +8148,9 @@ function saveReceipt() {
     taxType: taxType,
     tax: String(tax),
     total: String(total),
-    pricingType: recPricingType,
-    pricingPercent: document.getElementById("rec-modal-percent").value,
+    pricingType: (function() { var p = getRecPricingParties(); return p.length ? p[0].type : ""; })(),
+    pricingPercent: (function() { var p = getRecPricingParties(); return p.length ? String(p[0].percent) : ""; })(),
+    pricingParties: JSON.stringify(getRecPricingParties()),
     workspace: document.getElementById("rec-modal-workspace").value,
     notes: document.getElementById("rec-modal-notes").value.trim(),
     orderId: document.getElementById("rec-modal-order-id").value,
@@ -7876,6 +8264,47 @@ function buildReceiptPreviewTo(page, data) {
   badgeDiv.appendChild(badge);
   left.appendChild(badgeDiv);
 
+  // Cost breakdown (multi-party)
+  var recParties = data.pricingParties || [];
+  if (recParties.length > 0) {
+    var costBreak = document.createElement("div");
+    costBreak.className = "inv-prev-costbreak";
+    var cbTitle = document.createElement("h4");
+    cbTitle.textContent = "Cost Breakdown";
+    costBreak.appendChild(cbTitle);
+    recParties.forEach(function(party) {
+      var pctNum = parseFloat(party.percent) || 0;
+      var partyDiv = document.createElement("div");
+      partyDiv.style.marginBottom = "10px";
+      var partyTitle = document.createElement("p");
+      partyTitle.className = "inv-prev-costbreak-desc";
+      var typeLabel = party.type === "consignment"
+        ? pctNum + "/" + (100 - pctNum) + " consignment"
+        : pctNum + "% wholesale";
+      partyTitle.textContent = (party.name ? party.name + " \u2014 " : "") + typeLabel;
+      partyDiv.appendChild(partyTitle);
+      if (data.items && data.items.length) {
+        var lines = data.items.map(function(it) {
+          var origPrice = it.unitPrice || 0;
+          var partyShare = Math.round(origPrice * pctNum / 100);
+          var name = (it.description || "").split(" \u2014 ")[0];
+          return name + ": \u00a5" + Number(origPrice).toLocaleString() + " \u2192 \u00a5" + Number(partyShare).toLocaleString();
+        }).join("\n");
+        var cbLines = document.createElement("p");
+        cbLines.className = "inv-prev-costbreak-lines";
+        cbLines.textContent = lines;
+        partyDiv.appendChild(cbLines);
+      }
+      costBreak.appendChild(partyDiv);
+    });
+    var totalPct = recParties.reduce(function(s, p) { return s + (parseFloat(p.percent) || 0); }, 0);
+    var cbNote = document.createElement("p");
+    cbNote.className = "inv-prev-costbreak-note";
+    cbNote.textContent = "IVYCOAST margin: " + (100 - totalPct) + "% \u00B7 Tax included in product cost";
+    costBreak.appendChild(cbNote);
+    left.appendChild(costBreak);
+  }
+
   bodyDiv.appendChild(left);
 
   // Right column: items table + totals (same as invoice)
@@ -7977,7 +8406,8 @@ function previewReceipt() {
     shipping: shipping,
     taxType: taxType,
     tax: tax,
-    total: total
+    total: total,
+    pricingParties: getRecPricingParties()
   });
   document.getElementById("rec-preview-overlay").classList.add("open");
 }
@@ -8002,7 +8432,12 @@ function previewReceiptFromData(rec) {
     shipping: parseFloat(rec.shipping) || 0,
     taxType: rec.taxType || "included",
     tax: parseFloat(rec.tax) || 0,
-    total: parseFloat(rec.total) || 0
+    total: parseFloat(rec.total) || 0,
+    pricingParties: (function() {
+      if (rec.pricingParties) { try { return JSON.parse(rec.pricingParties); } catch(e) {} }
+      if (rec.pricingType && rec.pricingPercent) return [{ name: rec.contactName || "", contactId: "", type: rec.pricingType, percent: rec.pricingPercent }];
+      return [];
+    })()
   });
   document.getElementById("rec-preview-overlay").classList.add("open");
 }
@@ -8240,6 +8675,7 @@ function autoCreateReceiptFromInvoice(invoice) {
     total: invoice.total || "0",
     pricingType: invoice.pricingType || "",
     pricingPercent: invoice.pricingPercent || "",
+    pricingParties: invoice.pricingParties || "",
     workspace: invoice.workspace || "IVYCOAST",
     notes: "",
     orderId: invoice.orderId || "",
