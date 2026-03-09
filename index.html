@@ -1021,6 +1021,7 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
   position: relative;
 }
 .crm-card-upload:hover { border-color: #1a73e8; background: #f8f9ff; }
+.crm-card-upload.drag-over { border-color: #1a73e8; background: #e8f0fe; border-width: 2px; box-shadow: 0 0 0 3px rgba(26,115,232,0.15); }
 .crm-card-upload.has-preview {
   padding: 8px;
   border-style: solid;
@@ -5438,6 +5439,34 @@ function handleCrmCardUpload(side, input) {
   input.value = "";
 }
 
+function handleCrmCardDrop(side, e) {
+  e.preventDefault();
+  e.stopPropagation();
+  var el = document.getElementById("crm-card-" + side + "-upload");
+  el.classList.remove("drag-over");
+  var files = e.dataTransfer && e.dataTransfer.files;
+  if (!files || !files[0]) return;
+  if (!files[0].type.startsWith("image/")) return;
+  resizeImageBase64(files[0], 1200, function(result) {
+    if (side === "front") { crmPendingCardFront = result; crmRemoveCardFront = false; }
+    else { crmPendingCardBack = result; crmRemoveCardBack = false; }
+    document.getElementById("crm-card-" + side + "-img").src = result.dataUrl;
+    document.getElementById("crm-card-" + side + "-preview").classList.add("visible");
+    document.getElementById("crm-card-" + side + "-label").style.display = "none";
+    el.classList.add("has-preview");
+  });
+}
+
+function initCrmCardDragDrop() {
+  ["front", "back"].forEach(function(side) {
+    var el = document.getElementById("crm-card-" + side + "-upload");
+    el.addEventListener("dragenter", function(e) { e.preventDefault(); el.classList.add("drag-over"); });
+    el.addEventListener("dragover", function(e) { e.preventDefault(); el.classList.add("drag-over"); });
+    el.addEventListener("dragleave", function(e) { e.preventDefault(); el.classList.remove("drag-over"); });
+    el.addEventListener("drop", function(e) { handleCrmCardDrop(side, e); });
+  });
+}
+
 function removeCrmCard(side) {
   if (side === "front") { crmPendingCardFront = null; crmRemoveCardFront = true; crmExistingCardFrontUrl = ""; }
   else { crmPendingCardBack = null; crmRemoveCardBack = true; crmExistingCardBackUrl = ""; }
@@ -5488,6 +5517,7 @@ function openCrmCreateModal() {
   resetCrmCardPreview("front");
   resetCrmCardPreview("back");
   document.getElementById("crm-modal-overlay").classList.add("open");
+  initCrmCardDragDrop();
   setTimeout(function() { document.getElementById("crm-modal-name").focus(); }, 50);
 }
 
@@ -5547,6 +5577,7 @@ function openCrmEditModal(contactId) {
   }
 
   document.getElementById("crm-modal-overlay").classList.add("open");
+  initCrmCardDragDrop();
   setTimeout(function() { document.getElementById("crm-modal-name").focus(); }, 50);
 }
 
