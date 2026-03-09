@@ -1750,6 +1750,40 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
   opacity: 0.18;
 }
 
+/* Split-pane edit + live preview */
+.board-modal.inv-modal.inv-split-mode {
+  width: 1280px; max-width: 98vw;
+  display: flex; flex-direction: row;
+  padding: 0; overflow: hidden;
+}
+.inv-split-editor {
+  flex: 0 0 620px; max-width: 620px;
+  overflow-y: auto; padding: 28px;
+  max-height: 90vh;
+  border-right: 1px solid #e0e0e0;
+}
+.board-modal.inv-modal:not(.inv-split-mode) .inv-split-editor {
+  max-width: 100%; flex: none;
+}
+.inv-split-preview {
+  flex: 1; overflow-y: auto;
+  background: #f0f0f0;
+  display: flex; align-items: flex-start;
+  justify-content: center; padding: 24px;
+  max-height: 90vh;
+}
+.inv-split-preview-inner {
+  width: 210mm; transform-origin: top center;
+  transform: scale(0.55);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+  background: #fff; border-radius: 2px;
+}
+
+/* Receipt-specific styles */
+.rec-prev-invnum { font-size: 18px; font-weight: 600; color: #202124; text-align: right; }
+.rec-badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 500; background: #e6f4ea; color: #137333; }
+.rec-prev-invref { font-size: 12px; color: #1a73e8; margin-top: 12px; font-weight: 500; }
+
 /* CRM Documents Checklist */
 .crm-checklist-list { display: flex; flex-direction: column; gap: 8px; }
 .crm-checklist-item {
@@ -1869,6 +1903,10 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
   .order-detail-grid { grid-template-columns: 1fr; }
   .tools-subnav-tab { padding: 8px 12px; font-size: 12px; }
   .board-modal.inv-modal { width: 100%; max-width: 100vw; border-radius: 0; max-height: 100vh; }
+  .board-modal.inv-modal.inv-split-mode { flex-direction: column; width: 100%; }
+  .inv-split-editor { max-width: 100% !important; flex: none !important; max-height: 55vh; border-right: none; border-bottom: 1px solid #e0e0e0; }
+  .inv-split-preview { max-height: 40vh; }
+  .inv-split-preview-inner { transform: scale(0.35); }
   .inv-field-row { grid-template-columns: 1fr; }
   .inv-field-row.three-col { grid-template-columns: 1fr; }
   .invoices-table { font-size: 13px; }
@@ -2448,6 +2486,7 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
     <h2 class="section-title">Tools</h2>
     <nav class="tools-subnav" id="tools-subnav">
       <button class="tools-subnav-tab active" data-tool="invoices" onclick="switchTool('invoices')">Invoices</button>
+      <button class="tools-subnav-tab" data-tool="receipts" onclick="switchTool('receipts')">Receipts</button>
     </nav>
 
     <!-- Invoice Generator -->
@@ -2455,6 +2494,7 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
       <h2 class="section-title" style="font-size:18px;margin-bottom:4px">Invoice Generator</h2>
       <div class="board-toolbar" id="invoices-toolbar">
         <button class="btn-add-task" onclick="openInvoiceCreateModal()">+ Create Invoice</button>
+        <button class="btn-add-task" onclick="generateMissingInvoices()" style="background:#f1f3f4;color:#202124;border:1px solid #dadce0">Generate Missing Invoices</button>
         <select class="filter-select" id="invoices-filter-status" onchange="renderInvoices()">
           <option value="">All Statuses</option>
           <option value="draft">Draft</option>
@@ -2480,12 +2520,45 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
             <th>Contact / Company</th>
             <th>Total</th>
             <th>Status</th>
+            <th>Order</th>
             <th>Actions</th>
           </tr>
         </thead>
         <tbody id="invoices-body"></tbody>
       </table>
       <p id="invoices-no-results" style="display:none;text-align:center;padding:32px;color:#5f6368;font-size:14px;">No invoices found.</p>
+    </div>
+
+    <!-- Receipts -->
+    <div id="tools-receipts" class="tools-subview">
+      <h2 class="section-title" style="font-size:18px;margin-bottom:4px">Receipts</h2>
+      <div class="board-toolbar" id="receipts-toolbar">
+        <button class="btn-add-task" onclick="openReceiptCreateModal()">+ Create Receipt</button>
+        <select class="filter-select" id="receipts-filter-ws" onchange="renderReceipts()">
+          <option value="">All Workspaces</option>
+          <option value="IVYCOAST">IVYCOAST</option>
+          <option value="BOLDOATH">BOLDOATH</option>
+        </select>
+        <input type="text" class="search-input" id="receipts-search" placeholder="Search receipts..." style="max-width:240px" oninput="renderReceipts()">
+        <div class="sync-indicator">
+          <span id="receipts-sync-status"></span>
+          <button onclick="fetchReceipts(true)">Refresh</button>
+        </div>
+      </div>
+      <table class="invoices-table">
+        <thead>
+          <tr>
+            <th>Receipt #</th>
+            <th>Date</th>
+            <th>Contact / Company</th>
+            <th>Invoice Ref</th>
+            <th>Total</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="receipts-body"></tbody>
+      </table>
+      <p id="receipts-no-results" style="display:none;text-align:center;padding:32px;color:#5f6368;font-size:14px;">No receipts found.</p>
     </div>
   </div>
 
@@ -2610,6 +2683,10 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
     <div class="order-detail-grid" id="order-detail-grid"></div>
     <div class="order-items-list" id="order-detail-items"></div>
     <div class="board-modal-actions" style="margin-top:20px">
+      <button id="order-create-invoice-btn" onclick="createInvoiceFromOrder()" style="color:#1a73e8;border-color:#1a73e8;display:none">Create Invoice</button>
+      <button id="order-view-invoice-btn" onclick="viewLinkedInvoice()" style="color:#34a853;border-color:#34a853;display:none">View Invoice</button>
+      <button id="order-create-receipt-btn" onclick="createReceiptFromOrder()" style="color:#1a73e8;border-color:#1a73e8;display:none">Create Receipt</button>
+      <button id="order-view-receipt-btn" onclick="viewLinkedReceipt()" style="color:#34a853;border-color:#34a853;display:none">View Receipt</button>
       <button onclick="closeOrderDetailModal()">Close</button>
     </div>
   </div>
@@ -2643,6 +2720,8 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
     <input type="text" id="customer-drawer-tags" placeholder="e.g. VIP, wholesale">
     <label>Notes</label>
     <textarea id="customer-drawer-notes" rows="4" placeholder="Add notes about this customer..."></textarea>
+    <label>Invoices</label>
+    <div id="customer-drawer-invoices-list" style="margin-bottom:12px;font-size:13px;color:#5f6368"></div>
     <button class="btn-save" onclick="saveCustomerFromDrawer()">Save</button>
     <h4>Past Orders</h4>
     <div class="customer-orders-list" id="customer-drawer-orders-list"></div>
@@ -2806,8 +2885,11 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
 <!-- Invoice Modal -->
 <div class="board-modal-overlay" id="inv-modal-overlay" onclick="if(event.target===this)closeInvoiceModal()">
   <div class="board-modal inv-modal">
+   <div class="inv-split-editor" id="inv-split-editor">
     <h2 id="inv-modal-title">New Invoice</h2>
     <input type="hidden" id="inv-modal-id">
+    <input type="hidden" id="inv-modal-order-id">
+    <input type="hidden" id="inv-modal-order-number">
 
     <div class="inv-field-row">
       <div>
@@ -2943,10 +3025,16 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
 
     <div class="board-modal-actions">
       <button class="btn-delete" id="inv-modal-delete-btn" style="display:none" onclick="deleteInvoiceConfirm()">Delete</button>
-      <button type="button" onclick="previewInvoice()" style="color:#1a73e8;border-color:#1a73e8">Preview</button>
+      <button type="button" id="inv-preview-toggle-btn" onclick="toggleInvSplitPreview()" style="color:#1a73e8;border-color:#1a73e8">Preview</button>
       <button onclick="closeInvoiceModal()">Cancel</button>
       <button class="btn-save" onclick="saveInvoice()">Save</button>
     </div>
+   </div>
+   <div class="inv-split-preview" id="inv-split-preview" style="display:none">
+     <div class="inv-split-preview-inner" id="inv-split-preview-inner">
+       <div class="inv-preview-page" id="inv-split-preview-page"></div>
+     </div>
+   </div>
   </div>
 </div>
 
@@ -2958,6 +3046,150 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
       <button onclick="downloadInvoicePdf()" style="background:#1a73e8;color:#fff;border-color:#1a73e8">Download PDF</button>
     </div>
     <div class="inv-preview-page" id="inv-preview-page"></div>
+  </div>
+</div>
+
+<!-- Receipt Modal -->
+<div class="board-modal-overlay" id="rec-modal-overlay" onclick="if(event.target===this)closeReceiptModal()">
+  <div class="board-modal inv-modal">
+    <h2 id="rec-modal-title">New Receipt</h2>
+    <input type="hidden" id="rec-modal-id">
+    <input type="hidden" id="rec-modal-invoice-id">
+    <input type="hidden" id="rec-modal-invoice-number">
+    <input type="hidden" id="rec-modal-order-id">
+    <input type="hidden" id="rec-modal-order-number">
+
+    <div id="rec-linked-invoice-row" class="inv-field-row" style="display:none">
+      <div style="grid-column:1/-1">
+        <label>Linked Invoice</label>
+        <span id="rec-linked-invoice-display" style="font-size:14px;color:#1a73e8;font-weight:500"></span>
+      </div>
+    </div>
+
+    <div class="inv-field-row">
+      <div>
+        <label for="rec-modal-contact-name">Contact Name</label>
+        <input type="text" id="rec-modal-contact-name" placeholder="Full name">
+      </div>
+      <div>
+        <label for="rec-modal-workspace">Workspace</label>
+        <select id="rec-modal-workspace">
+          <option value="IVYCOAST">IVYCOAST</option>
+          <option value="BOLDOATH">BOLDOATH</option>
+        </select>
+      </div>
+    </div>
+    <div class="inv-field-row">
+      <div>
+        <label for="rec-modal-company">Company</label>
+        <input type="text" id="rec-modal-company" placeholder="Company name">
+      </div>
+      <div>
+        <label for="rec-modal-email">Email</label>
+        <input type="email" id="rec-modal-email" placeholder="Email address">
+      </div>
+    </div>
+    <div class="inv-field-row" style="grid-template-columns:1fr">
+      <div>
+        <label>Address</label>
+        <div class="inv-address-grid">
+          <input type="text" id="rec-addr-postal" placeholder="〒 Postal Code" style="max-width:160px">
+          <input type="text" id="rec-addr-prefecture" placeholder="Prefecture / 都道府県">
+          <input type="text" id="rec-addr-city" placeholder="City / 市区町村" style="grid-column:1/-1">
+          <input type="text" id="rec-addr-line1" placeholder="Address Line 1 / 番地" style="grid-column:1/-1">
+          <input type="text" id="rec-addr-line2" placeholder="Address Line 2 / 建物名" style="grid-column:1/-1">
+        </div>
+      </div>
+    </div>
+
+    <div class="inv-field-row">
+      <div>
+        <label for="rec-modal-number">Receipt Number</label>
+        <input type="text" id="rec-modal-number" placeholder="REC-2026-001">
+      </div>
+      <div>
+        <label for="rec-modal-date">Receipt Date</label>
+        <input type="date" id="rec-modal-date">
+      </div>
+    </div>
+
+    <div class="inv-field-row">
+      <div>
+        <label>Pricing Type</label>
+        <div class="inv-pricing-toggle" style="margin-top:4px">
+          <button type="button" id="rec-pricing-wholesale" class="active" onclick="setRecPricingType('wholesale')">Wholesale</button>
+          <button type="button" id="rec-pricing-consignment" onclick="setRecPricingType('consignment')">Consignment</button>
+          <input type="number" id="rec-modal-percent" placeholder="%" style="width:70px;padding:6px 8px;border:1px solid #dadce0;border-radius:6px;font-size:13px;font-family:inherit">
+        </div>
+      </div>
+    </div>
+
+    <label>Line Items</label>
+    <table class="inv-line-items">
+      <thead>
+        <tr>
+          <th style="width:45%">Description</th>
+          <th style="width:12%">Qty</th>
+          <th style="width:18%">Unit Price</th>
+          <th style="width:18%">Amount</th>
+          <th style="width:7%"></th>
+        </tr>
+      </thead>
+      <tbody id="rec-line-items-body"></tbody>
+    </table>
+    <button class="inv-add-row-btn" type="button" onclick="addReceiptLineItem()">+ Add Line Item</button>
+
+    <div class="inv-totals">
+      <div class="inv-totals-row">
+        <label>Subtotal</label>
+        <span id="rec-modal-subtotal" class="inv-total-val">&yen;0</span>
+      </div>
+      <div class="inv-totals-row">
+        <label>Discount</label>
+        <input type="number" id="rec-modal-discount" value="0" style="width:100px;padding:6px 8px;border:1px solid #dadce0;border-radius:6px;font-size:13px;font-family:inherit;text-align:right" oninput="recalcReceiptTotals()">
+      </div>
+      <div class="inv-totals-row">
+        <label>Shipping</label>
+        <input type="number" id="rec-modal-shipping" value="0" style="width:100px;padding:6px 8px;border:1px solid #dadce0;border-radius:6px;font-size:13px;font-family:inherit;text-align:right" oninput="recalcReceiptTotals()">
+      </div>
+      <div class="inv-totals-row">
+        <label>Tax</label>
+        <select id="rec-modal-tax-type" style="width:140px;padding:6px 8px;border:1px solid #dadce0;border-radius:6px;font-size:13px;font-family:inherit" onchange="recalcReceiptTotals()">
+          <option value="included">10% included</option>
+          <option value="0">No tax</option>
+          <option value="10">10% added</option>
+        </select>
+      </div>
+      <div class="inv-totals-row" style="border-top:2px solid #202124;padding-top:8px;margin-top:4px">
+        <label style="font-weight:700;color:#202124">Total</label>
+        <span id="rec-modal-total" class="inv-total-val" style="font-size:18px">&yen;0</span>
+      </div>
+    </div>
+
+    <div class="inv-field-row" style="margin-top:16px">
+      <div style="grid-column:1/-1">
+        <label for="rec-modal-notes">Notes</label>
+        <input type="text" id="rec-modal-notes" placeholder="Payment method, thank you message...">
+      </div>
+    </div>
+
+    <div class="board-modal-actions">
+      <button class="btn-delete" id="rec-modal-delete-btn" style="display:none" onclick="deleteReceiptConfirm()">Delete</button>
+      <button type="button" onclick="previewReceipt()" style="color:#1a73e8;border-color:#1a73e8">Preview</button>
+      <button onclick="closeReceiptModal()">Cancel</button>
+      <button class="btn-save" onclick="saveReceipt()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Receipt Preview Overlay -->
+<div class="inv-preview-overlay" id="rec-preview-overlay" onclick="if(event.target===this)closeReceiptPreview()">
+  <div class="inv-preview-container">
+    <div class="inv-preview-actions">
+      <button onclick="closeReceiptPreview()">Back to Edit</button>
+      <button onclick="downloadReceiptPdf()" style="background:#1a73e8;color:#fff;border-color:#1a73e8">Download PDF</button>
+    </div>
+    <div class="inv-preview-page" id="rec-preview-page"></div>
   </div>
 </div>
 
@@ -3520,7 +3752,7 @@ document.querySelectorAll(".doc-table th").forEach(function(th) {
 
 var SCRIPT_URL = localStorage.getItem("boardScriptUrl") || "https://script.google.com/macros/s/AKfycbwC0gPe5EQRbk6ld99DMMg5UgmfjTrqE0UpRnBJqLRtqHWfHb_M4DSxt5ZWlg8KOrj2Dw/exec";
 var CACHE_TTL = 300000; // 5 minutes — skip re-fetch if data is fresher than this
-var lastFetched = { board: 0, crm: 0, products: 0, orders: 0, customers: 0, invoices: 0 };
+var lastFetched = { board: 0, crm: 0, products: 0, orders: 0, customers: 0, invoices: 0, receipts: 0 };
 var boardTasks = [];
 var boardRefreshTimer = null;
 var isMobile = window.matchMedia("(max-width: 600px)").matches;
@@ -5525,6 +5757,7 @@ function switchTool(toolId, skipHash) {
   });
   // Fetch data for the tool
   if (toolId === "invoices") fetchInvoices();
+  if (toolId === "receipts") fetchReceipts();
 }
 
 // Backwards-compat aliases
@@ -5600,6 +5833,13 @@ function renderInvoices() {
     badge.textContent = inv.status || "draft";
     tdStatus.appendChild(badge);
     tr.appendChild(tdStatus);
+
+    var tdOrder = document.createElement("td");
+    if (inv.orderNumber) {
+      tdOrder.textContent = "#" + inv.orderNumber;
+      tdOrder.style.cssText = "font-size:12px;color:#5f6368;";
+    }
+    tr.appendChild(tdOrder);
 
     var tdActions = document.createElement("td");
     tdActions.style.cssText = "display:flex;gap:4px;";
@@ -5695,6 +5935,8 @@ function openInvoiceCreateModal() {
   if (!SCRIPT_URL) { alert("Please configure the Apps Script URL first."); return; }
   document.getElementById("inv-modal-title").textContent = "New Invoice";
   document.getElementById("inv-modal-id").value = "";
+  document.getElementById("inv-modal-order-id").value = "";
+  document.getElementById("inv-modal-order-number").value = "";
   document.getElementById("inv-modal-number").value = generateInvoiceNumber();
   document.getElementById("inv-modal-date").value = new Date().toISOString().split("T")[0];
   document.getElementById("inv-modal-due").value = "";
@@ -5726,6 +5968,8 @@ function openInvoiceEditModal(invId) {
   if (!inv) return;
   document.getElementById("inv-modal-title").textContent = "Edit Invoice";
   document.getElementById("inv-modal-id").value = inv.id;
+  document.getElementById("inv-modal-order-id").value = inv.orderId || "";
+  document.getElementById("inv-modal-order-number").value = inv.orderNumber || "";
   document.getElementById("inv-modal-number").value = inv.invoiceNumber || "";
   document.getElementById("inv-modal-date").value = inv.invoiceDate || "";
   document.getElementById("inv-modal-due").value = inv.dueDate || "";
@@ -5767,6 +6011,14 @@ function openInvoiceEditModal(invId) {
 }
 
 function closeInvoiceModal() {
+  if (invSplitActive) {
+    var modal = document.querySelector(".board-modal.inv-modal");
+    modal.classList.remove("inv-split-mode");
+    document.getElementById("inv-split-preview").style.display = "none";
+    document.getElementById("inv-preview-toggle-btn").textContent = "Preview";
+    invSplitActive = false;
+    detachInvLiveUpdate();
+  }
   document.getElementById("inv-modal-overlay").classList.remove("open");
 }
 
@@ -6015,7 +6267,9 @@ function saveInvoice() {
     pricingPercent: document.getElementById("inv-modal-percent").value,
     status: document.getElementById("inv-modal-status").value,
     workspace: document.getElementById("inv-modal-workspace").value,
-    notes: document.getElementById("inv-modal-notes").value.trim()
+    notes: document.getElementById("inv-modal-notes").value.trim(),
+    orderId: document.getElementById("inv-modal-order-id").value,
+    orderNumber: document.getElementById("inv-modal-order-number").value
   };
 
   if (!invoice.invoiceNumber) { alert("Invoice number is required."); return; }
@@ -6028,7 +6282,10 @@ function saveInvoice() {
     invoices = invoices.map(function(inv) { return inv.id === id ? Object.assign({}, inv, invoice) : inv; });
     renderInvoices();
     invApiPost({ action: "update", invoice: invoice })
-      .then(function() { setInvSyncStatus("Saved"); fetchInvoices(true); })
+      .then(function() {
+        setInvSyncStatus("Saved"); fetchInvoices(true);
+        if (invoice.status === "paid") autoCreateReceiptFromInvoice(invoice);
+      })
       .catch(function() { setInvSyncStatus("Save failed"); });
   } else {
     var tempId = "temp-" + Date.now();
@@ -6041,6 +6298,7 @@ function saveInvoice() {
         if (data.invoice) {
           invoices = invoices.map(function(inv) { return inv.id === tempId ? data.invoice : inv; });
           renderInvoices();
+          if (data.invoice.status === "paid") autoCreateReceiptFromInvoice(data.invoice);
         }
       })
       .catch(function() { setInvSyncStatus("Create failed"); fetchInvoices(true); });
@@ -6059,9 +6317,13 @@ function deleteInvoiceConfirm() {
 }
 
 // ── Invoice Preview ────────────────────────────────────────────
-// Shared builder: renders LongForme-style invoice into #inv-preview-page
+// Shared builder: renders LongForme-style invoice into a target page element
 function buildInvoicePreview(data) {
-  var page = document.getElementById("inv-preview-page");
+  buildInvoicePreviewTo(document.getElementById("inv-preview-page"), data);
+  document.getElementById("inv-preview-overlay").classList.add("open");
+}
+
+function buildInvoicePreviewTo(page, data) {
   page.textContent = "";
 
   // Format date
@@ -6264,8 +6526,6 @@ function buildInvoicePreview(data) {
   illus.className = "inv-prev-illustration";
   illus.alt = "";
   page.appendChild(illus);
-
-  document.getElementById("inv-preview-overlay").classList.add("open");
 }
 
 // Preview from modal (current form fields)
@@ -6327,6 +6587,312 @@ function previewInvoiceFromData(inv) {
 
 function closeInvoicePreview() {
   document.getElementById("inv-preview-overlay").classList.remove("open");
+}
+
+// ── Split-Pane Live Preview ─────────────────────────────────────
+var invSplitActive = false;
+var invLiveTimer = null;
+
+function toggleInvSplitPreview() {
+  var modal = document.querySelector(".board-modal.inv-modal");
+  var pane = document.getElementById("inv-split-preview");
+  var btn = document.getElementById("inv-preview-toggle-btn");
+  if (invSplitActive) {
+    modal.classList.remove("inv-split-mode");
+    pane.style.display = "none";
+    btn.textContent = "Preview";
+    invSplitActive = false;
+    detachInvLiveUpdate();
+  } else {
+    modal.classList.add("inv-split-mode");
+    pane.style.display = "";
+    btn.textContent = "Close Preview";
+    invSplitActive = true;
+    updateInvSplitPreview();
+    attachInvLiveUpdate();
+    requestAnimationFrame(scaleInvSplitPreview);
+  }
+}
+
+function updateInvSplitPreview() {
+  if (!invSplitActive) return;
+  var items = getInvoiceLineItems();
+  var subtotal = items.reduce(function(s, it) { return s + it.amount; }, 0);
+  var discount = parseFloat(document.getElementById("inv-modal-discount").value) || 0;
+  var shipping = parseFloat(document.getElementById("inv-modal-shipping").value) || 0;
+  var taxType = document.getElementById("inv-modal-tax-type").value;
+  var afterDiscount = subtotal - discount;
+  var tax = taxType === "10" ? Math.round(afterDiscount * 0.1) : 0;
+  var total = afterDiscount + tax + shipping;
+  var addrLines = formatInvAddress(getInvAddressJSON());
+  var poRaw = document.getElementById("inv-modal-po").value || "";
+
+  buildInvoicePreviewTo(document.getElementById("inv-split-preview-page"), {
+    number: document.getElementById("inv-modal-number").value || "",
+    date: document.getElementById("inv-modal-date").value || "",
+    company: document.getElementById("inv-modal-company").value || "",
+    event: "",
+    poRef: poRaw,
+    addrLines: addrLines,
+    items: items,
+    subtotal: subtotal,
+    discount: discount,
+    shipping: shipping,
+    taxType: taxType,
+    tax: tax,
+    total: total,
+    pricingType: invPricingType,
+    pricingPercent: document.getElementById("inv-modal-percent").value || ""
+  });
+}
+
+function invLiveHandler() {
+  clearTimeout(invLiveTimer);
+  invLiveTimer = setTimeout(updateInvSplitPreview, 150);
+}
+
+function attachInvLiveUpdate() {
+  var ed = document.getElementById("inv-split-editor");
+  ed.addEventListener("input", invLiveHandler, true);
+  ed.addEventListener("change", invLiveHandler, true);
+}
+
+function detachInvLiveUpdate() {
+  var ed = document.getElementById("inv-split-editor");
+  ed.removeEventListener("input", invLiveHandler, true);
+  ed.removeEventListener("change", invLiveHandler, true);
+  clearTimeout(invLiveTimer);
+}
+
+function scaleInvSplitPreview() {
+  var container = document.getElementById("inv-split-preview");
+  var inner = document.getElementById("inv-split-preview-inner");
+  if (!container || !inner) return;
+  var availW = container.clientWidth - 48;
+  var scaleW = availW / 794; // A4 at 96dpi = ~794px
+  var scale = Math.min(scaleW, 0.7);
+  if (scale < 0.2) scale = 0.2;
+  inner.style.transform = "scale(" + scale + ")";
+}
+window.addEventListener("resize", function() {
+  if (invSplitActive) scaleInvSplitPreview();
+});
+
+// ── Auto-Invoice from Shopify Orders ──────────────────────────
+
+function parseOrderLineItems(lineItemsStr, totalPrice) {
+  if (!lineItemsStr) return [];
+  var parts = lineItemsStr.split(";").map(function(s) { return s.trim(); }).filter(Boolean);
+  var items = [];
+  var totalQty = 0;
+  parts.forEach(function(part) {
+    var match = part.match(/^(\d+)\s*x\s+(.+?)(?:\s*@\s*[¥\\]?([\d,]+))?$/i);
+    if (match) {
+      var qty = parseInt(match[1], 10) || 1;
+      var desc = match[2].trim();
+      var price = match[3] ? parseInt(match[3].replace(/,/g, ""), 10) : 0;
+      items.push({ description: desc, qty: qty, unitPrice: price });
+      totalQty += qty;
+    } else {
+      items.push({ description: part, qty: 1, unitPrice: 0 });
+      totalQty += 1;
+    }
+  });
+  // Try shopifyProducts lookup if no prices found
+  var hasPrices = items.some(function(it) { return it.unitPrice > 0; });
+  if (!hasPrices && typeof shopifyProducts !== "undefined" && shopifyProducts.length) {
+    items.forEach(function(it) {
+      var product = shopifyProducts.find(function(p) {
+        var fullName = p.title + (p.variantTitle ? " \u2014 " + p.variantTitle : "");
+        return fullName.toLowerCase() === it.description.toLowerCase() ||
+               p.title.toLowerCase() === it.description.toLowerCase();
+      });
+      if (product && product.price) it.unitPrice = parseFloat(product.price) || 0;
+    });
+  }
+  // Last resort: distribute totalPrice evenly
+  hasPrices = items.some(function(it) { return it.unitPrice > 0; });
+  if (!hasPrices && totalPrice && totalQty > 0) {
+    var perUnit = Math.round(parseFloat(totalPrice) / totalQty);
+    items.forEach(function(it) { it.unitPrice = perUnit; });
+  }
+  return items;
+}
+
+function parseOrderShippingAddress(addrStr) {
+  if (!addrStr) return "";
+  var parts = addrStr.split(",").map(function(s) { return s.trim(); }).filter(Boolean);
+  var addr = { postal: "", prefecture: "", city: "", line1: "", line2: "" };
+  parts.forEach(function(p) {
+    if (/^\d{3}-?\d{4}$/.test(p) || /^〒/.test(p)) {
+      addr.postal = p.replace("〒", "").trim();
+    }
+  });
+  var remaining = parts.filter(function(p) {
+    return !/^\d{3}-?\d{4}$/.test(p) && !/^〒/.test(p) && !/^JP$/i.test(p) && !/^Japan$/i.test(p);
+  });
+  if (remaining.length >= 3) {
+    addr.line1 = remaining[0] || "";
+    addr.city = remaining[1] || "";
+    addr.prefecture = remaining[2] || "";
+  } else if (remaining.length === 2) {
+    addr.line1 = remaining[0] || "";
+    addr.city = remaining[1] || "";
+  } else if (remaining.length === 1) {
+    addr.line1 = remaining[0] || "";
+  }
+  if (!addr.postal && !addr.prefecture && !addr.city && !addr.line1) return "";
+  return JSON.stringify(addr);
+}
+
+function createInvoiceFromOrder() {
+  var orderJson = document.getElementById("order-detail-overlay").dataset.orderJson;
+  if (!orderJson) return;
+  var order = JSON.parse(orderJson);
+  closeOrderDetailModal();
+  openInvoiceCreateModal();
+
+  document.getElementById("inv-modal-order-id").value = order.shopifyOrderId || "";
+  document.getElementById("inv-modal-order-number").value = order.orderNumber || "";
+  document.getElementById("inv-modal-po").value = "Order #" + (order.orderNumber || order.shopifyOrderId || "");
+  document.getElementById("inv-modal-company").value = order.customerName || "";
+  document.getElementById("inv-modal-email").value = order.email || "";
+  document.getElementById("inv-modal-status").value = order.financialStatus === "paid" ? "paid" : "draft";
+
+  // Try CRM contact match by email
+  if (order.email) {
+    var emailLower = order.email.toLowerCase();
+    var contact = (typeof crmContacts !== "undefined" ? crmContacts : []).find(function(c) {
+      return c.email && c.email.toLowerCase() === emailLower;
+    });
+    if (contact) {
+      document.getElementById("inv-modal-contact").value = contact.id;
+      onInvoiceContactChange();
+    }
+  }
+
+  // Parse and fill shipping address
+  if (order.shippingAddress) {
+    var addrJson = parseOrderShippingAddress(order.shippingAddress);
+    if (addrJson) populateInvAddressFields(addrJson);
+  }
+
+  // Parse and fill line items
+  var items = parseOrderLineItems(order.lineItems, order.totalPrice);
+  document.getElementById("inv-line-items-body").textContent = "";
+  if (items.length === 0) {
+    addInvoiceLineItem();
+  } else {
+    items.forEach(function(it) {
+      addInvoiceLineItem(it.description, it.qty, it.unitPrice);
+    });
+  }
+
+  // Set date from order
+  if (order.createdAt) {
+    document.getElementById("inv-modal-date").value = order.createdAt.split("T")[0];
+  }
+  document.getElementById("inv-modal-tax-type").value = "included";
+  recalcInvoiceTotals();
+}
+
+function viewLinkedInvoice() {
+  var invoiceId = document.getElementById("order-view-invoice-btn").dataset.invoiceId;
+  if (!invoiceId) return;
+  closeOrderDetailModal();
+  openInvoiceEditModal(invoiceId);
+}
+
+function autoCreateInvoicesForPaidOrders() {
+  if (!SCRIPT_URL) return;
+  var paidWithoutInvoice = shopifyOrders.filter(function(o) {
+    if (o.financialStatus !== "paid") return false;
+    return !invoices.some(function(inv) {
+      return inv.orderId === o.shopifyOrderId || inv.orderNumber === String(o.orderNumber);
+    });
+  });
+  if (paidWithoutInvoice.length === 0) return 0;
+
+  var created = 0;
+  paidWithoutInvoice.forEach(function(order) {
+    var items = parseOrderLineItems(order.lineItems, order.totalPrice);
+    var subtotal = items.reduce(function(s, it) { return s + (it.qty * it.unitPrice); }, 0);
+    var total = parseFloat(order.totalPrice) || subtotal;
+
+    var invoice = {
+      invoiceNumber: generateInvoiceNumber(),
+      contactId: "",
+      contactName: order.customerName || "",
+      contactCompany: order.customerName || "",
+      contactEmail: order.email || "",
+      contactAddress: parseOrderShippingAddress(order.shippingAddress),
+      invoiceDate: order.createdAt ? order.createdAt.split("T")[0] : new Date().toISOString().split("T")[0],
+      dueDate: "",
+      poReference: "Order #" + (order.orderNumber || order.shopifyOrderId || ""),
+      items: JSON.stringify(items.map(function(it) {
+        return { description: it.description, qty: it.qty, unitPrice: it.unitPrice, amount: it.qty * it.unitPrice };
+      })),
+      subtotal: String(subtotal),
+      discount: "0",
+      shipping: "0",
+      taxType: "included",
+      tax: "0",
+      total: String(total),
+      pricingType: "wholesale",
+      pricingPercent: "",
+      status: "draft",
+      workspace: "IVYCOAST",
+      notes: "Auto-generated from Shopify order #" + (order.orderNumber || ""),
+      orderId: order.shopifyOrderId || "",
+      orderNumber: String(order.orderNumber || "")
+    };
+
+    // Try to match CRM contact
+    if (order.email) {
+      var emailLower = order.email.toLowerCase();
+      var contact = (typeof crmContacts !== "undefined" ? crmContacts : []).find(function(c) {
+        return c.email && c.email.toLowerCase() === emailLower;
+      });
+      if (contact) {
+        invoice.contactId = contact.id;
+        invoice.contactName = contact.name || invoice.contactName;
+        invoice.contactCompany = contact.company || invoice.contactCompany;
+      }
+    }
+
+    var tempId = "temp-" + Date.now() + "-" + created;
+    invoice.id = tempId;
+    invoices.push(invoice);
+    created++;
+
+    invApiPost({ action: "create", invoice: invoice })
+      .then(function(data) {
+        if (data.invoice) {
+          invoices = invoices.map(function(inv) { return inv.id === tempId ? data.invoice : inv; });
+        }
+      })
+      .catch(function() {
+        invoices = invoices.filter(function(inv) { return inv.id !== tempId; });
+      });
+  });
+
+  if (created > 0) {
+    renderInvoices();
+    setInvSyncStatus(created + " invoice(s) auto-created from orders");
+  }
+  return created;
+}
+
+function generateMissingInvoices() {
+  // Ensure we have orders and invoices loaded
+  if (!shopifyOrders.length) {
+    setInvSyncStatus("No orders loaded yet. Sync orders first.");
+    return;
+  }
+  var count = autoCreateInvoicesForPaidOrders();
+  if (count === 0) {
+    setInvSyncStatus("All paid orders already have invoices");
+  }
 }
 
 // ── PDF Generation (LongForme template style) ─────────────────
@@ -6551,6 +7117,850 @@ function downloadInvoicePdf(invData) {
   // Save
   var fileName = (inv.invoiceNumber || "invoice") + "_" + (inv.contactCompany || "").replace(/\s+/g, "_") + ".pdf";
   doc.save(fileName);
+}
+
+// ══════════════════════════════════════════════════════════════
+// ██  RECEIPTS 領収書  ██
+// ══════════════════════════════════════════════════════════════
+
+var receipts = [];
+var recPricingType = "wholesale";
+
+function recApiPost(body) {
+  body.sheet = "Receipts";
+  return fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify(body) })
+    .then(function(r) { return r.json(); });
+}
+
+function setRecSyncStatus(msg) {
+  var el = document.getElementById("receipts-sync-status");
+  if (el) el.textContent = msg;
+}
+
+// ── Fetch & Render ────────────────────────────────────────────
+
+function fetchReceipts(force) {
+  if (!SCRIPT_URL) return;
+  var now = Date.now();
+  if (!force && receipts.length && (now - lastFetched.receipts < 120000)) { renderReceipts(); return; }
+  setRecSyncStatus("Loading\u2026");
+  fetch(SCRIPT_URL + "?sheet=Receipts")
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      receipts = data.receipts || [];
+      lastFetched.receipts = Date.now();
+      setRecSyncStatus("Loaded " + receipts.length + " receipts");
+      renderReceipts();
+    })
+    .catch(function() { setRecSyncStatus("Load failed"); });
+}
+
+function renderReceipts() {
+  var body = document.getElementById("receipts-body");
+  if (!body) return;
+  body.textContent = "";
+  var ws = (document.getElementById("receipts-filter-ws") || {}).value || "";
+  var q = (document.getElementById("receipts-search") || {}).value.toLowerCase();
+  var filtered = receipts.filter(function(r) {
+    if (ws && r.workspace !== ws) return false;
+    if (q) {
+      var hay = ((r.receiptNumber || "") + " " + (r.contactName || "") + " " + (r.contactCompany || "") + " " + (r.invoiceNumber || "")).toLowerCase();
+      if (hay.indexOf(q) === -1) return false;
+    }
+    return true;
+  });
+  var noRes = document.getElementById("receipts-no-results");
+  if (!filtered.length) { if (noRes) noRes.style.display = ""; return; }
+  if (noRes) noRes.style.display = "none";
+
+  filtered.sort(function(a, b) { return (b.receiptDate || "").localeCompare(a.receiptDate || ""); });
+  filtered.forEach(function(rec) {
+    var tr = document.createElement("tr");
+    tr.innerHTML = "<td>" + (rec.receiptNumber || "") + "</td>"
+      + "<td>" + formatDate(rec.receiptDate) + "</td>"
+      + "<td>" + (rec.contactName || "") + (rec.contactCompany ? " / " + rec.contactCompany : "") + "</td>"
+      + "<td>" + (rec.invoiceNumber || "\u2014") + "</td>"
+      + "<td>\u00a5" + Number(rec.total || 0).toLocaleString() + "</td>"
+      + "<td><button class='btn-edit-task' onclick='openReceiptEditModal(\"" + rec.id + "\")'>Edit</button>"
+      + " <button class='btn-edit-task' onclick='previewReceiptFromData(receipts.find(function(r){return r.id===\"" + rec.id + "\";}))'>Preview</button></td>";
+    body.appendChild(tr);
+  });
+}
+
+// ── Receipt Number ────────────────────────────────────────────
+
+function generateReceiptNumber() {
+  var year = new Date().getFullYear();
+  var existing = receipts.filter(function(r) {
+    return r.receiptNumber && r.receiptNumber.indexOf("REC-" + year) === 0;
+  });
+  var maxSeq = 0;
+  existing.forEach(function(r) {
+    var parts = r.receiptNumber.split("-");
+    var seq = parseInt(parts[2], 10) || 0;
+    if (seq > maxSeq) maxSeq = seq;
+  });
+  var next = String(maxSeq + 1);
+  while (next.length < 3) next = "0" + next;
+  return "REC-" + year + "-" + next;
+}
+
+// ── Pricing Toggle ────────────────────────────────────────────
+
+function setRecPricingType(type) {
+  recPricingType = type;
+  document.getElementById("rec-pricing-wholesale").classList.toggle("active", type === "wholesale");
+  document.getElementById("rec-pricing-consignment").classList.toggle("active", type === "consignment");
+}
+
+// ── Address Helpers ───────────────────────────────────────────
+
+function clearRecAddressFields() {
+  ["rec-addr-postal","rec-addr-prefecture","rec-addr-city","rec-addr-line1","rec-addr-line2"].forEach(function(id) {
+    document.getElementById(id).value = "";
+  });
+}
+function populateRecAddressFields(addrStr) {
+  clearRecAddressFields();
+  if (!addrStr) return;
+  try {
+    var a = JSON.parse(addrStr);
+    document.getElementById("rec-addr-postal").value = a.postal || "";
+    document.getElementById("rec-addr-prefecture").value = a.prefecture || "";
+    document.getElementById("rec-addr-city").value = a.city || "";
+    document.getElementById("rec-addr-line1").value = a.line1 || "";
+    document.getElementById("rec-addr-line2").value = a.line2 || "";
+  } catch(e) {}
+}
+function getRecAddressJSON() {
+  var a = {
+    postal: document.getElementById("rec-addr-postal").value.trim(),
+    prefecture: document.getElementById("rec-addr-prefecture").value.trim(),
+    city: document.getElementById("rec-addr-city").value.trim(),
+    line1: document.getElementById("rec-addr-line1").value.trim(),
+    line2: document.getElementById("rec-addr-line2").value.trim()
+  };
+  if (!a.postal && !a.prefecture && !a.city && !a.line1) return "";
+  return JSON.stringify(a);
+}
+
+// ── Line Items ────────────────────────────────────────────────
+
+function addReceiptLineItem(desc, qty, price) {
+  var tbody = document.getElementById("rec-line-items-body");
+  var tr = document.createElement("tr");
+  var descInput = document.createElement("input");
+  descInput.type = "text"; descInput.placeholder = "Product or service";
+  descInput.value = desc || "";
+  descInput.style.cssText = "width:100%;padding:6px 8px;border:1px solid #dadce0;border-radius:6px;font-size:13px;font-family:inherit";
+  descInput.className = "rec-line-desc";
+  // Product autocomplete
+  descInput.setAttribute("list", "inv-product-options");
+  descInput.addEventListener("change", function() {
+    var prod = (typeof shopifyProducts !== "undefined" ? shopifyProducts : []).find(function(p) { return p.title === descInput.value; });
+    if (prod) {
+      var priceInput = tr.querySelector(".rec-line-price");
+      if (priceInput && !priceInput.value) priceInput.value = prod.price || "";
+      recalcReceiptTotals();
+    }
+  });
+  var qtyInput = document.createElement("input");
+  qtyInput.type = "number"; qtyInput.min = "1"; qtyInput.value = qty || "1";
+  qtyInput.style.cssText = "width:100%;padding:6px 8px;border:1px solid #dadce0;border-radius:6px;font-size:13px;font-family:inherit;text-align:center";
+  qtyInput.className = "rec-line-qty";
+  qtyInput.oninput = recalcReceiptTotals;
+  var priceInput = document.createElement("input");
+  priceInput.type = "number"; priceInput.value = price || "";
+  priceInput.placeholder = "0";
+  priceInput.style.cssText = "width:100%;padding:6px 8px;border:1px solid #dadce0;border-radius:6px;font-size:13px;font-family:inherit;text-align:right";
+  priceInput.className = "rec-line-price";
+  priceInput.oninput = recalcReceiptTotals;
+
+  var td1 = document.createElement("td"); td1.appendChild(descInput);
+  var td2 = document.createElement("td"); td2.appendChild(qtyInput);
+  var td3 = document.createElement("td"); td3.appendChild(priceInput);
+  var td4 = document.createElement("td"); td4.className = "rec-line-amount"; td4.textContent = "\u00a50";
+  var td5 = document.createElement("td");
+  var removeBtn = document.createElement("button");
+  removeBtn.type = "button"; removeBtn.textContent = "\u00d7";
+  removeBtn.style.cssText = "background:none;border:none;font-size:18px;color:#d93025;cursor:pointer";
+  removeBtn.onclick = function() { tr.remove(); recalcReceiptTotals(); };
+  td5.appendChild(removeBtn);
+  tr.appendChild(td1); tr.appendChild(td2); tr.appendChild(td3); tr.appendChild(td4); tr.appendChild(td5);
+  tbody.appendChild(tr);
+  recalcReceiptTotals();
+}
+
+function getReceiptLineItems() {
+  var rows = document.querySelectorAll("#rec-line-items-body tr");
+  var items = [];
+  rows.forEach(function(tr) {
+    var desc = tr.querySelector(".rec-line-desc");
+    var qty = tr.querySelector(".rec-line-qty");
+    var price = tr.querySelector(".rec-line-price");
+    if (!desc) return;
+    var q = parseInt(qty.value, 10) || 0;
+    var p = parseFloat(price.value) || 0;
+    items.push({ description: desc.value, qty: q, unitPrice: p, amount: q * p });
+  });
+  return items;
+}
+
+function recalcReceiptTotals() {
+  var items = getReceiptLineItems();
+  var subtotal = items.reduce(function(s, it) { return s + it.amount; }, 0);
+  var discount = parseFloat(document.getElementById("rec-modal-discount").value) || 0;
+  var shipping = parseFloat(document.getElementById("rec-modal-shipping").value) || 0;
+  var taxType = document.getElementById("rec-modal-tax-type").value;
+  var afterDiscount = subtotal - discount;
+  var tax = taxType === "10" ? Math.round(afterDiscount * 0.1) : 0;
+  var total = afterDiscount + tax + shipping;
+  document.getElementById("rec-modal-subtotal").textContent = "\u00a5" + subtotal.toLocaleString();
+  document.getElementById("rec-modal-total").textContent = "\u00a5" + total.toLocaleString();
+  // Update per-row amounts
+  document.querySelectorAll("#rec-line-items-body tr").forEach(function(tr) {
+    var q = parseInt((tr.querySelector(".rec-line-qty") || {}).value, 10) || 0;
+    var p = parseFloat((tr.querySelector(".rec-line-price") || {}).value) || 0;
+    var amt = tr.querySelector(".rec-line-amount");
+    if (amt) amt.textContent = "\u00a5" + (q * p).toLocaleString();
+  });
+}
+
+// ── Modal Open / Close / Save ─────────────────────────────────
+
+function openReceiptCreateModal() {
+  document.getElementById("rec-modal-title").textContent = "New Receipt";
+  document.getElementById("rec-modal-id").value = "";
+  document.getElementById("rec-modal-invoice-id").value = "";
+  document.getElementById("rec-modal-invoice-number").value = "";
+  document.getElementById("rec-modal-order-id").value = "";
+  document.getElementById("rec-modal-order-number").value = "";
+  document.getElementById("rec-linked-invoice-row").style.display = "none";
+  document.getElementById("rec-modal-contact-name").value = "";
+  document.getElementById("rec-modal-company").value = "";
+  document.getElementById("rec-modal-email").value = "";
+  clearRecAddressFields();
+  document.getElementById("rec-modal-number").value = generateReceiptNumber();
+  document.getElementById("rec-modal-date").value = new Date().toISOString().split("T")[0];
+  document.getElementById("rec-modal-discount").value = "0";
+  document.getElementById("rec-modal-shipping").value = "0";
+  document.getElementById("rec-modal-tax-type").value = "included";
+  document.getElementById("rec-modal-notes").value = "";
+  document.getElementById("rec-modal-percent").value = "";
+  document.getElementById("rec-modal-workspace").value = "IVYCOAST";
+  setRecPricingType("wholesale");
+  document.getElementById("rec-line-items-body").textContent = "";
+  addReceiptLineItem();
+  document.getElementById("rec-modal-delete-btn").style.display = "none";
+  document.getElementById("rec-modal-overlay").classList.add("open");
+}
+
+function openReceiptEditModal(recId) {
+  var rec = receipts.find(function(r) { return r.id === recId; });
+  if (!rec) return;
+  document.getElementById("rec-modal-title").textContent = "Edit Receipt";
+  document.getElementById("rec-modal-id").value = rec.id;
+  document.getElementById("rec-modal-invoice-id").value = rec.invoiceId || "";
+  document.getElementById("rec-modal-invoice-number").value = rec.invoiceNumber || "";
+  document.getElementById("rec-modal-order-id").value = rec.orderId || "";
+  document.getElementById("rec-modal-order-number").value = rec.orderNumber || "";
+  if (rec.invoiceNumber) {
+    document.getElementById("rec-linked-invoice-row").style.display = "";
+    document.getElementById("rec-linked-invoice-display").textContent = rec.invoiceNumber;
+  } else {
+    document.getElementById("rec-linked-invoice-row").style.display = "none";
+  }
+  document.getElementById("rec-modal-contact-name").value = rec.contactName || "";
+  document.getElementById("rec-modal-company").value = rec.contactCompany || "";
+  document.getElementById("rec-modal-email").value = rec.contactEmail || "";
+  populateRecAddressFields(rec.contactAddress);
+  document.getElementById("rec-modal-number").value = rec.receiptNumber || "";
+  document.getElementById("rec-modal-date").value = rec.receiptDate || "";
+  document.getElementById("rec-modal-discount").value = rec.discount || "0";
+  document.getElementById("rec-modal-shipping").value = rec.shipping || "0";
+  document.getElementById("rec-modal-tax-type").value = rec.taxType || "included";
+  document.getElementById("rec-modal-notes").value = rec.notes || "";
+  document.getElementById("rec-modal-percent").value = rec.pricingPercent || "";
+  document.getElementById("rec-modal-workspace").value = rec.workspace || "IVYCOAST";
+  setRecPricingType(rec.pricingType || "wholesale");
+  document.getElementById("rec-line-items-body").textContent = "";
+  var items = [];
+  try { items = JSON.parse(rec.items); } catch(e) {}
+  if (items.length) {
+    items.forEach(function(it) { addReceiptLineItem(it.description, it.qty, it.unitPrice); });
+  } else {
+    addReceiptLineItem();
+  }
+  document.getElementById("rec-modal-delete-btn").style.display = "";
+  document.getElementById("rec-modal-overlay").classList.add("open");
+}
+
+function closeReceiptModal() {
+  document.getElementById("rec-modal-overlay").classList.remove("open");
+}
+
+function saveReceipt() {
+  if (!SCRIPT_URL) return;
+  var id = document.getElementById("rec-modal-id").value;
+  var items = getReceiptLineItems();
+  var subtotal = items.reduce(function(s, it) { return s + it.amount; }, 0);
+  var discount = parseFloat(document.getElementById("rec-modal-discount").value) || 0;
+  var shipping = parseFloat(document.getElementById("rec-modal-shipping").value) || 0;
+  var taxType = document.getElementById("rec-modal-tax-type").value;
+  var afterDiscount = subtotal - discount;
+  var tax = taxType === "10" ? Math.round(afterDiscount * 0.1) : 0;
+  var total = afterDiscount + tax + shipping;
+
+  var receipt = {
+    receiptNumber: document.getElementById("rec-modal-number").value.trim(),
+    invoiceId: document.getElementById("rec-modal-invoice-id").value,
+    invoiceNumber: document.getElementById("rec-modal-invoice-number").value,
+    contactName: document.getElementById("rec-modal-contact-name").value.trim(),
+    contactCompany: document.getElementById("rec-modal-company").value.trim(),
+    contactEmail: document.getElementById("rec-modal-email").value.trim(),
+    contactAddress: getRecAddressJSON(),
+    receiptDate: document.getElementById("rec-modal-date").value,
+    items: JSON.stringify(items),
+    subtotal: String(subtotal),
+    discount: String(discount),
+    shipping: String(shipping),
+    taxType: taxType,
+    tax: String(tax),
+    total: String(total),
+    pricingType: recPricingType,
+    pricingPercent: document.getElementById("rec-modal-percent").value,
+    workspace: document.getElementById("rec-modal-workspace").value,
+    notes: document.getElementById("rec-modal-notes").value.trim(),
+    orderId: document.getElementById("rec-modal-order-id").value,
+    orderNumber: document.getElementById("rec-modal-order-number").value
+  };
+
+  if (!receipt.receiptNumber) { alert("Receipt number is required."); return; }
+
+  closeReceiptModal();
+  setRecSyncStatus("Saving\u2026");
+
+  if (id) {
+    receipt.id = id;
+    receipts = receipts.map(function(r) { return r.id === id ? Object.assign({}, r, receipt) : r; });
+    renderReceipts();
+    recApiPost({ action: "update", receipt: receipt })
+      .then(function() { setRecSyncStatus("Saved"); fetchReceipts(true); })
+      .catch(function() { setRecSyncStatus("Save failed"); });
+  } else {
+    var tempId = "temp-" + Date.now();
+    receipt.id = tempId;
+    receipts.push(receipt);
+    renderReceipts();
+    recApiPost({ action: "create", receipt: receipt })
+      .then(function(data) {
+        setRecSyncStatus("Receipt created");
+        if (data.receipt) {
+          receipts = receipts.map(function(r) { return r.id === tempId ? data.receipt : r; });
+          renderReceipts();
+        }
+      })
+      .catch(function() { setRecSyncStatus("Create failed"); fetchReceipts(true); });
+  }
+}
+
+function deleteReceiptConfirm() {
+  var id = document.getElementById("rec-modal-id").value;
+  var num = document.getElementById("rec-modal-number").value;
+  if (!id || !confirm("Delete receipt " + num + "?")) return;
+  closeReceiptModal();
+  setRecSyncStatus("Deleting\u2026");
+  receipts = receipts.filter(function(r) { return r.id !== id; });
+  renderReceipts();
+  recApiPost({ action: "delete", id: id }).catch(function() { fetchReceipts(true); });
+}
+
+// ── Receipt Preview ───────────────────────────────────────────
+
+function buildReceiptPreviewTo(page, data) {
+  page.textContent = "";
+
+  // Format date
+  var dateDisplay = data.date || "";
+  if (dateDisplay) {
+    var dp = dateDisplay.split("-");
+    var months = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+    dateDisplay = months[parseInt(dp[1],10)-1] + " " + parseInt(dp[2],10) + ", " + dp[0];
+  }
+
+  // Header: logo left, receipt # + date right
+  var header = document.createElement("div");
+  header.className = "inv-prev-header";
+  var logoImg = document.createElement("img");
+  logoImg.src = "icons/logo.png";
+  logoImg.alt = "IVYCOAST";
+  logoImg.style.cssText = "height:42px;width:auto;";
+  header.appendChild(logoImg);
+  var rightDiv = document.createElement("div");
+  var numDiv = document.createElement("div");
+  numDiv.className = "rec-prev-invnum";
+  numDiv.textContent = "Receipt \u9818\u53CE\u66F8 " + (data.number || "").replace("REC-", "");
+  rightDiv.appendChild(numDiv);
+  var dateDiv = document.createElement("div");
+  dateDiv.className = "inv-prev-date";
+  dateDiv.textContent = dateDisplay;
+  rightDiv.appendChild(dateDiv);
+  header.appendChild(rightDiv);
+  page.appendChild(header);
+
+  // Body: 2-column grid
+  var bodyDiv = document.createElement("div");
+  bodyDiv.className = "inv-prev-body";
+
+  // Left column: bill-to + invoice reference
+  var left = document.createElement("div");
+  left.className = "inv-prev-left";
+  var companyDiv = document.createElement("div");
+  companyDiv.className = "inv-prev-company";
+  companyDiv.textContent = data.company || "";
+  left.appendChild(companyDiv);
+  if (data.addrLines && data.addrLines.length) {
+    var addrDiv = document.createElement("div");
+    addrDiv.className = "inv-prev-addr";
+    addrDiv.textContent = data.addrLines.join("\n");
+    left.appendChild(addrDiv);
+  }
+  // Invoice reference (if linked)
+  if (data.invoiceNumber) {
+    var refDiv = document.createElement("div");
+    refDiv.className = "rec-prev-invref";
+    refDiv.textContent = "Invoice Reference: " + data.invoiceNumber;
+    left.appendChild(refDiv);
+  }
+
+  // Paid badge
+  var badgeDiv = document.createElement("div");
+  badgeDiv.style.marginTop = "16px";
+  var badge = document.createElement("span");
+  badge.className = "rec-badge";
+  badge.textContent = "PAID";
+  badgeDiv.appendChild(badge);
+  left.appendChild(badgeDiv);
+
+  bodyDiv.appendChild(left);
+
+  // Right column: items table + totals (same as invoice)
+  var right = document.createElement("div");
+  right.className = "inv-prev-right";
+  var table = document.createElement("table");
+  table.className = "inv-prev-items";
+  var thead = document.createElement("thead");
+  var headTr = document.createElement("tr");
+  ["Description", "Count", "Price"].forEach(function(txt, i) {
+    var th = document.createElement("th");
+    th.textContent = txt;
+    if (i === 1) th.className = "col-count";
+    if (i === 2) th.className = "col-price";
+    headTr.appendChild(th);
+  });
+  thead.appendChild(headTr);
+  table.appendChild(thead);
+  var tbod = document.createElement("tbody");
+  (data.items || []).forEach(function(it) {
+    var row = document.createElement("tr");
+    var td1 = document.createElement("td"); td1.textContent = it.description || "";
+    row.appendChild(td1);
+    var td2 = document.createElement("td"); td2.className = "col-count"; td2.textContent = "x" + (it.qty || 0);
+    row.appendChild(td2);
+    var td3 = document.createElement("td"); td3.className = "col-price"; td3.textContent = "\u00a5" + Number(it.amount || 0).toLocaleString();
+    row.appendChild(td3);
+    tbod.appendChild(row);
+  });
+  table.appendChild(tbod);
+  right.appendChild(table);
+
+  // Totals
+  var totals = document.createElement("div");
+  totals.className = "inv-prev-totals";
+  var taxDisplay = data.taxType === "included" ? "included in product" : (data.taxType === "10" ? "\u00a5" + data.tax.toLocaleString() : "\u2014");
+  [
+    { label: "Subtotal", value: "\u00a5" + data.subtotal.toLocaleString() },
+    { label: "Discount", value: data.discount ? "\u00a5" + data.discount.toLocaleString() : "\u2014" },
+    { label: "Shipping", value: data.shipping ? "\u00a5" + data.shipping.toLocaleString() : "\u2014" },
+    { label: "Tax 10%", value: taxDisplay }
+  ].forEach(function(r) {
+    var row = document.createElement("div");
+    row.className = "inv-prev-totals-row";
+    var lbl = document.createElement("span"); lbl.className = "label"; lbl.textContent = r.label;
+    row.appendChild(lbl);
+    var val = document.createElement("span"); val.className = "value"; val.textContent = r.value;
+    row.appendChild(val);
+    totals.appendChild(row);
+  });
+  var finalRow = document.createElement("div");
+  finalRow.className = "inv-prev-totals-row inv-prev-total-final";
+  var finalLbl = document.createElement("span"); finalLbl.className = "label"; finalLbl.textContent = "Total";
+  finalRow.appendChild(finalLbl);
+  var finalVal = document.createElement("span"); finalVal.className = "value"; finalVal.textContent = "\u00a5" + data.total.toLocaleString();
+  finalRow.appendChild(finalVal);
+  totals.appendChild(finalRow);
+  right.appendChild(totals);
+  bodyDiv.appendChild(right);
+  page.appendChild(bodyDiv);
+
+  // Footer
+  var footer = document.createElement("div");
+  footer.className = "inv-prev-footer";
+  var f1 = document.createElement("span"); f1.className = "inv-prev-site"; f1.textContent = "ivycoast.co";
+  footer.appendChild(f1);
+  var f2 = document.createElement("span"); f2.textContent = "yoko@ivycoast.co";
+  footer.appendChild(f2);
+  page.appendChild(footer);
+
+  // Illustration
+  var illus = document.createElement("img");
+  illus.src = "icons/illustration.png";
+  illus.className = "inv-prev-illustration";
+  illus.alt = "";
+  page.appendChild(illus);
+}
+
+function previewReceipt() {
+  var items = getReceiptLineItems();
+  var subtotal = items.reduce(function(s, it) { return s + it.amount; }, 0);
+  var discount = parseFloat(document.getElementById("rec-modal-discount").value) || 0;
+  var shipping = parseFloat(document.getElementById("rec-modal-shipping").value) || 0;
+  var taxType = document.getElementById("rec-modal-tax-type").value;
+  var afterDiscount = subtotal - discount;
+  var tax = taxType === "10" ? Math.round(afterDiscount * 0.1) : 0;
+  var total = afterDiscount + tax + shipping;
+  var addrLines = formatInvAddress(getRecAddressJSON());
+
+  buildReceiptPreviewTo(document.getElementById("rec-preview-page"), {
+    number: document.getElementById("rec-modal-number").value || "",
+    date: document.getElementById("rec-modal-date").value || "",
+    company: document.getElementById("rec-modal-company").value || "",
+    invoiceNumber: document.getElementById("rec-modal-invoice-number").value || "",
+    addrLines: addrLines,
+    items: items,
+    subtotal: subtotal,
+    discount: discount,
+    shipping: shipping,
+    taxType: taxType,
+    tax: tax,
+    total: total
+  });
+  document.getElementById("rec-preview-overlay").classList.add("open");
+}
+
+function previewReceiptFromData(rec) {
+  if (!rec) return;
+  var items = [];
+  try { items = JSON.parse(rec.items); } catch(e) {}
+  var addrLines = formatInvAddress(rec.contactAddress || "");
+  buildReceiptPreviewTo(document.getElementById("rec-preview-page"), {
+    number: rec.receiptNumber || "",
+    date: rec.receiptDate || "",
+    company: rec.contactCompany || "",
+    invoiceNumber: rec.invoiceNumber || "",
+    addrLines: addrLines,
+    items: items,
+    subtotal: parseFloat(rec.subtotal) || 0,
+    discount: parseFloat(rec.discount) || 0,
+    shipping: parseFloat(rec.shipping) || 0,
+    taxType: rec.taxType || "included",
+    tax: parseFloat(rec.tax) || 0,
+    total: parseFloat(rec.total) || 0
+  });
+  document.getElementById("rec-preview-overlay").classList.add("open");
+}
+
+function closeReceiptPreview() {
+  document.getElementById("rec-preview-overlay").classList.remove("open");
+}
+
+// ── Receipt PDF ───────────────────────────────────────────────
+
+function downloadReceiptPdf(recData) {
+  var rec = recData;
+  if (!rec) {
+    var items = getReceiptLineItems();
+    var subtotal = items.reduce(function(s, it) { return s + it.amount; }, 0);
+    var discount = parseFloat(document.getElementById("rec-modal-discount").value) || 0;
+    var shipping = parseFloat(document.getElementById("rec-modal-shipping").value) || 0;
+    var taxType = document.getElementById("rec-modal-tax-type").value;
+    var afterDiscount = subtotal - discount;
+    var tax = taxType === "10" ? Math.round(afterDiscount * 0.1) : 0;
+    var total = afterDiscount + tax + shipping;
+    rec = {
+      receiptNumber: document.getElementById("rec-modal-number").value,
+      receiptDate: document.getElementById("rec-modal-date").value,
+      contactCompany: document.getElementById("rec-modal-company").value,
+      contactAddress: getRecAddressJSON(),
+      contactEmail: document.getElementById("rec-modal-email").value,
+      invoiceNumber: document.getElementById("rec-modal-invoice-number").value,
+      items: JSON.stringify(items),
+      subtotal: String(subtotal),
+      discount: String(discount),
+      shipping: String(shipping),
+      taxType: taxType,
+      tax: String(tax),
+      total: String(total),
+      notes: document.getElementById("rec-modal-notes").value,
+      workspace: document.getElementById("rec-modal-workspace").value
+    };
+  }
+
+  var jsPDF = window.jspdf.jsPDF;
+  var doc = new jsPDF({ unit: "mm", format: "a4" });
+  var pageW = 210;
+  var marginL = 20;
+  var marginR = 20;
+
+  var brandGreen = [14, 65, 59];
+  var textDark = [32, 33, 36];
+  var textMuted = [95, 99, 104];
+
+  // Header logo
+  if (invLogoDataUrl) {
+    doc.addImage(invLogoDataUrl, "PNG", marginL, 16, 78, 12);
+  } else {
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(28);
+    doc.setTextColor.apply(doc, brandGreen);
+    doc.text("IVYCOAST", marginL, 30);
+  }
+
+  // Receipt # and date (right side) — bold (NOT italic like invoice)
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(14);
+  doc.setTextColor.apply(doc, textDark);
+  doc.text("Receipt \u9818\u53CE\u66F8 " + (rec.receiptNumber || "").replace("REC-", ""), pageW - marginR, 22, { align: "right" });
+  doc.setFontSize(11);
+  doc.setTextColor.apply(doc, textMuted);
+  var dateStr = rec.receiptDate || "";
+  if (dateStr) {
+    var dp = dateStr.split("-");
+    var months = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+    dateStr = months[parseInt(dp[1],10)-1] + " " + parseInt(dp[2],10) + ", " + dp[0];
+  }
+  doc.text(dateStr, pageW - marginR, 32, { align: "right" });
+
+  // Divider
+  doc.setDrawColor(220, 220, 220);
+  doc.setLineWidth(0.3);
+  doc.line(marginL, 40, pageW - marginR, 40);
+
+  // Left column: Bill-to info
+  var y = 55;
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(12);
+  doc.setTextColor.apply(doc, textDark);
+  doc.text(rec.contactCompany || "", marginL, y);
+  y += 6;
+
+  if (rec.contactAddress) {
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
+    doc.setTextColor.apply(doc, textMuted);
+    var addrLines = formatInvAddress(rec.contactAddress);
+    addrLines.forEach(function(line) {
+      if (line) { doc.text(line, marginL, y); y += 5; }
+    });
+  }
+
+  // Invoice reference
+  if (rec.invoiceNumber) {
+    y += 6;
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(10);
+    doc.setTextColor(26, 115, 232); // #1a73e8
+    doc.text("Invoice Reference: " + rec.invoiceNumber, marginL, y);
+    y += 8;
+  }
+
+  // Right column: Line items table
+  var tableX = 95;
+  var tableW = pageW - marginR - tableX;
+  var items = [];
+  try { items = JSON.parse(rec.items); } catch(e) { items = []; }
+
+  var tableBody = items.map(function(it) {
+    return [
+      it.description || "",
+      "x" + (it.qty || 0),
+      "\u00a5" + Number(it.amount || 0).toLocaleString()
+    ];
+  });
+
+  doc.autoTable({
+    startY: 50,
+    margin: { left: tableX, right: marginR },
+    head: [["Description", "Count", "Price"]],
+    body: tableBody,
+    theme: "plain",
+    styles: {
+      font: "helvetica",
+      fontSize: 10,
+      cellPadding: { top: 4, bottom: 4, left: 2, right: 2 },
+      textColor: textDark,
+      lineColor: [220, 220, 220]
+    },
+    headStyles: {
+      fontStyle: "normal",
+      fontSize: 9,
+      textColor: textMuted,
+      cellPadding: { top: 2, bottom: 4, left: 2, right: 2 }
+    },
+    columnStyles: {
+      0: { cellWidth: tableW * 0.6 },
+      1: { cellWidth: tableW * 0.15, halign: "center" },
+      2: { cellWidth: tableW * 0.25, halign: "right" }
+    },
+    didDrawPage: function() {}
+  });
+
+  // Totals (right side, below table)
+  var totalsY = (doc.autoTable.previous ? doc.autoTable.previous.finalY : 120) + 15;
+  var totalsX = pageW - marginR;
+  var subtotal = parseFloat(rec.subtotal) || 0;
+  var discount = parseFloat(rec.discount) || 0;
+  var shipping = parseFloat(rec.shipping) || 0;
+  var total = parseFloat(rec.total) || 0;
+  var taxType = rec.taxType || "included";
+
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(10);
+
+  var totalsRows = [
+    { label: "Subtotal", value: "\u00a5" + subtotal.toLocaleString() },
+    { label: "Discount", value: discount ? "\u00a5" + discount.toLocaleString() : "\u2014" },
+    { label: "Shipping", value: shipping ? "\u00a5" + shipping.toLocaleString() : "\u2014" },
+    { label: "Tax 10%", value: taxType === "included" ? "included in product" : (taxType === "10" ? "\u00a5" + (parseFloat(rec.tax) || 0).toLocaleString() : "\u2014") }
+  ];
+
+  totalsRows.forEach(function(row) {
+    doc.setTextColor.apply(doc, textMuted);
+    doc.text(row.label, totalsX - 45, totalsY, { align: "right" });
+    doc.setTextColor.apply(doc, textDark);
+    doc.text(row.value, totalsX, totalsY, { align: "right" });
+    totalsY += 7;
+  });
+
+  // Total line
+  totalsY += 2;
+  doc.setDrawColor.apply(doc, textDark);
+  doc.setLineWidth(0.5);
+  doc.line(tableX, totalsY - 3, totalsX, totalsY - 3);
+  totalsY += 4;
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(12);
+  doc.setTextColor.apply(doc, textDark);
+  doc.text("Total", totalsX - 45, totalsY, { align: "right" });
+  doc.text("\u00a5" + total.toLocaleString(), totalsX, totalsY, { align: "right" });
+
+  // Footer
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(9);
+  doc.setTextColor.apply(doc, textDark);
+  doc.text("ivycoast.co", marginL, 280);
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor.apply(doc, textMuted);
+  doc.text("yoko@ivycoast.co", 55, 280);
+
+  // Bottom-right illustration
+  if (invIllusDataUrl) {
+    doc.addImage(invIllusDataUrl, "PNG", pageW - marginR - 40, 297 - 50, 40, 40);
+  }
+
+  // Save
+  var fileName = (rec.receiptNumber || "receipt") + "_" + (rec.contactCompany || "").replace(/\s+/g, "_") + ".pdf";
+  doc.save(fileName);
+}
+
+// ── Auto-Create Receipt from Invoice ──────────────────────────
+
+function autoCreateReceiptFromInvoice(invoice) {
+  if (!SCRIPT_URL) return;
+  // Check for duplicate — skip if receipt already exists for this invoice
+  var existing = receipts.find(function(r) { return r.invoiceId === invoice.id; });
+  if (existing) return;
+
+  var receipt = {
+    receiptNumber: generateReceiptNumber(),
+    invoiceId: invoice.id,
+    invoiceNumber: invoice.invoiceNumber || "",
+    contactName: invoice.contactName || "",
+    contactCompany: invoice.contactCompany || "",
+    contactEmail: invoice.contactEmail || "",
+    contactAddress: invoice.contactAddress || "",
+    receiptDate: new Date().toISOString().split("T")[0],
+    items: invoice.items || "[]",
+    subtotal: invoice.subtotal || "0",
+    discount: invoice.discount || "0",
+    shipping: invoice.shipping || "0",
+    taxType: invoice.taxType || "included",
+    tax: invoice.tax || "0",
+    total: invoice.total || "0",
+    pricingType: invoice.pricingType || "",
+    pricingPercent: invoice.pricingPercent || "",
+    workspace: invoice.workspace || "IVYCOAST",
+    notes: "",
+    orderId: invoice.orderId || "",
+    orderNumber: invoice.orderNumber || ""
+  };
+
+  // Optimistic local add
+  var tempId = "temp-rec-" + Date.now();
+  receipt.id = tempId;
+  receipts.push(receipt);
+  renderReceipts();
+  setRecSyncStatus("Auto-creating receipt\u2026");
+
+  recApiPost({ action: "create", receipt: receipt })
+    .then(function(data) {
+      setRecSyncStatus("Receipt auto-created");
+      if (data.receipt) {
+        receipts = receipts.map(function(r) { return r.id === tempId ? data.receipt : r; });
+        renderReceipts();
+      }
+    })
+    .catch(function() { setRecSyncStatus("Auto-create failed"); fetchReceipts(true); });
+}
+
+// ── Create Receipt from Order ─────────────────────────────────
+
+function createReceiptFromOrder() {
+  var overlay = document.getElementById("order-detail-overlay");
+  var orderJson = overlay.dataset.orderJson;
+  if (!orderJson) return;
+  var order = JSON.parse(orderJson);
+  closeOrderDetailModal();
+
+  openReceiptCreateModal();
+  document.getElementById("rec-modal-contact-name").value = order.customerName || "";
+  document.getElementById("rec-modal-company").value = "";
+  document.getElementById("rec-modal-email").value = order.email || "";
+  document.getElementById("rec-modal-order-id").value = order.shopifyOrderId || "";
+  document.getElementById("rec-modal-order-number").value = order.orderNumber || "";
+
+  // Parse address
+  if (order.shippingAddress) {
+    var addr = parseOrderShippingAddress(order.shippingAddress);
+    if (addr) populateRecAddressFields(JSON.stringify(addr));
+  }
+
+  // Parse line items
+  document.getElementById("rec-line-items-body").textContent = "";
+  var items = parseOrderLineItems(order.lineItems, order.totalPrice);
+  if (items.length) {
+    items.forEach(function(it) { addReceiptLineItem(it.description, it.qty, it.unitPrice); });
+  } else {
+    addReceiptLineItem();
+  }
+  recalcReceiptTotals();
+}
+
+function viewLinkedReceipt() {
+  var recId = document.getElementById("order-view-receipt-btn").dataset.receiptId;
+  if (!recId) return;
+  closeOrderDetailModal();
+  openReceiptEditModal(recId);
 }
 
 // ── CRM Checklist System ──────────────────────────────────────
@@ -6917,6 +8327,35 @@ function openCustomerDrawer(email) {
     });
   }
 
+  // Render linked invoices
+  var invList = document.getElementById("customer-drawer-invoices-list");
+  invList.textContent = "";
+  var customerInvoices = invoices.filter(function(inv) {
+    return inv.contactEmail && inv.contactEmail.toLowerCase() === emailLower;
+  });
+  if (customerInvoices.length === 0) {
+    invList.textContent = "No invoices found.";
+  } else {
+    customerInvoices.forEach(function(inv) {
+      var row = document.createElement("div");
+      row.style.cssText = "display:flex;justify-content:space-between;align-items:center;padding:6px 0;cursor:pointer;border-bottom:1px solid #f1f3f4;";
+      row.addEventListener("click", function() { closeCustomerDrawer(); openInvoiceEditModal(inv.id); });
+      var numSpan = document.createElement("span");
+      numSpan.style.fontWeight = "500";
+      numSpan.textContent = inv.invoiceNumber || inv.id;
+      row.appendChild(numSpan);
+      var dateSpan = document.createElement("span");
+      dateSpan.style.cssText = "font-size:12px;color:#5f6368;";
+      dateSpan.textContent = inv.invoiceDate ? formatDate(inv.invoiceDate) : "";
+      row.appendChild(dateSpan);
+      var totalSpan = document.createElement("span");
+      totalSpan.style.fontWeight = "500";
+      totalSpan.textContent = "\u00a5" + Number(inv.total || 0).toLocaleString();
+      row.appendChild(totalSpan);
+      invList.appendChild(row);
+    });
+  }
+
   // Show drawer
   document.getElementById("customer-drawer-overlay").classList.add("open");
   document.getElementById("customer-drawer").classList.add("open");
@@ -7266,6 +8705,10 @@ function fetchShopifyOrders(force) {
       renderOrders();
       renderHomeShopifyStats();
       showOrdersLastSynced();
+      // Auto-create invoices for paid orders without linked invoices
+      if (invoices.length > 0 || lastFetched.invoices > 0) {
+        autoCreateInvoicesForPaidOrders();
+      }
     })
     .catch(function(err) {
       setOrdersSyncStatus("Load failed");
@@ -7431,6 +8874,45 @@ function openOrderDetailModal(order) {
       row.textContent = item;
       itemsDiv.appendChild(row);
     });
+  }
+
+  // Store order data for invoice creation
+  document.getElementById("order-detail-overlay").dataset.orderJson = JSON.stringify(order);
+
+  // Check if this order already has a linked invoice
+  var linkedInv = invoices.find(function(inv) {
+    return inv.orderId === order.shopifyOrderId || inv.orderNumber === String(order.orderNumber);
+  });
+  var createBtn = document.getElementById("order-create-invoice-btn");
+  var viewBtn = document.getElementById("order-view-invoice-btn");
+  if (linkedInv) {
+    createBtn.style.display = "none";
+    viewBtn.style.display = "";
+    viewBtn.dataset.invoiceId = linkedInv.id;
+  } else if (order.financialStatus === "paid") {
+    createBtn.style.display = "";
+    viewBtn.style.display = "none";
+  } else {
+    createBtn.style.display = "none";
+    viewBtn.style.display = "none";
+  }
+
+  // Check if this order already has a linked receipt
+  var linkedRec = receipts.find(function(r) {
+    return r.orderId === order.shopifyOrderId || r.orderNumber === String(order.orderNumber);
+  });
+  var createRecBtn = document.getElementById("order-create-receipt-btn");
+  var viewRecBtn = document.getElementById("order-view-receipt-btn");
+  if (linkedRec) {
+    createRecBtn.style.display = "none";
+    viewRecBtn.style.display = "";
+    viewRecBtn.dataset.receiptId = linkedRec.id;
+  } else if (order.financialStatus === "paid") {
+    createRecBtn.style.display = "";
+    viewRecBtn.style.display = "none";
+  } else {
+    createRecBtn.style.display = "none";
+    viewRecBtn.style.display = "none";
   }
 
   document.getElementById("order-detail-overlay").classList.add("open");

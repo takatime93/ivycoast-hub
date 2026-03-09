@@ -15,7 +15,8 @@
 // 4. Products headers: id | shopifyProductId | shopifyVariantId | title | variantTitle | sku | price | compareAtPrice | inventoryQuantity | inventoryItemId | locationId | status | productType | vendor | tags | imageUrl | lastSynced
 // 5. Orders headers:   id | shopifyOrderId | orderNumber | email | totalPrice | currency | financialStatus | fulfillmentStatus | lineItems | customerName | createdAt | shippingAddress | note | lastSynced
 // 6. Customers headers: id | shopifyCustomerId | name | email | phone | totalOrders | totalSpent | firstOrderDate | lastOrderDate | tags | notes | createdAt | updatedAt
-// 6. Open Extensions → Apps Script, paste this code, deploy as web app
+// 7. Invoices headers:  id | invoiceNumber | contactId | contactName | contactCompany | contactEmail | contactAddress | invoiceDate | dueDate | poReference | items | subtotal | discount | shipping | taxType | tax | total | pricingType | pricingPercent | status | workspace | notes | orderId | orderNumber | createdAt | updatedAt
+// 8. Open Extensions → Apps Script, paste this code, deploy as web app
 // 7. Set "Execute as: Me" and "Who has access: Anyone"
 // 8. Copy the deployed URL into the dashboard (Board tab config)
 //
@@ -73,7 +74,7 @@ function nextId(sheet, prefix) {
 
 function createRow(sheetName, item) {
   var sheet = getSheet(sheetName);
-  var prefixMap = { "Contacts": "crm-", "Products": "prod-", "Orders": "ord-", "Customers": "cust-", "Invoices": "inv-" };
+  var prefixMap = { "Contacts": "crm-", "Products": "prod-", "Orders": "ord-", "Customers": "cust-", "Invoices": "inv-", "Receipts": "rec-" };
   var prefix = prefixMap[sheetName] || "ivy-";
   var now = new Date().toISOString();
   var id = nextId(sheet, prefix);
@@ -119,7 +120,7 @@ function doGet(e) {
   var action = (e.parameter && e.parameter.action) || "list";
   var sheetName = (e.parameter && e.parameter.sheet) || "Tasks";
   if (action === "list") {
-    var keyMap = { "Contacts": "contacts", "Products": "products", "Orders": "orders", "Customers": "customers", "Invoices": "invoices" };
+    var keyMap = { "Contacts": "contacts", "Products": "products", "Orders": "orders", "Customers": "customers", "Invoices": "invoices", "Receipts": "receipts" };
     var key = keyMap[sheetName] || "tasks";
     var result = {};
     result[key] = getAllRows(sheetName);
@@ -129,15 +130,21 @@ function doGet(e) {
 }
 
 function doPost(e) {
+  // Detect Shopify webhook (has X-Shopify-Topic header or order_number field without action)
   var body;
   try { body = JSON.parse(e.postData.contents); }
   catch (err) { return jsonResponse({ error: "Invalid JSON body" }); }
 
+  // Shopify webhook: payload has order_number but no action field
+  if (!body.action && body.order_number !== undefined) {
+    return handleShopifyWebhook(body);
+  }
+
   var action = body.action;
   var sheetName = body.sheet || "Tasks";
-  var itemKeyMap = { "Contacts": "contact", "Products": "product", "Orders": "order", "Customers": "customer", "Invoices": "invoice" };
+  var itemKeyMap = { "Contacts": "contact", "Products": "product", "Orders": "order", "Customers": "customer", "Invoices": "invoice", "Receipts": "receipt" };
   var itemKey = itemKeyMap[sheetName] || "task";
-  var item = body[itemKey] || body.task || body.contact || body.invoice || {};
+  var item = body[itemKey] || body.task || body.contact || body.invoice || body.receipt || {};
 
   if (action === "create") {
     var created = createRow(sheetName, item);
@@ -219,6 +226,150 @@ function uploadFileToDrive(fileName, mimeType, base64Data) {
 function jsonResponse(obj) {
   return ContentService.createTextOutput(JSON.stringify(obj))
     .setMimeType(ContentService.MimeType.JSON);
+}
+
+// ===================== SHOPIFY WEBHOOK HANDLER =====================
+
+function handleShopifyWebhook(order) {
+  // Only create invoice for paid orders
+  if (order.financial_status !== "paid") {
+    return jsonResponse({ success: true, skipped: "not paid" });
+  }
+
+  var shopifyOrderId = String(order.id || "");
+  var orderNumber = String(order.order_number || "");
+
+  // Check if invoice already exists for this order
+  var invoiceSheet = getSheet("Invoices");
+  if (invoiceSheet) {
+    var invData = invoiceSheet.getDataRange().getValues();
+    var invHeaders = invData[0];
+    var orderIdCol = invHeaders.indexOf("orderId");
+    var orderNumCol = invHeaders.indexOf("orderNumber");
+    for (var i = 1; i < invData.length; i++) {
+      if ((orderIdCol >= 0 && String(invData[i][orderIdCol]) === shopifyOrderId) ||
+          (orderNumCol >= 0 && String(invData[i][orderNumCol]) === orderNumber)) {
+        return jsonResponse({ success: true, skipped: "invoice already exists" });
+      }
+    }
+  }
+
+  // Build line items string and structured items
+  var lineItems = [];
+  var itemsJson = [];
+  var subtotal = 0;
+  if (order.line_items && order.line_items.length) {
+    order.line_items.forEach(function(li) {
+      var qty = li.quantity || 1;
+      var price = parseFloat(li.price) || 0;
+      var name = li.title || li.name || "";
+      if (li.variant_title) name += " \u2014 " + li.variant_title;
+      lineItems.push(qty + "x " + name);
+      itemsJson.push({
+        description: name,
+        qty: qty,
+        unitPrice: price,
+        amount: qty * price
+      });
+      subtotal += qty * price;
+    });
+  }
+
+  var totalPrice = parseFloat(order.total_price) || subtotal;
+  var customerName = "";
+  if (order.customer) {
+    customerName = ((order.customer.first_name || "") + " " + (order.customer.last_name || "")).trim();
+  }
+
+  // Parse shipping address
+  var addrJson = "";
+  if (order.shipping_address) {
+    var sa = order.shipping_address;
+    addrJson = JSON.stringify({
+      postal: sa.zip || "",
+      prefecture: sa.province || "",
+      city: sa.city || "",
+      line1: (sa.address1 || ""),
+      line2: (sa.address2 || "")
+    });
+  }
+
+  var invoice = {
+    invoiceNumber: generateInvoiceNumber_(),
+    contactId: "",
+    contactName: customerName,
+    contactCompany: customerName,
+    contactEmail: order.email || "",
+    contactAddress: addrJson,
+    invoiceDate: order.created_at ? order.created_at.split("T")[0] : new Date().toISOString().split("T")[0],
+    dueDate: "",
+    poReference: "Order #" + orderNumber,
+    items: JSON.stringify(itemsJson),
+    subtotal: String(subtotal),
+    discount: "0",
+    shipping: String(parseFloat(order.total_shipping_price_set && order.total_shipping_price_set.shop_money ? order.total_shipping_price_set.shop_money.amount : "0") || 0),
+    taxType: "included",
+    tax: "0",
+    total: String(totalPrice),
+    pricingType: "wholesale",
+    pricingPercent: "",
+    status: "draft",
+    workspace: "IVYCOAST",
+    notes: "Auto-generated from Shopify webhook, order #" + orderNumber,
+    orderId: shopifyOrderId,
+    orderNumber: orderNumber
+  };
+
+  var created = createRow("Invoices", invoice);
+  return jsonResponse({ success: true, invoice: created });
+}
+
+// Generate invoice number server-side
+function generateInvoiceNumber_() {
+  var sheet = getSheet("Invoices");
+  if (!sheet) return "INV-" + new Date().getFullYear() + "-001";
+  var data = sheet.getDataRange().getValues();
+  var headers = data[0];
+  var numCol = headers.indexOf("invoiceNumber");
+  if (numCol === -1) return "INV-" + new Date().getFullYear() + "-001";
+  var year = String(new Date().getFullYear());
+  var maxSeq = 0;
+  for (var i = 1; i < data.length; i++) {
+    var num = String(data[i][numCol] || "");
+    if (num.indexOf("INV-" + year) === 0) {
+      var parts = num.split("-");
+      var seq = parseInt(parts[2], 10) || 0;
+      if (seq > maxSeq) maxSeq = seq;
+    }
+  }
+  var next = String(maxSeq + 1);
+  while (next.length < 3) next = "0" + next;
+  return "INV-" + year + "-" + next;
+}
+
+function generateReceiptNumber_() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName("Receipts");
+  var year = new Date().getFullYear().toString();
+  var prefix = "REC-" + year + "-";
+  var maxSeq = 0;
+  if (sheet && sheet.getLastRow() > 1) {
+    var headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+    var col = headers.indexOf("receiptNumber");
+    if (col >= 0) {
+      var data = sheet.getRange(2, col + 1, sheet.getLastRow() - 1, 1).getValues();
+      for (var i = 0; i < data.length; i++) {
+        var num = String(data[i][0] || "");
+        if (num.indexOf(prefix) !== 0) continue;
+        var parts = num.split("-");
+        var seq = parseInt(parts[2], 10) || 0;
+        if (seq > maxSeq) maxSeq = seq;
+      }
+    }
+  }
+  var next = String(maxSeq + 1);
+  while (next.length < 3) next = "0" + next;
+  return "REC-" + year + "-" + next;
 }
 
 // ===================== SHOPIFY API =====================
