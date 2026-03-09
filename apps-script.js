@@ -552,6 +552,56 @@ function syncShopifyOrders() {
     if (orders.length < 250) hasMore = false;
   }
 
+  // Also fetch draft orders (separate Shopify endpoint)
+  var draftSinceId = "0";
+  var draftHasMore = true;
+  while (draftHasMore) {
+    var draftParams = { limit: "250", since_id: draftSinceId };
+    var draftData = shopifyGet("draft_orders.json", draftParams);
+    var drafts = draftData.draft_orders || [];
+    if (drafts.length === 0) { draftHasMore = false; break; }
+
+    drafts.forEach(function(d) {
+      var lineItemsSummary = (d.line_items || []).map(function(li) {
+        return li.quantity + "x " + li.title;
+      }).join("; ");
+
+      var customerName = "";
+      if (d.customer) {
+        customerName = ((d.customer.first_name || "") + " " + (d.customer.last_name || "")).trim();
+      }
+
+      var shippingAddr = "";
+      if (d.shipping_address) {
+        var sa = d.shipping_address;
+        shippingAddr = [sa.address1, sa.address2, sa.city, sa.province, sa.zip, sa.country].filter(Boolean).join(", ");
+      }
+
+      // Use "draft-" prefix to avoid ID collision with regular orders
+      var draftId = "draft-" + String(d.id);
+      // Skip if already added as a completed order (draft was converted)
+      if (orderMap[draftId]) return;
+
+      allOrders.push({
+        shopifyOrderId: draftId,
+        orderNumber: d.name || ("D" + d.order_number || ""),
+        email: d.email || "",
+        totalPrice: d.total_price || "",
+        currency: d.currency || "JPY",
+        financialStatus: d.status || "draft",
+        fulfillmentStatus: "unfulfilled",
+        lineItems: lineItemsSummary,
+        customerName: customerName,
+        createdAt: d.created_at || "",
+        shippingAddress: shippingAddr,
+        note: d.note || ""
+      });
+    });
+
+    draftSinceId = String(drafts[drafts.length - 1].id);
+    if (drafts.length < 250) draftHasMore = false;
+  }
+
   // Sort newest first
   allOrders.sort(function(a, b) {
     return (b.createdAt || "").localeCompare(a.createdAt || "");
