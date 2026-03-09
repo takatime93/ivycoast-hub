@@ -3059,6 +3059,21 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
     <input type="hidden" id="rec-modal-order-id">
     <input type="hidden" id="rec-modal-order-number">
 
+    <div class="inv-field-row" id="rec-from-source-row">
+      <div>
+        <label>Create from Invoice</label>
+        <select id="rec-from-invoice" onchange="onRecFromInvoiceChange()">
+          <option value="">-- None --</option>
+        </select>
+      </div>
+      <div>
+        <label>Or from Contact</label>
+        <select id="rec-from-contact" onchange="onRecFromContactChange()">
+          <option value="">-- None --</option>
+        </select>
+      </div>
+    </div>
+
     <div id="rec-linked-invoice-row" class="inv-field-row" style="display:none">
       <div style="grid-column:1/-1">
         <label>Linked Invoice</label>
@@ -6528,8 +6543,11 @@ function buildInvoicePreviewTo(page, data) {
   page.appendChild(illus);
 }
 
+var invPreviewingId = "";
+
 // Preview from modal (current form fields)
 function previewInvoice() {
+  invPreviewingId = "";
   var items = getInvoiceLineItems();
   var subtotal = items.reduce(function(s, it) { return s + it.amount; }, 0);
   var discount = parseFloat(document.getElementById("inv-modal-discount").value) || 0;
@@ -6562,6 +6580,7 @@ function previewInvoice() {
 
 // Preview from saved invoice data
 function previewInvoiceFromData(inv) {
+  invPreviewingId = inv.id || "";
   var items = [];
   try { items = JSON.parse(inv.items); } catch(e) { items = []; }
   var addrLines = formatInvAddress(inv.contactAddress || "");
@@ -6587,6 +6606,10 @@ function previewInvoiceFromData(inv) {
 
 function closeInvoicePreview() {
   document.getElementById("inv-preview-overlay").classList.remove("open");
+  if (invPreviewingId) {
+    openInvoiceEditModal(invPreviewingId);
+    invPreviewingId = "";
+  }
 }
 
 // ── Split-Pane Live Preview ─────────────────────────────────────
@@ -7326,6 +7349,96 @@ function recalcReceiptTotals() {
   });
 }
 
+// ── Source Dropdowns (From Invoice / From Contact) ────────────
+
+function populateRecSourceDropdowns() {
+  // Invoice dropdown
+  var invSel = document.getElementById("rec-from-invoice");
+  invSel.textContent = "";
+  var opt0 = document.createElement("option");
+  opt0.value = ""; opt0.textContent = "-- None --";
+  invSel.appendChild(opt0);
+  invoices.slice().sort(function(a, b) { return (b.invoiceDate || "").localeCompare(a.invoiceDate || ""); }).forEach(function(inv) {
+    var opt = document.createElement("option");
+    opt.value = inv.id;
+    opt.textContent = (inv.invoiceNumber || "?") + " \u2014 " + (inv.contactCompany || inv.contactName || "");
+    invSel.appendChild(opt);
+  });
+  // Contact dropdown
+  var cSel = document.getElementById("rec-from-contact");
+  cSel.textContent = "";
+  var cOpt0 = document.createElement("option");
+  cOpt0.value = ""; cOpt0.textContent = "-- None --";
+  cSel.appendChild(cOpt0);
+  var contacts = (typeof crmContacts !== "undefined" ? crmContacts : []);
+  contacts.forEach(function(c) {
+    var opt = document.createElement("option");
+    opt.value = c.id;
+    opt.textContent = c.name + (c.company ? " (" + c.company + ")" : "");
+    cSel.appendChild(opt);
+  });
+}
+
+function onRecFromInvoiceChange() {
+  var invId = document.getElementById("rec-from-invoice").value;
+  if (!invId) return;
+  var inv = invoices.find(function(i) { return i.id === invId; });
+  if (!inv) return;
+  // Reset contact dropdown
+  document.getElementById("rec-from-contact").value = "";
+  // Fill fields from invoice
+  document.getElementById("rec-modal-invoice-id").value = inv.id;
+  document.getElementById("rec-modal-invoice-number").value = inv.invoiceNumber || "";
+  document.getElementById("rec-linked-invoice-row").style.display = "";
+  document.getElementById("rec-linked-invoice-display").textContent = inv.invoiceNumber || "";
+  document.getElementById("rec-modal-contact-name").value = inv.contactName || "";
+  document.getElementById("rec-modal-company").value = inv.contactCompany || "";
+  document.getElementById("rec-modal-email").value = inv.contactEmail || "";
+  populateRecAddressFields(inv.contactAddress);
+  document.getElementById("rec-modal-workspace").value = inv.workspace || "IVYCOAST";
+  document.getElementById("rec-modal-discount").value = inv.discount || "0";
+  document.getElementById("rec-modal-shipping").value = inv.shipping || "0";
+  document.getElementById("rec-modal-tax-type").value = inv.taxType || "included";
+  document.getElementById("rec-modal-notes").value = "";
+  document.getElementById("rec-modal-order-id").value = inv.orderId || "";
+  document.getElementById("rec-modal-order-number").value = inv.orderNumber || "";
+  if (inv.pricingType) setRecPricingType(inv.pricingType);
+  document.getElementById("rec-modal-percent").value = inv.pricingPercent || "";
+  // Line items
+  document.getElementById("rec-line-items-body").textContent = "";
+  var items = [];
+  try { items = JSON.parse(inv.items); } catch(e) {}
+  if (items.length) {
+    items.forEach(function(it) { addReceiptLineItem(it.description, it.qty, it.unitPrice); });
+  } else {
+    addReceiptLineItem();
+  }
+  recalcReceiptTotals();
+}
+
+function onRecFromContactChange() {
+  var cId = document.getElementById("rec-from-contact").value;
+  if (!cId) return;
+  var c = (typeof crmContacts !== "undefined" ? crmContacts : []).find(function(x) { return x.id === cId; });
+  if (!c) return;
+  // Reset invoice dropdown
+  document.getElementById("rec-from-invoice").value = "";
+  document.getElementById("rec-linked-invoice-row").style.display = "none";
+  document.getElementById("rec-modal-invoice-id").value = "";
+  document.getElementById("rec-modal-invoice-number").value = "";
+  // Fill contact fields
+  document.getElementById("rec-modal-contact-name").value = c.name || "";
+  document.getElementById("rec-modal-company").value = c.company || "";
+  document.getElementById("rec-modal-email").value = c.email || "";
+  if (c.wholesalePercent) {
+    document.getElementById("rec-modal-percent").value = c.wholesalePercent;
+    setRecPricingType("wholesale");
+  } else if (c.consignmentPercent) {
+    document.getElementById("rec-modal-percent").value = c.consignmentPercent;
+    setRecPricingType("consignment");
+  }
+}
+
 // ── Modal Open / Close / Save ─────────────────────────────────
 
 function openReceiptCreateModal() {
@@ -7336,6 +7449,8 @@ function openReceiptCreateModal() {
   document.getElementById("rec-modal-order-id").value = "";
   document.getElementById("rec-modal-order-number").value = "";
   document.getElementById("rec-linked-invoice-row").style.display = "none";
+  document.getElementById("rec-from-source-row").style.display = "";
+  populateRecSourceDropdowns();
   document.getElementById("rec-modal-contact-name").value = "";
   document.getElementById("rec-modal-company").value = "";
   document.getElementById("rec-modal-email").value = "";
@@ -7359,6 +7474,7 @@ function openReceiptEditModal(recId) {
   var rec = receipts.find(function(r) { return r.id === recId; });
   if (!rec) return;
   document.getElementById("rec-modal-title").textContent = "Edit Receipt";
+  document.getElementById("rec-from-source-row").style.display = "none";
   document.getElementById("rec-modal-id").value = rec.id;
   document.getElementById("rec-modal-invoice-id").value = rec.invoiceId || "";
   document.getElementById("rec-modal-invoice-number").value = rec.invoiceNumber || "";
@@ -7648,8 +7764,11 @@ function previewReceipt() {
   document.getElementById("rec-preview-overlay").classList.add("open");
 }
 
+var recPreviewingId = "";
+
 function previewReceiptFromData(rec) {
   if (!rec) return;
+  recPreviewingId = rec.id || "";
   var items = [];
   try { items = JSON.parse(rec.items); } catch(e) {}
   var addrLines = formatInvAddress(rec.contactAddress || "");
@@ -7672,6 +7791,10 @@ function previewReceiptFromData(rec) {
 
 function closeReceiptPreview() {
   document.getElementById("rec-preview-overlay").classList.remove("open");
+  if (recPreviewingId) {
+    openReceiptEditModal(recPreviewingId);
+    recPreviewingId = "";
+  }
 }
 
 // ── Receipt PDF ───────────────────────────────────────────────
