@@ -4171,6 +4171,7 @@ document.querySelectorAll(".doc-table th").forEach(function(th) {
 
 // ===================== BOARD =====================
 
+var APP_VERSION = "20260309-1";
 var SCRIPT_URL = localStorage.getItem("boardScriptUrl") || "https://script.google.com/macros/s/AKfycbwC0gPe5EQRbk6ld99DMMg5UgmfjTrqE0UpRnBJqLRtqHWfHb_M4DSxt5ZWlg8KOrj2Dw/exec";
 var CACHE_TTL = 300000; // 5 minutes — skip re-fetch if data is fresher than this
 var lastFetched = { board: 0, crm: 0, products: 0, orders: 0, customers: 0, invoices: 0, receipts: 0 };
@@ -11068,6 +11069,18 @@ if ("serviceWorker" in navigator) {
     }
   });
 }
+
+// ── Version check (detect new deployments) ────────────────────
+setInterval(function() {
+  fetch("version.json?_t=" + Date.now())
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data.v && data.v !== APP_VERSION) {
+        document.getElementById("update-banner").classList.add("active");
+      }
+    })
+    .catch(function() { /* offline or error — ignore */ });
+}, 3 * 60 * 1000);
 </script>
 
 <div id="update-banner">

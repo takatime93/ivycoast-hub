@@ -1,4 +1,4 @@
-var CACHE_NAME = "ivyhub-v2";
+var CACHE_NAME = "ivyhub-v3";
 var STATIC_ASSETS = [
   "/ivycoast-hub/",
   "/ivycoast-hub/index.html",
@@ -48,7 +48,8 @@ self.addEventListener("fetch", function(e) {
   if (e.request.url.includes("script.google.com") ||
       e.request.url.includes("googleapis.com") ||
       e.request.url.includes("gstatic.com") ||
-      e.request.url.includes("firebaseapp.com")) {
+      e.request.url.includes("firebaseapp.com") ||
+      e.request.url.includes("version.json")) {
     return;
   }
 
