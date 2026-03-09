@@ -1408,54 +1408,29 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
 }
 
 /* Tools Tab */
-.tools-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 20px;
-  margin-top: 20px;
-}
-.tool-card {
-  background: #f8f9fa;
-  border-radius: 12px;
-  padding: 24px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-  cursor: pointer;
-  transition: box-shadow 0.15s, transform 0.15s;
-}
-.tool-card:hover {
-  box-shadow: 0 2px 8px rgba(0,0,0,0.13);
-  transform: translateY(-1px);
-}
-.tool-card-icon {
-  width: 48px;
-  height: 48px;
-  border-radius: 12px;
-  background: #e8f0fe;
-  color: #1a73e8;
+.tools-subnav {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 24px;
-  margin-bottom: 12px;
+  gap: 0;
+  border-bottom: 1px solid #e0e0e0;
+  margin-bottom: 20px;
 }
-.tool-card-title { font-size: 16px; font-weight: 500; color: #202124; margin-bottom: 4px; }
-.tool-card-desc { font-size: 13px; color: #5f6368; line-height: 1.5; }
-.tools-subview { display: none; }
-.tools-subview.active { display: block; }
-.tools-back-btn {
+.tools-subnav-tab {
+  padding: 10px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #5f6368;
   background: none;
   border: none;
+  border-bottom: 2px solid transparent;
   cursor: pointer;
+  white-space: nowrap;
   font-family: inherit;
-  font-size: 14px;
-  color: #1a73e8;
-  padding: 0;
-  margin-bottom: 16px;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
+  transition: color 0.15s, border-color 0.15s;
 }
-.tools-back-btn:hover { text-decoration: underline; }
+.tools-subnav-tab:hover { color: #202124; }
+.tools-subnav-tab.active { color: #0e413b; font-weight: 600; border-bottom-color: #0e413b; }
+.tools-subview { display: none; }
+.tools-subview.active { display: block; }
 .section-subtitle { font-size: 14px; color: #5f6368; margin-top: 4px; }
 
 /* Invoice Table */
@@ -1589,6 +1564,128 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
 }
 .inv-pricing-toggle button.active { background: #e8f0fe; border-color: #1a73e8; color: #1a73e8; font-weight: 500; }
 
+/* Invoice Address Grid */
+.inv-address-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 4px;
+}
+.inv-address-grid input {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid #dadce0;
+  border-radius: 6px;
+  font-size: 13px;
+  font-family: inherit;
+  outline: none;
+  box-sizing: border-box;
+}
+.inv-address-grid input:focus { border-color: #1a73e8; }
+
+/* Invoice Product Dropdown */
+.inv-product-wrapper { position: relative; }
+.inv-product-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background: #fff;
+  border: 1px solid #dadce0;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 310;
+  width: 100%;
+  display: none;
+}
+.inv-product-dropdown.open { display: block; }
+.inv-product-option {
+  padding: 8px 10px;
+  cursor: pointer;
+  font-size: 13px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.inv-product-option:hover,
+.inv-product-option.active { background: #f1f3f4; }
+.inv-product-option .inv-prod-name { color: #202124; }
+.inv-product-option .inv-prod-price { color: #5f6368; font-size: 12px; white-space: nowrap; margin-left: 8px; }
+
+/* Invoice Preview Overlay */
+.inv-preview-overlay {
+  display: none;
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 250;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+.inv-preview-overlay.open { display: flex; }
+.inv-preview-container {
+  background: #fff;
+  width: 210mm;
+  max-width: 96vw;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+  border-radius: 4px;
+  position: relative;
+}
+.inv-preview-actions {
+  position: sticky;
+  top: 0;
+  background: #f8f9fa;
+  padding: 12px 20px;
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  border-bottom: 1px solid #e0e0e0;
+  z-index: 1;
+}
+.inv-preview-actions button {
+  padding: 8px 16px;
+  border: 1px solid #dadce0;
+  border-radius: 6px;
+  font-size: 13px;
+  font-family: inherit;
+  cursor: pointer;
+  background: #fff;
+}
+.inv-preview-page {
+  padding: 40px;
+  font-family: 'DM Sans', sans-serif;
+  color: #202124;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.inv-preview-page .inv-prev-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid #e0e0e0; }
+.inv-preview-page .inv-prev-brand { font-size: 28px; font-weight: 700; color: #0e413b; letter-spacing: 2px; }
+.inv-preview-page .inv-prev-invnum { font-size: 14px; color: #202124; text-align: right; }
+.inv-preview-page .inv-prev-date { font-size: 11px; color: #5f6368; text-align: right; margin-top: 2px; }
+.inv-preview-page .inv-prev-body { display: grid; grid-template-columns: 1fr 1.2fr; gap: 32px; }
+.inv-preview-page .inv-prev-billto h4 { font-size: 12px; color: #5f6368; text-transform: uppercase; margin: 0 0 8px 0; font-weight: 500; }
+.inv-preview-page .inv-prev-billto .inv-prev-company { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+.inv-preview-page .inv-prev-billto .inv-prev-po { font-size: 11px; color: #5f6368; margin-bottom: 4px; }
+.inv-preview-page .inv-prev-billto .inv-prev-addr { font-size: 11px; color: #5f6368; line-height: 1.6; white-space: pre-line; }
+.inv-preview-page .inv-prev-items { width: 100%; border-collapse: collapse; font-size: 13px; }
+.inv-preview-page .inv-prev-items th { text-align: left; font-size: 10px; font-weight: 500; color: #5f6368; text-transform: uppercase; padding: 4px 6px; border-bottom: 1px solid #e0e0e0; }
+.inv-preview-page .inv-prev-items td { padding: 6px 6px; border-bottom: 1px solid #f0f0f0; }
+.inv-preview-page .inv-prev-items .col-count { text-align: center; width: 60px; }
+.inv-preview-page .inv-prev-items .col-price { text-align: right; width: 90px; }
+.inv-preview-page .inv-prev-payment { margin-top: 24px; }
+.inv-preview-page .inv-prev-payment h4 { font-size: 12px; font-weight: 700; margin: 0 0 6px 0; }
+.inv-preview-page .inv-prev-payment p { font-size: 10px; color: #5f6368; margin: 0; line-height: 1.6; }
+.inv-preview-page .inv-prev-totals { margin-top: 16px; display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+.inv-preview-page .inv-prev-totals-row { display: flex; gap: 16px; font-size: 12px; }
+.inv-preview-page .inv-prev-totals-row .label { color: #5f6368; min-width: 70px; text-align: right; }
+.inv-preview-page .inv-prev-totals-row .value { min-width: 80px; text-align: right; }
+.inv-preview-page .inv-prev-total-final { font-size: 14px; font-weight: 700; border-top: 2px solid #202124; padding-top: 8px; margin-top: 4px; }
+.inv-preview-page .inv-prev-footer { margin-top: 40px; padding-top: 12px; border-top: 1px solid #e0e0e0; font-size: 10px; color: #5f6368; display: flex; gap: 32px; }
+
 /* CRM Documents Checklist */
 .crm-checklist-list { display: flex; flex-direction: column; gap: 8px; }
 .crm-checklist-item {
@@ -1706,12 +1803,16 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
   .orders-table { font-size: 13px; }
   .orders-table th, .orders-table td { padding: 8px 6px; }
   .order-detail-grid { grid-template-columns: 1fr; }
-  .tools-grid { grid-template-columns: 1fr; }
+  .tools-subnav-tab { padding: 8px 12px; font-size: 12px; }
   .board-modal.inv-modal { width: 100%; max-width: 100vw; border-radius: 0; max-height: 100vh; }
   .inv-field-row { grid-template-columns: 1fr; }
   .inv-field-row.three-col { grid-template-columns: 1fr; }
   .invoices-table { font-size: 13px; }
   .invoices-table th, .invoices-table td { padding: 8px 6px; }
+  .inv-address-grid { grid-template-columns: 1fr; }
+  .inv-preview-container { width: 100%; max-width: 100vw; border-radius: 0; }
+  .inv-preview-page { padding: 20px; }
+  .inv-preview-page .inv-prev-body { grid-template-columns: 1fr; gap: 16px; }
 }
 
 /* Login Screen */
@@ -2279,25 +2380,14 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
 
   <!-- TOOLS -->
   <div id="tools" class="view" role="tabpanel" aria-labelledby="tab-tools">
-    <!-- Tools Home -->
-    <div id="tools-home" class="tools-subview active">
-      <h2 class="section-title">Tools</h2>
-      <p class="section-subtitle">Internal tools and utilities</p>
-      <div class="tools-grid">
-        <div class="tool-card" onclick="openToolInvoices()">
-          <div class="tool-card-icon">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-          </div>
-          <div class="tool-card-title">Invoice Generator</div>
-          <div class="tool-card-desc">Create, manage, and export invoices for vendors and wholesale partners</div>
-        </div>
-      </div>
-    </div>
+    <h2 class="section-title">Tools</h2>
+    <nav class="tools-subnav" id="tools-subnav">
+      <button class="tools-subnav-tab active" data-tool="invoices" onclick="switchTool('invoices')">Invoices</button>
+    </nav>
 
     <!-- Invoice Generator -->
-    <div id="tools-invoices" class="tools-subview">
-      <button class="tools-back-btn" onclick="showToolsHome()">&larr; Back to Tools</button>
-      <h2 class="section-title">Invoice Generator</h2>
+    <div id="tools-invoices" class="tools-subview active">
+      <h2 class="section-title" style="font-size:18px;margin-bottom:4px">Invoice Generator</h2>
       <div class="board-toolbar" id="invoices-toolbar">
         <button class="btn-add-task" onclick="openInvoiceCreateModal()">+ Create Invoice</button>
         <select class="filter-select" id="invoices-filter-status" onchange="renderInvoices()">
@@ -2676,7 +2766,7 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
         <input type="text" id="inv-modal-contact-name" placeholder="Full name">
       </div>
     </div>
-    <div class="inv-field-row three-col">
+    <div class="inv-field-row">
       <div>
         <label for="inv-modal-company">Company</label>
         <input type="text" id="inv-modal-company" placeholder="Company name">
@@ -2685,9 +2775,17 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
         <label for="inv-modal-email">Email</label>
         <input type="email" id="inv-modal-email" placeholder="Email address">
       </div>
+    </div>
+    <div class="inv-field-row" style="grid-template-columns:1fr">
       <div>
-        <label for="inv-modal-address">Address</label>
-        <input type="text" id="inv-modal-address" placeholder="Billing address">
+        <label>Address</label>
+        <div class="inv-address-grid">
+          <input type="text" id="inv-addr-postal" placeholder="〒 Postal Code" style="max-width:160px">
+          <input type="text" id="inv-addr-prefecture" placeholder="Prefecture / 都道府県">
+          <input type="text" id="inv-addr-city" placeholder="City / 市区町村" style="grid-column:1/-1">
+          <input type="text" id="inv-addr-line1" placeholder="Address Line 1 / 番地" style="grid-column:1/-1">
+          <input type="text" id="inv-addr-line2" placeholder="Address Line 2 / 建物名" style="grid-column:1/-1">
+        </div>
       </div>
     </div>
 
@@ -2780,10 +2878,21 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
 
     <div class="board-modal-actions">
       <button class="btn-delete" id="inv-modal-delete-btn" style="display:none" onclick="deleteInvoiceConfirm()">Delete</button>
-      <button type="button" onclick="downloadInvoicePdf()" style="color:#1a73e8;border-color:#1a73e8" id="inv-modal-pdf-btn">Download PDF</button>
+      <button type="button" onclick="previewInvoice()" style="color:#1a73e8;border-color:#1a73e8">Preview</button>
       <button onclick="closeInvoiceModal()">Cancel</button>
       <button class="btn-save" onclick="saveInvoice()">Save</button>
     </div>
+  </div>
+</div>
+
+<!-- Invoice Preview Overlay -->
+<div class="inv-preview-overlay" id="inv-preview-overlay" onclick="if(event.target===this)closeInvoicePreview()">
+  <div class="inv-preview-container">
+    <div class="inv-preview-actions">
+      <button onclick="closeInvoicePreview()">Back to Edit</button>
+      <button onclick="downloadInvoicePdf()" style="background:#1a73e8;color:#fff;border-color:#1a73e8">Download PDF</button>
+    </div>
+    <div class="inv-preview-page" id="inv-preview-page"></div>
   </div>
 </div>
 
@@ -4020,7 +4129,7 @@ document.querySelectorAll(".tab").forEach(function(tab) {
     } else if (tab.dataset.view === "customers") {
       if (typeof fetchCustomers === "function") fetchCustomers();
     } else if (tab.dataset.view === "tools") {
-      showToolsHome();
+      openToolInvoices();
     }
   });
 });
@@ -4037,6 +4146,7 @@ document.addEventListener("keydown", function(e) {
     closeStatusPicker();
     closeAllComposers();
     closeMentionDropdown();
+    if (typeof closeInvoicePreview === "function") closeInvoicePreview();
     if (typeof closeInvoiceModal === "function") closeInvoiceModal();
     if (typeof closeOrderDetailModal === "function") closeOrderDetailModal();
   }
@@ -4294,8 +4404,17 @@ function navigateTo(viewId, searchQuery, statusFilter) {
     if (typeof fetchShopifyOrders === "function") fetchShopifyOrders();
   } else if (viewId === "customers") {
     if (typeof fetchCustomers === "function") fetchCustomers();
-  } else if (viewId === "tools") {
-    showToolsHome();
+  } else if (viewId === "tools" || viewId.indexOf("tools/") === 0) {
+    var toolId = viewId.indexOf("tools/") === 0 ? viewId.split("/")[1] : "invoices";
+    // Activate the tools view
+    document.querySelectorAll(".view").forEach(function(v) { v.classList.remove("active"); });
+    document.getElementById("tools").classList.add("active");
+    // Activate the tools tab
+    document.querySelectorAll(".tab").forEach(function(t) { t.classList.remove("active"); t.setAttribute("aria-selected", "false"); });
+    var toolsTab = document.querySelector('.tab[data-view="tools"]');
+    if (toolsTab) { toolsTab.classList.add("active"); toolsTab.setAttribute("aria-selected", "true"); }
+    switchTool(toolId);
+    return;
   }
   if (viewId === "library" && searchQuery) {
     var si = document.getElementById("search-input");
@@ -5313,16 +5432,24 @@ function fetchInvoices(force) {
 }
 
 // ── Tools tab navigation ──────────────────────────────────────
-function openToolInvoices() {
-  document.getElementById("tools-home").classList.remove("active");
-  document.getElementById("tools-invoices").classList.add("active");
-  fetchInvoices();
+function switchTool(toolId) {
+  // Hide all tool subviews, show the selected one
+  document.querySelectorAll("#tools .tools-subview").forEach(function(v) { v.classList.remove("active"); });
+  var target = document.getElementById("tools-" + toolId);
+  if (target) target.classList.add("active");
+  // Update sub-nav tabs
+  document.querySelectorAll(".tools-subnav-tab").forEach(function(t) {
+    t.classList.toggle("active", t.dataset.tool === toolId);
+  });
+  // Update URL hash
+  location.hash = "tools/" + toolId;
+  // Fetch data for the tool
+  if (toolId === "invoices") fetchInvoices();
 }
 
-function showToolsHome() {
-  document.getElementById("tools-invoices").classList.remove("active");
-  document.getElementById("tools-home").classList.add("active");
-}
+// Backwards-compat aliases
+function openToolInvoices() { switchTool("invoices"); }
+function showToolsHome() { switchTool("invoices"); }
 
 // ── Invoice Number Generation ─────────────────────────────────
 function generateInvoiceNumber() {
@@ -5395,9 +5522,18 @@ function renderInvoices() {
     tr.appendChild(tdStatus);
 
     var tdActions = document.createElement("td");
+    tdActions.style.cssText = "display:flex;gap:4px;";
+    var prevBtn = document.createElement("button");
+    prevBtn.textContent = "Preview";
+    prevBtn.style.cssText = "background:none;border:1px solid #dadce0;border-radius:4px;padding:3px 8px;font-size:12px;color:#1a73e8;cursor:pointer;font-family:inherit;";
+    prevBtn.addEventListener("click", function(e) {
+      e.stopPropagation();
+      previewInvoiceFromData(inv);
+    });
+    tdActions.appendChild(prevBtn);
     var dlBtn = document.createElement("button");
     dlBtn.textContent = "PDF";
-    dlBtn.style.cssText = "background:none;border:1px solid #dadce0;border-radius:4px;padding:3px 8px;font-size:12px;color:#1a73e8;cursor:pointer;font-family:inherit;";
+    dlBtn.style.cssText = "background:none;border:1px solid #dadce0;border-radius:4px;padding:3px 8px;font-size:12px;color:#5f6368;cursor:pointer;font-family:inherit;";
     dlBtn.addEventListener("click", function(e) {
       e.stopPropagation();
       downloadInvoicePdf(inv);
@@ -5442,6 +5578,7 @@ function onInvoiceContactChange() {
     document.getElementById("inv-modal-company").value = "";
     document.getElementById("inv-modal-email").value = "";
     document.getElementById("inv-modal-percent").value = "";
+    clearInvAddressFields();
     document.getElementById("inv-modal-contact-name").focus();
     return;
   }
@@ -5452,6 +5589,7 @@ function onInvoiceContactChange() {
     document.getElementById("inv-modal-company").value = "";
     document.getElementById("inv-modal-email").value = "";
     document.getElementById("inv-modal-percent").value = "";
+    clearInvAddressFields();
     return;
   }
   var c = (typeof crmContacts !== "undefined" ? crmContacts : []).find(function(x) { return x.id === contactId; });
@@ -5482,7 +5620,7 @@ function openInvoiceCreateModal() {
   document.getElementById("inv-modal-due").value = "";
   document.getElementById("inv-modal-company").value = "";
   document.getElementById("inv-modal-email").value = "";
-  document.getElementById("inv-modal-address").value = "";
+  clearInvAddressFields();
   document.getElementById("inv-modal-po").value = "";
   document.getElementById("inv-modal-percent").value = "";
   document.getElementById("inv-modal-discount").value = "0";
@@ -5513,7 +5651,7 @@ function openInvoiceEditModal(invId) {
   document.getElementById("inv-modal-due").value = inv.dueDate || "";
   document.getElementById("inv-modal-company").value = inv.contactCompany || "";
   document.getElementById("inv-modal-email").value = inv.contactEmail || "";
-  document.getElementById("inv-modal-address").value = inv.contactAddress || "";
+  populateInvAddressFields(inv.contactAddress);
   document.getElementById("inv-modal-po").value = inv.poReference || "";
   document.getElementById("inv-modal-percent").value = inv.pricingPercent || "";
   document.getElementById("inv-modal-discount").value = inv.discount || "0";
@@ -5552,18 +5690,126 @@ function closeInvoiceModal() {
   document.getElementById("inv-modal-overlay").classList.remove("open");
 }
 
+// ── Address Helpers ────────────────────────────────────────────
+function clearInvAddressFields() {
+  ["inv-addr-postal","inv-addr-prefecture","inv-addr-city","inv-addr-line1","inv-addr-line2"].forEach(function(id) {
+    document.getElementById(id).value = "";
+  });
+}
+
+function populateInvAddressFields(addrStr) {
+  clearInvAddressFields();
+  if (!addrStr) return;
+  try {
+    var addr = JSON.parse(addrStr);
+    document.getElementById("inv-addr-postal").value = addr.postal || "";
+    document.getElementById("inv-addr-prefecture").value = addr.prefecture || "";
+    document.getElementById("inv-addr-city").value = addr.city || "";
+    document.getElementById("inv-addr-line1").value = addr.line1 || "";
+    document.getElementById("inv-addr-line2").value = addr.line2 || "";
+  } catch(e) {
+    // Legacy: plain text address — put in line1
+    document.getElementById("inv-addr-line1").value = addrStr;
+  }
+}
+
+function getInvAddressJSON() {
+  var addr = {
+    postal: document.getElementById("inv-addr-postal").value.trim(),
+    prefecture: document.getElementById("inv-addr-prefecture").value.trim(),
+    city: document.getElementById("inv-addr-city").value.trim(),
+    line1: document.getElementById("inv-addr-line1").value.trim(),
+    line2: document.getElementById("inv-addr-line2").value.trim()
+  };
+  if (!addr.postal && !addr.prefecture && !addr.city && !addr.line1 && !addr.line2) return "";
+  return JSON.stringify(addr);
+}
+
+function formatInvAddress(addrStr) {
+  if (!addrStr) return [];
+  try {
+    var addr = JSON.parse(addrStr);
+    var lines = [];
+    if (addr.postal) lines.push("〒" + addr.postal);
+    var prefCity = [addr.prefecture, addr.city].filter(Boolean).join(" ");
+    if (prefCity) lines.push(prefCity);
+    if (addr.line1) lines.push(addr.line1);
+    if (addr.line2) lines.push(addr.line2);
+    return lines;
+  } catch(e) {
+    return addrStr.split(",").map(function(s) { return s.trim(); });
+  }
+}
+
 // ── Line Items ────────────────────────────────────────────────
 function addInvoiceLineItem(desc, qty, price) {
   var tbody = document.getElementById("inv-line-items-body");
   var tr = document.createElement("tr");
 
+  // Description cell with product autocomplete
   var tdDesc = document.createElement("td");
+  tdDesc.style.position = "relative";
+  var wrapper = document.createElement("div");
+  wrapper.className = "inv-product-wrapper";
   var inDesc = document.createElement("input");
   inDesc.type = "text";
   inDesc.placeholder = "Product or service";
   inDesc.value = desc || "";
   inDesc.className = "inv-desc";
-  tdDesc.appendChild(inDesc);
+  var dropdown = document.createElement("div");
+  dropdown.className = "inv-product-dropdown";
+  var ddIndex = -1;
+
+  function showProductDropdown(query) {
+    var products = typeof shopifyProducts !== "undefined" ? shopifyProducts : [];
+    if (!query || !products.length) { dropdown.classList.remove("open"); return; }
+    var q = query.toLowerCase();
+    var matches = products.filter(function(p) {
+      return (p.title && p.title.toLowerCase().indexOf(q) !== -1) ||
+             (p.variantTitle && p.variantTitle.toLowerCase().indexOf(q) !== -1) ||
+             (p.sku && p.sku.toLowerCase().indexOf(q) !== -1);
+    }).slice(0, 8);
+    if (!matches.length) { dropdown.classList.remove("open"); return; }
+    dropdown.textContent = "";
+    ddIndex = -1;
+    matches.forEach(function(p, i) {
+      var opt = document.createElement("div");
+      opt.className = "inv-product-option";
+      opt.dataset.index = i;
+      var nameSpan = document.createElement("span");
+      nameSpan.className = "inv-prod-name";
+      nameSpan.textContent = p.title + (p.variantTitle ? " — " + p.variantTitle : "");
+      opt.appendChild(nameSpan);
+      var priceSpan = document.createElement("span");
+      priceSpan.className = "inv-prod-price";
+      priceSpan.textContent = "¥" + Number(p.price || 0).toLocaleString();
+      opt.appendChild(priceSpan);
+      opt.addEventListener("mousedown", function(e) {
+        e.preventDefault();
+        inDesc.value = p.title + (p.variantTitle ? " — " + p.variantTitle : "");
+        inPrice.value = p.price || "";
+        dropdown.classList.remove("open");
+        recalcInvoiceTotals();
+      });
+      dropdown.appendChild(opt);
+    });
+    dropdown.classList.add("open");
+  }
+
+  inDesc.addEventListener("input", function() { showProductDropdown(inDesc.value.trim()); });
+  inDesc.addEventListener("blur", function() { setTimeout(function() { dropdown.classList.remove("open"); }, 150); });
+  inDesc.addEventListener("keydown", function(e) {
+    var opts = dropdown.querySelectorAll(".inv-product-option");
+    if (!opts.length || !dropdown.classList.contains("open")) return;
+    if (e.key === "ArrowDown") { e.preventDefault(); ddIndex = Math.min(ddIndex + 1, opts.length - 1); opts.forEach(function(o,i) { o.classList.toggle("active", i === ddIndex); }); }
+    else if (e.key === "ArrowUp") { e.preventDefault(); ddIndex = Math.max(ddIndex - 1, 0); opts.forEach(function(o,i) { o.classList.toggle("active", i === ddIndex); }); }
+    else if (e.key === "Enter" && ddIndex >= 0) { e.preventDefault(); opts[ddIndex].dispatchEvent(new Event("mousedown")); }
+    else if (e.key === "Escape") { dropdown.classList.remove("open"); }
+  });
+
+  wrapper.appendChild(inDesc);
+  wrapper.appendChild(dropdown);
+  tdDesc.appendChild(wrapper);
   tr.appendChild(tdDesc);
 
   var tdQty = document.createElement("td");
@@ -5674,7 +5920,7 @@ function saveInvoice() {
     contactName: contactName,
     contactCompany: document.getElementById("inv-modal-company").value.trim(),
     contactEmail: document.getElementById("inv-modal-email").value.trim(),
-    contactAddress: document.getElementById("inv-modal-address").value.trim(),
+    contactAddress: getInvAddressJSON(),
     invoiceDate: document.getElementById("inv-modal-date").value,
     dueDate: document.getElementById("inv-modal-due").value,
     poReference: document.getElementById("inv-modal-po").value.trim(),
@@ -5732,6 +5978,306 @@ function deleteInvoiceConfirm() {
   invApiPost({ action: "delete", id: id }).catch(function() { fetchInvoices(true); });
 }
 
+// ── Invoice Preview ────────────────────────────────────────────
+function previewInvoice() {
+  var items = getInvoiceLineItems();
+  var subtotal = items.reduce(function(s, it) { return s + it.amount; }, 0);
+  var discount = parseFloat(document.getElementById("inv-modal-discount").value) || 0;
+  var shipping = parseFloat(document.getElementById("inv-modal-shipping").value) || 0;
+  var taxType = document.getElementById("inv-modal-tax-type").value;
+  var afterDiscount = subtotal - discount;
+  var tax = taxType === "10" ? Math.round(afterDiscount * 0.1) : 0;
+  var total = afterDiscount + tax + shipping;
+
+  var invNumber = document.getElementById("inv-modal-number").value || "";
+  var invDate = document.getElementById("inv-modal-date").value || "";
+  var company = document.getElementById("inv-modal-company").value || "";
+  var poRef = document.getElementById("inv-modal-po").value || "";
+  var addressJSON = getInvAddressJSON();
+  var addrLines = formatInvAddress(addressJSON);
+
+  // Format date
+  var dateDisplay = invDate;
+  if (invDate) {
+    var dp = invDate.split("-");
+    var months = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+    dateDisplay = months[parseInt(dp[1],10)-1] + " " + parseInt(dp[2],10) + ", " + dp[0];
+  }
+
+  var page = document.getElementById("inv-preview-page");
+  page.textContent = "";
+
+  // Header
+  var header = document.createElement("div");
+  header.className = "inv-prev-header";
+  var brand = document.createElement("div");
+  brand.className = "inv-prev-brand";
+  brand.textContent = "IVYCOAST";
+  header.appendChild(brand);
+  var rightDiv = document.createElement("div");
+  var numDiv = document.createElement("div");
+  numDiv.className = "inv-prev-invnum";
+  numDiv.textContent = "Invoice " + invNumber.replace("INV-", "");
+  rightDiv.appendChild(numDiv);
+  var dateDiv = document.createElement("div");
+  dateDiv.className = "inv-prev-date";
+  dateDiv.textContent = dateDisplay;
+  rightDiv.appendChild(dateDiv);
+  header.appendChild(rightDiv);
+  page.appendChild(header);
+
+  // Body grid
+  var body = document.createElement("div");
+  body.className = "inv-prev-body";
+
+  // Left: Bill-to + Payment
+  var billto = document.createElement("div");
+  billto.className = "inv-prev-billto";
+  var companyDiv = document.createElement("div");
+  companyDiv.className = "inv-prev-company";
+  companyDiv.textContent = company;
+  billto.appendChild(companyDiv);
+  if (poRef) {
+    var poDiv = document.createElement("div");
+    poDiv.className = "inv-prev-po";
+    poDiv.textContent = "for " + poRef;
+    billto.appendChild(poDiv);
+  }
+  var addrDiv = document.createElement("div");
+  addrDiv.className = "inv-prev-addr";
+  addrDiv.textContent = addrLines.join("\n");
+  billto.appendChild(addrDiv);
+
+  var paySection = document.createElement("div");
+  paySection.className = "inv-prev-payment";
+  paySection.style.marginTop = "32px";
+  var payH4 = document.createElement("h4");
+  payH4.textContent = "Payment Direction";
+  paySection.appendChild(payH4);
+  var payP = document.createElement("p");
+  payP.textContent = "Boldoath 株式会社\n三井住友銀行　名古屋\n普通　(481) 8089351\n\nPlease make a direct deposit\nto the listed Mitsui Sumitomo\naccount on the left.";
+  payP.style.whiteSpace = "pre-line";
+  paySection.appendChild(payP);
+  billto.appendChild(paySection);
+  body.appendChild(billto);
+
+  // Right: Items table + Totals
+  var rightCol = document.createElement("div");
+  var table = document.createElement("table");
+  table.className = "inv-prev-items";
+  var thead = document.createElement("thead");
+  var headTr = document.createElement("tr");
+  ["Description", "Count", "Price"].forEach(function(txt, i) {
+    var th = document.createElement("th");
+    th.textContent = txt;
+    if (i === 1) th.className = "col-count";
+    if (i === 2) th.className = "col-price";
+    headTr.appendChild(th);
+  });
+  thead.appendChild(headTr);
+  table.appendChild(thead);
+  var tbod = document.createElement("tbody");
+  items.forEach(function(it) {
+    var row = document.createElement("tr");
+    var td1 = document.createElement("td");
+    td1.textContent = it.description || "";
+    row.appendChild(td1);
+    var td2 = document.createElement("td");
+    td2.className = "col-count";
+    td2.textContent = "x" + (it.qty || 0);
+    row.appendChild(td2);
+    var td3 = document.createElement("td");
+    td3.className = "col-price";
+    td3.textContent = "¥" + Number(it.amount || 0).toLocaleString();
+    row.appendChild(td3);
+    tbod.appendChild(row);
+  });
+  table.appendChild(tbod);
+  rightCol.appendChild(table);
+
+  // Totals
+  var totals = document.createElement("div");
+  totals.className = "inv-prev-totals";
+  var taxDisplay = taxType === "included" ? "included in product" : (taxType === "10" ? "¥" + tax.toLocaleString() : "—");
+  var totalsData = [
+    { label: "Subtotal", value: "¥" + subtotal.toLocaleString() },
+    { label: "Discount", value: discount ? "¥" + discount.toLocaleString() : "—" },
+    { label: "Shipping", value: shipping ? "¥" + shipping.toLocaleString() : "—" },
+    { label: "Tax 10%", value: taxDisplay }
+  ];
+  totalsData.forEach(function(r) {
+    var row = document.createElement("div");
+    row.className = "inv-prev-totals-row";
+    var lbl = document.createElement("span");
+    lbl.className = "label";
+    lbl.textContent = r.label;
+    row.appendChild(lbl);
+    var val = document.createElement("span");
+    val.className = "value";
+    val.textContent = r.value;
+    row.appendChild(val);
+    totals.appendChild(row);
+  });
+  var finalRow = document.createElement("div");
+  finalRow.className = "inv-prev-totals-row inv-prev-total-final";
+  var finalLbl = document.createElement("span");
+  finalLbl.className = "label";
+  finalLbl.textContent = "Total";
+  finalRow.appendChild(finalLbl);
+  var finalVal = document.createElement("span");
+  finalVal.className = "value";
+  finalVal.textContent = "¥" + total.toLocaleString();
+  finalRow.appendChild(finalVal);
+  totals.appendChild(finalRow);
+  rightCol.appendChild(totals);
+  body.appendChild(rightCol);
+  page.appendChild(body);
+
+  // Footer
+  var footer = document.createElement("div");
+  footer.className = "inv-prev-footer";
+  var f1 = document.createElement("span");
+  f1.textContent = "ivycoast.co";
+  footer.appendChild(f1);
+  var f2 = document.createElement("span");
+  f2.textContent = "yoko@ivycoast.co";
+  footer.appendChild(f2);
+  page.appendChild(footer);
+
+  document.getElementById("inv-preview-overlay").classList.add("open");
+}
+
+function previewInvoiceFromData(inv) {
+  var items = [];
+  try { items = JSON.parse(inv.items); } catch(e) { items = []; }
+  var subtotal = parseFloat(inv.subtotal) || 0;
+  var discount = parseFloat(inv.discount) || 0;
+  var shipping = parseFloat(inv.shipping) || 0;
+  var tax = parseFloat(inv.tax) || 0;
+  var total = parseFloat(inv.total) || 0;
+  var taxType = inv.taxType || "included";
+  var addrLines = formatInvAddress(inv.contactAddress || "");
+
+  var invDate = inv.invoiceDate || "";
+  var dateDisplay = invDate;
+  if (invDate) {
+    var dp = invDate.split("-");
+    var months = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+    dateDisplay = months[parseInt(dp[1],10)-1] + " " + parseInt(dp[2],10) + ", " + dp[0];
+  }
+
+  var page = document.getElementById("inv-preview-page");
+  page.textContent = "";
+
+  var header = document.createElement("div");
+  header.className = "inv-prev-header";
+  var brand = document.createElement("div");
+  brand.className = "inv-prev-brand";
+  brand.textContent = "IVYCOAST";
+  header.appendChild(brand);
+  var rightDiv = document.createElement("div");
+  var numDiv = document.createElement("div");
+  numDiv.className = "inv-prev-invnum";
+  numDiv.textContent = "Invoice " + (inv.invoiceNumber || "").replace("INV-", "");
+  rightDiv.appendChild(numDiv);
+  var dateDiv = document.createElement("div");
+  dateDiv.className = "inv-prev-date";
+  dateDiv.textContent = dateDisplay;
+  rightDiv.appendChild(dateDiv);
+  header.appendChild(rightDiv);
+  page.appendChild(header);
+
+  var body = document.createElement("div");
+  body.className = "inv-prev-body";
+  var billto = document.createElement("div");
+  billto.className = "inv-prev-billto";
+  var companyDiv = document.createElement("div");
+  companyDiv.className = "inv-prev-company";
+  companyDiv.textContent = inv.contactCompany || "";
+  billto.appendChild(companyDiv);
+  if (inv.poReference) {
+    var poDiv = document.createElement("div");
+    poDiv.className = "inv-prev-po";
+    poDiv.textContent = "for " + inv.poReference;
+    billto.appendChild(poDiv);
+  }
+  var addrDiv = document.createElement("div");
+  addrDiv.className = "inv-prev-addr";
+  addrDiv.textContent = addrLines.join("\n");
+  billto.appendChild(addrDiv);
+  var paySection = document.createElement("div");
+  paySection.className = "inv-prev-payment";
+  paySection.style.marginTop = "32px";
+  var payH4 = document.createElement("h4");
+  payH4.textContent = "Payment Direction";
+  paySection.appendChild(payH4);
+  var payP = document.createElement("p");
+  payP.textContent = "Boldoath \u682A\u5F0F\u4F1A\u793E\n\u4E09\u4E95\u4F4F\u53CB\u9280\u884C\u3000\u540D\u53E4\u5C4B\n\u666E\u901A\u3000(481) 8089351\n\nPlease make a direct deposit\nto the listed Mitsui Sumitomo\naccount on the left.";
+  payP.style.whiteSpace = "pre-line";
+  paySection.appendChild(payP);
+  billto.appendChild(paySection);
+  body.appendChild(billto);
+
+  var rightCol = document.createElement("div");
+  var table = document.createElement("table");
+  table.className = "inv-prev-items";
+  var thead = document.createElement("thead");
+  var headTr = document.createElement("tr");
+  ["Description", "Count", "Price"].forEach(function(txt, i) {
+    var th = document.createElement("th");
+    th.textContent = txt;
+    if (i === 1) th.className = "col-count";
+    if (i === 2) th.className = "col-price";
+    headTr.appendChild(th);
+  });
+  thead.appendChild(headTr);
+  table.appendChild(thead);
+  var tbod = document.createElement("tbody");
+  items.forEach(function(it) {
+    var row = document.createElement("tr");
+    var td1 = document.createElement("td"); td1.textContent = it.description || ""; row.appendChild(td1);
+    var td2 = document.createElement("td"); td2.className = "col-count"; td2.textContent = "x" + (it.qty || 0); row.appendChild(td2);
+    var td3 = document.createElement("td"); td3.className = "col-price"; td3.textContent = "\u00a5" + Number(it.amount || 0).toLocaleString(); row.appendChild(td3);
+    tbod.appendChild(row);
+  });
+  table.appendChild(tbod);
+  rightCol.appendChild(table);
+
+  var totals = document.createElement("div");
+  totals.className = "inv-prev-totals";
+  var taxDisplay = taxType === "included" ? "included in product" : (taxType === "10" ? "\u00a5" + tax.toLocaleString() : "\u2014");
+  [
+    { label: "Subtotal", value: "\u00a5" + subtotal.toLocaleString() },
+    { label: "Discount", value: discount ? "\u00a5" + discount.toLocaleString() : "\u2014" },
+    { label: "Shipping", value: shipping ? "\u00a5" + shipping.toLocaleString() : "\u2014" },
+    { label: "Tax 10%", value: taxDisplay }
+  ].forEach(function(r) {
+    var row = document.createElement("div"); row.className = "inv-prev-totals-row";
+    var lbl = document.createElement("span"); lbl.className = "label"; lbl.textContent = r.label; row.appendChild(lbl);
+    var val = document.createElement("span"); val.className = "value"; val.textContent = r.value; row.appendChild(val);
+    totals.appendChild(row);
+  });
+  var finalRow = document.createElement("div"); finalRow.className = "inv-prev-totals-row inv-prev-total-final";
+  var finalLbl = document.createElement("span"); finalLbl.className = "label"; finalLbl.textContent = "Total"; finalRow.appendChild(finalLbl);
+  var finalVal = document.createElement("span"); finalVal.className = "value"; finalVal.textContent = "\u00a5" + total.toLocaleString(); finalRow.appendChild(finalVal);
+  totals.appendChild(finalRow);
+  rightCol.appendChild(totals);
+  body.appendChild(rightCol);
+  page.appendChild(body);
+
+  var footer = document.createElement("div");
+  footer.className = "inv-prev-footer";
+  var f1 = document.createElement("span"); f1.textContent = "ivycoast.co"; footer.appendChild(f1);
+  var f2 = document.createElement("span"); f2.textContent = "yoko@ivycoast.co"; footer.appendChild(f2);
+  page.appendChild(footer);
+
+  document.getElementById("inv-preview-overlay").classList.add("open");
+}
+
+function closeInvoicePreview() {
+  document.getElementById("inv-preview-overlay").classList.remove("open");
+}
+
 // ── PDF Generation (LongForme template style) ─────────────────
 function downloadInvoicePdf(invData) {
   var inv = invData;
@@ -5749,7 +6295,7 @@ function downloadInvoicePdf(invData) {
       invoiceNumber: document.getElementById("inv-modal-number").value,
       invoiceDate: document.getElementById("inv-modal-date").value,
       contactCompany: document.getElementById("inv-modal-company").value,
-      contactAddress: document.getElementById("inv-modal-address").value,
+      contactAddress: getInvAddressJSON(),
       contactEmail: document.getElementById("inv-modal-email").value,
       poReference: document.getElementById("inv-modal-po").value,
       items: JSON.stringify(items),
@@ -5822,10 +6368,9 @@ function downloadInvoicePdf(invData) {
     doc.setFont("helvetica", "normal");
     doc.setFontSize(10);
     doc.setTextColor.apply(doc, textMuted);
-    var addrLines = inv.contactAddress.split(",").map(function(s) { return s.trim(); });
+    var addrLines = formatInvAddress(inv.contactAddress);
     addrLines.forEach(function(line) {
-      doc.text(line, marginL, y);
-      y += 5;
+      if (line) { doc.text(line, marginL, y); y += 5; }
     });
   }
 
@@ -6978,7 +7523,13 @@ function showApp(user) {
 
 function restoreTabFromHash() {
   var hash = location.hash.replace("#", "");
-  if (hash && document.getElementById(hash)) {
+  if (!hash) return;
+  // Handle tools/invoices style sub-routes
+  if (hash.indexOf("tools/") === 0 || hash === "tools") {
+    navigateTo(hash);
+    return;
+  }
+  if (document.getElementById(hash)) {
     navigateTo(hash);
   }
 }
