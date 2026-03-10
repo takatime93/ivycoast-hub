@@ -4072,19 +4072,10 @@ function init() {
   if (defaultTh) defaultTh.querySelector(".sort-arrow").textContent = " \u25B2";
 }
 
-// Tab switching — update hash on click
+// Tab switching — route all clicks through navigateTo() so dots clear and visits record
 document.querySelectorAll(".tab").forEach(function(tab) {
   tab.addEventListener("click", function() {
-    var viewId = tab.dataset.view;
-    location.hash = viewId === "home" ? "" : viewId;
-    document.querySelectorAll(".tab").forEach(function(t) {
-      t.classList.remove("active");
-      t.setAttribute("aria-selected", "false");
-    });
-    document.querySelectorAll(".view").forEach(function(v) { v.classList.remove("active"); });
-    tab.classList.add("active");
-    tab.setAttribute("aria-selected", "true");
-    document.getElementById(viewId).classList.add("active");
+    navigateTo(tab.dataset.view);
   });
 });
 
@@ -4573,6 +4564,7 @@ function setTabLastVisited(viewId) {
 // Notification bell
 function fetchActivityLog() {
   if (!SCRIPT_URL) return;
+  if (!getCurrentUserEmail()) return;
   fetch(SCRIPT_URL + "?action=list&sheet=ActivityLog")
     .then(function(r) { return r.json(); })
     .then(function(data) {
@@ -5416,23 +5408,7 @@ function stopBoardRefresh() {
   if (boardRefreshTimer) { clearInterval(boardRefreshTimer); boardRefreshTimer = null; }
 }
 
-// Hook into tab switching (Board + CRM + Products + Orders coordination)
-document.querySelectorAll(".tab").forEach(function(tab) {
-  tab.addEventListener("click", function() {
-    if (tab.dataset.view === "board") {
-      checkBoardSetup();
-      fetchBoardTasks();
-    } else if (tab.dataset.view === "crm") {
-      if (typeof fetchCrmContacts === "function") fetchCrmContacts();
-    } else if (tab.dataset.view === "products") {
-      if (typeof fetchShopifyProducts === "function") fetchShopifyProducts();
-    } else if (tab.dataset.view === "orders") {
-      if (typeof fetchShopifyOrders === "function") fetchShopifyOrders();
-    } else if (tab.dataset.view === "customers") {
-      if (typeof fetchCustomers === "function") fetchCustomers();
-    }
-  });
-});
+// (Tab click handlers unified into single navigateTo() dispatcher above)
 
 // Mobile detection via MediaQueryList (handles orientation changes)
 var mobileQuery = window.matchMedia("(max-width: 600px)");
@@ -6390,7 +6366,7 @@ function uploadCrmFile(base64, mimeType, fileName, callback) {
   fetch(SCRIPT_URL, {
     method: "POST",
     headers: { "Content-Type": "text/plain" },
-    body: JSON.stringify({ action: "uploadFile", fileName: fileName, mimeType: mimeType, base64Data: base64 })
+    body: JSON.stringify({ action: "uploadFile", fileName: fileName, mimeType: mimeType, base64Data: base64, userId: getCurrentUserEmail(), userName: getCurrentUserName() })
   })
     .then(function(r) { return r.json(); })
     .then(function(data) {
@@ -7254,6 +7230,11 @@ if (SCRIPT_URL) {
     .then(function(r) { return r.json(); })
     .then(function(data) {
       crmContacts = data.contacts || [];
+      crmContacts.forEach(function(c) {
+        if (c.profileImageUrl) c.profileImageUrl = normalizeDriveImageUrl(c.profileImageUrl);
+        if (c.businessCardFrontUrl) c.businessCardFrontUrl = normalizeDriveImageUrl(c.businessCardFrontUrl);
+        if (c.businessCardBackUrl) c.businessCardBackUrl = normalizeDriveImageUrl(c.businessCardBackUrl);
+      });
       renderHomeCrmStats();
     })
     .catch(function() { /* silently fail on startup */ });
@@ -9097,7 +9078,7 @@ function fetchReceipts(force) {
   var now = Date.now();
   if (!force && receipts.length && (now - lastFetched.receipts < 120000)) { renderDocuments(); return; }
   setRecSyncStatus("Loading\u2026");
-  fetch(SCRIPT_URL + "?sheet=Receipts")
+  fetch(SCRIPT_URL + "?action=list&sheet=Receipts")
     .then(function(r) { return r.json(); })
     .then(function(data) {
       receipts = data.receipts || [];
@@ -11005,6 +10986,7 @@ var ordersSubFilter = "all";
 var ordersRefreshTimer = null;
 
 function ordersApiPost(body) {
+  body.sheet = "Orders";
   body.userId = getCurrentUserEmail();
   body.userName = getCurrentUserName();
   return fetch(SCRIPT_URL, {
