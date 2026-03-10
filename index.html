@@ -7043,7 +7043,10 @@ function saveCrmContact() {
   };
   if (!contact.name) { alert("Contact name is required."); return; }
 
-  closeCrmModal();
+  // Hide edit form while saving (keep overlay open)
+  document.getElementById("crm-edit-header").style.display = "none";
+  document.getElementById("crm-edit-body").style.display = "none";
+  document.getElementById("crm-edit-actions").style.display = "none";
   setCrmSyncStatus("Saving\u2026");
 
   // Upload pending files sequentially, then save contact
@@ -7103,6 +7106,7 @@ function saveCrmContact() {
         });
         renderCrmActiveView();
         renderHomeCrmStats();
+        openCrmDetailView(id);
         crmApiPost({ action: "update", contact: contact })
           .then(function() { setCrmSyncStatus("Saved"); fetchCrmContacts(); })
           .catch(function() { setCrmSyncStatus("Save failed"); fetchCrmContacts(); });
@@ -7112,14 +7116,17 @@ function saveCrmContact() {
         crmContacts.push(contact);
         renderCrmActiveView();
         renderHomeCrmStats();
+        openCrmDetailView(tempId);
         crmApiPost({ action: "create", contact: contact })
           .then(function(data) {
             setCrmSyncStatus("Contact created");
             if (data.contact) {
+              var newId = data.contact.id;
               crmContacts = crmContacts.map(function(c) {
                 return c.id === tempId ? data.contact : c;
               });
               renderCrmActiveView();
+              openCrmDetailView(newId);
             }
           })
           .catch(function() { setCrmSyncStatus("Create failed"); fetchCrmContacts(); });
