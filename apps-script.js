@@ -115,12 +115,49 @@ function deleteRow(sheetName, id) {
   return true;
 }
 
+// --- Activity Logging & Presence Helpers ---
+
+var SHEET_TO_ITEM_TYPE = {
+  Tasks: "task", Contacts: "contact", Products: "product",
+  Orders: "order", Customers: "customer", Invoices: "invoice", Receipts: "receipt"
+};
+
+function ensureSheet(name, headers) {
+  var ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  var sheet = ss.getSheetByName(name);
+  if (!sheet) {
+    sheet = ss.insertSheet(name);
+    sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
+  }
+  return sheet;
+}
+
+function ensureActivityAndPresenceSheets() {
+  ensureSheet("ActivityLog", ["id","action","itemType","itemId","itemName","detail","userId","userName","timestamp"]);
+  ensureSheet("Presence", ["email","lastActive","currentTab","photoUrl"]);
+}
+
+function logActivity(action, itemType, itemId, itemName, detail, userId, userName) {
+  var sheet = getSheet("ActivityLog");
+  if (!sheet) return;
+  var id = "log-" + Date.now() + "-" + Math.floor(Math.random() * 1000);
+  var ts = new Date().toISOString();
+  sheet.appendRow([id, action, itemType || "", itemId || "", itemName || "", detail || "", userId || "", userName || "", ts]);
+}
+
 // --- Web App Endpoints ---
 
 function doGet(e) {
+  ensureActivityAndPresenceSheets();
   var action = (e.parameter && e.parameter.action) || "list";
   var sheetName = (e.parameter && e.parameter.sheet) || "Tasks";
   if (action === "list") {
+    // ActivityLog: return only last 100 entries
+    if (sheetName === "ActivityLog") {
+      var all = getAllRows("ActivityLog");
+      var last100 = all.slice(-100).reverse();
+      return jsonResponse({ activities: last100 });
+    }
     var keyMap = { "Contacts": "contacts", "Products": "products", "Orders": "orders", "Customers": "customers", "Invoices": "invoices", "Receipts": "receipts" };
     var key = keyMap[sheetName] || "tasks";
     var result = {};
@@ -131,6 +168,8 @@ function doGet(e) {
 }
 
 function doPost(e) {
+  ensureActivityAndPresenceSheets();
+
   // Detect Shopify webhook (has X-Shopify-Topic header or order_number field without action)
   var body;
   try { body = JSON.parse(e.postData.contents); }
@@ -146,9 +185,13 @@ function doPost(e) {
   var itemKeyMap = { "Contacts": "contact", "Products": "product", "Orders": "order", "Customers": "customer", "Invoices": "invoice", "Receipts": "receipt" };
   var itemKey = itemKeyMap[sheetName] || "task";
   var item = body[itemKey] || body.task || body.contact || body.invoice || body.receipt || {};
+  var userId = body.userId || "";
+  var userName = body.userName || "";
+  var iType = SHEET_TO_ITEM_TYPE[sheetName] || "task";
 
   if (action === "create") {
     var created = createRow(sheetName, item);
+    logActivity("created", iType, created.id, created.name || created.invoiceNumber || created.receiptNumber || created.title || "", "", userId, userName);
     var res = {};
     res[itemKey] = created;
     return jsonResponse(res);
@@ -156,36 +199,71 @@ function doPost(e) {
   if (action === "update") {
     var updated = updateRow(sheetName, item);
     if (!updated) return jsonResponse({ error: itemKey + " not found" });
+    logActivity("updated", iType, updated.id, updated.name || updated.invoiceNumber || updated.receiptNumber || updated.title || "", "", userId, userName);
     var res2 = {};
     res2[itemKey] = updated;
     return jsonResponse(res2);
   }
   if (action === "delete") {
     var ok = deleteRow(sheetName, body.id);
+    logActivity("deleted", iType, body.id, body.itemName || "", "", userId, userName);
     return jsonResponse({ success: ok });
   }
 
   // Shopify custom actions
   if (action === "syncProducts") {
     var count = syncShopifyProducts();
+    logActivity("synced", "product", "", "", count + " products synced", "system", "Shopify");
     return jsonResponse({ success: true, synced: count });
   }
   if (action === "syncOrders") {
     var count2 = syncShopifyOrders();
+    logActivity("synced", "order", "", "", count2 + " orders synced", "system", "Shopify");
     return jsonResponse({ success: true, synced: count2 });
   }
   if (action === "updateInventory") {
     var result3 = updateShopifyInventory(body.inventoryItemId, body.locationId, body.quantity);
+    if (result3.success) {
+      logActivity("updated", "product", body.inventoryItemId || "", "", "qty=" + body.quantity, userId, userName);
+    }
     return jsonResponse(result3);
   }
   if (action === "syncCustomers") {
     var count3 = syncCustomers();
+    logActivity("synced", "customer", "", "", count3 + " customers synced", "system", "Shopify");
     return jsonResponse({ success: true, synced: count3 });
   }
 
   if (action === "uploadFile") {
     var result4 = uploadFileToDrive(body.fileName, body.mimeType, body.base64Data);
+    if (result4.success) {
+      logActivity("uploaded", "file", result4.fileId || "", body.fileName || "", "", userId, userName);
+    }
     return jsonResponse(result4);
+  }
+
+  // Heartbeat / Presence
+  if (action === "heartbeat") {
+    var presenceSheet = getSheet("Presence");
+    if (presenceSheet) {
+      var email = body.email || "";
+      var data = presenceSheet.getDataRange().getValues();
+      var found = false;
+      for (var pi = 1; pi < data.length; pi++) {
+        if (String(data[pi][0]) === email) {
+          presenceSheet.getRange(pi + 1, 2).setValue(new Date().toISOString());
+          presenceSheet.getRange(pi + 1, 3).setValue(body.currentTab || "");
+          if (body.photoUrl) presenceSheet.getRange(pi + 1, 4).setValue(body.photoUrl);
+          found = true;
+          break;
+        }
+      }
+      if (!found) {
+        presenceSheet.appendRow([email, new Date().toISOString(), body.currentTab || "", body.photoUrl || ""]);
+      }
+    }
+    var presenceData = getAllRows("Presence");
+    return jsonResponse({ success: true, presence: presenceData });
   }
 
   return jsonResponse({ error: "Unknown action" });
@@ -322,6 +400,7 @@ function handleShopifyWebhook(order) {
   };
 
   var created = createRow("Invoices", invoice);
+  logActivity("created", "invoice", created.id, created.invoiceNumber || "", "Auto-created from Shopify order #" + orderNumber, "system", "Shopify");
   return jsonResponse({ success: true, invoice: created });
 }
 
@@ -743,8 +822,11 @@ function updateShopifyInventory(inventoryItemId, locationId, quantity) {
 
 function scheduledSync() {
   try {
-    syncShopifyProducts();
-    syncShopifyOrders();
+    ensureActivityAndPresenceSheets();
+    var pCount = syncShopifyProducts();
+    var oCount = syncShopifyOrders();
+    logActivity("synced", "product", "", "", pCount + " products synced (scheduled)", "system", "Scheduler");
+    logActivity("synced", "order", "", "", oCount + " orders synced (scheduled)", "system", "Scheduler");
   } catch (e) {
     console.error("Scheduled sync failed:", e);
   }
