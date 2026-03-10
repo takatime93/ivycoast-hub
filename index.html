@@ -4552,16 +4552,16 @@ function normalizeDriveImageUrl(url) {
   if (!url) return url;
   var fileId;
   var m;
-  // drive.google.com/uc?id=X or uc?export=view&id=X
+  // drive.google.com/uc?id=X or uc?export=view&id=X — already good format
   m = url.match(/drive\.google\.com\/uc\?(?:[^&]*&)*id=([a-zA-Z0-9_-]+)/);
   if (m) fileId = m[1];
   // drive.google.com/file/d/X/view
   if (!fileId) { m = url.match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/); if (m) fileId = m[1]; }
   // lh3.googleusercontent.com/d/X
   if (!fileId) { m = url.match(/lh3\.googleusercontent\.com\/d\/([a-zA-Z0-9_-]+)/); if (m) fileId = m[1]; }
-  // drive.google.com/thumbnail?id=X (already correct format)
-  if (!fileId) { m = url.match(/drive\.google\.com\/thumbnail\?id=([a-zA-Z0-9_-]+)/); if (m) return url; }
-  if (fileId) return "https://drive.google.com/thumbnail?id=" + fileId + "&sz=w800";
+  // drive.google.com/thumbnail?id=X
+  if (!fileId) { m = url.match(/drive\.google\.com\/thumbnail\?id=([a-zA-Z0-9_-]+)/); if (m) fileId = m[1]; }
+  if (fileId) return "https://drive.google.com/uc?export=view&id=" + fileId;
   return url;
 }
 
@@ -6408,8 +6408,14 @@ function uploadCrmFile(base64, mimeType, fileName, callback) {
     body: JSON.stringify({ action: "uploadFile", fileName: fileName, mimeType: mimeType, base64Data: base64, userId: getCurrentUserEmail(), userName: getCurrentUserName() })
   })
     .then(function(r) {
-      if (!r.ok) { console.error("Upload HTTP error:", r.status); return { success: false, error: "HTTP " + r.status }; }
-      return r.json();
+      if (!r.ok) {
+        console.error("Upload HTTP error:", r.status);
+        return r.text().then(function(t) { console.error("Upload error body:", t.substring(0, 500)); return { success: false, error: "HTTP " + r.status }; });
+      }
+      return r.text().then(function(t) {
+        try { return JSON.parse(t); }
+        catch(e) { console.error("Upload response not JSON:", t.substring(0, 500)); return null; }
+      });
     })
     .then(function(data) {
       if (!data) { callback(null); return; }

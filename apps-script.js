@@ -138,11 +138,13 @@ function ensureActivityAndPresenceSheets() {
 }
 
 function logActivity(action, itemType, itemId, itemName, detail, userId, userName) {
-  var sheet = getSheet("ActivityLog");
-  if (!sheet) return;
-  var id = "log-" + Date.now() + "-" + Math.floor(Math.random() * 1000);
-  var ts = new Date().toISOString();
-  sheet.appendRow([id, action, itemType || "", itemId || "", itemName || "", detail || "", userId || "", userName || "", ts]);
+  try {
+    var sheet = getSheet("ActivityLog");
+    if (!sheet) return;
+    var id = "log-" + Date.now() + "-" + Math.floor(Math.random() * 1000);
+    var ts = new Date().toISOString();
+    sheet.appendRow([id, action, itemType || "", itemId || "", itemName || "", detail || "", userId || "", userName || "", ts]);
+  } catch(ex) { /* non-fatal: never crash caller */ }
 }
 
 // --- Web App Endpoints ---
@@ -295,7 +297,7 @@ function uploadFileToDrive(fileName, mimeType, base64Data) {
     file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
 
     var fileId = file.getId();
-    var fileUrl = "https://drive.google.com/thumbnail?id=" + fileId + "&sz=w800";
+    var fileUrl = "https://drive.google.com/uc?export=view&id=" + fileId;
     return { success: true, fileUrl: fileUrl, fileId: fileId };
   } catch (e) {
     return { success: false, error: e.message };
