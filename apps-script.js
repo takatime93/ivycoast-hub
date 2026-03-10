@@ -156,6 +156,20 @@ function doGet(e) {
   try { ensureActivityAndPresenceSheets(); } catch (ex) { /* non-fatal */ }
   var action = (e.parameter && e.parameter.action) || "list";
   var sheetName = (e.parameter && e.parameter.sheet) || "Tasks";
+  // Batch endpoint: return all data in one request
+  if (action === "batchList") {
+    var actAll = getAllRows("ActivityLog");
+    return jsonResponse({
+      tasks: getAllRows("Tasks"),
+      contacts: getAllRows("Contacts"),
+      products: getAllRows("Products"),
+      orders: getAllRows("Orders"),
+      customers: getAllRows("Customers"),
+      invoices: getAllRows("Invoices"),
+      receipts: getAllRows("Receipts"),
+      activities: actAll.slice(-100).reverse()
+    });
+  }
   if (action === "list") {
     // ActivityLog: return only last 100 entries
     if (sheetName === "ActivityLog") {
