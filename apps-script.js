@@ -17,7 +17,9 @@
 // 6. Customers headers: id | shopifyCustomerId | name | email | phone | totalOrders | totalSpent | firstOrderDate | lastOrderDate | tags | notes | createdAt | updatedAt
 // 7. Invoices headers:  id | invoiceNumber | contactId | contactName | contactCompany | contactEmail | contactAddress | invoiceDate | dueDate | poReference | items | subtotal | discount | shipping | taxType | tax | total | pricingType | pricingPercent | pricingParties | status | workspace | notes | orderId | orderNumber | createdAt | updatedAt
 // 8. Receipts headers:  id | receiptNumber | invoiceId | invoiceNumber | contactName | contactCompany | contactEmail | contactAddress | receiptDate | items | subtotal | discount | shipping | taxType | tax | total | pricingType | pricingPercent | pricingParties | workspace | notes | orderId | orderNumber | createdAt | updatedAt
-// 9. Open Extensions → Apps Script, paste this code, deploy as web app
+// 9. PartnerStock headers: id | contactId | contactName | productName | sku | quantity | unitPrice | pricingType | status | dateDelivered | dateSold | dateReturned | notes | createdAt | updatedAt
+// 10. ContactDocuments headers: id | contactId | contactName | docType | docName | sentDate | receivedDate | fileUrl | notes | createdAt | updatedAt
+// 11. Open Extensions → Apps Script, paste this code, deploy as web app
 // 7. Set "Execute as: Me" and "Who has access: Anyone"
 // 8. Copy the deployed URL into the dashboard (Board tab config)
 //
@@ -84,7 +86,7 @@ function nextId(sheet, prefix) {
 
 function createRow(sheetName, item) {
   var sheet = getSheet(sheetName);
-  var prefixMap = { "Contacts": "crm-", "Products": "prod-", "Orders": "ord-", "Customers": "cust-", "Invoices": "inv-", "Receipts": "rec-" };
+  var prefixMap = { "Contacts": "crm-", "Products": "prod-", "Orders": "ord-", "Customers": "cust-", "Invoices": "inv-", "Receipts": "rec-", "PartnerStock": "stk-", "ContactDocuments": "cdoc-" };
   var prefix = prefixMap[sheetName] || "ivy-";
   var now = new Date().toISOString();
   var id = nextId(sheet, prefix);
@@ -128,7 +130,8 @@ function deleteRow(sheetName, id) {
 
 var SHEET_TO_ITEM_TYPE = {
   Tasks: "task", Contacts: "contact", Products: "product",
-  Orders: "order", Customers: "customer", Invoices: "invoice", Receipts: "receipt"
+  Orders: "order", Customers: "customer", Invoices: "invoice", Receipts: "receipt",
+  PartnerStock: "stock", ContactDocuments: "document"
 };
 
 function ensureSheet(name, headers) {
@@ -181,6 +184,8 @@ function doGet(e) {
       customers: getAllRows("Customers"),
       invoices: getAllRows("Invoices"),
       receipts: getAllRows("Receipts"),
+      partnerStock: getAllRows("PartnerStock"),
+      contactDocuments: getAllRows("ContactDocuments"),
       activities: actAll.slice(-100).reverse()
     });
     try { cache.put("batchList", payload, 60); } catch(ex) { /* payload too large for cache */ }
@@ -193,7 +198,7 @@ function doGet(e) {
       var last100 = all.slice(-100).reverse();
       return jsonResponse({ activities: last100 });
     }
-    var keyMap = { "Contacts": "contacts", "Products": "products", "Orders": "orders", "Customers": "customers", "Invoices": "invoices", "Receipts": "receipts" };
+    var keyMap = { "Contacts": "contacts", "Products": "products", "Orders": "orders", "Customers": "customers", "Invoices": "invoices", "Receipts": "receipts", "PartnerStock": "partnerStock", "ContactDocuments": "contactDocuments" };
     var key = keyMap[sheetName] || "tasks";
     var result = {};
     result[key] = getAllRows(sheetName);
@@ -217,7 +222,7 @@ function doPost(e) {
 
   var action = body.action;
   var sheetName = body.sheet || "Tasks";
-  var itemKeyMap = { "Contacts": "contact", "Products": "product", "Orders": "order", "Customers": "customer", "Invoices": "invoice", "Receipts": "receipt" };
+  var itemKeyMap = { "Contacts": "contact", "Products": "product", "Orders": "order", "Customers": "customer", "Invoices": "invoice", "Receipts": "receipt", "PartnerStock": "stock", "ContactDocuments": "document" };
   var itemKey = itemKeyMap[sheetName] || "task";
   var item = body[itemKey] || body.task || body.contact || body.invoice || body.receipt || {};
   var userId = body.userId || "";
@@ -280,6 +285,25 @@ function doPost(e) {
       logActivity("uploaded", "file", result4.fileId || "", body.fileName || "", "", userId, userName);
     }
     return jsonResponse(result4);
+  }
+
+  // Fetch OG metadata from a URL
+  if (action === "fetchOgImage") {
+    var targetUrl = body.url;
+    if (!targetUrl) return jsonResponse({ success: false, error: "Missing url" });
+    try {
+      var ogResp = UrlFetchApp.fetch(targetUrl, { muteHttpExceptions: true, followRedirects: true });
+      var html = ogResp.getContentText();
+      var ogImage = (html.match(/<meta[^>]+property=["']og:image["'][^>]+content=["']([^"']+)["']/i) || [])[1] || "";
+      var ogTitle = (html.match(/<meta[^>]+property=["']og:title["'][^>]+content=["']([^"']+)["']/i) || [])[1] || "";
+      var ogDescription = (html.match(/<meta[^>]+property=["']og:description["'][^>]+content=["']([^"']+)["']/i) || [])[1] || "";
+      if (!ogImage) ogImage = (html.match(/<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:image["']/i) || [])[1] || "";
+      if (!ogTitle) ogTitle = (html.match(/<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:title["']/i) || [])[1] || "";
+      if (!ogTitle) ogTitle = (html.match(/<title>([^<]+)<\/title>/i) || [])[1] || "";
+      return jsonResponse({ success: true, ogImage: ogImage, ogTitle: ogTitle, ogDescription: ogDescription });
+    } catch(ogErr) {
+      return jsonResponse({ success: false, error: ogErr.message });
+    }
   }
 
   // Heartbeat / Presence
@@ -870,4 +894,85 @@ function scheduledSync() {
   } catch (e) {
     console.error("Scheduled sync failed:", e);
   }
+}
+
+// ── One-time cleanup: remove duplicate auto-created invoices ────
+// Run manually: deduplicateInvoices()
+// Dedupes by extracting order# from notes/poReference, or by contactName+total+date
+function deduplicateInvoices() {
+  var sheet = getSheet("Invoices");
+  var lastRow = sheet.getLastRow();
+  var lastCol = sheet.getLastColumn();
+  if (lastRow < 2) { Logger.log("No data rows"); return; }
+
+  var all = sheet.getRange(1, 1, lastRow, lastCol).getValues();
+  var headers = all[0];
+  Logger.log("Headers: " + JSON.stringify(headers));
+  Logger.log("Total rows (excl header): " + (all.length - 1));
+
+  // Find columns by name (case-insensitive)
+  var cols = {};
+  for (var h = 0; h < headers.length; h++) {
+    cols[String(headers[h]).trim().toLowerCase()] = h;
+  }
+  var notesCol = cols["notes"] !== undefined ? cols["notes"] : -1;
+  var poRefCol = cols["poreference"] !== undefined ? cols["poreference"] : -1;
+  var createdAtCol = cols["createdat"] !== undefined ? cols["createdat"] : -1;
+  var nameCol = cols["contactname"] !== undefined ? cols["contactname"] : -1;
+  var totalCol = cols["total"] !== undefined ? cols["total"] : -1;
+  var dateCol = cols["invoicedate"] !== undefined ? cols["invoicedate"] : -1;
+  Logger.log("notes=" + notesCol + " poRef=" + poRefCol + " createdAt=" + createdAtCol + " name=" + nameCol + " total=" + totalCol + " date=" + dateCol);
+
+  function getDedupeKey(row) {
+    if (poRefCol !== -1) {
+      var po = String(row[poRefCol]).trim();
+      var poMatch = po.match(/[Oo]rder\s*#?\s*(\d+)/);
+      if (poMatch) return "order-" + poMatch[1];
+    }
+    if (notesCol !== -1) {
+      var notes = String(row[notesCol]).trim();
+      var noteMatch = notes.match(/[Oo]rder\s*#?\s*(\d+)/);
+      if (noteMatch) return "order-" + noteMatch[1];
+    }
+    var n = nameCol !== -1 ? String(row[nameCol]).trim() : "";
+    var t = totalCol !== -1 ? String(row[totalCol]).trim() : "";
+    var d = dateCol !== -1 ? String(row[dateCol]).trim() : "";
+    if (n && t) return "composite-" + n + "|" + t + "|" + d;
+    return null;
+  }
+
+  var manualRows = [];
+  var groups = {};
+  for (var i = 1; i < all.length; i++) {
+    var key = getDedupeKey(all[i]);
+    if (!key) { manualRows.push(all[i]); continue; }
+    if (!groups[key]) {
+      groups[key] = { best: i, bestCreated: createdAtCol !== -1 ? String(all[i][createdAtCol]) : String(i) };
+    } else {
+      var existing = groups[key].bestCreated;
+      var current = createdAtCol !== -1 ? String(all[i][createdAtCol]) : String(i);
+      if (current < existing) {
+        groups[key] = { best: i, bestCreated: current };
+      }
+    }
+  }
+
+  var keepRows = [];
+  manualRows.forEach(function(r) { keepRows.push(r); });
+  Object.keys(groups).forEach(function(k) { keepRows.push(all[groups[k].best]); });
+
+  var removed = (all.length - 1) - keepRows.length;
+  Logger.log("Keeping: " + keepRows.length + " rows. Removing: " + removed + " duplicates.");
+  if (removed === 0) { Logger.log("No duplicates found"); return; }
+
+  sheet.getRange(2, 1, lastRow - 1, lastCol).clearContent();
+  if (keepRows.length > 0) {
+    sheet.getRange(2, 1, keepRows.length, lastCol).setValues(keepRows);
+  }
+  var newLastRow = keepRows.length + 1;
+  if (lastRow > newLastRow) {
+    sheet.deleteRows(newLastRow + 1, lastRow - newLastRow);
+  }
+  SpreadsheetApp.flush();
+  Logger.log("Done! Kept " + keepRows.length + " invoices, removed " + removed + " duplicates.");
 }

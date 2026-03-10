@@ -3525,7 +3525,6 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
       <div class="board-toolbar" id="documents-toolbar">
         <button class="btn-add-task" onclick="openInvoiceCreateModal()">+ Invoice</button>
         <button class="btn-add-task" onclick="openReceiptCreateModal()">+ Receipt</button>
-        <button class="btn-add-task" onclick="generateMissingInvoices()" style="background:#f1f3f4;color:#202124;border:1px solid #dadce0">Generate Missing</button>
         <select class="filter-select" id="docs-filter-status" onchange="renderDocuments()">
           <option value="">All Statuses</option>
           <option value="draft">Draft</option>
@@ -5016,7 +5015,6 @@ function fetchAllData() {
       if (typeof renderCrmCustomers === "function") renderCrmCustomers();
       if (typeof renderDocuments === "function") renderDocuments();
       if (typeof populateProductTypeFilter === "function") populateProductTypeFilter();
-      // Auto-invoice creation removed from generic fetch — runs only on explicit order sync
       saveDataCache();
       showLastSynced();
     })
@@ -10061,104 +10059,6 @@ function createInvoiceFromOrder() {
   document.getElementById("inv-from-order").value = order.shopifyOrderId || "";
 }
 
-var _autoInvoiceDisabled = true;
-var _autoInvoiceCooldown = 0;
-function autoCreateInvoicesForPaidOrders() {
-  if (_autoInvoiceDisabled) return 0;
-  if (!SCRIPT_URL) return;
-  var now = Date.now();
-  if (now < _autoInvoiceCooldown) { return 0; }
-  _autoInvoiceCooldown = now + 30000;
-  var paidWithoutInvoice = shopifyOrders.filter(function(o) {
-    if (o.financialStatus !== "paid") return false;
-    return !invoices.some(function(inv) {
-      return inv.orderId === o.shopifyOrderId || inv.orderNumber === String(o.orderNumber);
-    });
-  });
-  if (paidWithoutInvoice.length === 0) return 0;
-
-  var created = 0;
-  paidWithoutInvoice.forEach(function(order) {
-    var items = parseOrderLineItems(order.lineItems, order.totalPrice);
-    var subtotal = items.reduce(function(s, it) { return s + (it.qty * it.unitPrice); }, 0);
-    var total = parseFloat(order.totalPrice) || subtotal;
-
-    var invoice = {
-      invoiceNumber: generateInvoiceNumber(),
-      contactId: "",
-      contactName: order.customerName || "",
-      contactCompany: order.customerName || "",
-      contactEmail: order.email || "",
-      contactAddress: parseOrderShippingAddress(order.shippingAddress),
-      invoiceDate: order.createdAt ? order.createdAt.split("T")[0] : new Date().toISOString().split("T")[0],
-      dueDate: "",
-      poReference: "Order #" + (order.orderNumber || order.shopifyOrderId || ""),
-      items: JSON.stringify(items.map(function(it) {
-        return { description: it.description, qty: it.qty, unitPrice: it.unitPrice, amount: it.qty * it.unitPrice };
-      })),
-      subtotal: String(subtotal),
-      discount: "0",
-      shipping: "0",
-      taxType: "included",
-      tax: "0",
-      total: String(total),
-      pricingType: "wholesale",
-      pricingPercent: "",
-      status: "draft",
-      workspace: "IVYCOAST",
-      notes: "Auto-generated from Shopify order #" + (order.orderNumber || ""),
-      orderId: order.shopifyOrderId || "",
-      orderNumber: String(order.orderNumber || "")
-    };
-
-    // Try to match CRM contact
-    if (order.email) {
-      var emailLower = order.email.toLowerCase();
-      var contact = (typeof crmContacts !== "undefined" ? crmContacts : []).find(function(c) {
-        return c.email && c.email.toLowerCase() === emailLower;
-      });
-      if (contact) {
-        invoice.contactId = contact.id;
-        invoice.contactName = contact.name || invoice.contactName;
-        invoice.contactCompany = contact.company || invoice.contactCompany;
-      }
-    }
-
-    var tempId = "temp-" + Date.now() + "-" + created;
-    invoice.id = tempId;
-    invoices.push(invoice);
-    created++;
-
-    invApiPost({ action: "create", invoice: invoice })
-      .then(function(data) {
-        if (data.invoice) {
-          invoices = invoices.map(function(inv) { return inv.id === tempId ? data.invoice : inv; });
-        }
-      })
-      .catch(function() {
-        invoices = invoices.filter(function(inv) { return inv.id !== tempId; });
-      });
-  });
-
-  if (created > 0) {
-    renderDocuments();
-    setInvSyncStatus(created + " invoice(s) auto-created from orders");
-  }
-  return created;
-}
-
-function generateMissingInvoices() {
-  // Ensure we have orders and invoices loaded
-  if (!shopifyOrders.length) {
-    setInvSyncStatus("No orders loaded yet. Sync orders first.");
-    return;
-  }
-  var count = autoCreateInvoicesForPaidOrders();
-  if (count === 0) {
-    setInvSyncStatus("All paid orders already have invoices");
-  }
-}
-
 // ── PDF Generation (LongForme template style) ─────────────────
 function downloadInvoicePdf(invData) {
   var inv = invData;
@@ -12360,7 +12260,6 @@ function fetchShopifyOrders(force) {
       renderOrders();
       renderHomeShopifyStats();
       showOrdersLastSynced();
-      // Auto-invoice creation disabled — use manual "Generate Invoices" button only
       saveDataCache();
     })
     .catch(function(err) {
