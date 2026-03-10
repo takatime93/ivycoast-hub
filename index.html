@@ -6366,12 +6366,18 @@ function uploadCrmFile(base64, mimeType, fileName, callback) {
   if (!SCRIPT_URL) { callback(null); return; }
   fetch(SCRIPT_URL, {
     method: "POST",
+    redirect: "follow",
     headers: { "Content-Type": "text/plain" },
     body: JSON.stringify({ action: "uploadFile", fileName: fileName, mimeType: mimeType, base64Data: base64, userId: getCurrentUserEmail(), userName: getCurrentUserName() })
   })
-    .then(function(r) { return r.json(); })
+    .then(function(r) {
+      if (!r.ok) { console.error("Upload HTTP error:", r.status); return { success: false, error: "HTTP " + r.status }; }
+      return r.json();
+    })
     .then(function(data) {
+      if (!data) { callback(null); return; }
       if (!data.success) console.error("CRM file upload failed:", data.error);
+      console.log("Upload result for " + fileName + ":", data);
       callback(data.success ? data.fileUrl : null);
     })
     .catch(function(err) { console.error("CRM file upload error:", err); callback(null); });
@@ -7050,11 +7056,18 @@ function saveCrmContact() {
   setCrmSyncStatus("Saving\u2026");
 
   // Upload pending files sequentially, then save contact
+  var pendingUploads = [];
+  if (crmPendingAvatar) pendingUploads.push("avatar");
+  if (crmPendingCardFront) pendingUploads.push("card front");
+  if (crmPendingCardBack) pendingUploads.push("card back");
+  if (pendingUploads.length) setCrmSyncStatus("Uploading " + pendingUploads.join(", ") + "\u2026");
+
   var uploadAvatar = function(cb) {
     if (crmPendingAvatar) {
       var fname = "avatar-" + contact.name.replace(/\s+/g, "-").toLowerCase() + "-" + Date.now() + ".jpg";
       uploadCrmFile(crmPendingAvatar.base64, crmPendingAvatar.mimeType, fname, function(url) {
-        if (url) contact.profileImageUrl = url;
+        if (url) { contact.profileImageUrl = url; }
+        else { setCrmSyncStatus("Avatar upload failed"); console.error("Avatar upload returned null"); }
         cb();
       });
     } else {
@@ -7068,7 +7081,7 @@ function saveCrmContact() {
       var fname = "card-front-" + contact.name.replace(/\s+/g, "-").toLowerCase() + "-" + Date.now() + ".jpg";
       uploadCrmFile(crmPendingCardFront.base64, crmPendingCardFront.mimeType, fname, function(url) {
         if (url) { contact.businessCardFrontUrl = url; contact.businessCardUrl = url; }
-        else { setCrmSyncStatus("Card front upload failed"); }
+        else { setCrmSyncStatus("Card front upload failed"); console.error("Card front upload returned null"); }
         cb();
       });
     } else if (crmRemoveCardFront) {
@@ -7083,8 +7096,8 @@ function saveCrmContact() {
     if (crmPendingCardBack) {
       var fname = "card-back-" + contact.name.replace(/\s+/g, "-").toLowerCase() + "-" + Date.now() + ".jpg";
       uploadCrmFile(crmPendingCardBack.base64, crmPendingCardBack.mimeType, fname, function(url) {
-        if (url) contact.businessCardBackUrl = url;
-        else { setCrmSyncStatus("Card back upload failed"); }
+        if (url) { contact.businessCardBackUrl = url; }
+        else { setCrmSyncStatus("Card back upload failed"); console.error("Card back upload returned null"); }
         cb();
       });
     } else if (crmRemoveCardBack) {
@@ -7096,6 +7109,18 @@ function saveCrmContact() {
     }
   };
 
+  var openDetailAfterSave = function(contactId) {
+    var saved = crmContacts.find(function(x) { return x.id === contactId; });
+    console.log("CRM save complete, image URLs:", {
+      profile: saved && saved.profileImageUrl,
+      cardFront: saved && saved.businessCardFrontUrl,
+      cardBack: saved && saved.businessCardBackUrl
+    });
+    renderCrmActiveView();
+    renderHomeCrmStats();
+    openCrmDetailView(contactId);
+  };
+
   uploadAvatar(function() {
     uploadCardFront(function() {
     uploadCardBack(function() {
@@ -7104,19 +7129,25 @@ function saveCrmContact() {
         crmContacts = crmContacts.map(function(c) {
           return c.id === id ? Object.assign({}, c, contact) : c;
         });
-        renderCrmActiveView();
-        renderHomeCrmStats();
-        openCrmDetailView(id);
+        openDetailAfterSave(id);
         crmApiPost({ action: "update", contact: contact })
-          .then(function() { setCrmSyncStatus("Saved"); fetchCrmContacts(); })
+          .then(function(data) {
+            setCrmSyncStatus("Saved");
+            // Re-open detail with server data to ensure images are current
+            if (data.contact) {
+              crmContacts = crmContacts.map(function(c) {
+                return c.id === id ? Object.assign({}, c, data.contact) : c;
+              });
+              openCrmDetailView(id);
+            }
+            fetchCrmContacts();
+          })
           .catch(function() { setCrmSyncStatus("Save failed"); fetchCrmContacts(); });
       } else {
         var tempId = "temp-" + Date.now();
         contact.id = tempId;
         crmContacts.push(contact);
-        renderCrmActiveView();
-        renderHomeCrmStats();
-        openCrmDetailView(tempId);
+        openDetailAfterSave(tempId);
         crmApiPost({ action: "create", contact: contact })
           .then(function(data) {
             setCrmSyncStatus("Contact created");
