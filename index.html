@@ -2474,11 +2474,6 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
   align-items: center;
   gap: 10px;
 }
-.header-user img {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-}
 .header-user span {
   font-size: 14px;
   color: rgba(0,0,0,0.5);
@@ -2490,19 +2485,24 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
   background: none;
   border: none;
   cursor: pointer;
-  font-size: 20px;
-  padding: 4px 6px;
-  line-height: 1;
+  padding: 6px;
+  line-height: 0;
   color: #5f6368;
   border-radius: 50%;
-  transition: background 0.15s;
+  transition: background 0.15s, color 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 .notif-bell:hover { background: #f1f3f4; }
+.notif-bell svg { width: 20px; height: 20px; fill: currentColor; transition: fill 0.15s; }
+.notif-bell.has-alert { color: #202124; }
+.notif-bell.has-alert svg { fill: #202124; }
 .notif-dot {
   display: none;
   position: absolute;
-  top: 2px;
-  right: 2px;
+  top: 4px;
+  right: 4px;
   width: 8px;
   height: 8px;
   background: #ea4335;
@@ -2823,13 +2823,12 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
       <div class="header-user">
         <div class="presence-container" id="presence-container"></div>
         <div style="position:relative">
-          <button class="notif-bell" id="notif-bell" onclick="toggleNotifDropdown()" title="Notifications">&#128276;<span class="notif-dot" id="notif-dot"></span></button>
+          <button class="notif-bell" id="notif-bell" onclick="toggleNotifDropdown()" title="Notifications"><svg viewBox="0 0 24 24"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg><span class="notif-dot" id="notif-dot"></span></button>
           <div class="notif-dropdown" id="notif-dropdown">
             <div class="notif-dropdown-header"><span>Activity</span><button onclick="markAllNotifRead()">Mark all read</button></div>
             <div class="notif-list" id="notif-list"></div>
           </div>
         </div>
-        <img id="user-avatar" src="" alt="">
         <span id="user-name"></span>
         <button id="sign-out-btn" onclick="signOut()">Sign out</button>
       </div>
@@ -4596,7 +4595,9 @@ function updateNotifBell() {
     return a.userId !== myEmail && a.timestamp > lastSeen;
   });
   var dot = document.getElementById("notif-dot");
+  var bell = document.getElementById("notif-bell");
   if (dot) dot.classList.toggle("active", hasNew);
+  if (bell) bell.classList.toggle("has-alert", hasNew);
 }
 
 function renderNotifDropdown() {
@@ -11785,12 +11786,6 @@ function showApp(user) {
   document.getElementById("login-screen").style.display = "none";
   document.getElementById("app-container").style.display = "";
   document.getElementById("auth-error").textContent = "";
-  if (user.photoURL) {
-    document.getElementById("user-avatar").src = user.photoURL;
-    document.getElementById("user-avatar").style.display = "";
-  } else {
-    document.getElementById("user-avatar").style.display = "none";
-  }
   document.getElementById("user-name").textContent = user.displayName || user.email;
   // Prefetch documents in background so Tools tab loads instantly
   if (SCRIPT_URL) fetchDocuments();
