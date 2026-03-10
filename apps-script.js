@@ -29,9 +29,16 @@
 
 var SPREADSHEET_ID = "1Nr1Jh22jK6HZRcy-ViA8Mryq8zNJo9t4LgT7My-s7Vo";
 
+// Cache spreadsheet handle per execution to avoid repeated openById calls
+var _ssHandle = null;
+function getSS() {
+  if (!_ssHandle) _ssHandle = SpreadsheetApp.openById(SPREADSHEET_ID);
+  return _ssHandle;
+}
+
 function getSheet(sheetName) {
   var name = sheetName || "Tasks";
-  return SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(name);
+  return getSS().getSheetByName(name);
 }
 
 function rowToObj(headers, row) {
@@ -45,8 +52,10 @@ function rowToObj(headers, row) {
 function getAllRows(sheetName) {
   var sheet = getSheet(sheetName);
   if (!sheet) return [];
-  var data = sheet.getDataRange().getValues();
-  if (data.length < 2) return [];
+  var lastRow = sheet.getLastRow();
+  if (lastRow < 2) return [];
+  var lastCol = sheet.getLastColumn();
+  var data = sheet.getRange(1, 1, lastRow, lastCol).getValues();
   var headers = data[0];
   var rows = [];
   for (var i = 1; i < data.length; i++) {
@@ -123,7 +132,7 @@ var SHEET_TO_ITEM_TYPE = {
 };
 
 function ensureSheet(name, headers) {
-  var ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  var ss = getSS();
   var sheet = ss.getSheetByName(name);
   if (!sheet) {
     sheet = ss.insertSheet(name);
@@ -156,10 +165,15 @@ function doGet(e) {
   try { ensureActivityAndPresenceSheets(); } catch (ex) { /* non-fatal */ }
   var action = (e.parameter && e.parameter.action) || "list";
   var sheetName = (e.parameter && e.parameter.sheet) || "Tasks";
-  // Batch endpoint: return all data in one request
+  // Batch endpoint: return all data in one request (cached 60s)
   if (action === "batchList") {
+    var cache = CacheService.getScriptCache();
+    var cached = cache.get("batchList");
+    if (cached) {
+      return ContentService.createTextOutput(cached).setMimeType(ContentService.MimeType.JSON);
+    }
     var actAll = getAllRows("ActivityLog");
-    return jsonResponse({
+    var payload = JSON.stringify({
       tasks: getAllRows("Tasks"),
       contacts: getAllRows("Contacts"),
       products: getAllRows("Products"),
@@ -169,6 +183,8 @@ function doGet(e) {
       receipts: getAllRows("Receipts"),
       activities: actAll.slice(-100).reverse()
     });
+    try { cache.put("batchList", payload, 60); } catch(ex) { /* payload too large for cache */ }
+    return ContentService.createTextOutput(payload).setMimeType(ContentService.MimeType.JSON);
   }
   if (action === "list") {
     // ActivityLog: return only last 100 entries
@@ -207,6 +223,11 @@ function doPost(e) {
   var userId = body.userId || "";
   var userName = body.userName || "";
   var iType = SHEET_TO_ITEM_TYPE[sheetName] || "task";
+
+  // Invalidate batchList cache on any data mutation
+  if (action === "create" || action === "update" || action === "delete") {
+    try { CacheService.getScriptCache().remove("batchList"); } catch(ex) {}
+  }
 
   if (action === "create") {
     var created = createRow(sheetName, item);
