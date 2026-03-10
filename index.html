@@ -4552,16 +4552,17 @@ function normalizeDriveImageUrl(url) {
   if (!url) return url;
   var fileId;
   var m;
-  // drive.google.com/uc?id=X or uc?export=view&id=X — already good format
+  // lh3.googleusercontent.com/d/X — already correct format
+  m = url.match(/lh3\.googleusercontent\.com\/d\/([a-zA-Z0-9_-]+)/);
+  if (m) return url;
+  // drive.google.com/uc?id=X or uc?export=view&id=X
   m = url.match(/drive\.google\.com\/uc\?(?:[^&]*&)*id=([a-zA-Z0-9_-]+)/);
   if (m) fileId = m[1];
   // drive.google.com/file/d/X/view
   if (!fileId) { m = url.match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/); if (m) fileId = m[1]; }
-  // lh3.googleusercontent.com/d/X
-  if (!fileId) { m = url.match(/lh3\.googleusercontent\.com\/d\/([a-zA-Z0-9_-]+)/); if (m) fileId = m[1]; }
   // drive.google.com/thumbnail?id=X
   if (!fileId) { m = url.match(/drive\.google\.com\/thumbnail\?id=([a-zA-Z0-9_-]+)/); if (m) fileId = m[1]; }
-  if (fileId) return "https://drive.google.com/uc?export=view&id=" + fileId;
+  if (fileId) return "https://lh3.googleusercontent.com/d/" + fileId;
   return url;
 }
 
