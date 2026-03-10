@@ -148,7 +148,7 @@ function logActivity(action, itemType, itemId, itemName, detail, userId, userNam
 // --- Web App Endpoints ---
 
 function doGet(e) {
-  ensureActivityAndPresenceSheets();
+  try { ensureActivityAndPresenceSheets(); } catch (ex) { /* non-fatal */ }
   var action = (e.parameter && e.parameter.action) || "list";
   var sheetName = (e.parameter && e.parameter.sheet) || "Tasks";
   if (action === "list") {
@@ -168,7 +168,7 @@ function doGet(e) {
 }
 
 function doPost(e) {
-  ensureActivityAndPresenceSheets();
+  try { ensureActivityAndPresenceSheets(); } catch (ex) { /* non-fatal */ }
 
   // Detect Shopify webhook (has X-Shopify-Topic header or order_number field without action)
   var body;
@@ -295,7 +295,7 @@ function uploadFileToDrive(fileName, mimeType, base64Data) {
     file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
 
     var fileId = file.getId();
-    var fileUrl = "https://lh3.googleusercontent.com/d/" + fileId;
+    var fileUrl = "https://drive.google.com/thumbnail?id=" + fileId + "&sz=w800";
     return { success: true, fileUrl: fileUrl, fileId: fileId };
   } catch (e) {
     return { success: false, error: e.message };

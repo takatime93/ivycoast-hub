@@ -2017,6 +2017,30 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
 .crm-invoice-download:hover { background: #e8f0fe; }
 
 /* CRM Detail View (Read-Only) */
+.crm-saving-overlay {
+  position: absolute;
+  inset: 0;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  z-index: 3;
+}
+.crm-saving-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid #e8eaed;
+  border-top-color: #1a73e8;
+  border-radius: 50%;
+  animation: crm-spin 0.8s linear infinite;
+}
+@keyframes crm-spin { to { transform: rotate(360deg); } }
+.crm-saving-text {
+  font-size: 14px;
+  color: #5f6368;
+}
 .crm-detail-view {
   position: absolute;
   inset: 0;
@@ -3422,6 +3446,12 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
     <input type="file" id="crm-card-front-input" accept="image/*" style="display:none" onchange="handleCrmCardUpload('front',this)">
     <input type="file" id="crm-card-back-input" accept="image/*" style="display:none" onchange="handleCrmCardUpload('back',this)">
 
+    <!-- Saving spinner -->
+    <div class="crm-saving-overlay" id="crm-saving-overlay" style="display:none">
+      <div class="crm-saving-spinner"></div>
+      <div class="crm-saving-text" id="crm-saving-text">Saving...</div>
+    </div>
+
     <!-- Detail View (read-only, built by JS) -->
     <div class="crm-detail-view" id="crm-detail-view" style="display:none">
       <div class="crm-detail-header" id="crm-detail-header"></div>
@@ -4517,14 +4547,21 @@ function getCurrentUserName() {
   return USER_NAME_MAP[getCurrentUserEmail()] || getCurrentUserEmail();
 }
 
-// CRM image URL normalization
+// CRM image URL normalization — convert all Drive URL variants to thumbnail API
 function normalizeDriveImageUrl(url) {
   if (!url) return url;
+  var fileId;
   var m;
-  m = url.match(/drive\.google\.com\/uc\?(?:export=view&)?id=([a-zA-Z0-9_-]+)/);
-  if (m) return "https://lh3.googleusercontent.com/d/" + m[1];
-  m = url.match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/);
-  if (m) return "https://lh3.googleusercontent.com/d/" + m[1];
+  // drive.google.com/uc?id=X or uc?export=view&id=X
+  m = url.match(/drive\.google\.com\/uc\?(?:[^&]*&)*id=([a-zA-Z0-9_-]+)/);
+  if (m) fileId = m[1];
+  // drive.google.com/file/d/X/view
+  if (!fileId) { m = url.match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/); if (m) fileId = m[1]; }
+  // lh3.googleusercontent.com/d/X
+  if (!fileId) { m = url.match(/lh3\.googleusercontent\.com\/d\/([a-zA-Z0-9_-]+)/); if (m) fileId = m[1]; }
+  // drive.google.com/thumbnail?id=X (already correct format)
+  if (!fileId) { m = url.match(/drive\.google\.com\/thumbnail\?id=([a-zA-Z0-9_-]+)/); if (m) return url; }
+  if (fileId) return "https://drive.google.com/thumbnail?id=" + fileId + "&sz=w800";
   return url;
 }
 
@@ -6560,6 +6597,7 @@ function openCrmEditModal(contactId) {
 function closeCrmModal() {
   document.getElementById("crm-modal-overlay").classList.remove("open");
   document.getElementById("crm-detail-view").style.display = "none";
+  document.getElementById("crm-saving-overlay").style.display = "none";
   document.getElementById("crm-edit-header").style.display = "";
   document.getElementById("crm-edit-body").style.display = "";
   document.getElementById("crm-edit-actions").style.display = "";
@@ -6623,6 +6661,7 @@ function openCrmDetailView(contactId) {
     var img = document.createElement("img");
     img.src = c.profileImageUrl;
     img.alt = c.name || "";
+    img.onerror = function() { avatarDiv.removeChild(img); avatarDiv.textContent = (c.name || "?").charAt(0).toUpperCase(); };
     avatarDiv.appendChild(img);
   } else {
     avatarDiv.textContent = (c.name || "?").charAt(0).toUpperCase();
@@ -7049,25 +7088,28 @@ function saveCrmContact() {
   };
   if (!contact.name) { alert("Contact name is required."); return; }
 
-  // Hide edit form while saving (keep overlay open)
+  // Show saving spinner, hide edit form
   document.getElementById("crm-edit-header").style.display = "none";
   document.getElementById("crm-edit-body").style.display = "none";
   document.getElementById("crm-edit-actions").style.display = "none";
-  setCrmSyncStatus("Saving\u2026");
+  var savingOverlay = document.getElementById("crm-saving-overlay");
+  var savingText = document.getElementById("crm-saving-text");
+  savingOverlay.style.display = "flex";
 
   // Upload pending files sequentially, then save contact
   var pendingUploads = [];
   if (crmPendingAvatar) pendingUploads.push("avatar");
   if (crmPendingCardFront) pendingUploads.push("card front");
   if (crmPendingCardBack) pendingUploads.push("card back");
-  if (pendingUploads.length) setCrmSyncStatus("Uploading " + pendingUploads.join(", ") + "\u2026");
+  savingText.textContent = pendingUploads.length ? "Uploading " + pendingUploads.join(", ") + "\u2026" : "Saving\u2026";
 
   var uploadAvatar = function(cb) {
     if (crmPendingAvatar) {
+      savingText.textContent = "Uploading profile photo\u2026";
       var fname = "avatar-" + contact.name.replace(/\s+/g, "-").toLowerCase() + "-" + Date.now() + ".jpg";
       uploadCrmFile(crmPendingAvatar.base64, crmPendingAvatar.mimeType, fname, function(url) {
         if (url) { contact.profileImageUrl = url; }
-        else { setCrmSyncStatus("Avatar upload failed"); console.error("Avatar upload returned null"); }
+        else { console.error("Avatar upload returned null"); }
         cb();
       });
     } else {
@@ -7078,10 +7120,11 @@ function saveCrmContact() {
 
   var uploadCardFront = function(cb) {
     if (crmPendingCardFront) {
+      savingText.textContent = "Uploading business card (front)\u2026";
       var fname = "card-front-" + contact.name.replace(/\s+/g, "-").toLowerCase() + "-" + Date.now() + ".jpg";
       uploadCrmFile(crmPendingCardFront.base64, crmPendingCardFront.mimeType, fname, function(url) {
         if (url) { contact.businessCardFrontUrl = url; contact.businessCardUrl = url; }
-        else { setCrmSyncStatus("Card front upload failed"); console.error("Card front upload returned null"); }
+        else { console.error("Card front upload returned null"); }
         cb();
       });
     } else if (crmRemoveCardFront) {
@@ -7094,10 +7137,11 @@ function saveCrmContact() {
   };
   var uploadCardBack = function(cb) {
     if (crmPendingCardBack) {
+      savingText.textContent = "Uploading business card (back)\u2026";
       var fname = "card-back-" + contact.name.replace(/\s+/g, "-").toLowerCase() + "-" + Date.now() + ".jpg";
       uploadCrmFile(crmPendingCardBack.base64, crmPendingCardBack.mimeType, fname, function(url) {
         if (url) { contact.businessCardBackUrl = url; }
-        else { setCrmSyncStatus("Card back upload failed"); console.error("Card back upload returned null"); }
+        else { console.error("Card back upload returned null"); }
         cb();
       });
     } else if (crmRemoveCardBack) {
@@ -7116,6 +7160,7 @@ function saveCrmContact() {
       cardFront: saved && saved.businessCardFrontUrl,
       cardBack: saved && saved.businessCardBackUrl
     });
+    savingOverlay.style.display = "none";
     renderCrmActiveView();
     renderHomeCrmStats();
     openCrmDetailView(contactId);
@@ -7124,6 +7169,7 @@ function saveCrmContact() {
   uploadAvatar(function() {
     uploadCardFront(function() {
     uploadCardBack(function() {
+      savingText.textContent = "Saving contact\u2026";
       if (id) {
         contact.id = id;
         crmContacts = crmContacts.map(function(c) {
