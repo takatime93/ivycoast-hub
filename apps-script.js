@@ -132,7 +132,10 @@ function ensureSheet(name, headers) {
   return sheet;
 }
 
+var _sheetsEnsured = false;
 function ensureActivityAndPresenceSheets() {
+  if (_sheetsEnsured) return;
+  _sheetsEnsured = true;
   ensureSheet("ActivityLog", ["id","action","itemType","itemId","itemName","detail","userId","userName","timestamp"]);
   ensureSheet("Presence", ["email","lastActive","currentTab","photoUrl"]);
 }
