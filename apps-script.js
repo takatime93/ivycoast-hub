@@ -976,3 +976,54 @@ function deduplicateInvoices() {
   SpreadsheetApp.flush();
   Logger.log("Done! Kept " + keepRows.length + " invoices, removed " + removed + " duplicates.");
 }
+
+// ── One-time cleanup: remove "created invoice" spam from ActivityLog ────
+// Run manually: cleanupActivityLog()
+function cleanupActivityLog() {
+  var sheet = getSheet("ActivityLog");
+  var lastRow = sheet.getLastRow();
+  var lastCol = sheet.getLastColumn();
+  if (lastRow < 2) { Logger.log("No data rows"); return; }
+
+  var all = sheet.getRange(1, 1, lastRow, lastCol).getValues();
+  var headers = all[0];
+  Logger.log("Headers: " + JSON.stringify(headers));
+  Logger.log("Total rows (excl header): " + (all.length - 1));
+
+  // Find action and itemType columns
+  var actionCol = -1, typeCol = -1, nameCol = -1;
+  for (var h = 0; h < headers.length; h++) {
+    var hLower = String(headers[h]).trim().toLowerCase();
+    if (hLower === "action") actionCol = h;
+    else if (hLower === "itemtype") typeCol = h;
+    else if (hLower === "itemname") nameCol = h;
+  }
+  Logger.log("action=" + actionCol + " itemType=" + typeCol + " itemName=" + nameCol);
+
+  var keepRows = [];
+  var removed = 0;
+  for (var i = 1; i < all.length; i++) {
+    var action = actionCol !== -1 ? String(all[i][actionCol]).trim().toLowerCase() : "";
+    var itype = typeCol !== -1 ? String(all[i][typeCol]).trim().toLowerCase() : "";
+    // Remove "created invoice" spam entries (auto-generated duplicates)
+    if (action === "created" && itype === "invoice") {
+      removed++;
+      continue;
+    }
+    keepRows.push(all[i]);
+  }
+
+  Logger.log("Keeping: " + keepRows.length + " rows. Removing: " + removed + " spam entries.");
+  if (removed === 0) { Logger.log("No spam found"); return; }
+
+  sheet.getRange(2, 1, lastRow - 1, lastCol).clearContent();
+  if (keepRows.length > 0) {
+    sheet.getRange(2, 1, keepRows.length, lastCol).setValues(keepRows);
+  }
+  var newLastRow = keepRows.length + 1;
+  if (lastRow > newLastRow) {
+    sheet.deleteRows(newLastRow + 1, lastRow - newLastRow);
+  }
+  SpreadsheetApp.flush();
+  Logger.log("Done! Kept " + keepRows.length + " activity entries, removed " + removed + " spam.");
+}
