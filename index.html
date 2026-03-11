@@ -2307,6 +2307,24 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
   transition: opacity 0.15s;
 }
 .crm-detail-card-img:hover { opacity: 0.85; }
+/* Image lightbox overlay */
+.img-lightbox {
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(0,0,0,0.85); z-index: 99999;
+  display: flex; align-items: center; justify-content: center;
+  cursor: zoom-out; animation: lightboxFadeIn 0.15s ease;
+}
+@keyframes lightboxFadeIn { from { opacity: 0; } to { opacity: 1; } }
+.img-lightbox img {
+  max-width: 92vw; max-height: 92vh; border-radius: 8px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.4); object-fit: contain;
+}
+.img-lightbox-close {
+  position: absolute; top: 16px; right: 20px;
+  color: #fff; font-size: 28px; cursor: pointer;
+  background: none; border: none; opacity: 0.7;
+}
+.img-lightbox-close:hover { opacity: 1; }
 .crm-detail-card-label {
   font-size: 11px;
   color: #80868b;
@@ -5070,6 +5088,26 @@ function formatRelativeTime(isoStr) {
   return d + "d ago";
 }
 
+// Image lightbox
+function openImageLightbox(src) {
+  var overlay = document.createElement("div");
+  overlay.className = "img-lightbox";
+  var closeBtn = document.createElement("button");
+  closeBtn.className = "img-lightbox-close";
+  closeBtn.textContent = "\u2715";
+  closeBtn.onclick = function(e) { e.stopPropagation(); document.body.removeChild(overlay); };
+  overlay.appendChild(closeBtn);
+  var img = document.createElement("img");
+  img.src = src;
+  img.onclick = function(e) { e.stopPropagation(); };
+  overlay.appendChild(img);
+  overlay.onclick = function() { document.body.removeChild(overlay); };
+  document.addEventListener("keydown", function handler(e) {
+    if (e.key === "Escape") { if (overlay.parentNode) document.body.removeChild(overlay); document.removeEventListener("keydown", handler); }
+  });
+  document.body.appendChild(overlay);
+}
+
 // localStorage helpers
 function getLastSeenTimestamp() {
   var email = getCurrentUserEmail();
@@ -5449,7 +5487,7 @@ function apiPost(body) {
     method: "POST",
     headers: { "Content-Type": "text/plain" },
     body: JSON.stringify(body)
-  }).then(function(r) { return r.json(); });
+  }).then(function(r) { return r.json(); }).then(function(data) { setTimeout(fetchActivityLog, 500); return data; });
 }
 
 // Render board
@@ -6503,7 +6541,7 @@ function crmApiPost(body) {
     method: "POST",
     headers: { "Content-Type": "text/plain" },
     body: JSON.stringify(body)
-  }).then(function(r) { return r.json(); });
+  }).then(function(r) { return r.json(); }).then(function(data) { setTimeout(fetchActivityLog, 500); return data; });
 }
 
 function stockApiPost(body) {
@@ -6514,7 +6552,7 @@ function stockApiPost(body) {
     method: "POST",
     headers: { "Content-Type": "text/plain" },
     body: JSON.stringify(body)
-  }).then(function(r) { return r.json(); });
+  }).then(function(r) { return r.json(); }).then(function(data) { setTimeout(fetchActivityLog, 500); return data; });
 }
 
 function contactDocApiPost(body) {
@@ -6525,7 +6563,7 @@ function contactDocApiPost(body) {
     method: "POST",
     headers: { "Content-Type": "text/plain" },
     body: JSON.stringify(body)
-  }).then(function(r) { return r.json(); });
+  }).then(function(r) { return r.json(); }).then(function(data) { setTimeout(fetchActivityLog, 500); return data; });
 }
 
 function fetchCrmContacts(force) {
@@ -7517,7 +7555,7 @@ function renderCrmOverviewTab(c, panel, contactId) {
       fImg.className = "crm-detail-card-img";
       fImg.src = cardFront;
       fImg.alt = "Front";
-      fImg.onclick = function() { window.open(cardFront, "_blank"); };
+      fImg.onclick = function() { openImageLightbox(cardFront); };
       fWrap.appendChild(fImg);
       var fLbl = document.createElement("div");
       fLbl.className = "crm-detail-card-label";
@@ -7531,7 +7569,7 @@ function renderCrmOverviewTab(c, panel, contactId) {
       bImg.className = "crm-detail-card-img";
       bImg.src = cardBack;
       bImg.alt = "Back";
-      bImg.onclick = function() { window.open(cardBack, "_blank"); };
+      bImg.onclick = function() { openImageLightbox(cardBack); };
       bWrap.appendChild(bImg);
       var bLbl = document.createElement("div");
       bLbl.className = "crm-detail-card-label";
@@ -8202,7 +8240,7 @@ function renderCrmInfoTab(c, panel, contactId) {
       var imgEl = document.createElement("img");
       imgEl.src = url;
       imgEl.alt = "Shop photo";
-      imgEl.onclick = function() { window.open(url, "_blank"); };
+      imgEl.onclick = function() { openImageLightbox(url); };
       grid.appendChild(imgEl);
     });
     photosSec.appendChild(grid);
@@ -8596,7 +8634,7 @@ function invApiPost(body) {
     method: "POST",
     headers: { "Content-Type": "text/plain" },
     body: JSON.stringify(body)
-  }).then(function(r) { return r.json(); });
+  }).then(function(r) { return r.json(); }).then(function(data) { setTimeout(fetchActivityLog, 500); return data; });
 }
 
 function setInvSyncStatus(msg) { setDocsSyncStatus(msg); }
@@ -10294,7 +10332,7 @@ function recApiPost(body) {
   body.userId = getCurrentUserEmail();
   body.userName = getCurrentUserName();
   return fetch(SCRIPT_URL, { method: "POST", headers: { "Content-Type": "text/plain" }, body: JSON.stringify(body) })
-    .then(function(r) { return r.json(); });
+    .then(function(r) { return r.json(); }).then(function(data) { setTimeout(fetchActivityLog, 500); return data; });
 }
 
 function setRecSyncStatus(msg) { setDocsSyncStatus(msg); }
