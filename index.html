@@ -2077,6 +2077,7 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
   align-items: center;
   justify-content: center;
   color: #5f6368;
+  font-size: 18px;
   transition: all 0.15s;
 }
 .crm-detail-header-actions button:hover { background: #f1f3f4; color: #202124; }
@@ -2400,31 +2401,92 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
 .crm-detail-tab-panel { display: none; padding: 0 24px 16px; }
 .crm-detail-tab-panel.active { display: block; }
 
-/* ── Pipeline indicator ────────────────────────────────────── */
-.crm-detail-pipeline {
+/* ── Pipeline progress bar ─────────────────────────────────── */
+.crm-pipeline-wrap {
   display: flex;
-  gap: 4px;
-  margin-top: 12px;
+  align-items: center;
+  gap: 10px;
+  margin-top: 16px;
 }
-.crm-pipeline-step {
+.crm-detail-pipeline {
   flex: 1;
-  font-size: 11px;
-  font-weight: 600;
-  padding: 6px 4px;
-  border-radius: 6px;
-  text-align: center;
-  background: #f1f3f4;
+  position: relative;
+  height: 40px;
+}
+.crm-pipeline-track {
+  position: absolute;
+  top: 8px;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: #e0e3e6;
+  border-radius: 2px;
+}
+.crm-pipeline-fill {
+  position: absolute;
+  top: 8px;
+  left: 0;
+  height: 4px;
+  background: #0e413b;
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+.crm-pipeline-marker {
+  position: absolute;
+  top: 0;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.crm-pipeline-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #e0e3e6;
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 1px #e0e3e6;
+  position: relative;
+  z-index: 1;
+}
+.crm-pipeline-dot.completed {
+  background: #0e413b;
+  box-shadow: 0 0 0 1px #0e413b;
+}
+.crm-pipeline-dot.active {
+  background: #0e413b;
+  box-shadow: 0 0 0 1px #0e413b, 0 0 0 4px rgba(14,65,59,0.15);
+  width: 14px;
+  height: 14px;
+  margin-top: -1px;
+}
+.crm-pipeline-label {
+  font-size: 9px;
   color: #80868b;
-  transition: all 0.15s;
+  margin-top: 4px;
+  white-space: nowrap;
   text-transform: capitalize;
 }
-.crm-pipeline-step.completed { background: #e6f4ea; color: #137333; }
-.crm-pipeline-step.active { font-weight: 700; }
-.crm-pipeline-step.active.stage-prospect { background: #e8f0fe; color: #1a73e8; }
-.crm-pipeline-step.active.stage-outreach { background: #fef7e0; color: #b06000; }
-.crm-pipeline-step.active.stage-negotiation { background: #fce8e6; color: #c5221f; }
-.crm-pipeline-step.active.stage-active_partner { background: #e6f4ea; color: #137333; }
-.crm-pipeline-step.active.stage-inactive { background: #f1f3f4; color: #5f6368; }
+.crm-pipeline-label.active {
+  color: #0e413b;
+  font-weight: 600;
+  font-size: 10px;
+}
+.crm-pipeline-cog {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 1px solid #e0e0e0;
+  background: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #5f6368;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+.crm-pipeline-cog:hover { background: #f1f3f4; color: #202124; }
 
 /* ── Summary row ───────────────────────────────────────────── */
 .crm-detail-summary-row {
@@ -3025,8 +3087,8 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
   .crm-stock-summary { grid-template-columns: 1fr; }
   .crm-stock-form .form-row { grid-template-columns: 1fr; }
   .crm-shop-images { grid-template-columns: 1fr; }
-  .crm-detail-pipeline { flex-wrap: wrap; }
-  .crm-pipeline-step { flex: 0 0 calc(50% - 2px); }
+  .crm-pipeline-label { font-size: 8px; }
+  .crm-pipeline-label.active { font-size: 9px; }
   .crm-detail-summary-row { flex-direction: column; gap: 6px; }
   .crm-detail-quick-stats { grid-template-columns: 1fr 1fr; }
   .crm-tickets-add-row { flex-direction: column; align-items: stretch; }
@@ -7565,43 +7627,15 @@ function openCrmDetailView(contactId) {
   editBtn.appendChild(_crmSvgIcon(["M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7","M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"]));
   editBtn.onclick = function() { switchToCrmEditMode(contactId); };
   headerActions.appendChild(editBtn);
-  // More menu (three-dot)
+  // More menu (three-dot) — just Delete
   var moreWrap = document.createElement("div");
   moreWrap.className = "crm-more-menu-wrap";
   var moreBtn = document.createElement("button");
   moreBtn.title = "More";
-  moreBtn.appendChild(_crmSvgIcon(["cx=12 cy=5 r=1","cx=12 cy=12 r=1","cx=12 cy=19 r=1"], 16, 16, 2));
+  moreBtn.textContent = "\u22EE";
   moreWrap.appendChild(moreBtn);
   var moreMenu = document.createElement("div");
   moreMenu.className = "crm-detail-more-menu";
-  // Change Stage submenu
-  var pipelineStages = ["prospect", "outreach", "negotiation", "active_partner", "inactive"];
-  var pipelineLabels = { prospect: "Prospect", outreach: "Outreach", negotiation: "Negotiation", active_partner: "Active Partner", inactive: "Inactive" };
-  var currentStage = (c.stage || "prospect").toLowerCase().replace(/\s+/g, "_");
-  var stageLabel = document.createElement("div");
-  stageLabel.style.cssText = "font-size:10px;font-weight:600;color:#80868b;text-transform:uppercase;letter-spacing:0.5px;padding:8px 16px 4px;";
-  stageLabel.textContent = "Change Stage";
-  moreMenu.appendChild(stageLabel);
-  pipelineStages.forEach(function(stage) {
-    var stageItem = document.createElement("button");
-    stageItem.className = "crm-detail-more-menu-item" + (stage === currentStage ? " crm-menu-item-active" : "");
-    stageItem.textContent = pipelineLabels[stage];
-    if (stage === currentStage) { stageItem.style.fontWeight = "600"; stageItem.style.color = "#0e413b"; }
-    stageItem.onclick = function() {
-      moreMenu.classList.remove("open");
-      if (stage === currentStage) return;
-      crmContacts.forEach(function(x) { if (x.id === contactId) x.stage = stage; });
-      renderCrmPipeline();
-      renderHomeCrmStats();
-      openCrmDetailView(contactId);
-      crmApiPost({ action: "update", contact: { id: contactId, stage: stage } })
-        .catch(function() { fetchCrmContacts(); });
-    };
-    moreMenu.appendChild(stageItem);
-  });
-  var menuDivider = document.createElement("div");
-  menuDivider.style.cssText = "height:1px;background:#ebebeb;margin:4px 0;";
-  moreMenu.appendChild(menuDivider);
   var deleteItem = document.createElement("button");
   deleteItem.className = "crm-detail-more-menu-item danger";
   deleteItem.textContent = "Delete Contact";
@@ -7676,20 +7710,87 @@ function openCrmDetailView(contactId) {
     header.appendChild(summaryRow);
   }
 
-  // Pipeline progress bar (read-only indicator, change via More menu)
+  // Pipeline progress bar with settings cog
+  var pipelineStages = ["prospect", "outreach", "negotiation", "active_partner", "inactive"];
+  var pipelineLabels = { prospect: "Prospect", outreach: "Outreach", negotiation: "Negotiation", active_partner: "Active Partner", inactive: "Inactive" };
+  var currentStage = (c.stage || "prospect").toLowerCase().replace(/\s+/g, "_");
   var currentIdx = pipelineStages.indexOf(currentStage);
   if (currentIdx < 0) currentIdx = 0;
+
+  var pipelineWrap = document.createElement("div");
+  pipelineWrap.className = "crm-pipeline-wrap";
+
   var pipelineRow = document.createElement("div");
   pipelineRow.className = "crm-detail-pipeline";
+  // Track bar (background)
+  var trackBar = document.createElement("div");
+  trackBar.className = "crm-pipeline-track";
+  pipelineRow.appendChild(trackBar);
+  // Fill bar (progress)
+  var fillBar = document.createElement("div");
+  fillBar.className = "crm-pipeline-fill";
+  var fillPct = pipelineStages.length > 1 ? ((currentIdx) / (pipelineStages.length - 1)) * 100 : 0;
+  fillBar.style.width = fillPct + "%";
+  pipelineRow.appendChild(fillBar);
+  // Dot markers with labels
   pipelineStages.forEach(function(stage, idx) {
-    var step = document.createElement("div");
-    step.className = "crm-pipeline-step";
-    if (idx < currentIdx) step.classList.add("completed");
-    if (idx === currentIdx) { step.classList.add("active"); step.classList.add("stage-" + stage); }
-    step.textContent = pipelineLabels[stage];
-    pipelineRow.appendChild(step);
+    var marker = document.createElement("div");
+    marker.className = "crm-pipeline-marker";
+    var pct = pipelineStages.length > 1 ? (idx / (pipelineStages.length - 1)) * 100 : 0;
+    marker.style.left = pct + "%";
+    var dot = document.createElement("div");
+    dot.className = "crm-pipeline-dot";
+    if (idx < currentIdx) dot.classList.add("completed");
+    if (idx === currentIdx) dot.classList.add("active");
+    marker.appendChild(dot);
+    var label = document.createElement("div");
+    label.className = "crm-pipeline-label";
+    if (idx === currentIdx) label.classList.add("active");
+    label.textContent = pipelineLabels[stage];
+    marker.appendChild(label);
+    pipelineRow.appendChild(marker);
   });
-  header.appendChild(pipelineRow);
+  pipelineWrap.appendChild(pipelineRow);
+
+  // Settings cog for stage change
+  var cogWrap = document.createElement("div");
+  cogWrap.className = "crm-more-menu-wrap";
+  var cogBtn = document.createElement("button");
+  cogBtn.className = "crm-pipeline-cog";
+  cogBtn.title = "Change stage";
+  cogBtn.appendChild(_crmSvgIcon(["M12 15a3 3 0 100-6 3 3 0 000 6z","M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"], 15, 15, 1.8));
+  cogWrap.appendChild(cogBtn);
+  var cogMenu = document.createElement("div");
+  cogMenu.className = "crm-detail-more-menu";
+  pipelineStages.forEach(function(stage) {
+    var stageItem = document.createElement("button");
+    stageItem.className = "crm-detail-more-menu-item";
+    if (stage === currentStage) { stageItem.style.fontWeight = "600"; stageItem.style.color = "#0e413b"; }
+    stageItem.textContent = pipelineLabels[stage];
+    stageItem.onclick = function() {
+      cogMenu.classList.remove("open");
+      if (stage === currentStage) return;
+      crmContacts.forEach(function(x) { if (x.id === contactId) x.stage = stage; });
+      renderCrmPipeline();
+      renderHomeCrmStats();
+      openCrmDetailView(contactId);
+      crmApiPost({ action: "update", contact: { id: contactId, stage: stage } })
+        .catch(function() { fetchCrmContacts(); });
+    };
+    cogMenu.appendChild(stageItem);
+  });
+  cogWrap.appendChild(cogMenu);
+  cogBtn.onclick = function(e) { e.stopPropagation(); cogMenu.classList.toggle("open"); };
+  // Reuse the same outside-click cleanup for cog menu
+  var oldCleanup = _crmMoreMenuCleanup;
+  if (_crmMoreMenuCleanup) { document.removeEventListener("click", _crmMoreMenuCleanup); }
+  _crmMoreMenuCleanup = function(e) {
+    if (!moreWrap.contains(e.target)) { moreMenu.classList.remove("open"); }
+    if (!cogWrap.contains(e.target)) { cogMenu.classList.remove("open"); }
+  };
+  document.addEventListener("click", _crmMoreMenuCleanup);
+  pipelineWrap.appendChild(cogWrap);
+  header.appendChild(pipelineWrap);
 
   // --- TAB BAR ---
   // Compute counts for tab badges
