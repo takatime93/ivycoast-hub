@@ -2083,15 +2083,15 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
 .crm-detail-header-actions .crm-edit-btn { color: #1a73e8; border-color: #c2d7f5; }
 .crm-detail-header-actions .crm-edit-btn:hover { background: #e8f0fe; }
 .crm-detail-avatar {
-  width: 56px;
-  height: 56px;
+  width: 72px;
+  height: 72px;
   border-radius: 50%;
   background: #e8f0fe;
   color: #1a73e8;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 22px;
+  font-size: 26px;
   font-weight: 700;
   overflow: hidden;
   flex-shrink: 0;
@@ -2122,49 +2122,6 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
   color: #5f6368;
   margin-top: 4px;
 }
-.crm-detail-badges {
-  display: flex;
-  gap: 6px;
-  flex-wrap: wrap;
-  margin-top: 8px;
-}
-.crm-detail-badge {
-  display: inline-block;
-  font-size: 11px;
-  font-weight: 600;
-  padding: 2px 10px;
-  border-radius: 12px;
-  letter-spacing: 0.3px;
-}
-.crm-detail-badge.type-vendor { background: #e8f0fe; color: #1a73e8; }
-.crm-detail-badge.type-business { background: #fef7e0; color: #b06000; }
-.crm-detail-badge.type-customer { background: #e6f4ea; color: #137333; }
-.crm-detail-badge.stage {
-  background: #f1f3f4;
-  color: #5f6368;
-  text-transform: capitalize;
-}
-/* Contact chips in header */
-.crm-detail-chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 12px;
-}
-.crm-detail-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 12px;
-  color: #3c4043;
-  background: #f1f3f4;
-  padding: 4px 12px;
-  border-radius: 16px;
-  text-decoration: none;
-  transition: background 0.15s;
-}
-.crm-detail-chip:hover { background: #e0e3e6; }
-.crm-detail-chip svg { flex-shrink: 0; color: #5f6368; }
 .crm-detail-body {
   flex: 1;
   overflow-y: auto;
@@ -2414,6 +2371,262 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
 .crm-detail-tab.active { color: #0e413b; border-bottom-color: #0e413b; font-weight: 600; }
 .crm-detail-tab-panel { display: none; }
 .crm-detail-tab-panel.active { display: block; }
+
+/* ── Pipeline indicator ────────────────────────────────────── */
+.crm-detail-pipeline {
+  display: flex;
+  gap: 4px;
+  margin-top: 12px;
+}
+.crm-pipeline-step {
+  flex: 1;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 6px 4px;
+  border-radius: 6px;
+  text-align: center;
+  background: #f1f3f4;
+  color: #80868b;
+  cursor: pointer;
+  transition: all 0.15s;
+  text-transform: capitalize;
+}
+.crm-pipeline-step:hover { filter: brightness(0.95); }
+.crm-pipeline-step.completed { background: #e6f4ea; color: #137333; }
+.crm-pipeline-step.active { font-weight: 700; }
+.crm-pipeline-step.active.stage-prospect { background: #e8f0fe; color: #1a73e8; }
+.crm-pipeline-step.active.stage-outreach { background: #fef7e0; color: #b06000; }
+.crm-pipeline-step.active.stage-negotiation { background: #fce8e6; color: #c5221f; }
+.crm-pipeline-step.active.stage-active_partner { background: #e6f4ea; color: #137333; }
+.crm-pipeline-step.active.stage-inactive { background: #f1f3f4; color: #5f6368; }
+
+/* ── Summary row ───────────────────────────────────────────── */
+.crm-detail-summary-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 12px;
+  font-size: 12px;
+  color: #5f6368;
+}
+.crm-detail-summary-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.crm-detail-summary-item svg { color: #80868b; flex-shrink: 0; }
+
+/* ── More menu (three-dot dropdown) ────────────────────────── */
+.crm-more-menu-wrap { position: relative; }
+.crm-detail-more-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 4px;
+  min-width: 180px;
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 10px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+  z-index: 20;
+  padding: 4px 0;
+  display: none;
+}
+.crm-detail-more-menu.open { display: block; }
+.crm-detail-more-menu-item {
+  display: block;
+  width: 100%;
+  padding: 9px 16px;
+  font-size: 13px;
+  font-family: inherit;
+  background: none;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  color: #202124;
+  transition: background 0.1s;
+}
+.crm-detail-more-menu-item:hover { background: #f1f3f4; }
+.crm-detail-more-menu-item.danger { color: #c5221f; }
+.crm-detail-more-menu-item.danger:hover { background: #fce8e6; }
+
+/* ── Quick stats grid ──────────────────────────────────────── */
+.crm-detail-quick-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+
+/* ── Notes timeline ────────────────────────────────────────── */
+.crm-notes-input-wrap {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+.crm-notes-input-wrap textarea {
+  flex: 1;
+  resize: vertical;
+  min-height: 40px;
+  max-height: 120px;
+  padding: 8px 12px;
+  font-size: 13px;
+  font-family: inherit;
+  border: 1px solid #dadce0;
+  border-radius: 8px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.crm-notes-input-wrap textarea:focus { border-color: #1a73e8; }
+.crm-notes-add-btn {
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  font-family: inherit;
+  background: #0e413b;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s;
+  display: none;
+}
+.crm-notes-add-btn.visible { display: inline-block; }
+.crm-notes-add-btn:hover { background: #1a5c54; }
+.crm-notes-timeline { margin-top: 4px; }
+.crm-note-item {
+  padding: 10px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+.crm-note-item:last-child { border-bottom: none; }
+.crm-note-meta {
+  font-size: 11px;
+  color: #80868b;
+  margin-bottom: 4px;
+}
+.crm-note-meta strong { color: #3c4043; font-weight: 600; }
+.crm-note-text {
+  font-size: 13px;
+  color: #202124;
+  white-space: pre-wrap;
+  line-height: 1.5;
+}
+
+/* ── Tickets / Tasks ───────────────────────────────────────── */
+.crm-tickets-add-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 12px;
+}
+.crm-tickets-add-row input[type="text"] {
+  flex: 1;
+  padding: 8px 12px;
+  font-size: 13px;
+  font-family: inherit;
+  border: 1px solid #dadce0;
+  border-radius: 8px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.crm-tickets-add-row input[type="text"]:focus { border-color: #1a73e8; }
+.crm-tickets-add-row input[type="date"] {
+  padding: 7px 10px;
+  font-size: 13px;
+  font-family: inherit;
+  border: 1px solid #dadce0;
+  border-radius: 8px;
+  outline: none;
+  color: #3c4043;
+}
+.crm-tickets-add-btn {
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  font-family: inherit;
+  background: #0e413b;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s;
+}
+.crm-tickets-add-btn:hover { background: #1a5c54; }
+.crm-ticket-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+.crm-ticket-item:last-child { border-bottom: none; }
+.crm-ticket-item input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: #0e413b;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.crm-ticket-title {
+  flex: 1;
+  font-size: 13px;
+  color: #202124;
+}
+.crm-ticket-title.done {
+  text-decoration: line-through;
+  color: #80868b;
+}
+.crm-ticket-meta {
+  font-size: 11px;
+  color: #80868b;
+  white-space: nowrap;
+}
+.crm-ticket-meta.overdue { color: #c5221f; }
+
+/* ── Activity timeline ─────────────────────────────────────── */
+.crm-activity-timeline { margin-top: 4px; }
+.crm-activity-item {
+  display: flex;
+  gap: 10px;
+  padding: 8px 0;
+  border-bottom: 1px solid #f0f0f0;
+  align-items: flex-start;
+}
+.crm-activity-item:last-child { border-bottom: none; }
+.crm-activity-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 12px;
+}
+.crm-activity-icon.act-created { background: #e6f4ea; color: #137333; }
+.crm-activity-icon.act-updated { background: #e8f0fe; color: #1a73e8; }
+.crm-activity-icon.act-deleted { background: #fce8e6; color: #c5221f; }
+.crm-activity-icon.act-uploaded { background: #fef7e0; color: #b06000; }
+.crm-activity-content { flex: 1; min-width: 0; }
+.crm-activity-action {
+  font-size: 13px;
+  color: #202124;
+}
+.crm-activity-action strong { font-weight: 600; }
+.crm-activity-detail {
+  font-size: 12px;
+  color: #5f6368;
+  margin-top: 2px;
+}
+.crm-activity-time {
+  font-size: 11px;
+  color: #80868b;
+  white-space: nowrap;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
 
 /* ── Orders tab ─────────────────────────────────────────────── */
 .crm-order-summary-stats {
@@ -2748,6 +2961,12 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
   .crm-stock-summary { grid-template-columns: 1fr; }
   .crm-stock-form .form-row { grid-template-columns: 1fr; }
   .crm-shop-images { grid-template-columns: 1fr; }
+  .crm-detail-pipeline { flex-wrap: wrap; }
+  .crm-pipeline-step { flex: 0 0 calc(50% - 2px); }
+  .crm-detail-summary-row { flex-direction: column; gap: 6px; }
+  .crm-detail-quick-stats { grid-template-columns: 1fr 1fr; }
+  .crm-tickets-add-row { flex-direction: column; align-items: stretch; }
+  .crm-tickets-add-row input[type="date"] { width: 100%; }
   .products-table { font-size: 13px; }
   .products-table th, .products-table td { padding: 8px 6px; }
   .orders-table { font-size: 13px; }
@@ -3954,10 +4173,7 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
           <label for="crm-modal-lastcontact">Last Contact Date</label>
           <input type="date" id="crm-modal-lastcontact">
         </div>
-        <div class="crm-field full-width">
-          <label for="crm-modal-notes">Notes</label>
-          <textarea id="crm-modal-notes"></textarea>
-        </div>
+        <!-- Notes managed in detail view timeline -->
       </div>
     </div>
 
@@ -6904,6 +7120,8 @@ document.querySelectorAll("#crm-kanban .kanban-col").forEach(function(col) {
 });
 
 // CRM Modal — Image state
+var crmCurrentDetailContactId = null;
+var _crmMoreMenuCleanup = null;
 var crmPendingAvatar = null; // { base64, mimeType, dataUrl }
 var crmPendingCardFront = null;
 var crmPendingCardBack = null;
@@ -7088,7 +7306,6 @@ function openCrmCreateModal() {
   document.getElementById("crm-modal-socialmedia").value = "";
   document.getElementById("crm-modal-connected").value = "";
   document.getElementById("crm-modal-lastcontact").value = "";
-  document.getElementById("crm-modal-notes").value = "";
   document.getElementById("crm-modal-delete-btn").style.display = "none";
   document.getElementById("crm-modal-wholesale").value = "";
   document.getElementById("crm-modal-consignment").value = "";
@@ -7135,7 +7352,6 @@ function openCrmEditModal(contactId) {
   document.getElementById("crm-modal-socialmedia").value = c.socialMedia || "";
   document.getElementById("crm-modal-connected").value = c.connectedDate || "";
   document.getElementById("crm-modal-lastcontact").value = c.lastContactDate || "";
-  document.getElementById("crm-modal-notes").value = c.notes || "";
   document.getElementById("crm-modal-delete-btn").style.display = "inline-block";
   document.getElementById("crm-modal-wholesale").value = c.wholesalePercent || "";
   document.getElementById("crm-modal-consignment").value = c.consignmentPercent || "";
@@ -7171,6 +7387,8 @@ function openCrmEditModal(contactId) {
 }
 
 function closeCrmModal() {
+  crmCurrentDetailContactId = null;
+  if (_crmMoreMenuCleanup) { document.removeEventListener("click", _crmMoreMenuCleanup); _crmMoreMenuCleanup = null; }
   document.getElementById("crm-modal-overlay").classList.remove("open");
   document.getElementById("crm-detail-view").style.display = "none";
   document.getElementById("crm-saving-overlay").style.display = "none";
@@ -7215,6 +7433,7 @@ function _crmSvgIcon(paths, w, h, strokeW) {
 function openCrmDetailView(contactId) {
   var c = crmContacts.find(function(x) { return x.id === contactId; });
   if (!c) return;
+  crmCurrentDetailContactId = contactId;
 
   // Hide edit form, show detail view
   document.getElementById("crm-edit-header").style.display = "none";
@@ -7268,15 +7487,51 @@ function openCrmDetailView(contactId) {
   }
   headerTop.appendChild(infoDiv);
 
-  // Header action buttons (Edit + Close)
+  // Header action buttons (Email, Phone, Edit, More, Close)
   var headerActions = document.createElement("div");
   headerActions.className = "crm-detail-header-actions";
+  if (c.email) {
+    var emailBtn = document.createElement("button");
+    emailBtn.title = "Email";
+    emailBtn.appendChild(_crmSvgIcon(["M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z","points=22,6 12,13 2,6"], 16, 16));
+    emailBtn.onclick = function() { window.location.href = "mailto:" + c.email; };
+    headerActions.appendChild(emailBtn);
+  }
+  if (c.phone) {
+    var phoneBtn = document.createElement("button");
+    phoneBtn.title = "Call";
+    phoneBtn.appendChild(_crmSvgIcon(["M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.13.81.36 1.6.66 2.36a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.76.3 1.55.53 2.36.66A2 2 0 0122 16.92z"], 16, 16));
+    phoneBtn.onclick = function() { window.location.href = "tel:" + c.phone; };
+    headerActions.appendChild(phoneBtn);
+  }
   var editBtn = document.createElement("button");
   editBtn.className = "crm-edit-btn";
   editBtn.title = "Edit";
   editBtn.appendChild(_crmSvgIcon(["M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7","M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"]));
   editBtn.onclick = function() { switchToCrmEditMode(contactId); };
   headerActions.appendChild(editBtn);
+  // More menu (three-dot)
+  var moreWrap = document.createElement("div");
+  moreWrap.className = "crm-more-menu-wrap";
+  var moreBtn = document.createElement("button");
+  moreBtn.title = "More";
+  moreBtn.appendChild(_crmSvgIcon(["cx=12 cy=5 r=1","cx=12 cy=12 r=1","cx=12 cy=19 r=1"], 16, 16, 2));
+  moreWrap.appendChild(moreBtn);
+  var moreMenu = document.createElement("div");
+  moreMenu.className = "crm-detail-more-menu";
+  var deleteItem = document.createElement("button");
+  deleteItem.className = "crm-detail-more-menu-item danger";
+  deleteItem.textContent = "Delete Contact";
+  deleteItem.onclick = function() { moreMenu.classList.remove("open"); deleteCrmContactConfirm(); };
+  moreMenu.appendChild(deleteItem);
+  moreWrap.appendChild(moreMenu);
+  moreBtn.onclick = function(e) { e.stopPropagation(); moreMenu.classList.toggle("open"); };
+  if (_crmMoreMenuCleanup) { document.removeEventListener("click", _crmMoreMenuCleanup); }
+  _crmMoreMenuCleanup = function(e) {
+    if (!moreWrap.contains(e.target)) { moreMenu.classList.remove("open"); }
+  };
+  document.addEventListener("click", _crmMoreMenuCleanup);
+  headerActions.appendChild(moreWrap);
   var closeBtn = document.createElement("button");
   closeBtn.title = "Close";
   closeBtn.appendChild(_crmSvgIcon(["M18 6L6 18","M6 6l12 12"], 16, 16, 2.5));
@@ -7285,65 +7540,57 @@ function openCrmDetailView(contactId) {
   headerTop.appendChild(headerActions);
   header.appendChild(headerTop);
 
-  // Badges
-  var badges = document.createElement("div");
-  badges.className = "crm-detail-badges";
-  if (c.type) {
-    var tb = document.createElement("span");
-    tb.className = "crm-detail-badge type-" + c.type.toLowerCase();
-    tb.textContent = c.type;
-    badges.appendChild(tb);
-  }
-  if (c.stage) {
-    var sb = document.createElement("span");
-    sb.className = "crm-detail-badge stage";
-    sb.textContent = (c.stage || "").replace(/_/g, " ");
-    badges.appendChild(sb);
-  }
-  if (c.workspace) {
-    var wb = document.createElement("span");
-    wb.className = "crm-detail-badge stage";
-    wb.textContent = c.workspace;
-    badges.appendChild(wb);
-  }
-  header.appendChild(badges);
+  // Summary row
+  var summaryRow = document.createElement("div");
+  summaryRow.className = "crm-detail-summary-row";
+  var summaryItems = [
+    { icon: ["M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4-4v2","cx=8.5 cy=7 r=4"], text: c.type },
+    { icon: ["M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z","M9 22V12h6v10"], text: (c.products && c.products.trim()) ? c.products : null },
+    { icon: ["M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z","cx=12 cy=10 r=3"], text: c.location },
+    { icon: ["rect=2 7 20 14 2","M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"], text: c.workspace },
+    { icon: ["M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z","M12 6v6l4 2"], text: c.connectedDate ? "Connected: " + formatDate(c.connectedDate) : null },
+    { icon: ["M12 20h9","M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"], text: c.lastContactDate ? "Last contact: " + formatDate(c.lastContactDate) : null }
+  ];
+  summaryItems.forEach(function(si) {
+    if (!si.text) return;
+    var item = document.createElement("div");
+    item.className = "crm-detail-summary-item";
+    item.appendChild(_crmSvgIcon(si.icon, 13, 13, 1.5));
+    item.appendChild(document.createTextNode(si.text));
+    summaryRow.appendChild(item);
+  });
+  if (summaryRow.childNodes.length) header.appendChild(summaryRow);
 
-  // Contact chips (email, phone, location)
-  var hasChips = c.email || c.phone || c.location;
-  if (hasChips) {
-    var chips = document.createElement("div");
-    chips.className = "crm-detail-chips";
-    if (c.email) {
-      var emailChip = document.createElement("a");
-      emailChip.className = "crm-detail-chip";
-      emailChip.href = "mailto:" + c.email;
-      emailChip.appendChild(_crmSvgIcon(["M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z","points=22,6 12,13 2,6"], 14, 14));
-      var emailText = document.createTextNode(c.email);
-      emailChip.appendChild(emailText);
-      chips.appendChild(emailChip);
-    }
-    if (c.phone) {
-      var phoneChip = document.createElement("a");
-      phoneChip.className = "crm-detail-chip";
-      phoneChip.href = "tel:" + c.phone;
-      phoneChip.appendChild(_crmSvgIcon(["M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.13.81.36 1.6.66 2.36a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.76.3 1.55.53 2.36.66A2 2 0 0122 16.92z"], 14, 14));
-      var phoneText = document.createTextNode(c.phone);
-      phoneChip.appendChild(phoneText);
-      chips.appendChild(phoneChip);
-    }
-    if (c.location) {
-      var locChip = document.createElement("span");
-      locChip.className = "crm-detail-chip";
-      locChip.appendChild(_crmSvgIcon(["M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z","cx=12 cy=10 r=3"], 14, 14));
-      var locText = document.createTextNode(c.location);
-      locChip.appendChild(locText);
-      chips.appendChild(locChip);
-    }
-    header.appendChild(chips);
-  }
+  // Pipeline indicator
+  var pipelineStages = ["prospect", "outreach", "negotiation", "active_partner", "inactive"];
+  var pipelineLabels = { prospect: "Prospect", outreach: "Outreach", negotiation: "Negotiation", active_partner: "Active Partner", inactive: "Inactive" };
+  var currentStage = (c.stage || "prospect").toLowerCase().replace(/\s+/g, "_");
+  var currentIdx = pipelineStages.indexOf(currentStage);
+  if (currentIdx < 0) currentIdx = 0;
+  var pipelineRow = document.createElement("div");
+  pipelineRow.className = "crm-detail-pipeline";
+  pipelineStages.forEach(function(stage, idx) {
+    var pill = document.createElement("div");
+    pill.className = "crm-pipeline-step";
+    if (idx < currentIdx) pill.classList.add("completed");
+    if (idx === currentIdx) { pill.classList.add("active"); pill.classList.add("stage-" + stage); }
+    pill.textContent = pipelineLabels[stage];
+    pill.onclick = function() {
+      if (stage === currentStage) return;
+      // Optimistic update
+      crmContacts.forEach(function(x) { if (x.id === contactId) x.stage = stage; });
+      renderCrmPipeline();
+      renderHomeCrmStats();
+      openCrmDetailView(contactId);
+      crmApiPost({ action: "update", contact: { id: contactId, stage: stage } })
+        .catch(function() { fetchCrmContacts(); });
+    };
+    pipelineRow.appendChild(pill);
+  });
+  header.appendChild(pipelineRow);
 
   // --- TAB BAR ---
-  var tabNames = ["Overview", "Orders", "Stock", "Documents", "Info"];
+  var tabNames = ["Overview", "Orders", "Stock", "Documents"];
   var panels = [];
   tabNames.forEach(function(name, idx) {
     var btn = document.createElement("button");
@@ -7371,7 +7618,6 @@ function openCrmDetailView(contactId) {
   renderCrmOrdersTab(c, panels[1], contactId);
   renderCrmStockTab(c, panels[2], contactId);
   renderCrmDocumentsTab(c, panels[3], contactId);
-  renderCrmInfoTab(c, panels[4], contactId);
 
   detailView.style.display = "flex";
   document.getElementById("crm-modal-overlay").classList.add("open");
@@ -7483,15 +7729,29 @@ function _crmBuildFormField(tag, id, type, label, opts) {
 function renderCrmOverviewTab(c, panel, contactId) {
   panel.textContent = "";
 
-  // --- BUSINESS DETAILS (compact cards) ---
-  var bizSec = _crmMakeSection("Business Details");
-  var bizRow = document.createElement("div");
-  bizRow.className = "crm-detail-biz-row";
-  bizRow.appendChild(_crmMakeBizCard("Type", c.type));
-  bizRow.appendChild(_crmMakeBizCard("Stage", (c.stage || "").replace(/_/g, " ")));
-  bizRow.appendChild(_crmMakeBizCard("Shop Type", c.products && c.products.trim() ? c.products : null));
-  bizSec.appendChild(bizRow);
-  panel.appendChild(bizSec);
+  // --- QUICK STATS ---
+  var emailLower = (c.email || "").toLowerCase();
+  var nameLower = (c.name || "").toLowerCase();
+  var matchedOrders = shopifyOrders.filter(function(o) {
+    if (emailLower && (o.email || "").toLowerCase() === emailLower) return true;
+    if (nameLower && (o.customerName || "").toLowerCase() === nameLower) return true;
+    return false;
+  });
+  matchedOrders.sort(function(a, b) { return (b.createdAt || "").localeCompare(a.createdAt || ""); });
+  var totalSpent = 0;
+  matchedOrders.forEach(function(o) { totalSpent += Number(o.totalPrice || 0); });
+  var activeStock = partnerStock.filter(function(s) { return s.contactId === contactId && (s.status || "").toLowerCase() === "active"; });
+  var lastOrderDate = matchedOrders.length && matchedOrders[0].createdAt ? formatDate(matchedOrders[0].createdAt) : "\u2014";
+
+  var qsSec = _crmMakeSection("Quick Stats");
+  var qsGrid = document.createElement("div");
+  qsGrid.className = "crm-detail-quick-stats";
+  qsGrid.appendChild(_crmMakeStatCard(String(matchedOrders.length), "Total Orders"));
+  qsGrid.appendChild(_crmMakeStatCard("\u00A5" + totalSpent.toLocaleString(), "Total Spent"));
+  qsGrid.appendChild(_crmMakeStatCard(String(activeStock.length), "Active Stock"));
+  qsGrid.appendChild(_crmMakeStatCard(lastOrderDate, "Last Order"));
+  qsSec.appendChild(qsGrid);
+  panel.appendChild(qsSec);
 
   // --- PRICING (stat cards) ---
   var ws = c.wholesalePercent;
@@ -7530,17 +7790,14 @@ function renderCrmOverviewTab(c, panel, contactId) {
     panel.appendChild(priceSec);
   }
 
-  // --- ACTIVITY ---
-  var actSec = _crmMakeSection("Activity");
-  var actFields = document.createElement("div");
-  actFields.className = "crm-detail-fields";
-  actFields.appendChild(_crmMakeField("Connected", c.connectedDate ? formatDate(c.connectedDate) : ""));
-  actFields.appendChild(_crmMakeField("Last Contact", c.lastContactDate ? formatDate(c.lastContactDate) : ""));
-  if (c.notes) {
-    actFields.appendChild(_crmMakeField("Notes", c.notes, { fullWidth: true, className: "detail-notes" }));
-  }
-  actSec.appendChild(actFields);
-  panel.appendChild(actSec);
+  // --- NOTES ---
+  renderCrmNotesSection(c, panel, contactId);
+
+  // --- TASKS ---
+  renderCrmTicketsSection(c, panel, contactId);
+
+  // --- RECENT ACTIVITY ---
+  renderCrmActivitySection(c, panel, contactId);
 
   // --- BUSINESS CARD ---
   var cardFront = c.businessCardFrontUrl || c.businessCardUrl || "";
@@ -7581,19 +7838,409 @@ function renderCrmOverviewTab(c, panel, contactId) {
     panel.appendChild(cardSec);
   }
 
-  // --- DELETE LINK (subtle, at bottom) ---
-  var deleteSec = document.createElement("div");
-  deleteSec.className = "crm-detail-section";
-  deleteSec.style.borderBottom = "none";
-  var delLink = document.createElement("button");
-  delLink.className = "crm-detail-delete-link";
-  var delIcon = _crmSvgIcon(["points=3,6 5,6 21,6","M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"], 14, 14);
-  delLink.appendChild(delIcon);
-  var delText = document.createTextNode("Delete contact");
-  delLink.appendChild(delText);
-  delLink.onclick = function() { document.getElementById("crm-modal-id").value = contactId; deleteCrmContactConfirm(); };
-  deleteSec.appendChild(delLink);
-  panel.appendChild(deleteSec);
+  // --- WEBSITE / SOCIAL LINKS ---
+  var linksSec = _crmMakeSection("Links");
+  var links = [
+    { label: "Website", value: c.website, icon: ["M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z","M2 12h20","M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10A15.3 15.3 0 0112 2z"] },
+    { label: "Instagram", value: c.instagram, icon: ["M16 2H8a6 6 0 00-6 6v8a6 6 0 006 6h8a6 6 0 006-6V8a6 6 0 00-6-6z","cx=12 cy=12 r=4.5","cx=17.5 cy=6.5 r=1.5"] },
+    { label: "Other Social", value: c.socialUrl, icon: ["M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71","M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"] }
+  ];
+  var hasLinks = false;
+  links.forEach(function(lnk) {
+    if (!lnk.value) return;
+    hasLinks = true;
+    var row = document.createElement("div");
+    row.className = "crm-info-link-row";
+    row.appendChild(_crmSvgIcon(lnk.icon, 16, 16, 1.5));
+    var a = document.createElement("a");
+    a.href = lnk.value.indexOf("http") === 0 ? lnk.value : "https://" + lnk.value;
+    a.target = "_blank";
+    a.rel = "noopener";
+    a.textContent = lnk.value;
+    row.appendChild(a);
+    linksSec.appendChild(row);
+  });
+  if (!hasLinks) {
+    var noLinks = document.createElement("p");
+    noLinks.style.cssText = "font-size:13px;color:#80868b;margin:0;";
+    noLinks.textContent = "No links added yet";
+    linksSec.appendChild(noLinks);
+  }
+  panel.appendChild(linksSec);
+
+  // --- OG PREVIEW ---
+  if (c.website) {
+    var ogSec = _crmMakeSection("Website Preview");
+    var ogCard = document.createElement("div");
+    ogCard.className = "crm-og-preview";
+    var ogLoading = document.createElement("div");
+    ogLoading.className = "crm-empty-state";
+    ogLoading.textContent = "Loading preview\u2026";
+    ogCard.appendChild(ogLoading);
+    ogSec.appendChild(ogCard);
+    panel.appendChild(ogSec);
+
+    var ogUrl = c.website.indexOf("http") === 0 ? c.website : "https://" + c.website;
+    fetch(SCRIPT_URL + "?action=fetchOg&url=" + encodeURIComponent(ogUrl))
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        ogCard.textContent = "";
+        if (data.image) {
+          var ogImg = document.createElement("img");
+          ogImg.src = data.image;
+          ogImg.alt = data.title || "";
+          ogCard.appendChild(ogImg);
+        }
+        var ogBody = document.createElement("div");
+        ogBody.className = "crm-og-preview-body";
+        if (data.title) {
+          var ogTitle = document.createElement("div");
+          ogTitle.className = "crm-og-preview-title";
+          ogTitle.textContent = data.title;
+          ogBody.appendChild(ogTitle);
+        }
+        if (data.description) {
+          var ogDesc = document.createElement("div");
+          ogDesc.className = "crm-og-preview-desc";
+          ogDesc.textContent = data.description;
+          ogBody.appendChild(ogDesc);
+        }
+        if (!data.title && !data.description && !data.image) {
+          var noOg = document.createElement("div");
+          noOg.className = "crm-empty-state";
+          noOg.textContent = "No preview available";
+          ogBody.appendChild(noOg);
+        }
+        ogCard.appendChild(ogBody);
+      })
+      .catch(function() {
+        ogCard.textContent = "";
+        var errEl = document.createElement("div");
+        errEl.className = "crm-empty-state";
+        errEl.textContent = "Could not load preview";
+        ogCard.appendChild(errEl);
+      });
+  }
+
+  // --- SHOP PHOTOS ---
+  var photosSec = _crmMakeSection("Shop Photos");
+  var shopPhotos = [];
+  try { shopPhotos = JSON.parse(c.shopPhotos || "[]"); } catch(e) { shopPhotos = []; }
+  if (shopPhotos.length) {
+    var grid = document.createElement("div");
+    grid.className = "crm-shop-images";
+    shopPhotos.forEach(function(url) {
+      var imgEl = document.createElement("img");
+      imgEl.src = url;
+      imgEl.alt = "Shop photo";
+      imgEl.onclick = function() { openImageLightbox(url); };
+      grid.appendChild(imgEl);
+    });
+    photosSec.appendChild(grid);
+  } else {
+    var noPhotos = document.createElement("p");
+    noPhotos.style.cssText = "font-size:13px;color:#80868b;margin:0 0 8px;";
+    noPhotos.textContent = "No shop photos yet";
+    photosSec.appendChild(noPhotos);
+  }
+
+  var uploadBtn = document.createElement("button");
+  uploadBtn.className = "crm-stock-add-btn";
+  uploadBtn.style.marginTop = "8px";
+  uploadBtn.appendChild(_crmSvgIcon(["M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4","M17 8l-5-5-5 5","M12 3v12"], 14, 14, 2));
+  var uploadText = document.createTextNode(" Upload Photo");
+  uploadBtn.appendChild(uploadText);
+  uploadBtn.onclick = function() {
+    var inp = document.createElement("input");
+    inp.type = "file";
+    inp.accept = "image/*";
+    inp.onchange = function() {
+      if (!inp.files || !inp.files[0]) return;
+      resizeImageBase64(inp.files[0], 1200, function(result) {
+        uploadCrmFile(result.base64, result.mimeType, inp.files[0].name, function(uploadedUrl) {
+          if (!uploadedUrl) { alert("Upload failed"); return; }
+          var existing = [];
+          try { existing = JSON.parse(c.shopPhotos || "[]"); } catch(e) { existing = []; }
+          existing.push(uploadedUrl);
+          crmApiPost({ action: "update", contact: { id: contactId, shopPhotos: JSON.stringify(existing) } }).then(function() {
+            fetchAllData();
+            setTimeout(function() { renderCrmOverviewTab(crmContacts.find(function(x) { return x.id === contactId; }) || c, panel, contactId); }, 1500);
+          });
+        });
+      });
+    };
+    inp.click();
+  };
+  photosSec.appendChild(uploadBtn);
+  panel.appendChild(photosSec);
+}
+
+// ── Notes Section ──────────────────────────────────────────────────────────
+
+function _parseCrmNotes(c) {
+  if (!c.notes) return [];
+  try {
+    var parsed = JSON.parse(c.notes);
+    if (Array.isArray(parsed)) return parsed;
+  } catch(e) {}
+  // Migration: plain string → wrap as first note
+  if (typeof c.notes === "string" && c.notes.trim()) {
+    return [{ id: "note-migrated", text: c.notes.trim(), author: "System", date: new Date().toISOString() }];
+  }
+  return [];
+}
+
+function renderCrmNotesSection(c, panel, contactId) {
+  var sec = _crmMakeSection("Notes");
+  var notes = _parseCrmNotes(c);
+
+  // Input area
+  var inputWrap = document.createElement("div");
+  inputWrap.className = "crm-notes-input-wrap";
+  var textarea = document.createElement("textarea");
+  textarea.placeholder = "Add a note\u2026";
+  textarea.rows = 2;
+  inputWrap.appendChild(textarea);
+  var addBtn = document.createElement("button");
+  addBtn.className = "crm-notes-add-btn";
+  addBtn.textContent = "Add Note";
+  inputWrap.appendChild(addBtn);
+  sec.appendChild(inputWrap);
+
+  textarea.addEventListener("input", function() {
+    addBtn.classList.toggle("visible", textarea.value.trim().length > 0);
+  });
+
+  // Timeline container
+  var timeline = document.createElement("div");
+  timeline.className = "crm-notes-timeline";
+  sec.appendChild(timeline);
+
+  function renderNotesList() {
+    timeline.textContent = "";
+    if (!notes.length) {
+      var empty = document.createElement("p");
+      empty.style.cssText = "font-size:13px;color:#80868b;margin:0;";
+      empty.textContent = "No notes yet";
+      timeline.appendChild(empty);
+      return;
+    }
+    // Most recent first
+    notes.slice().reverse().forEach(function(note) {
+      var item = document.createElement("div");
+      item.className = "crm-note-item";
+      var meta = document.createElement("div");
+      meta.className = "crm-note-meta";
+      var authorEl = document.createElement("strong");
+      authorEl.textContent = note.author || "Unknown";
+      meta.appendChild(authorEl);
+      meta.appendChild(document.createTextNode(" \u00B7 " + formatRelativeTime(note.date)));
+      item.appendChild(meta);
+      var text = document.createElement("div");
+      text.className = "crm-note-text";
+      text.textContent = note.text;
+      item.appendChild(text);
+      timeline.appendChild(item);
+    });
+  }
+
+  renderNotesList();
+
+  addBtn.onclick = function() {
+    var text = textarea.value.trim();
+    if (!text) return;
+    var newNote = { id: "note-" + Date.now(), text: text, author: getCurrentUserName(), date: new Date().toISOString() };
+    notes.push(newNote);
+    textarea.value = "";
+    addBtn.classList.remove("visible");
+    renderNotesList();
+    // Save
+    var notesJson = JSON.stringify(notes);
+    crmContacts.forEach(function(x) { if (x.id === contactId) x.notes = notesJson; });
+    crmApiPost({ action: "update", contact: { id: contactId, notes: notesJson } })
+      .catch(function() { fetchCrmContacts(); });
+  };
+
+  panel.appendChild(sec);
+}
+
+// ── Tickets/Tasks Section ──────────────────────────────────────────────────
+
+function _parseCrmTickets(c) {
+  if (!c.tickets) return [];
+  try {
+    var parsed = JSON.parse(c.tickets);
+    if (Array.isArray(parsed)) return parsed;
+  } catch(e) {}
+  return [];
+}
+
+function renderCrmTicketsSection(c, panel, contactId) {
+  var sec = _crmMakeSection("Tasks");
+  var tickets = _parseCrmTickets(c);
+
+  // Add row
+  var addRow = document.createElement("div");
+  addRow.className = "crm-tickets-add-row";
+  var titleInput = document.createElement("input");
+  titleInput.type = "text";
+  titleInput.placeholder = "Add a task\u2026";
+  addRow.appendChild(titleInput);
+  var dateInput = document.createElement("input");
+  dateInput.type = "date";
+  addRow.appendChild(dateInput);
+  var addBtn = document.createElement("button");
+  addBtn.className = "crm-tickets-add-btn";
+  addBtn.textContent = "Add";
+  addRow.appendChild(addBtn);
+  sec.appendChild(addRow);
+
+  var listEl = document.createElement("div");
+  listEl.className = "crm-tickets-list";
+  sec.appendChild(listEl);
+
+  function saveTickets() {
+    var json = JSON.stringify(tickets);
+    crmContacts.forEach(function(x) { if (x.id === contactId) x.tickets = json; });
+    crmApiPost({ action: "update", contact: { id: contactId, tickets: json } })
+      .catch(function() { fetchCrmContacts(); });
+  }
+
+  function renderTicketsList() {
+    listEl.textContent = "";
+    // Open tasks first (sorted by due date), then done tasks
+    var open = tickets.filter(function(t) { return t.status !== "done"; });
+    var done = tickets.filter(function(t) { return t.status === "done"; });
+    open.sort(function(a, b) { return (a.dueDate || "9999").localeCompare(b.dueDate || "9999"); });
+
+    if (!tickets.length) {
+      var empty = document.createElement("p");
+      empty.style.cssText = "font-size:13px;color:#80868b;margin:0;";
+      empty.textContent = "No tasks yet";
+      listEl.appendChild(empty);
+      return;
+    }
+
+    open.concat(done).forEach(function(tkt) {
+      var item = document.createElement("div");
+      item.className = "crm-ticket-item";
+      var cb = document.createElement("input");
+      cb.type = "checkbox";
+      cb.checked = tkt.status === "done";
+      cb.onchange = function() {
+        tkt.status = cb.checked ? "done" : "open";
+        renderTicketsList();
+        saveTickets();
+      };
+      item.appendChild(cb);
+      var title = document.createElement("span");
+      title.className = "crm-ticket-title" + (tkt.status === "done" ? " done" : "");
+      title.textContent = tkt.title;
+      item.appendChild(title);
+      if (tkt.dueDate) {
+        var meta = document.createElement("span");
+        var isOverdue = tkt.status !== "done" && tkt.dueDate < new Date().toISOString().slice(0, 10);
+        meta.className = "crm-ticket-meta" + (isOverdue ? " overdue" : "");
+        meta.textContent = formatDate(tkt.dueDate);
+        item.appendChild(meta);
+      }
+      listEl.appendChild(item);
+    });
+  }
+
+  renderTicketsList();
+
+  addBtn.onclick = function() {
+    var title = titleInput.value.trim();
+    if (!title) return;
+    tickets.push({
+      id: "tkt-" + Date.now(),
+      title: title,
+      status: "open",
+      dueDate: dateInput.value || "",
+      createdBy: getCurrentUserName(),
+      createdDate: new Date().toISOString().slice(0, 10)
+    });
+    titleInput.value = "";
+    dateInput.value = "";
+    renderTicketsList();
+    saveTickets();
+  };
+
+  titleInput.addEventListener("keydown", function(e) {
+    if (e.key === "Enter") { e.preventDefault(); addBtn.click(); }
+  });
+
+  panel.appendChild(sec);
+}
+
+// ── Recent Activity Section ────────────────────────────────────────────────
+
+function renderCrmActivitySection(c, panel, contactId) {
+  var sec = _crmMakeSection("Recent Activity");
+  var timeline = document.createElement("div");
+  timeline.className = "crm-activity-timeline";
+
+  // Filter activities for this contact
+  var contactName = (c.name || "").toLowerCase();
+  var contactNameEn = (c.nameEn || "").toLowerCase();
+  var filtered = activityLog.filter(function(a) {
+    if (a.itemType === "contact" && a.itemId === contactId) return true;
+    if (a.itemType === "contact" && a.itemName && contactName && a.itemName.toLowerCase() === contactName) return true;
+    if (a.itemType === "file" && a.detail && contactName && a.detail.toLowerCase().indexOf(contactName) >= 0) return true;
+    if (a.itemType === "stock" && a.detail && contactName && a.detail.toLowerCase().indexOf(contactName) >= 0) return true;
+    return false;
+  }).slice(0, 10);
+
+  if (!filtered.length) {
+    var empty = document.createElement("p");
+    empty.style.cssText = "font-size:13px;color:#80868b;margin:0;";
+    empty.textContent = "No activity recorded yet";
+    timeline.appendChild(empty);
+  } else {
+    filtered.forEach(function(a) {
+      var item = document.createElement("div");
+      item.className = "crm-activity-item";
+
+      var icon = document.createElement("div");
+      var action = (a.action || "").toLowerCase();
+      var iconClass = "act-updated";
+      var iconChar = "\u270E"; // pencil
+      if (action.indexOf("created") >= 0 || action.indexOf("added") >= 0) { iconClass = "act-created"; iconChar = "+"; }
+      else if (action.indexOf("deleted") >= 0 || action.indexOf("removed") >= 0) { iconClass = "act-deleted"; iconChar = "\u2212"; }
+      else if (action.indexOf("uploaded") >= 0) { iconClass = "act-uploaded"; iconChar = "\u2191"; }
+      icon.className = "crm-activity-icon " + iconClass;
+      icon.textContent = iconChar;
+      item.appendChild(icon);
+
+      var content = document.createElement("div");
+      content.className = "crm-activity-content";
+      var actionEl = document.createElement("div");
+      actionEl.className = "crm-activity-action";
+      var strong = document.createElement("strong");
+      strong.textContent = a.userName || a.userId || "System";
+      actionEl.appendChild(strong);
+      actionEl.appendChild(document.createTextNode(" " + (a.action || "updated") + " " + (a.itemType || "")));
+      content.appendChild(actionEl);
+      if (a.detail) {
+        var detail = document.createElement("div");
+        detail.className = "crm-activity-detail";
+        detail.textContent = a.detail;
+        content.appendChild(detail);
+      }
+      item.appendChild(content);
+
+      var time = document.createElement("div");
+      time.className = "crm-activity-time";
+      time.textContent = formatRelativeTime(a.timestamp);
+      item.appendChild(time);
+
+      timeline.appendChild(item);
+    });
+  }
+
+  sec.appendChild(timeline);
+  panel.appendChild(sec);
 }
 
 // ── Orders Tab ─────────────────────────────────────────────────────────────
@@ -8139,150 +8786,6 @@ function saveContactDocument(c, panel, contactId) {
   }
 }
 
-// ── Info Tab ───────────────────────────────────────────────────────────────
-
-function renderCrmInfoTab(c, panel, contactId) {
-  panel.textContent = "";
-
-  // --- WEBSITE / SOCIAL LINKS ---
-  var linksSec = _crmMakeSection("Links");
-  var links = [
-    { label: "Website", value: c.website, icon: ["M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z","M2 12h20","M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10A15.3 15.3 0 0112 2z"] },
-    { label: "Instagram", value: c.instagram, icon: ["M16 2H8a6 6 0 00-6 6v8a6 6 0 006 6h8a6 6 0 006-6V8a6 6 0 00-6-6z","cx=12 cy=12 r=4.5","cx=17.5 cy=6.5 r=1.5"] },
-    { label: "Other Social", value: c.socialUrl, icon: ["M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71","M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"] }
-  ];
-  var hasLinks = false;
-  links.forEach(function(lnk) {
-    if (!lnk.value) return;
-    hasLinks = true;
-    var row = document.createElement("div");
-    row.className = "crm-info-link-row";
-    row.appendChild(_crmSvgIcon(lnk.icon, 16, 16, 1.5));
-    var a = document.createElement("a");
-    a.href = lnk.value.indexOf("http") === 0 ? lnk.value : "https://" + lnk.value;
-    a.target = "_blank";
-    a.rel = "noopener";
-    a.textContent = lnk.value;
-    row.appendChild(a);
-    linksSec.appendChild(row);
-  });
-  if (!hasLinks) {
-    var noLinks = document.createElement("p");
-    noLinks.style.cssText = "font-size:13px;color:#80868b;margin:0;";
-    noLinks.textContent = "No links added yet";
-    linksSec.appendChild(noLinks);
-  }
-  panel.appendChild(linksSec);
-
-  // --- OG PREVIEW ---
-  if (c.website) {
-    var ogSec = _crmMakeSection("Website Preview");
-    var ogCard = document.createElement("div");
-    ogCard.className = "crm-og-preview";
-    var ogLoading = document.createElement("div");
-    ogLoading.className = "crm-empty-state";
-    ogLoading.textContent = "Loading preview\u2026";
-    ogCard.appendChild(ogLoading);
-    ogSec.appendChild(ogCard);
-    panel.appendChild(ogSec);
-
-    // Fetch OG data from backend
-    var ogUrl = c.website.indexOf("http") === 0 ? c.website : "https://" + c.website;
-    fetch(SCRIPT_URL + "?action=fetchOg&url=" + encodeURIComponent(ogUrl))
-      .then(function(r) { return r.json(); })
-      .then(function(data) {
-        ogCard.textContent = "";
-        if (data.image) {
-          var ogImg = document.createElement("img");
-          ogImg.src = data.image;
-          ogImg.alt = data.title || "";
-          ogCard.appendChild(ogImg);
-        }
-        var ogBody = document.createElement("div");
-        ogBody.className = "crm-og-preview-body";
-        if (data.title) {
-          var ogTitle = document.createElement("div");
-          ogTitle.className = "crm-og-preview-title";
-          ogTitle.textContent = data.title;
-          ogBody.appendChild(ogTitle);
-        }
-        if (data.description) {
-          var ogDesc = document.createElement("div");
-          ogDesc.className = "crm-og-preview-desc";
-          ogDesc.textContent = data.description;
-          ogBody.appendChild(ogDesc);
-        }
-        if (!data.title && !data.description && !data.image) {
-          var noOg = document.createElement("div");
-          noOg.className = "crm-empty-state";
-          noOg.textContent = "No preview available";
-          ogBody.appendChild(noOg);
-        }
-        ogCard.appendChild(ogBody);
-      })
-      .catch(function() {
-        ogCard.textContent = "";
-        var errEl = document.createElement("div");
-        errEl.className = "crm-empty-state";
-        errEl.textContent = "Could not load preview";
-        ogCard.appendChild(errEl);
-      });
-  }
-
-  // --- SHOP PHOTOS ---
-  var photosSec = _crmMakeSection("Shop Photos");
-  var shopPhotos = [];
-  try { shopPhotos = JSON.parse(c.shopPhotos || "[]"); } catch(e) { shopPhotos = []; }
-  if (shopPhotos.length) {
-    var grid = document.createElement("div");
-    grid.className = "crm-shop-images";
-    shopPhotos.forEach(function(url) {
-      var imgEl = document.createElement("img");
-      imgEl.src = url;
-      imgEl.alt = "Shop photo";
-      imgEl.onclick = function() { openImageLightbox(url); };
-      grid.appendChild(imgEl);
-    });
-    photosSec.appendChild(grid);
-  } else {
-    var noPhotos = document.createElement("p");
-    noPhotos.style.cssText = "font-size:13px;color:#80868b;margin:0 0 8px;";
-    noPhotos.textContent = "No shop photos yet";
-    photosSec.appendChild(noPhotos);
-  }
-
-  // Upload photo button
-  var uploadBtn = document.createElement("button");
-  uploadBtn.className = "crm-stock-add-btn";
-  uploadBtn.style.marginTop = "8px";
-  uploadBtn.appendChild(_crmSvgIcon(["M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4","M17 8l-5-5-5 5","M12 3v12"], 14, 14, 2));
-  var uploadText = document.createTextNode(" Upload Photo");
-  uploadBtn.appendChild(uploadText);
-  uploadBtn.onclick = function() {
-    var inp = document.createElement("input");
-    inp.type = "file";
-    inp.accept = "image/*";
-    inp.onchange = function() {
-      if (!inp.files || !inp.files[0]) return;
-      resizeImageBase64(inp.files[0], 1200, function(result) {
-        uploadCrmFile(result.base64, result.mimeType, inp.files[0].name, function(uploadedUrl) {
-          if (!uploadedUrl) { alert("Upload failed"); return; }
-          var existing = [];
-          try { existing = JSON.parse(c.shopPhotos || "[]"); } catch(e) { existing = []; }
-          existing.push(uploadedUrl);
-          crmApiPost({ action: "update", contact: { id: contactId, shopPhotos: JSON.stringify(existing) } }).then(function() {
-            fetchAllData();
-            setTimeout(function() { renderCrmInfoTab(crmContacts.find(function(x) { return x.id === contactId; }) || c, panel, contactId); }, 1500);
-          });
-        });
-      });
-    };
-    inp.click();
-  };
-  photosSec.appendChild(uploadBtn);
-  panel.appendChild(photosSec);
-}
-
 function switchToCrmEditMode(contactId) {
   document.getElementById("crm-detail-view").style.display = "none";
   document.getElementById("crm-edit-header").style.display = "";
@@ -8316,7 +8819,6 @@ function switchToCrmEditMode(contactId) {
   document.getElementById("crm-modal-socialmedia").value = c.socialMedia || "";
   document.getElementById("crm-modal-connected").value = c.connectedDate || "";
   document.getElementById("crm-modal-lastcontact").value = c.lastContactDate || "";
-  document.getElementById("crm-modal-notes").value = c.notes || "";
   document.getElementById("crm-modal-delete-btn").style.display = "inline-block";
   document.getElementById("crm-modal-wholesale").value = c.wholesalePercent || "";
   document.getElementById("crm-modal-consignment").value = c.consignmentPercent || "";
@@ -8358,7 +8860,6 @@ function saveCrmContact() {
     workspace: document.getElementById("crm-modal-workspace").value,
     connectedDate: document.getElementById("crm-modal-connected").value,
     lastContactDate: document.getElementById("crm-modal-lastcontact").value,
-    notes: document.getElementById("crm-modal-notes").value.trim(),
     wholesalePercent: document.getElementById("crm-modal-wholesale").value || "",
     consignmentPercent: document.getElementById("crm-modal-consignment").value || "",
     checklist: JSON.stringify(getCrmChecklistData()),
@@ -8494,7 +8995,7 @@ function saveCrmContact() {
 }
 
 function deleteCrmContactConfirm() {
-  var id = document.getElementById("crm-modal-id").value;
+  var id = document.getElementById("crm-modal-id").value || crmCurrentDetailContactId;
   if (!id) return;
   var foundContact = crmContacts.find(function(x) { return x.id === id; });
   var name = foundContact ? (foundContact.name || foundContact.nameEn || "this contact") : document.getElementById("crm-modal-name").value;
