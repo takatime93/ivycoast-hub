@@ -2387,11 +2387,9 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
   text-align: center;
   background: #f1f3f4;
   color: #80868b;
-  cursor: pointer;
   transition: all 0.15s;
   text-transform: capitalize;
 }
-.crm-pipeline-step:hover { filter: brightness(0.95); }
 .crm-pipeline-step.completed { background: #e6f4ea; color: #137333; }
 .crm-pipeline-step.active { font-weight: 700; }
 .crm-pipeline-step.active.stage-prospect { background: #e8f0fe; color: #1a73e8; }
@@ -2415,6 +2413,24 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
   gap: 5px;
 }
 .crm-detail-summary-item svg { color: #80868b; flex-shrink: 0; }
+
+/* ── Contact info rows ─────────────────────────────────────── */
+.crm-detail-contact-info {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.crm-detail-contact-info-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #3c4043;
+}
+.crm-detail-contact-info-row svg { color: #80868b; flex-shrink: 0; }
+.crm-detail-contact-info-row a { color: #1a73e8; text-decoration: none; }
+.crm-detail-contact-info-row a:hover { text-decoration: underline; }
 
 /* ── More menu (three-dot dropdown) ────────────────────────── */
 .crm-more-menu-wrap { position: relative; }
@@ -2455,6 +2471,23 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 10px;
+}
+
+/* ── Pricing inline tags ───────────────────────────────────── */
+.crm-detail-pricing-inline {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.crm-pricing-tag {
+  display: inline-block;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 5px 12px;
+  background: #f8f9fa;
+  border: 1px solid #ebebeb;
+  border-radius: 8px;
+  color: #202124;
 }
 
 /* ── Notes timeline ────────────────────────────────────────── */
@@ -2539,6 +2572,8 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
   border-radius: 8px;
   outline: none;
   color: #3c4043;
+  width: 140px;
+  flex-shrink: 0;
 }
 .crm-tickets-add-btn {
   padding: 8px 14px;
@@ -7458,52 +7493,43 @@ function openCrmDetailView(contactId) {
     var img = document.createElement("img");
     img.src = c.profileImageUrl;
     img.alt = c.name || "";
-    img.onerror = function() { avatarDiv.removeChild(img); avatarDiv.textContent = (c.name || "?").charAt(0).toUpperCase(); };
+    img.onerror = function() { avatarDiv.removeChild(img); avatarDiv.textContent = (c.company || c.name || "?").charAt(0).toUpperCase(); };
     avatarDiv.appendChild(img);
   } else {
-    avatarDiv.textContent = (c.name || "?").charAt(0).toUpperCase();
+    avatarDiv.textContent = (c.company || c.name || "?").charAt(0).toUpperCase();
   }
   headerTop.appendChild(avatarDiv);
 
   var infoDiv = document.createElement("div");
   infoDiv.className = "crm-detail-header-info";
+  // Company name is primary heading
+  var companyName = c.company || c.name || c.nameEn || "Unnamed";
   var nameEl = document.createElement("h2");
   nameEl.className = "crm-detail-name";
-  nameEl.textContent = c.name || c.nameEn || "Unnamed";
+  nameEl.textContent = companyName;
   infoDiv.appendChild(nameEl);
-  if (c.nameEn && c.name) {
+  // Contact person below company
+  if (c.company && c.name) {
+    var contactPerson = document.createElement("div");
+    contactPerson.className = "crm-detail-name-en";
+    contactPerson.textContent = c.name + (c.nameEn ? "  " + c.nameEn : "") + (c.role ? " \u00B7 " + c.role : "");
+    infoDiv.appendChild(contactPerson);
+  } else if (c.nameEn && c.name) {
     var nameEnEl = document.createElement("div");
     nameEnEl.className = "crm-detail-name-en";
-    nameEnEl.textContent = c.nameEn;
+    nameEnEl.textContent = c.nameEn + (c.role ? " \u00B7 " + c.role : "");
     infoDiv.appendChild(nameEnEl);
-  }
-
-  var subtitleParts = [c.company, c.role].filter(Boolean);
-  if (subtitleParts.length) {
-    var sub = document.createElement("div");
-    sub.className = "crm-detail-subtitle";
-    sub.textContent = subtitleParts.join(" \u00B7 ");
-    infoDiv.appendChild(sub);
+  } else if (c.role) {
+    var roleEl = document.createElement("div");
+    roleEl.className = "crm-detail-subtitle";
+    roleEl.textContent = c.role;
+    infoDiv.appendChild(roleEl);
   }
   headerTop.appendChild(infoDiv);
 
-  // Header action buttons (Email, Phone, Edit, More, Close)
+  // Header action buttons (Edit, More, Close)
   var headerActions = document.createElement("div");
   headerActions.className = "crm-detail-header-actions";
-  if (c.email) {
-    var emailBtn = document.createElement("button");
-    emailBtn.title = "Email";
-    emailBtn.appendChild(_crmSvgIcon(["M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z","points=22,6 12,13 2,6"], 16, 16));
-    emailBtn.onclick = function() { window.location.href = "mailto:" + c.email; };
-    headerActions.appendChild(emailBtn);
-  }
-  if (c.phone) {
-    var phoneBtn = document.createElement("button");
-    phoneBtn.title = "Call";
-    phoneBtn.appendChild(_crmSvgIcon(["M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.13.81.36 1.6.66 2.36a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.76.3 1.55.53 2.36.66A2 2 0 0122 16.92z"], 16, 16));
-    phoneBtn.onclick = function() { window.location.href = "tel:" + c.phone; };
-    headerActions.appendChild(phoneBtn);
-  }
   var editBtn = document.createElement("button");
   editBtn.className = "crm-edit-btn";
   editBtn.title = "Edit";
@@ -7519,6 +7545,34 @@ function openCrmDetailView(contactId) {
   moreWrap.appendChild(moreBtn);
   var moreMenu = document.createElement("div");
   moreMenu.className = "crm-detail-more-menu";
+  // Change Stage submenu
+  var pipelineStages = ["prospect", "outreach", "negotiation", "active_partner", "inactive"];
+  var pipelineLabels = { prospect: "Prospect", outreach: "Outreach", negotiation: "Negotiation", active_partner: "Active Partner", inactive: "Inactive" };
+  var currentStage = (c.stage || "prospect").toLowerCase().replace(/\s+/g, "_");
+  var stageLabel = document.createElement("div");
+  stageLabel.style.cssText = "font-size:10px;font-weight:600;color:#80868b;text-transform:uppercase;letter-spacing:0.5px;padding:8px 16px 4px;";
+  stageLabel.textContent = "Change Stage";
+  moreMenu.appendChild(stageLabel);
+  pipelineStages.forEach(function(stage) {
+    var stageItem = document.createElement("button");
+    stageItem.className = "crm-detail-more-menu-item" + (stage === currentStage ? " crm-menu-item-active" : "");
+    stageItem.textContent = pipelineLabels[stage];
+    if (stage === currentStage) { stageItem.style.fontWeight = "600"; stageItem.style.color = "#0e413b"; }
+    stageItem.onclick = function() {
+      moreMenu.classList.remove("open");
+      if (stage === currentStage) return;
+      crmContacts.forEach(function(x) { if (x.id === contactId) x.stage = stage; });
+      renderCrmPipeline();
+      renderHomeCrmStats();
+      openCrmDetailView(contactId);
+      crmApiPost({ action: "update", contact: { id: contactId, stage: stage } })
+        .catch(function() { fetchCrmContacts(); });
+    };
+    moreMenu.appendChild(stageItem);
+  });
+  var menuDivider = document.createElement("div");
+  menuDivider.style.cssText = "height:1px;background:#ebebeb;margin:4px 0;";
+  moreMenu.appendChild(menuDivider);
   var deleteItem = document.createElement("button");
   deleteItem.className = "crm-detail-more-menu-item danger";
   deleteItem.textContent = "Delete Contact";
@@ -7540,52 +7594,71 @@ function openCrmDetailView(contactId) {
   headerTop.appendChild(headerActions);
   header.appendChild(headerTop);
 
-  // Summary row
-  var summaryRow = document.createElement("div");
-  summaryRow.className = "crm-detail-summary-row";
+  // Contact info row (email, phone, address, website — visible text)
+  var contactInfoItems = [
+    { icon: ["M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z","points=22,6 12,13 2,6"], text: c.email },
+    { icon: ["M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.13.81.36 1.6.66 2.36a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.76.3 1.55.53 2.36.66A2 2 0 0122 16.92z"], text: c.phone },
+    { icon: ["M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z","cx=12 cy=10 r=3"], text: c.location },
+    { icon: ["M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z","M2 12h20","M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10A15.3 15.3 0 0112 2z"], text: c.website, isLink: true }
+  ];
+  var hasContactInfo = contactInfoItems.some(function(i) { return !!i.text; });
+  if (hasContactInfo) {
+    var contactInfo = document.createElement("div");
+    contactInfo.className = "crm-detail-contact-info";
+    contactInfoItems.forEach(function(ci) {
+      if (!ci.text) return;
+      var row = document.createElement("div");
+      row.className = "crm-detail-contact-info-row";
+      row.appendChild(_crmSvgIcon(ci.icon, 14, 14, 1.5));
+      if (ci.isLink) {
+        var a = document.createElement("a");
+        a.href = ci.text.indexOf("http") === 0 ? ci.text : "https://" + ci.text;
+        a.target = "_blank";
+        a.rel = "noopener";
+        a.textContent = ci.text;
+        row.appendChild(a);
+      } else {
+        row.appendChild(document.createTextNode(ci.text));
+      }
+      contactInfo.appendChild(row);
+    });
+    header.appendChild(contactInfo);
+  }
+
+  // Summary row (type, shop type, connected, last contact — no workspace)
   var summaryItems = [
     { icon: ["M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4-4v2","cx=8.5 cy=7 r=4"], text: c.type },
     { icon: ["M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z","M9 22V12h6v10"], text: (c.products && c.products.trim()) ? c.products : null },
-    { icon: ["M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z","cx=12 cy=10 r=3"], text: c.location },
-    { icon: ["rect=2 7 20 14 2","M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"], text: c.workspace },
     { icon: ["M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z","M12 6v6l4 2"], text: c.connectedDate ? "Connected: " + formatDate(c.connectedDate) : null },
     { icon: ["M12 20h9","M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"], text: c.lastContactDate ? "Last contact: " + formatDate(c.lastContactDate) : null }
   ];
-  summaryItems.forEach(function(si) {
-    if (!si.text) return;
-    var item = document.createElement("div");
-    item.className = "crm-detail-summary-item";
-    item.appendChild(_crmSvgIcon(si.icon, 13, 13, 1.5));
-    item.appendChild(document.createTextNode(si.text));
-    summaryRow.appendChild(item);
-  });
-  if (summaryRow.childNodes.length) header.appendChild(summaryRow);
+  var hasSummary = summaryItems.some(function(i) { return !!i.text; });
+  if (hasSummary) {
+    var summaryRow = document.createElement("div");
+    summaryRow.className = "crm-detail-summary-row";
+    summaryItems.forEach(function(si) {
+      if (!si.text) return;
+      var item = document.createElement("div");
+      item.className = "crm-detail-summary-item";
+      item.appendChild(_crmSvgIcon(si.icon, 13, 13, 1.5));
+      item.appendChild(document.createTextNode(si.text));
+      summaryRow.appendChild(item);
+    });
+    header.appendChild(summaryRow);
+  }
 
-  // Pipeline indicator
-  var pipelineStages = ["prospect", "outreach", "negotiation", "active_partner", "inactive"];
-  var pipelineLabels = { prospect: "Prospect", outreach: "Outreach", negotiation: "Negotiation", active_partner: "Active Partner", inactive: "Inactive" };
-  var currentStage = (c.stage || "prospect").toLowerCase().replace(/\s+/g, "_");
+  // Pipeline progress bar (read-only indicator, change via More menu)
   var currentIdx = pipelineStages.indexOf(currentStage);
   if (currentIdx < 0) currentIdx = 0;
   var pipelineRow = document.createElement("div");
   pipelineRow.className = "crm-detail-pipeline";
   pipelineStages.forEach(function(stage, idx) {
-    var pill = document.createElement("div");
-    pill.className = "crm-pipeline-step";
-    if (idx < currentIdx) pill.classList.add("completed");
-    if (idx === currentIdx) { pill.classList.add("active"); pill.classList.add("stage-" + stage); }
-    pill.textContent = pipelineLabels[stage];
-    pill.onclick = function() {
-      if (stage === currentStage) return;
-      // Optimistic update
-      crmContacts.forEach(function(x) { if (x.id === contactId) x.stage = stage; });
-      renderCrmPipeline();
-      renderHomeCrmStats();
-      openCrmDetailView(contactId);
-      crmApiPost({ action: "update", contact: { id: contactId, stage: stage } })
-        .catch(function() { fetchCrmContacts(); });
-    };
-    pipelineRow.appendChild(pill);
+    var step = document.createElement("div");
+    step.className = "crm-pipeline-step";
+    if (idx < currentIdx) step.classList.add("completed");
+    if (idx === currentIdx) { step.classList.add("active"); step.classList.add("stage-" + stage); }
+    step.textContent = pipelineLabels[stage];
+    pipelineRow.appendChild(step);
   });
   header.appendChild(pipelineRow);
 
@@ -7753,40 +7826,26 @@ function renderCrmOverviewTab(c, panel, contactId) {
   qsSec.appendChild(qsGrid);
   panel.appendChild(qsSec);
 
-  // --- PRICING (stat cards) ---
+  // --- PRICING (compact inline) ---
   var ws = c.wholesalePercent;
   var cs = c.consignmentPercent;
   if (ws || cs) {
-    var priceSec = _crmMakeSection("Pricing");
-    var statsRow = document.createElement("div");
-    statsRow.className = "crm-detail-stats";
+    var priceSec = _crmMakeSection("Pricing Terms");
+    var priceRow = document.createElement("div");
+    priceRow.className = "crm-detail-pricing-inline";
     if (ws) {
-      var wsStat = document.createElement("div");
-      wsStat.className = "crm-detail-stat";
-      var wsVal = document.createElement("div");
-      wsVal.className = "crm-detail-stat-value";
-      wsVal.textContent = ws + "%";
-      wsStat.appendChild(wsVal);
-      var wsLbl = document.createElement("div");
-      wsLbl.className = "crm-detail-stat-label";
-      wsLbl.textContent = "Wholesale";
-      wsStat.appendChild(wsLbl);
-      statsRow.appendChild(wsStat);
+      var wsItem = document.createElement("span");
+      wsItem.className = "crm-pricing-tag";
+      wsItem.textContent = "Wholesale " + ws + "%";
+      priceRow.appendChild(wsItem);
     }
     if (cs) {
-      var csStat = document.createElement("div");
-      csStat.className = "crm-detail-stat";
-      var csVal = document.createElement("div");
-      csVal.className = "crm-detail-stat-value";
-      csVal.textContent = cs + "%";
-      csStat.appendChild(csVal);
-      var csLbl = document.createElement("div");
-      csLbl.className = "crm-detail-stat-label";
-      csLbl.textContent = "Consignment";
-      csStat.appendChild(csLbl);
-      statsRow.appendChild(csStat);
+      var csItem = document.createElement("span");
+      csItem.className = "crm-pricing-tag";
+      csItem.textContent = "Consignment " + cs + "%";
+      priceRow.appendChild(csItem);
     }
-    priceSec.appendChild(statsRow);
+    priceSec.appendChild(priceRow);
     panel.appendChild(priceSec);
   }
 
@@ -7838,10 +7897,9 @@ function renderCrmOverviewTab(c, panel, contactId) {
     panel.appendChild(cardSec);
   }
 
-  // --- WEBSITE / SOCIAL LINKS ---
-  var linksSec = _crmMakeSection("Links");
+  // --- SOCIAL LINKS (website is in header) ---
+  var linksSec = _crmMakeSection("Social Links");
   var links = [
-    { label: "Website", value: c.website, icon: ["M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z","M2 12h20","M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10A15.3 15.3 0 0112 2z"] },
     { label: "Instagram", value: c.instagram, icon: ["M16 2H8a6 6 0 00-6 6v8a6 6 0 006 6h8a6 6 0 006-6V8a6 6 0 00-6-6z","cx=12 cy=12 r=4.5","cx=17.5 cy=6.5 r=1.5"] },
     { label: "Other Social", value: c.socialUrl, icon: ["M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71","M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"] }
   ];
