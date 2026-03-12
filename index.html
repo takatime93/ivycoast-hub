@@ -2369,6 +2369,34 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
 }
 .crm-detail-tab:hover { color: #202124; }
 .crm-detail-tab.active { color: #0e413b; border-bottom-color: #0e413b; font-weight: 600; }
+.crm-detail-tab .crm-tab-badge {
+  margin-left: 5px;
+  vertical-align: middle;
+}
+.crm-detail-tab .crm-tab-dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #c5221f;
+}
+.crm-detail-tab .crm-tab-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  font-size: 10px;
+  font-weight: 600;
+  border-radius: 9px;
+  background: #f1f3f4;
+  color: #5f6368;
+}
+.crm-detail-tab.active .crm-tab-count {
+  background: #e6f4ea;
+  color: #137333;
+}
 .crm-detail-tab-panel { display: none; }
 .crm-detail-tab-panel.active { display: block; }
 
@@ -7663,13 +7691,40 @@ function openCrmDetailView(contactId) {
   header.appendChild(pipelineRow);
 
   // --- TAB BAR ---
+  // Compute counts for tab badges
+  var _emailLo = (c.email || "").toLowerCase();
+  var _nameLo = (c.name || "").toLowerCase();
+  var _orderCount = shopifyOrders.filter(function(o) {
+    if (_emailLo && (o.email || "").toLowerCase() === _emailLo) return true;
+    if (_nameLo && (o.customerName || "").toLowerCase() === _nameLo) return true;
+    return false;
+  }).length;
+  var _stockCount = partnerStock.filter(function(s) {
+    return s.contactId === contactId && (s.status || "").toLowerCase() === "active";
+  }).length;
+
   var tabNames = ["Overview", "Orders", "Stock", "Documents"];
   var panels = [];
   tabNames.forEach(function(name, idx) {
     var btn = document.createElement("button");
     btn.className = "crm-detail-tab" + (idx === 0 ? " active" : "");
-    btn.textContent = name;
     btn.setAttribute("data-tab", idx);
+    btn.appendChild(document.createTextNode(name));
+
+    // Orders tab (idx 1): dot notifier, replaced with count on click
+    if (idx === 1 && _orderCount > 0) {
+      var orderBadge = document.createElement("span");
+      orderBadge.className = "crm-tab-badge crm-tab-dot";
+      btn.appendChild(orderBadge);
+    }
+    // Stock tab (idx 2): always show count
+    if (idx === 2) {
+      var stockBadge = document.createElement("span");
+      stockBadge.className = "crm-tab-badge crm-tab-count";
+      stockBadge.textContent = String(_stockCount);
+      btn.appendChild(stockBadge);
+    }
+
     tabsBar.appendChild(btn);
 
     var panel = document.createElement("div");
@@ -7683,6 +7738,14 @@ function openCrmDetailView(contactId) {
       btn.classList.add("active");
       panels.forEach(function(p) { p.classList.remove("active"); });
       panel.classList.add("active");
+      // Orders tab: replace dot with count on first visit
+      if (idx === 1) {
+        var dot = btn.querySelector(".crm-tab-dot");
+        if (dot) {
+          dot.className = "crm-tab-badge crm-tab-count";
+          dot.textContent = String(_orderCount);
+        }
+      }
     };
   });
 
