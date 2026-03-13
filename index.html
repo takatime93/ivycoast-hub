@@ -2609,17 +2609,31 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
 }
 
 /* ── Notes timeline ────────────────────────────────────────── */
+.crm-notes-container {
+  display: flex;
+  flex-direction: column;
+  max-height: 420px;
+}
+.crm-notes-timeline {
+  flex: 1;
+  overflow-y: auto;
+  margin-top: 0;
+  padding: 8px 0;
+  min-height: 60px;
+}
 .crm-notes-input-wrap {
   display: flex;
   gap: 8px;
-  align-items: flex-start;
-  margin-bottom: 12px;
+  align-items: flex-end;
+  padding-top: 10px;
+  border-top: 1px solid #e8eaed;
+  flex-shrink: 0;
 }
 .crm-notes-input-wrap textarea {
   flex: 1;
-  resize: vertical;
-  min-height: 40px;
-  max-height: 120px;
+  resize: none;
+  min-height: 36px;
+  max-height: 80px;
   padding: 8px 12px;
   font-size: 13px;
   font-family: inherit;
@@ -2645,7 +2659,6 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
 }
 .crm-notes-add-btn.visible { display: inline-block; }
 .crm-notes-add-btn:hover { background: #1a5c54; }
-.crm-notes-timeline { margin-top: 4px; }
 .crm-note-item {
   padding: 10px 0;
   border-bottom: 1px solid #f0f0f0;
@@ -6472,20 +6485,44 @@ var _mentionTargetTextarea = null;
 
 function getMentionCandidates() {
   var candidates = [];
+  var seen = {};
+  // Team users
+  Object.keys(USER_NAME_MAP).forEach(function(email) {
+    var name = USER_NAME_MAP[email];
+    if (name && !seen[name.toLowerCase()]) {
+      seen[name.toLowerCase()] = true;
+      candidates.push({ type: "user", name: name, detail: email, group: "Team" });
+    }
+  });
+  // CRM contacts & companies
   var contacts = (typeof crmContacts !== "undefined" ? crmContacts : []);
   contacts.forEach(function(c) {
-    if (c.name) candidates.push({ id: c.id, type: "contact", name: c.name, detail: c.company || "", group: "CRM Contacts" });
+    if (c.company && !seen[c.company.toLowerCase()]) {
+      seen[c.company.toLowerCase()] = true;
+      candidates.push({ id: c.id, type: "contact", name: c.company, detail: c.name || "", group: "Companies" });
+    }
+    if (c.name && c.name !== c.company && !seen[c.name.toLowerCase()]) {
+      seen[c.name.toLowerCase()] = true;
+      candidates.push({ id: c.id, type: "contact", name: c.name, detail: c.company || "", group: "Contacts" });
+    }
     _migrateCrmPeople(c).forEach(function(p) {
       var full = ((p.firstName || "") + " " + (p.lastName || "")).trim();
-      if (full) candidates.push({ id: c.id, personId: p.id, type: "person", name: full, detail: c.company || c.name || "", group: "People" });
+      if (full && !seen[full.toLowerCase()]) {
+        seen[full.toLowerCase()] = true;
+        candidates.push({ id: c.id, personId: p.id, type: "person", name: full, detail: c.company || c.name || "", group: "People" });
+      }
     });
   });
+  // Shopify customers
   var customers = (typeof shopifyCustomers !== "undefined" ? shopifyCustomers : []);
   customers.forEach(function(c) {
     var name = (c.firstName || "") + " " + (c.lastName || "");
     name = name.trim();
     if (!name && c.name) name = c.name;
-    if (name) candidates.push({ name: name, detail: c.email || "", group: "Customers" });
+    if (name && !seen[name.toLowerCase()]) {
+      seen[name.toLowerCase()] = true;
+      candidates.push({ name: name, detail: c.email || "", group: "Customers" });
+    }
   });
   return candidates;
 }
@@ -8812,40 +8849,53 @@ function renderCrmNotesSection(c, panel, contactId) {
   var sec = _crmMakeSection("Notes");
   var notes = _parseCrmNotes(c);
 
-  // Input area
+  // Chat-style container: timeline on top, input at bottom
+  var container = document.createElement("div");
+  container.className = "crm-notes-container";
+
+  // Timeline (scrollable message area)
+  var timeline = document.createElement("div");
+  timeline.className = "crm-notes-timeline";
+  container.appendChild(timeline);
+
+  // Input area at bottom
   var inputWrap = document.createElement("div");
   inputWrap.className = "crm-notes-input-wrap";
   var textarea = document.createElement("textarea");
   textarea.placeholder = "Add a note\u2026";
-  textarea.rows = 2;
+  textarea.rows = 1;
   inputWrap.appendChild(textarea);
   var addBtn = document.createElement("button");
   addBtn.className = "crm-notes-add-btn";
-  addBtn.textContent = "Add Note";
+  addBtn.textContent = "Add";
   inputWrap.appendChild(addBtn);
-  sec.appendChild(inputWrap);
+  container.appendChild(inputWrap);
 
+  sec.appendChild(container);
+
+  // Auto-resize textarea
   textarea.addEventListener("input", function() {
     addBtn.classList.toggle("visible", textarea.value.trim().length > 0);
+    this.style.height = "auto";
+    this.style.height = Math.min(this.scrollHeight, 80) + "px";
   });
   attachMentionListeners(textarea);
 
-  // Timeline container
-  var timeline = document.createElement("div");
-  timeline.className = "crm-notes-timeline";
-  sec.appendChild(timeline);
+  function scrollToBottom() {
+    timeline.scrollTop = timeline.scrollHeight;
+  }
 
   function renderNotesList() {
     timeline.textContent = "";
     if (!notes.length) {
       var empty = document.createElement("p");
-      empty.style.cssText = "font-size:13px;color:#80868b;margin:0;";
+      empty.style.cssText = "font-size:13px;color:#80868b;margin:0;padding:20px 0;text-align:center;";
       empty.textContent = "No notes yet";
       timeline.appendChild(empty);
       return;
     }
-    // Most recent first
-    notes.slice().reverse().forEach(function(note) {
+    // Oldest first (chronological, like a chat)
+    notes.forEach(function(note) {
       var item = document.createElement("div");
       item.className = "crm-note-item";
       var meta = document.createElement("div");
@@ -8861,16 +8911,18 @@ function renderCrmNotesSection(c, panel, contactId) {
       item.appendChild(text);
       timeline.appendChild(item);
     });
+    scrollToBottom();
   }
 
   renderNotesList();
 
-  addBtn.onclick = function() {
+  function submitNote() {
     var text = textarea.value.trim();
     if (!text) return;
     var newNote = { id: "note-" + Date.now(), text: text, author: getCurrentUserName(), date: new Date().toISOString() };
     notes.push(newNote);
     textarea.value = "";
+    textarea.style.height = "auto";
     addBtn.classList.remove("visible");
     renderNotesList();
     // Save
@@ -8878,7 +8930,17 @@ function renderCrmNotesSection(c, panel, contactId) {
     crmContacts.forEach(function(x) { if (x.id === contactId) x.notes = notesJson; });
     crmApiPost({ action: "update", contact: { id: contactId, notes: notesJson } })
       .catch(function() { fetchCrmContacts(); });
-  };
+  }
+
+  addBtn.onclick = submitNote;
+
+  // Enter to send (Shift+Enter for newline)
+  textarea.addEventListener("keydown", function(e) {
+    if (e.key === "Enter" && !e.shiftKey && !mentionDropdown.classList.contains("open")) {
+      e.preventDefault();
+      submitNote();
+    }
+  });
 
   panel.appendChild(sec);
 }
