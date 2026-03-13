@@ -2523,9 +2523,9 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
 /* ── Contact info rows ─────────────────────────────────────── */
 .crm-detail-contact-info {
   margin-top: 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px 24px;
 }
 .crm-detail-contact-info-row {
   display: flex;
@@ -3109,6 +3109,7 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
   .crm-shop-images { grid-template-columns: 1fr; }
   .crm-pipeline-label { font-size: 8px; }
   .crm-pipeline-label.active { font-size: 9px; }
+  .crm-detail-contact-info { grid-template-columns: 1fr; }
   .crm-detail-summary-row { flex-direction: column; gap: 6px; }
   .crm-detail-quick-stats { grid-template-columns: 1fr 1fr; }
   .crm-tickets-add-row { flex-direction: column; align-items: stretch; }
@@ -3842,6 +3843,12 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
       <button class="crm-subtab" data-subview="crm-pipeline" onclick="switchCrmSubView('crm-pipeline')">Pipeline</button>
     </div>
 
+    <!-- Contacts sub-tab -->
+    <div id="crm-contacts" class="crm-subview">
+      <div class="crm-vendor-table-wrap" id="crm-contacts-table-wrap"></div>
+      <p id="crm-contacts-empty" style="display:none;text-align:center;padding:32px;color:#5f6368;font-size:14px;">No contacts found.</p>
+    </div>
+
     <!-- Vendors sub-tab -->
     <div id="crm-vendors" class="crm-subview active">
       <div id="crm-vendors-skeleton" class="skel-vendor-grid">
@@ -3850,25 +3857,6 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
       </div>
       <div class="crm-vendor-grid" id="crm-vendor-grid"></div>
       <p id="crm-vendors-empty" style="display:none;text-align:center;padding:32px;color:#5f6368;font-size:14px;">No vendors found. Add one with + Add Contact.</p>
-    </div>
-
-    <!-- Contacts sub-tab -->
-    <div id="crm-contacts" class="crm-subview">
-      <table class="crm-table">
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Company</th>
-            <th>Role</th>
-            <th>Email</th>
-            <th>Products</th>
-            <th>Stage</th>
-            <th>Last Contact</th>
-          </tr>
-        </thead>
-        <tbody id="crm-contacts-body"></tbody>
-      </table>
-      <p id="crm-contacts-empty" style="display:none;text-align:center;padding:32px;color:#5f6368;font-size:14px;">No contacts found.</p>
     </div>
 
     <!-- Pipeline sub-tab -->
@@ -5207,6 +5195,7 @@ function populateCategoryFilter() {
 }
 
 function renderLibrary() {
+  _saveFilterState("library", ["search-input", "filter-workspace", "filter-category", "filter-type"]);
   var query = document.getElementById("search-input").value.toLowerCase();
   var wsFilter = document.getElementById("filter-workspace").value;
   var catFilter = document.getElementById("filter-category").value;
@@ -5486,6 +5475,24 @@ function getTabLastVisited(viewId) {
 function setTabLastVisited(viewId) {
   var email = getCurrentUserEmail();
   localStorage.setItem("ivyhub_tabLastVisited_" + email + "_" + viewId, new Date().toISOString());
+}
+
+// ── View state persistence (filters, search, modals) ─────────
+function _saveViewState(key, val) { localStorage.setItem("ivyhub_vs_" + key, val); }
+function _getViewState(key) { return localStorage.getItem("ivyhub_vs_" + key) || ""; }
+function _clearViewState(key) { localStorage.removeItem("ivyhub_vs_" + key); }
+function _saveFilterState(pageId, elIds) {
+  elIds.forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) _saveViewState(pageId + "_" + id, el.value);
+  });
+}
+function _restoreFilterState(pageId, elIds) {
+  elIds.forEach(function(id) {
+    var el = document.getElementById(id);
+    var saved = _getViewState(pageId + "_" + id);
+    if (el && saved) el.value = saved;
+  });
 }
 
 // Notification bell
@@ -5814,7 +5821,9 @@ function showLastSynced() {
 // Fetch tasks from API
 function fetchBoardTasks(force) {
   if (!SCRIPT_URL) { checkBoardSetup(); return; }
-  if (!force && boardTasks.length > 0 && Date.now() - lastFetched.board < CACHE_TTL) { renderBoard(); return; }
+  if (!force && boardTasks.length > 0 && Date.now() - lastFetched.board < CACHE_TTL) {
+    _restoreFilterState("board", ["board-filter-ws"]); renderBoard(); return;
+  }
   setSyncStatus("Syncing\u2026");
   document.getElementById("board-loading").style.display = boardTasks.length === 0 ? "block" : "none";
   fetch(SCRIPT_URL + "?action=list&sheet=Tasks")
@@ -5822,6 +5831,7 @@ function fetchBoardTasks(force) {
     .then(function(data) {
       boardTasks = data.tasks || [];
       lastFetched.board = Date.now();
+      _restoreFilterState("board", ["board-filter-ws"]);
       renderBoard();
       renderHomeActiveTasks();
       renderHomeKeyStats();
@@ -5854,6 +5864,7 @@ function apiPost(body) {
 
 // Render board
 function renderBoard() {
+  _saveFilterState("board", ["board-filter-ws"]);
   var wsFilter = document.getElementById("board-filter-ws").value;
   var cols = { backlog: [], todo: [], in_progress: [], done: [] };
 
@@ -6630,9 +6641,9 @@ function navigateTo(viewId, searchQuery, statusFilter) {
   } else if (actualViewId === "tools") {
     switchTool(toolId || "documents");
   }
-  if (viewId === "library" && searchQuery) {
-    var si = document.getElementById("search-input");
-    si.value = searchQuery;
+  if (viewId === "library") {
+    _restoreFilterState("library", ["search-input", "filter-workspace", "filter-category", "filter-type"]);
+    if (searchQuery) { document.getElementById("search-input").value = searchQuery; }
     renderLibrary();
   }
   if (viewId === "board" && statusFilter) {
@@ -6887,8 +6898,8 @@ var crmContacts = [];
 var partnerStock = [];
 var contactDocuments = [];
 var crmRefreshTimer = null;
-var crmActiveSubView = "crm-vendors";
-var crmVendorViewMode = "tile";
+var crmActiveSubView = localStorage.getItem("ivyhub_crmSubView") || "crm-vendors";
+var crmVendorViewMode = localStorage.getItem("ivyhub_crmVendorView") || "tile";
 
 function setCrmSyncStatus(msg) {
   document.getElementById("crm-sync-status").textContent = msg;
@@ -6935,7 +6946,14 @@ function contactDocApiPost(body) {
 
 function fetchCrmContacts(force) {
   if (!SCRIPT_URL) return;
-  if (!force && crmContacts.length > 0 && Date.now() - lastFetched.crm < CACHE_TTL) { renderCrmActiveView(); return; }
+  if (!force && crmContacts.length > 0 && Date.now() - lastFetched.crm < CACHE_TTL) {
+    _restoreFilterState("crm", ["crm-filter-ws", "crm-filter-type"]);
+    if (crmActiveSubView !== "crm-vendors") switchCrmSubView(crmActiveSubView);
+    else renderCrmActiveView();
+    var savedC = localStorage.getItem("ivyhub_crmOpenContact");
+    if (savedC && crmContacts.find(function(x) { return x.id === savedC; })) openCrmDetailView(savedC);
+    return;
+  }
   setCrmSyncStatus("Syncing\u2026");
   fetch(SCRIPT_URL + "?action=list&sheet=Contacts")
     .then(function(r) { return r.json(); })
@@ -6948,7 +6966,15 @@ function fetchCrmContacts(force) {
         if (c.businessCardBackUrl) c.businessCardBackUrl = normalizeDriveImageUrl(c.businessCardBackUrl);
       });
       lastFetched.crm = Date.now();
-      renderCrmActiveView();
+      _restoreFilterState("crm", ["crm-filter-ws", "crm-filter-type"]);
+      // Restore saved sub-view (vendors/pipeline)
+      if (crmActiveSubView !== "crm-vendors") switchCrmSubView(crmActiveSubView);
+      else renderCrmActiveView();
+      // Restore open contact modal
+      var savedContact = localStorage.getItem("ivyhub_crmOpenContact");
+      if (savedContact && crmContacts.find(function(x) { return x.id === savedContact; })) {
+        openCrmDetailView(savedContact);
+      }
       renderHomeCrmStats();
       showCrmLastSynced();
       saveDataCache();
@@ -6961,6 +6987,7 @@ function fetchCrmContacts(force) {
 
 function switchCrmSubView(viewId) {
   crmActiveSubView = viewId;
+  localStorage.setItem("ivyhub_crmSubView", viewId);
   document.querySelectorAll(".crm-subtab").forEach(function(t) {
     t.classList.toggle("active", t.dataset.subview === viewId);
   });
@@ -6971,6 +6998,7 @@ function switchCrmSubView(viewId) {
 }
 
 function getFilteredCrmContacts() {
+  _saveFilterState("crm", ["crm-filter-ws", "crm-filter-type"]);
   var wsFilter = document.getElementById("crm-filter-ws").value;
   var typeFilter = document.getElementById("crm-filter-type").value;
   return crmContacts.filter(function(c) {
@@ -6986,8 +7014,79 @@ function renderCrmActiveView() {
   else if (crmActiveSubView === "crm-pipeline") renderCrmPipeline();
 }
 
+function renderCrmContacts() {
+  var wrap = document.getElementById("crm-contacts-table-wrap");
+  var empty = document.getElementById("crm-contacts-empty");
+  wrap.textContent = "";
+  var contacts = getFilteredCrmContacts();
+  if (contacts.length === 0) { empty.style.display = "block"; return; }
+  empty.style.display = "none";
+  var table = document.createElement("table");
+  table.className = "crm-table";
+  var thead = document.createElement("thead");
+  var headerRow = document.createElement("tr");
+  ["Contact Name", "Company", "Role", "Email", "Phone", "Stage", "Last Contact"].forEach(function(h) {
+    var th = document.createElement("th");
+    th.textContent = h;
+    if (h === "Company") th.style.minWidth = "180px";
+    headerRow.appendChild(th);
+  });
+  thead.appendChild(headerRow);
+  table.appendChild(thead);
+  var tbody = document.createElement("tbody");
+  contacts.forEach(function(c) {
+    var tr = document.createElement("tr");
+    tr.addEventListener("click", function() { openCrmDetailView(c.id); });
+    // Contact Name: show person name if company exists, otherwise show name + nameEn
+    var tdName = document.createElement("td");
+    tdName.style.fontWeight = "500";
+    if (c.company && c.name && c.name !== c.company) {
+      var personName = c.name;
+      if (c.nameEn) personName += "  " + c.nameEn;
+      tdName.textContent = personName;
+    } else if (c.nameEn) {
+      tdName.textContent = c.nameEn;
+    } else {
+      tdName.textContent = c.name || "Unnamed";
+    }
+    tr.appendChild(tdName);
+    var tdCompany = document.createElement("td");
+    tdCompany.textContent = c.company || "\u2014";
+    tr.appendChild(tdCompany);
+    var tdRole = document.createElement("td");
+    tdRole.textContent = c.role || "\u2014";
+    tr.appendChild(tdRole);
+    var tdEmail = document.createElement("td");
+    if (c.email) {
+      var a = document.createElement("a");
+      a.href = "mailto:" + c.email;
+      a.textContent = c.email;
+      a.style.cssText = "color:#1a73e8;text-decoration:none;";
+      a.addEventListener("click", function(e) { e.stopPropagation(); });
+      tdEmail.appendChild(a);
+    } else { tdEmail.textContent = "\u2014"; }
+    tr.appendChild(tdEmail);
+    var tdPhone = document.createElement("td");
+    tdPhone.textContent = c.phone || "\u2014";
+    tr.appendChild(tdPhone);
+    var tdStage = document.createElement("td");
+    var badge = document.createElement("span");
+    badge.className = "crm-stage-badge crm-stage-" + (c.stage || "prospect");
+    badge.textContent = (c.stage || "prospect").replace("_", " ");
+    tdStage.appendChild(badge);
+    tr.appendChild(tdStage);
+    var tdLast = document.createElement("td");
+    tdLast.textContent = c.lastContactDate ? formatDate(c.lastContactDate) : "\u2014";
+    tr.appendChild(tdLast);
+    tbody.appendChild(tr);
+  });
+  table.appendChild(tbody);
+  wrap.appendChild(table);
+}
+
 function switchCrmVendorView(mode) {
   crmVendorViewMode = mode;
+  localStorage.setItem("ivyhub_crmVendorView", mode);
   renderCrmVendors();
 }
 
@@ -7056,9 +7155,10 @@ function _renderCrmVendorTable(container, contacts) {
   table.className = "crm-table";
   var thead = document.createElement("thead");
   var headerRow = document.createElement("tr");
-  ["Name", "Company", "Location", "Email", "Phone", "Stage", "Products"].forEach(function(h) {
+  ["Name", "Company", "Website", "Email", "Phone", "Stage", "Shop Type"].forEach(function(h) {
     var th = document.createElement("th");
     th.textContent = h;
+    if (h === "Company") th.style.minWidth = "180px";
     headerRow.appendChild(th);
   });
   thead.appendChild(headerRow);
@@ -7074,9 +7174,19 @@ function _renderCrmVendorTable(container, contacts) {
     var tdCompany = document.createElement("td");
     tdCompany.textContent = c.company || "\u2014";
     tr.appendChild(tdCompany);
-    var tdLoc = document.createElement("td");
-    tdLoc.textContent = c.location || "\u2014";
-    tr.appendChild(tdLoc);
+    var tdWeb = document.createElement("td");
+    if (c.website) {
+      var wLink = document.createElement("a");
+      var wUrl = c.website.indexOf("http") === 0 ? c.website : "https://" + c.website;
+      wLink.href = wUrl;
+      wLink.target = "_blank";
+      wLink.rel = "noopener";
+      wLink.textContent = c.website.replace(/^https?:\/\//, "").replace(/\/$/, "");
+      wLink.style.cssText = "color:#1a73e8;text-decoration:none;font-size:12px;";
+      wLink.addEventListener("click", function(e) { e.stopPropagation(); });
+      tdWeb.appendChild(wLink);
+    } else { tdWeb.textContent = "\u2014"; }
+    tr.appendChild(tdWeb);
     var tdEmail = document.createElement("td");
     if (c.email) {
       var a = document.createElement("a");
@@ -7229,81 +7339,6 @@ function renderCrmVendors() {
   }
 }
 
-function renderCrmContacts() {
-  var tbody = document.getElementById("crm-contacts-body");
-  var empty = document.getElementById("crm-contacts-empty");
-  tbody.textContent = "";
-  var contacts = getFilteredCrmContacts();
-  if (contacts.length === 0) {
-    empty.style.display = "block";
-    return;
-  }
-  empty.style.display = "none";
-  var frag = document.createDocumentFragment();
-  contacts.forEach(function(c) {
-    var tr = document.createElement("tr");
-    tr.addEventListener("click", function() { openCrmDetailView(c.id); });
-
-    var tdName = document.createElement("td");
-    tdName.textContent = c.name;
-    tr.appendChild(tdName);
-
-    var tdCompany = document.createElement("td");
-    tdCompany.textContent = c.company || "\u2014";
-    tr.appendChild(tdCompany);
-
-    var tdRole = document.createElement("td");
-    tdRole.textContent = c.role || "\u2014";
-    tr.appendChild(tdRole);
-
-    var tdEmail = document.createElement("td");
-    if (c.email) {
-      var a = document.createElement("a");
-      a.href = "mailto:" + c.email;
-      a.textContent = c.email;
-      a.style.color = "#1a73e8";
-      a.style.textDecoration = "none";
-      a.addEventListener("click", function(e) { e.stopPropagation(); });
-      tdEmail.appendChild(a);
-    } else {
-      tdEmail.textContent = "\u2014";
-    }
-    tr.appendChild(tdEmail);
-
-    var tdProducts = document.createElement("td");
-    if (c.products) {
-      var tagsDiv = document.createElement("div");
-      tagsDiv.className = "crm-product-tags";
-      c.products.split(",").slice(0, 3).forEach(function(p) {
-        p = p.trim();
-        if (!p) return;
-        var tag = document.createElement("span");
-        tag.className = "crm-product-tag";
-        tag.textContent = p;
-        tagsDiv.appendChild(tag);
-      });
-      tdProducts.appendChild(tagsDiv);
-    } else {
-      tdProducts.textContent = "\u2014";
-    }
-    tr.appendChild(tdProducts);
-
-    var tdStage = document.createElement("td");
-    var stageBadge = document.createElement("span");
-    stageBadge.className = "crm-stage-badge crm-stage-" + (c.stage || "prospect");
-    stageBadge.textContent = (c.stage || "prospect").replace("_", " ");
-    tdStage.appendChild(stageBadge);
-    tr.appendChild(tdStage);
-
-    var tdLastContact = document.createElement("td");
-    tdLastContact.textContent = formatDate(c.lastContactDate);
-    tr.appendChild(tdLastContact);
-
-    frag.appendChild(tr);
-  });
-  tbody.appendChild(frag);
-}
-
 function renderCrmPipeline() {
   var stages = ["prospect", "outreach", "negotiation", "active_partner", "inactive"];
   var cols = {};
@@ -7407,7 +7442,9 @@ document.querySelectorAll("#crm-kanban .kanban-col").forEach(function(col) {
       if (c.id === contactId) c.stage = newStage;
     });
     renderCrmPipeline();
+    renderCrmActiveView();
     renderHomeCrmStats();
+    saveDataCache();
     // API call
     crmApiPost({ action: "update", contact: { id: contactId, stage: newStage } })
       .catch(function() { fetchCrmContacts(); });
@@ -7683,6 +7720,7 @@ function openCrmEditModal(contactId) {
 
 function closeCrmModal() {
   crmCurrentDetailContactId = null;
+  localStorage.removeItem("ivyhub_crmOpenContact");
   if (_crmMoreMenuCleanup) { document.removeEventListener("click", _crmMoreMenuCleanup); _crmMoreMenuCleanup = null; }
   document.getElementById("crm-modal-overlay").classList.remove("open");
   document.getElementById("crm-detail-view").style.display = "none";
@@ -7729,6 +7767,7 @@ function openCrmDetailView(contactId) {
   var c = crmContacts.find(function(x) { return x.id === contactId; });
   if (!c) return;
   crmCurrentDetailContactId = contactId;
+  localStorage.setItem("ivyhub_crmOpenContact", contactId);
 
   // Hide edit form, show detail view
   document.getElementById("crm-edit-header").style.display = "none";
@@ -7941,7 +7980,9 @@ function openCrmDetailView(contactId) {
       if (stage === currentStage) return;
       crmContacts.forEach(function(x) { if (x.id === contactId) x.stage = stage; });
       renderCrmPipeline();
+      renderCrmActiveView();
       renderHomeCrmStats();
+      saveDataCache();
       openCrmDetailView(contactId);
       crmApiPost({ action: "update", contact: { id: contactId, stage: stage } })
         .catch(function() { fetchCrmContacts(); });
@@ -9653,6 +9694,7 @@ function buildDocumentRows() {
 
 function renderDocuments() {
   hideSkeleton("documents-skeleton");
+  _saveFilterState("docs", ["docs-filter-status", "docs-filter-ws", "docs-search"]);
   var statusFilter = (document.getElementById("docs-filter-status") || {}).value || "";
   var wsFilter = (document.getElementById("docs-filter-ws") || {}).value || "";
   var query = ((document.getElementById("docs-search") || {}).value || "").toLowerCase().trim();
@@ -9793,6 +9835,7 @@ var debouncedRenderDocuments = debounce(renderDocuments, 200);
 function fetchDocuments(force) {
   if (!SCRIPT_URL) return;
   setDocsSyncStatus("Loading\u2026");
+  _restoreFilterState("docs", ["docs-filter-status", "docs-filter-ws", "docs-search"]);
   renderDocuments();
   var invP = fetch(SCRIPT_URL + "?action=list&sheet=Invoices").then(function(r) { return r.json(); });
   var recP = fetch(SCRIPT_URL + "?action=list&sheet=Receipts").then(function(r) { return r.json(); });
@@ -12524,14 +12567,27 @@ var debouncedRenderCustomers = debounce(renderCrmCustomers, 200);
 
 function fetchCustomers(force) {
   if (!SCRIPT_URL) return;
-  if (!force && shopifyCustomers.length > 0 && Date.now() - lastFetched.customers < CACHE_TTL) { renderCrmCustomers(); return; }
+  if (!force && shopifyCustomers.length > 0 && Date.now() - lastFetched.customers < CACHE_TTL) {
+    var cs = document.getElementById("customers-search"); var sv = _getViewState("customers_search");
+    if (cs && sv) cs.value = sv;
+    renderCrmCustomers();
+    var savedDrawer = _getViewState("customersOpenDrawer");
+    if (savedDrawer) openCustomerDrawer(savedDrawer);
+    return;
+  }
   fetch(SCRIPT_URL + "?action=list&sheet=Customers")
     .then(function(r) { return r.json(); })
     .then(function(data) {
       shopifyCustomers = data.customers || [];
       lastFetched.customers = Date.now();
       var customersView = document.getElementById("customers");
-      if (customersView && customersView.classList.contains("active")) renderCrmCustomers();
+      if (customersView && customersView.classList.contains("active")) {
+        var cs2 = document.getElementById("customers-search"); var sv2 = _getViewState("customers_search");
+        if (cs2 && sv2) cs2.value = sv2;
+        renderCrmCustomers();
+        var savedDrawer2 = _getViewState("customersOpenDrawer");
+        if (savedDrawer2) openCustomerDrawer(savedDrawer2);
+      }
       renderHomeCrmStats();
       saveDataCache();
     })
@@ -12564,6 +12620,7 @@ function renderCrmCustomers() {
   tbody.textContent = "";
 
   var searchEl = document.getElementById("customers-search");
+  if (searchEl) _saveViewState("customers_search", searchEl.value);
   var query = searchEl ? searchEl.value.toLowerCase().trim() : "";
 
   var customers = shopifyCustomers.filter(function(c) {
@@ -12636,6 +12693,7 @@ function renderCrmCustomers() {
 
 function openCustomerDrawer(email) {
   if (!email) return;
+  _saveViewState("customersOpenDrawer", email);
   var emailLower = email.toLowerCase();
 
   // Find customer in shopifyCustomers
@@ -12835,6 +12893,7 @@ function openCustomerDrawer(email) {
 }
 
 function closeCustomerDrawer() {
+  _clearViewState("customersOpenDrawer");
   document.getElementById("customer-drawer-overlay").classList.remove("open");
   document.getElementById("customer-drawer").classList.remove("open");
 }
@@ -12916,17 +12975,21 @@ var debouncedRenderProducts = debounce(renderProducts, 200);
 
 function fetchShopifyProducts(force) {
   if (!SCRIPT_URL) return;
-  if (!force && shopifyProducts.length > 0 && Date.now() - lastFetched.products < CACHE_TTL) { renderProducts(); return; }
+  if (!force && shopifyProducts.length > 0 && Date.now() - lastFetched.products < CACHE_TTL) {
+    _restoreFilterState("products", ["products-filter-status", "products-filter-type", "products-search"]);
+    renderProducts(); return;
+  }
   setProductsSyncStatus("Loading\u2026");
   fetch(SCRIPT_URL + "?action=list&sheet=Products")
     .then(function(r) { return r.json(); })
     .then(function(data) {
       shopifyProducts = data.products || [];
       lastFetched.products = Date.now();
+      populateProductTypeFilter();
+      _restoreFilterState("products", ["products-filter-status", "products-filter-type", "products-search"]);
       renderProducts();
       renderHomeShopifyStats();
       showProductsLastSynced();
-      populateProductTypeFilter();
       saveDataCache();
     })
     .catch(function(err) {
@@ -12969,6 +13032,7 @@ function populateProductTypeFilter() {
 
 function renderProducts() {
   hideSkeleton("products-skeleton");
+  _saveFilterState("products", ["products-filter-status", "products-filter-type", "products-search"]);
   var statusFilter = document.getElementById("products-filter-status").value;
   var typeFilter = document.getElementById("products-filter-type").value;
   var query = document.getElementById("products-search").value.toLowerCase().trim();
@@ -13153,7 +13217,7 @@ function stopProductsRefresh() {
 // ===================== ORDERS =====================
 
 var shopifyOrders = [];
-var ordersSubFilter = "all";
+var ordersSubFilter = localStorage.getItem("ivyhub_vs_ordersSubFilter") || "all";
 var ordersRefreshTimer = null;
 
 function ordersApiPost(body) {
@@ -13181,14 +13245,28 @@ var debouncedRenderOrders = debounce(renderOrders, 200);
 
 function fetchShopifyOrders(force) {
   if (!SCRIPT_URL) return;
-  if (!force && shopifyOrders.length > 0 && Date.now() - lastFetched.orders < CACHE_TTL) { renderOrders(); return; }
+  if (!force && shopifyOrders.length > 0 && Date.now() - lastFetched.orders < CACHE_TTL) {
+    _restoreFilterState("orders", ["orders-filter-payment", "orders-filter-fulfillment", "orders-search"]);
+    if (ordersSubFilter !== "all") switchOrdersSubFilter(ordersSubFilter);
+    else renderOrders();
+    var so = _getViewState("ordersOpenOrder");
+    if (so) { var om = shopifyOrders.find(function(o) { return (o.orderNumber || o.shopifyOrderId) === so; }); if (om) openOrderDetailModal(om); }
+    return;
+  }
   setOrdersSyncStatus("Loading\u2026");
   fetch(SCRIPT_URL + "?action=list&sheet=Orders")
     .then(function(r) { return r.json(); })
     .then(function(data) {
       shopifyOrders = data.orders || [];
       lastFetched.orders = Date.now();
-      renderOrders();
+      _restoreFilterState("orders", ["orders-filter-payment", "orders-filter-fulfillment", "orders-search"]);
+      if (ordersSubFilter !== "all") switchOrdersSubFilter(ordersSubFilter);
+      else renderOrders();
+      var savedOrder = _getViewState("ordersOpenOrder");
+      if (savedOrder) {
+        var oMatch = shopifyOrders.find(function(o) { return (o.orderNumber || o.shopifyOrderId) === savedOrder; });
+        if (oMatch) openOrderDetailModal(oMatch);
+      }
       renderHomeShopifyStats();
       showOrdersLastSynced();
       saveDataCache();
@@ -13215,6 +13293,7 @@ function syncShopifyOrdersFromHub() {
 
 function switchOrdersSubFilter(filter) {
   ordersSubFilter = filter;
+  localStorage.setItem("ivyhub_vs_ordersSubFilter", filter);
   document.querySelectorAll(".orders-subtab").forEach(function(t) {
     t.classList.toggle("active", t.dataset.filter === filter);
   });
@@ -13238,6 +13317,7 @@ function getOrderCategory(order) {
 
 function renderOrders() {
   hideSkeleton("orders-skeleton");
+  _saveFilterState("orders", ["orders-filter-payment", "orders-filter-fulfillment", "orders-search"]);
   var paymentFilter = document.getElementById("orders-filter-payment").value;
   var fulfillmentFilter = document.getElementById("orders-filter-fulfillment").value;
   var query = document.getElementById("orders-search").value.toLowerCase().trim();
@@ -13385,6 +13465,7 @@ function renderOrders() {
 }
 
 function openOrderDetailModal(order) {
+  _saveViewState("ordersOpenOrder", order.orderNumber || order.shopifyOrderId || "");
   var detailNum = order.orderNumber || order.shopifyOrderId || "";
   document.getElementById("order-detail-title").textContent = (String(detailNum).indexOf("M-") === 0 ? "Order " : "Order #") + detailNum;
   var grid = document.getElementById("order-detail-grid");
@@ -13563,6 +13644,7 @@ function openOrderDetailModal(order) {
 }
 
 function closeOrderDetailModal() {
+  _clearViewState("ordersOpenOrder");
   document.getElementById("order-detail-overlay").classList.remove("open");
 }
 
