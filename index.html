@@ -8707,16 +8707,30 @@ function _parseCrmPeople(c) {
 
 function _migrateCrmPeople(c) {
   var people = _parseCrmPeople(c);
-  if (people.length === 0 && c.company && c.name && c.name !== c.company) {
-    people = [{
-      id: "person-migrated",
-      firstName: (c.name || "").split(" ")[0] || c.name || "",
-      lastName: (c.name || "").split(" ").slice(1).join(" ") || "",
-      email: c.email || "",
-      phone: c.phone || "",
-      role: c.role || "",
-      notes: ""
-    }];
+  if (people.length === 0) {
+    // Determine person name from vendor-level fields
+    var pFirst = "", pLast = "";
+    if (c.company && c.name && c.name !== c.company) {
+      // Company exists and name is a person name
+      pFirst = (c.name || "").split(" ")[0] || "";
+      pLast = (c.name || "").split(" ").slice(1).join(" ") || "";
+    } else if (c.nameEn) {
+      // Fall back to English name (e.g. name===company but nameEn is person)
+      pFirst = (c.nameEn || "").split(" ")[0] || "";
+      pLast = (c.nameEn || "").split(" ").slice(1).join(" ") || "";
+    }
+    // Create person if we have any person-level data
+    if (pFirst || pLast || c.email || c.phone || c.role) {
+      people = [{
+        id: "person-migrated",
+        firstName: pFirst,
+        lastName: pLast,
+        email: c.email || "",
+        phone: c.phone || "",
+        role: c.role || "",
+        notes: ""
+      }];
+    }
   }
   // Migrate vendor-level business cards to first person
   if (people.length > 0 && !people[0].businessCardFrontUrl) {
@@ -9404,12 +9418,18 @@ function handlePersonCardUpload(person, side, input, imgEl, savePeople) {
 function renderCrmTeamTab(c, panel, contactId) {
   panel.textContent = "";
   var people = _migrateCrmPeople(c);
+  var savedRaw = _parseCrmPeople(c);
 
   function savePeople() {
     var json = JSON.stringify(people);
     crmContacts.forEach(function(x) { if (x.id === contactId) x.people = json; });
     crmApiPost({ action: "update", contact: { id: contactId, people: json } })
       .catch(function() { fetchCrmContacts(); });
+  }
+
+  // Auto-persist migrated people so migration only runs once
+  if (people.length > 0 && savedRaw.length === 0) {
+    savePeople();
   }
 
   // Add person row
