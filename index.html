@@ -7866,10 +7866,14 @@ function openCrmEditModal(contactId) {
   crmExistingCardBackUrl = c.businessCardBackUrl || "";
 
   document.getElementById("crm-modal-id").value = c.id;
-  document.getElementById("crm-modal-name").value = c.name || "";
+  // Smart population: if no company field, use name as company header
+  var _editCompany = c.company || "";
+  var _editName = c.name || "";
+  if (!_editCompany && _editName) { _editCompany = _editName; _editName = ""; }
+  document.getElementById("crm-modal-name").value = _editName;
   document.getElementById("crm-modal-name-en").value = c.nameEn || "";
   document.getElementById("crm-modal-type").value = c.type || "Vendor";
-  document.getElementById("crm-modal-company").value = c.company || "";
+  document.getElementById("crm-modal-company").value = _editCompany;
   document.getElementById("crm-modal-role").value = c.role || "";
   document.getElementById("crm-modal-email").value = c.email || "";
   document.getElementById("crm-modal-phone").value = c.phone || "";
@@ -10322,10 +10326,14 @@ function switchToCrmEditMode(contactId) {
   crmExistingCardFrontUrl = c.businessCardUrl || c.businessCardFrontUrl || "";
   crmExistingCardBackUrl = c.businessCardBackUrl || "";
   document.getElementById("crm-modal-id").value = c.id;
-  document.getElementById("crm-modal-name").value = c.name || "";
+  // Smart population: if no company field, use name as company header
+  var _editCompany = c.company || "";
+  var _editName = c.name || "";
+  if (!_editCompany && _editName) { _editCompany = _editName; _editName = ""; }
+  document.getElementById("crm-modal-name").value = _editName;
   document.getElementById("crm-modal-name-en").value = c.nameEn || "";
   document.getElementById("crm-modal-type").value = c.type || "Vendor";
-  document.getElementById("crm-modal-company").value = c.company || "";
+  document.getElementById("crm-modal-company").value = _editCompany;
   document.getElementById("crm-modal-role").value = c.role || "";
   document.getElementById("crm-modal-email").value = c.email || "";
   document.getElementById("crm-modal-phone").value = c.phone || "";
