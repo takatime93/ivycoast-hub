@@ -7037,13 +7037,11 @@ function renderCrmContacts() {
   contacts.forEach(function(c) {
     var tr = document.createElement("tr");
     tr.addEventListener("click", function() { openCrmDetailView(c.id); });
-    // Contact Name: show person name if company exists, otherwise show name + nameEn
+    // Contact Name: show person name only (one name per row)
     var tdName = document.createElement("td");
     tdName.style.fontWeight = "500";
     if (c.company && c.name && c.name !== c.company) {
-      var personName = c.name;
-      if (c.nameEn) personName += "  " + c.nameEn;
-      tdName.textContent = personName;
+      tdName.textContent = c.name;
     } else if (c.nameEn) {
       tdName.textContent = c.nameEn;
     } else {
