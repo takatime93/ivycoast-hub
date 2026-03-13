@@ -4327,7 +4327,10 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
       </div>
       <div class="crm-header-fields">
         <div class="crm-header-row">
-          <input type="text" id="crm-modal-company" placeholder="Company / Business Name" oninput="updateCrmAvatar(this.value)" style="flex:1">
+          <input type="text" id="crm-modal-company" placeholder="Brand / Display Name" oninput="updateCrmAvatar(this.value)" style="flex:1;font-size:15px;font-weight:500;">
+        </div>
+        <div class="crm-header-row">
+          <input type="text" id="crm-modal-name" data-field="name" placeholder="Registered Company Name (e.g. 株式会社...)" style="flex:1;font-size:12px;color:#5f6368;">
         </div>
       </div>
     </div>
@@ -4402,8 +4405,7 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
       </div>
     </div>
 
-    <!-- Primary contact fields: hidden, preserved for data compat -->
-    <input type="hidden" id="crm-modal-name" data-field="name">
+    <!-- Legacy person fields: hidden, preserved for data compat -->
     <input type="hidden" id="crm-modal-name-en">
     <input type="hidden" id="crm-modal-role">
     <input type="hidden" id="crm-modal-email">
@@ -7987,22 +7989,24 @@ function openCrmDetailView(contactId) {
     nameEl.appendChild(peopleBadge);
   }
   infoDiv.appendChild(nameEl);
-  // Contact person below company
-  if (c.company && c.name) {
-    var contactPerson = document.createElement("div");
-    contactPerson.className = "crm-detail-name-en";
-    contactPerson.textContent = c.name + (c.nameEn ? "  " + c.nameEn : "") + (c.role ? " \u00B7 " + c.role : "");
-    infoDiv.appendChild(contactPerson);
-  } else if (c.nameEn && c.name) {
-    var nameEnEl = document.createElement("div");
-    nameEnEl.className = "crm-detail-name-en";
-    nameEnEl.textContent = c.nameEn + (c.role ? " \u00B7 " + c.role : "");
-    infoDiv.appendChild(nameEnEl);
-  } else if (c.role) {
-    var roleEl = document.createElement("div");
-    roleEl.className = "crm-detail-subtitle";
-    roleEl.textContent = c.role;
-    infoDiv.appendChild(roleEl);
+  // Registered company name below brand name
+  var _regName = c.name && c.name !== (c.company || "") ? c.name : "";
+  if (_regName) {
+    var regNameEl = document.createElement("div");
+    regNameEl.className = "crm-detail-name-en";
+    regNameEl.textContent = _regName;
+    infoDiv.appendChild(regNameEl);
+  }
+  // First person name as subtitle
+  if (detailPeople.length > 0) {
+    var firstP = detailPeople[0];
+    var pFullName = ((firstP.firstName || "") + " " + (firstP.lastName || "")).trim();
+    if (pFullName) {
+      var personEl = document.createElement("div");
+      personEl.className = "crm-detail-subtitle";
+      personEl.textContent = pFullName + (firstP.role ? " \u00B7 " + firstP.role : "");
+      infoDiv.appendChild(personEl);
+    }
   }
   headerTop.appendChild(infoDiv);
 
