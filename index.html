@@ -595,6 +595,9 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
   background: #e8f0fe;
   text-decoration: underline;
 }
+.crm-product-link { color: #0d652d; cursor: pointer; font-weight: 500; border-radius: 3px; padding: 0 2px; }
+.crm-product-link:hover { background: #e6f4ea; text-decoration: underline; }
+.mention-item-price { font-size: 11px; color: #0d652d; margin-left: auto; }
 
 /* Board Modal */
 .board-modal-overlay {
@@ -2779,6 +2782,15 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
 }
 .crm-ticket-meta.overdue { color: #c5221f; }
 
+/* ── Chat-style tasks container ─────────────────────────────── */
+.crm-tasks-container { display: flex; flex-direction: column; max-height: 420px; }
+.crm-tasks-timeline { flex: 1; overflow-y: auto; padding: 8px 0; min-height: 60px; }
+.crm-tasks-input-wrap { display: flex; gap: 8px; align-items: center; padding-top: 10px; border-top: 1px solid #e8eaed; flex-shrink: 0; }
+.crm-tasks-input-wrap input[type="text"] { flex: 1; padding: 8px 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 13px; }
+.crm-tasks-input-wrap input[type="date"] { padding: 6px 8px; border: 1px solid #ddd; border-radius: 8px; font-size: 13px; }
+.crm-tasks-input-wrap button { padding: 8px 16px; background: #0e413b; color: #fff; border: none; border-radius: 8px; cursor: pointer; font-size: 13px; white-space: nowrap; }
+.crm-tasks-input-wrap button:hover { background: #1a5c54; }
+
 /* ── People section ────────────────────────────────────────── */
 .crm-people-add-row { display: flex; gap: 8px; margin-bottom: 12px; }
 .crm-people-add-row input { flex: 1; padding: 8px 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 13px; }
@@ -3189,6 +3201,7 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
   .crm-detail-quick-stats { grid-template-columns: 1fr 1fr; }
   .crm-tickets-add-row { flex-direction: column; align-items: stretch; }
   .crm-tickets-add-row input[type="date"] { width: 100%; }
+  .crm-tasks-input-wrap { flex-direction: column; align-items: stretch; }
   .crm-people-add-row { flex-direction: column; }
   .products-table { font-size: 13px; }
   .products-table th, .products-table td { padding: 8px 6px; }
@@ -6482,6 +6495,7 @@ var mentionFiltered = [];
 var mentionActiveIndex = -1;
 var mentionStartPos = -1;
 var _mentionTargetTextarea = null;
+var mentionTriggerChar = "@";
 
 function getMentionCandidates() {
   var candidates = [];
@@ -6534,6 +6548,29 @@ function filterMentionCandidates(query) {
   });
 }
 
+function getProductCandidates() {
+  var candidates = [];
+  var seen = {};
+  var products = (typeof shopifyProducts !== "undefined" ? shopifyProducts : []);
+  products.forEach(function(p) {
+    if (!p.title) return;
+    var key = p.title.toLowerCase();
+    if (seen[key]) return;
+    seen[key] = true;
+    var detail = (p.sku || "") + (p.variantTitle ? " — " + p.variantTitle : "");
+    var price = p.price ? "¥" + Number(p.price).toLocaleString() : "";
+    candidates.push({ id: p.id, type: "product", name: p.title, detail: detail, price: price, group: "Products" });
+  });
+  return candidates;
+}
+
+function filterProductCandidates(query) {
+  var q = query.toLowerCase();
+  return getProductCandidates().filter(function(c) {
+    return c.name.toLowerCase().indexOf(q) !== -1 || c.detail.toLowerCase().indexOf(q) !== -1;
+  });
+}
+
 function renderMentionDropdown(filtered) {
   mentionDropdown.textContent = "";
   if (!filtered.length) {
@@ -6568,6 +6605,13 @@ function renderMentionDropdown(filtered) {
       item.appendChild(detailSpan);
     }
 
+    if (c.price) {
+      var priceSpan = document.createElement("span");
+      priceSpan.className = "mention-item-price";
+      priceSpan.textContent = c.price;
+      item.appendChild(priceSpan);
+    }
+
     // mousedown fires before blur
     item.addEventListener("mousedown", function(e) {
       e.preventDefault();
@@ -6594,8 +6638,8 @@ function selectMention(index) {
   var val = ta.value;
   var before = val.substring(0, mentionStartPos);
   var after = val.substring(ta.selectionStart);
-  ta.value = before + "@" + selected.name + " " + after;
-  var newPos = before.length + selected.name.length + 2; // @ + name + space
+  ta.value = before + mentionTriggerChar + selected.name + " " + after;
+  var newPos = before.length + selected.name.length + 2; // trigger + name + space
   ta.selectionStart = ta.selectionEnd = newPos;
   ta.focus();
 
@@ -6615,21 +6659,41 @@ function attachMentionListeners(ta) {
     _mentionTargetTextarea = ta;
     var val = this.value;
     var pos = this.selectionStart;
-    // Find @ before cursor
     var textBefore = val.substring(0, pos);
+
+    // Find both @ and / triggers before cursor, take whichever is closer
     var atIndex = textBefore.lastIndexOf("@");
-    if (atIndex === -1 || (atIndex > 0 && textBefore[atIndex - 1] !== " " && textBefore[atIndex - 1] !== "\n")) {
+    var slashIndex = textBefore.lastIndexOf("/");
+    var triggerIndex = -1;
+    var trigger = "";
+
+    if (atIndex > slashIndex) { triggerIndex = atIndex; trigger = "@"; }
+    else if (slashIndex > atIndex) { triggerIndex = slashIndex; trigger = "/"; }
+    else { closeMentionDropdown(); return; }
+
+    // Validate: trigger must be at position 0 or preceded by space/newline
+    if (triggerIndex > 0 && textBefore[triggerIndex - 1] !== " " && textBefore[triggerIndex - 1] !== "\n") {
       closeMentionDropdown();
       return;
     }
-    var query = textBefore.substring(atIndex + 1);
+
+    var query = textBefore.substring(triggerIndex + 1);
+
+    // For /: if the very next char after / is a space, treat as literal
+    if (trigger === "/" && query.length > 0 && query[0] === " ") {
+      closeMentionDropdown();
+      return;
+    }
+
     // Don't trigger if there's a space in the query (mention already completed)
     if (query.indexOf(" ") !== -1 && query.length > 20) {
       closeMentionDropdown();
       return;
     }
-    mentionStartPos = atIndex;
-    var filtered = filterMentionCandidates(query);
+
+    mentionTriggerChar = trigger;
+    mentionStartPos = triggerIndex;
+    var filtered = trigger === "@" ? filterMentionCandidates(query) : filterProductCandidates(query);
     if (filtered.length) {
       positionMentionDropdown(this);
       renderMentionDropdown(filtered);
@@ -8806,6 +8870,7 @@ function _parseCrmNotes(c) {
 }
 
 function _renderTextWithMentions(container, text) {
+  // Build contact name map
   var nameMap = {};
   crmContacts.forEach(function(c) {
     if (c.name) nameMap[c.name.toLowerCase()] = c.id;
@@ -8818,29 +8883,83 @@ function _renderTextWithMentions(container, text) {
   });
   var names = Object.keys(nameMap).sort(function(a, b) { return b.length - a.length; });
 
+  // Build product title map
+  var productMap = {};
+  var products = (typeof shopifyProducts !== "undefined" ? shopifyProducts : []);
+  products.forEach(function(p) {
+    if (p.title && !productMap[p.title.toLowerCase()]) productMap[p.title.toLowerCase()] = p.title;
+  });
+  var productTitles = Object.keys(productMap).sort(function(a, b) { return b.length - a.length; });
+
   var remaining = text;
   while (remaining.length > 0) {
+    // Find whichever trigger comes first
     var atIdx = remaining.indexOf("@");
-    if (atIdx === -1) { container.appendChild(document.createTextNode(remaining)); break; }
-    if (atIdx > 0) container.appendChild(document.createTextNode(remaining.substring(0, atIdx)));
-    var afterAt = remaining.substring(atIdx + 1).toLowerCase();
-    var matched = false;
-    for (var i = 0; i < names.length; i++) {
-      if (afterAt.indexOf(names[i]) === 0) {
-        var span = document.createElement("span");
-        span.className = "crm-mention-link";
-        span.textContent = "@" + remaining.substring(atIdx + 1, atIdx + 1 + names[i].length);
-        var cId = nameMap[names[i]];
-        span.addEventListener("click", (function(id) { return function(e) { e.stopPropagation(); openCrmDetailView(id); }; })(cId));
-        container.appendChild(span);
-        remaining = remaining.substring(atIdx + 1 + names[i].length);
-        matched = true;
-        break;
+    var slIdx = remaining.indexOf("/");
+
+    // Guard: only match / as product trigger if preceded by start-of-text, space, or newline
+    if (slIdx !== -1) {
+      var origSlIdx = text.length - remaining.length + slIdx;
+      if (origSlIdx > 0) {
+        var prevChar = text[origSlIdx - 1];
+        if (prevChar !== " " && prevChar !== "\n") slIdx = -1; // inside URL or path, skip
       }
     }
-    if (!matched) {
-      container.appendChild(document.createTextNode("@"));
-      remaining = remaining.substring(atIdx + 1);
+
+    if (atIdx === -1 && slIdx === -1) { container.appendChild(document.createTextNode(remaining)); break; }
+
+    var useAt = (atIdx !== -1 && (slIdx === -1 || atIdx <= slIdx));
+    var triggerIdx = useAt ? atIdx : slIdx;
+
+    if (triggerIdx > 0) container.appendChild(document.createTextNode(remaining.substring(0, triggerIdx)));
+
+    if (useAt) {
+      // @ contact mention
+      var afterAt = remaining.substring(triggerIdx + 1).toLowerCase();
+      var matched = false;
+      for (var i = 0; i < names.length; i++) {
+        if (afterAt.indexOf(names[i]) === 0) {
+          var span = document.createElement("span");
+          span.className = "crm-mention-link";
+          span.textContent = "@" + remaining.substring(triggerIdx + 1, triggerIdx + 1 + names[i].length);
+          var cId = nameMap[names[i]];
+          span.addEventListener("click", (function(id) { return function(e) { e.stopPropagation(); openCrmDetailView(id); }; })(cId));
+          container.appendChild(span);
+          remaining = remaining.substring(triggerIdx + 1 + names[i].length);
+          matched = true;
+          break;
+        }
+      }
+      if (!matched) {
+        container.appendChild(document.createTextNode("@"));
+        remaining = remaining.substring(triggerIdx + 1);
+      }
+    } else {
+      // / product mention
+      var afterSlash = remaining.substring(triggerIdx + 1).toLowerCase();
+      var pMatched = false;
+      for (var j = 0; j < productTitles.length; j++) {
+        if (afterSlash.indexOf(productTitles[j]) === 0) {
+          var pSpan = document.createElement("span");
+          pSpan.className = "crm-product-link";
+          var originalTitle = remaining.substring(triggerIdx + 1, triggerIdx + 1 + productTitles[j].length);
+          pSpan.textContent = "/" + originalTitle;
+          pSpan.addEventListener("click", (function(title) { return function(e) {
+            e.stopPropagation();
+            navigateTo("products");
+            var searchInput = document.getElementById("products-search");
+            if (searchInput) { searchInput.value = title; renderProducts(); }
+          }; })(originalTitle));
+          container.appendChild(pSpan);
+          remaining = remaining.substring(triggerIdx + 1 + productTitles[j].length);
+          pMatched = true;
+          break;
+        }
+      }
+      if (!pMatched) {
+        container.appendChild(document.createTextNode("/"));
+        remaining = remaining.substring(triggerIdx + 1);
+      }
     }
   }
 }
@@ -8960,25 +9079,33 @@ function renderCrmTicketsSection(c, panel, contactId) {
   var sec = _crmMakeSection("Tasks");
   var tickets = _parseCrmTickets(c);
 
-  // Add row
-  var addRow = document.createElement("div");
-  addRow.className = "crm-tickets-add-row";
+  // Chat-style container: scrollable timeline on top, input bar at bottom
+  var container = document.createElement("div");
+  container.className = "crm-tasks-container";
+
+  var timeline = document.createElement("div");
+  timeline.className = "crm-tasks-timeline";
+  container.appendChild(timeline);
+
+  // Input bar at bottom
+  var inputWrap = document.createElement("div");
+  inputWrap.className = "crm-tasks-input-wrap";
   var titleInput = document.createElement("input");
   titleInput.type = "text";
   titleInput.placeholder = "Add a task\u2026";
-  addRow.appendChild(titleInput);
+  inputWrap.appendChild(titleInput);
   var dateInput = document.createElement("input");
   dateInput.type = "date";
-  addRow.appendChild(dateInput);
+  inputWrap.appendChild(dateInput);
   var addBtn = document.createElement("button");
-  addBtn.className = "crm-tickets-add-btn";
   addBtn.textContent = "Add";
-  addRow.appendChild(addBtn);
-  sec.appendChild(addRow);
+  inputWrap.appendChild(addBtn);
+  container.appendChild(inputWrap);
 
-  var listEl = document.createElement("div");
-  listEl.className = "crm-tickets-list";
-  sec.appendChild(listEl);
+  sec.appendChild(container);
+
+  // Attach @/product mention listeners to task input
+  attachMentionListeners(titleInput);
 
   function saveTickets() {
     var json = JSON.stringify(tickets);
@@ -8988,7 +9115,7 @@ function renderCrmTicketsSection(c, panel, contactId) {
   }
 
   function renderTicketsList() {
-    listEl.textContent = "";
+    timeline.textContent = "";
     // Open tasks first (sorted by due date), then done tasks
     var open = tickets.filter(function(t) { return t.status !== "done"; });
     var done = tickets.filter(function(t) { return t.status === "done"; });
@@ -8998,7 +9125,7 @@ function renderCrmTicketsSection(c, panel, contactId) {
       var empty = document.createElement("p");
       empty.style.cssText = "font-size:13px;color:#80868b;margin:0;";
       empty.textContent = "No tasks yet";
-      listEl.appendChild(empty);
+      timeline.appendChild(empty);
       return;
     }
 
@@ -9012,11 +9139,18 @@ function renderCrmTicketsSection(c, panel, contactId) {
         tkt.status = cb.checked ? "done" : "open";
         renderTicketsList();
         saveTickets();
+        // Board sync: propagate status change
+        if (tkt.boardTaskId) {
+          var newBoardStatus = cb.checked ? "done" : "todo";
+          apiPost({ action: "update", task: { id: tkt.boardTaskId, status: newBoardStatus } });
+          boardTasks.forEach(function(bt) { if (bt.id === tkt.boardTaskId) bt.status = newBoardStatus; });
+          if (document.getElementById("board").classList.contains("active")) renderBoard();
+        }
       };
       item.appendChild(cb);
       var title = document.createElement("span");
       title.className = "crm-ticket-title" + (tkt.status === "done" ? " done" : "");
-      title.textContent = tkt.title;
+      _renderTextWithMentions(title, tkt.title);
       item.appendChild(title);
       if (tkt.dueDate) {
         var meta = document.createElement("span");
@@ -9025,7 +9159,7 @@ function renderCrmTicketsSection(c, panel, contactId) {
         meta.textContent = formatDate(tkt.dueDate);
         item.appendChild(meta);
       }
-      listEl.appendChild(item);
+      timeline.appendChild(item);
     });
   }
 
@@ -9034,22 +9168,43 @@ function renderCrmTicketsSection(c, panel, contactId) {
   addBtn.onclick = function() {
     var title = titleInput.value.trim();
     if (!title) return;
-    tickets.push({
+    var dueDate = dateInput.value || "";
+    var tkt = {
       id: "tkt-" + Date.now(),
       title: title,
       status: "open",
-      dueDate: dateInput.value || "",
+      dueDate: dueDate,
       createdBy: getCurrentUserName(),
       createdDate: new Date().toISOString().slice(0, 10)
-    });
+    };
+    tickets.push(tkt);
     titleInput.value = "";
     dateInput.value = "";
     renderTicketsList();
     saveTickets();
+
+    // Board sync: create board task
+    var boardTask = {
+      name: title,
+      description: "From: " + (c.company || c.name || "Contact"),
+      status: "todo",
+      assignee: getCurrentUserName(),
+      due: dueDate,
+      workspace: "IVYCOAST",
+      category: ""
+    };
+    apiPost({ action: "create", task: boardTask }).then(function(data) {
+      if (data && data.task) {
+        tkt.boardTaskId = data.task.id;
+        saveTickets();
+        boardTasks.push(data.task);
+        if (document.getElementById("board").classList.contains("active")) renderBoard();
+      }
+    }).catch(function() { /* board sync failed silently */ });
   };
 
   titleInput.addEventListener("keydown", function(e) {
-    if (e.key === "Enter") { e.preventDefault(); addBtn.click(); }
+    if (e.key === "Enter" && !mentionDropdown.classList.contains("open")) { e.preventDefault(); addBtn.click(); }
   });
 
   panel.appendChild(sec);
