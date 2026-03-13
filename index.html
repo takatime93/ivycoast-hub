@@ -2814,6 +2814,25 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
 .crm-people-add-row button:hover { background: #1a5c54; }
 .crm-people-count-badge { display: inline-block; font-size: 12px; color: #5f6368; background: #f1f3f4; padding: 2px 8px; border-radius: 10px; margin-left: 8px; font-weight: 400; vertical-align: middle; }
 
+/* ── Team tab person cards ─────────────────────────────────── */
+.crm-team-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; margin-top: 8px; }
+.crm-team-card { border: 1px solid #e8eaed; border-radius: 12px; overflow: hidden; background: #fff; }
+.crm-team-card-header { display: flex; align-items: center; gap: 12px; padding: 14px; cursor: pointer; }
+.crm-team-card-header:hover { background: #f8f9fa; }
+.crm-team-avatar { width: 44px; height: 44px; border-radius: 50%; background: #e8eaed; display: flex; align-items: center; justify-content: center; font-weight: 600; color: #5f6368; font-size: 16px; overflow: hidden; flex-shrink: 0; }
+.crm-team-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.crm-team-info { flex: 1; min-width: 0; }
+.crm-team-name { font-weight: 500; font-size: 14px; color: #202124; }
+.crm-team-role { font-size: 12px; color: #5f6368; margin-top: 1px; }
+.crm-team-detail { display: none; padding: 0 14px 14px; border-top: 1px solid #f0f0f0; }
+.crm-team-detail.open { display: block; }
+.crm-team-cards-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
+.crm-team-card-img { width: 100%; border-radius: 6px; cursor: pointer; border: 1px solid #e8eaed; }
+.crm-team-card-label { font-size: 11px; color: #80868b; text-align: center; margin-top: 2px; }
+.crm-team-upload-row { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+.crm-team-upload-btn { padding: 5px 12px; font-size: 12px; background: #f1f3f4; border: 1px solid #ddd; border-radius: 6px; cursor: pointer; color: #202124; }
+.crm-team-upload-btn:hover { background: #e8eaed; }
+
 /* ── Activity timeline ─────────────────────────────────────── */
 .crm-activity-timeline { margin-top: 4px; }
 .crm-activity-item {
@@ -3203,6 +3222,8 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
   .crm-tickets-add-row input[type="date"] { width: 100%; }
   .crm-tasks-input-wrap { flex-direction: column; align-items: stretch; }
   .crm-people-add-row { flex-direction: column; }
+  .crm-team-grid { grid-template-columns: 1fr; }
+  .crm-team-cards-grid { grid-template-columns: 1fr; }
   .products-table { font-size: 13px; }
   .products-table th, .products-table td { padding: 8px 6px; }
   .orders-table { font-size: 13px; }
@@ -8222,8 +8243,9 @@ function openCrmDetailView(contactId) {
 
   var _refsData = _findCrmReferences(contactId);
   var _refCount = _refsData.length;
+  var _peopleCount = _migrateCrmPeople(c).length;
 
-  var tabNames = ["Overview", "Orders", "Stock", "Documents", "References"];
+  var tabNames = ["Overview", "Team", "Orders", "Stock", "Documents", "References"];
   var panels = [];
   tabNames.forEach(function(name, idx) {
     var btn = document.createElement("button");
@@ -8231,21 +8253,28 @@ function openCrmDetailView(contactId) {
     btn.setAttribute("data-tab", idx);
     btn.appendChild(document.createTextNode(name));
 
-    // Orders tab (idx 1): dot notifier, replaced with count on click
-    if (idx === 1 && _orderCount > 0) {
+    // Team tab (idx 1): show people count
+    if (idx === 1 && _peopleCount > 0) {
+      var teamBadge = document.createElement("span");
+      teamBadge.className = "crm-tab-badge crm-tab-count";
+      teamBadge.textContent = String(_peopleCount);
+      btn.appendChild(teamBadge);
+    }
+    // Orders tab (idx 2): dot notifier, replaced with count on click
+    if (idx === 2 && _orderCount > 0) {
       var orderBadge = document.createElement("span");
       orderBadge.className = "crm-tab-badge crm-tab-dot";
       btn.appendChild(orderBadge);
     }
-    // Stock tab (idx 2): always show count
-    if (idx === 2) {
+    // Stock tab (idx 3): always show count
+    if (idx === 3) {
       var stockBadge = document.createElement("span");
       stockBadge.className = "crm-tab-badge crm-tab-count";
       stockBadge.textContent = String(_stockCount);
       btn.appendChild(stockBadge);
     }
-    // References tab (idx 4): show count if > 0
-    if (idx === 4 && _refCount > 0) {
+    // References tab (idx 5): show count if > 0
+    if (idx === 5 && _refCount > 0) {
       var refBadge = document.createElement("span");
       refBadge.className = "crm-tab-badge crm-tab-count";
       refBadge.textContent = String(_refCount);
@@ -8266,7 +8295,7 @@ function openCrmDetailView(contactId) {
       panels.forEach(function(p) { p.classList.remove("active"); });
       panel.classList.add("active");
       // Orders tab: replace dot with count on first visit
-      if (idx === 1) {
+      if (idx === 2) {
         var dot = btn.querySelector(".crm-tab-dot");
         if (dot) {
           dot.className = "crm-tab-badge crm-tab-count";
@@ -8277,11 +8306,12 @@ function openCrmDetailView(contactId) {
   });
 
   // Render each tab
-  renderCrmOverviewTab(c, panels[0], contactId);
-  renderCrmOrdersTab(c, panels[1], contactId);
-  renderCrmStockTab(c, panels[2], contactId);
-  renderCrmDocumentsTab(c, panels[3], contactId);
-  renderCrmReferencesTab(c, panels[4], contactId, _refsData);
+  renderCrmOverviewTab(c, panels[0], contactId, tabsBar);
+  renderCrmTeamTab(c, panels[1], contactId);
+  renderCrmOrdersTab(c, panels[2], contactId);
+  renderCrmStockTab(c, panels[3], contactId);
+  renderCrmDocumentsTab(c, panels[4], contactId);
+  renderCrmReferencesTab(c, panels[5], contactId, _refsData);
 
   detailView.style.display = "flex";
   document.getElementById("crm-modal-overlay").classList.add("open");
@@ -8390,7 +8420,7 @@ function _crmBuildFormField(tag, id, type, label, opts) {
 
 // ── Overview Tab ───────────────────────────────────────────────────────────
 
-function renderCrmOverviewTab(c, panel, contactId) {
+function renderCrmOverviewTab(c, panel, contactId, tabsBar) {
   panel.textContent = "";
 
   // --- QUICK STATS ---
@@ -8440,8 +8470,48 @@ function renderCrmOverviewTab(c, panel, contactId) {
     panel.appendChild(priceSec);
   }
 
-  // --- PEOPLE ---
-  renderCrmPeopleSection(c, panel, contactId);
+  // --- TEAM SUMMARY (compact, links to Team tab) ---
+  var _ovPeople = _migrateCrmPeople(c);
+  if (_ovPeople.length > 0) {
+    var teamSec = _crmMakeSection("Team");
+    var teamRow = document.createElement("div");
+    teamRow.style.cssText = "display:flex;align-items:center;gap:8px;flex-wrap:wrap;";
+    var maxShow = 3;
+    _ovPeople.slice(0, maxShow).forEach(function(p) {
+      var av = document.createElement("div");
+      av.style.cssText = "width:32px;height:32px;border-radius:50%;background:#e8eaed;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:#5f6368;overflow:hidden;flex-shrink:0;";
+      if (p.profileImageUrl) {
+        var img = document.createElement("img");
+        img.src = p.profileImageUrl;
+        img.style.cssText = "width:100%;height:100%;object-fit:cover;";
+        av.appendChild(img);
+      } else {
+        av.textContent = ((p.firstName || "")[0] || "") + ((p.lastName || "")[0] || "");
+      }
+      teamRow.appendChild(av);
+      var nm = document.createElement("span");
+      nm.style.cssText = "font-size:13px;color:#202124;margin-right:8px;";
+      nm.textContent = ((p.firstName || "") + " " + (p.lastName || "")).trim();
+      teamRow.appendChild(nm);
+    });
+    if (_ovPeople.length > maxShow) {
+      var more = document.createElement("span");
+      more.style.cssText = "font-size:12px;color:#5f6368;";
+      more.textContent = "+" + (_ovPeople.length - maxShow) + " more";
+      teamRow.appendChild(more);
+    }
+    teamSec.appendChild(teamRow);
+    var viewAllLink = document.createElement("a");
+    viewAllLink.textContent = "View all " + _ovPeople.length + " \u2192";
+    viewAllLink.href = "#";
+    viewAllLink.style.cssText = "font-size:13px;color:#0e413b;cursor:pointer;display:inline-block;margin-top:8px;";
+    viewAllLink.onclick = function(e) {
+      e.preventDefault();
+      if (tabsBar) tabsBar.querySelectorAll(".crm-detail-tab")[1].click();
+    };
+    teamSec.appendChild(viewAllLink);
+    panel.appendChild(teamSec);
+  }
 
   // --- NOTES ---
   renderCrmNotesSection(c, panel, contactId);
@@ -8616,7 +8686,7 @@ function renderCrmOverviewTab(c, panel, contactId) {
           existing.push(uploadedUrl);
           crmApiPost({ action: "update", contact: { id: contactId, shopPhotos: JSON.stringify(existing) } }).then(function() {
             fetchAllData();
-            setTimeout(function() { renderCrmOverviewTab(crmContacts.find(function(x) { return x.id === contactId; }) || c, panel, contactId); }, 1500);
+            setTimeout(function() { renderCrmOverviewTab(crmContacts.find(function(x) { return x.id === contactId; }) || c, panel, contactId, tabsBar); }, 1500);
           });
         });
       });
@@ -8637,10 +8707,8 @@ function _parseCrmPeople(c) {
 
 function _migrateCrmPeople(c) {
   var people = _parseCrmPeople(c);
-  if (people.length > 0) return people;
-  // Auto-populate from existing fields if company exists and name is a person name
-  if (c.company && c.name && c.name !== c.company) {
-    return [{
+  if (people.length === 0 && c.company && c.name && c.name !== c.company) {
+    people = [{
       id: "person-migrated",
       firstName: (c.name || "").split(" ")[0] || c.name || "",
       lastName: (c.name || "").split(" ").slice(1).join(" ") || "",
@@ -8650,7 +8718,14 @@ function _migrateCrmPeople(c) {
       notes: ""
     }];
   }
-  return [];
+  // Migrate vendor-level business cards to first person
+  if (people.length > 0 && !people[0].businessCardFrontUrl) {
+    if (c.businessCardFrontUrl || c.businessCardUrl)
+      people[0].businessCardFrontUrl = c.businessCardFrontUrl || c.businessCardUrl || "";
+    if (c.businessCardBackUrl)
+      people[0].businessCardBackUrl = c.businessCardBackUrl || "";
+  }
+  return people;
 }
 
 function renderCrmPeopleSection(c, panel, contactId) {
@@ -9290,6 +9365,332 @@ function renderCrmActivitySection(c, panel, contactId) {
 
   sec.appendChild(timeline);
   panel.appendChild(sec);
+}
+
+// ── Team Tab ──────────────────────────────────────────────────────────────
+
+function handlePersonAvatarUpload(person, input, avatarEl, savePeople) {
+  if (!input.files || !input.files[0]) return;
+  resizeImageBase64(input.files[0], 400, function(result) {
+    avatarEl.textContent = "";
+    var img = document.createElement("img");
+    img.src = result.dataUrl;
+    avatarEl.appendChild(img);
+    var fname = "person-avatar-" + person.id + "-" + Date.now() + ".jpg";
+    uploadCrmFile(result.base64, result.mimeType, fname, function(url) {
+      if (url) { person.profileImageUrl = url; savePeople(); }
+    });
+  });
+  input.value = "";
+}
+
+function handlePersonCardUpload(person, side, input, imgEl, savePeople) {
+  if (!input.files || !input.files[0]) return;
+  resizeImageBase64(input.files[0], 1200, function(result) {
+    imgEl.src = result.dataUrl;
+    imgEl.style.display = "block";
+    var fname = "person-card-" + side + "-" + person.id + "-" + Date.now() + ".jpg";
+    uploadCrmFile(result.base64, result.mimeType, fname, function(url) {
+      if (url) {
+        if (side === "front") person.businessCardFrontUrl = url;
+        else person.businessCardBackUrl = url;
+        savePeople();
+      }
+    });
+  });
+  input.value = "";
+}
+
+function renderCrmTeamTab(c, panel, contactId) {
+  panel.textContent = "";
+  var people = _migrateCrmPeople(c);
+
+  function savePeople() {
+    var json = JSON.stringify(people);
+    crmContacts.forEach(function(x) { if (x.id === contactId) x.people = json; });
+    crmApiPost({ action: "update", contact: { id: contactId, people: json } })
+      .catch(function() { fetchCrmContacts(); });
+  }
+
+  // Add person row
+  var addRow = document.createElement("div");
+  addRow.className = "crm-people-add-row";
+  var fnInput = document.createElement("input");
+  fnInput.type = "text";
+  fnInput.placeholder = "First name";
+  addRow.appendChild(fnInput);
+  var lnInput = document.createElement("input");
+  lnInput.type = "text";
+  lnInput.placeholder = "Last name";
+  addRow.appendChild(lnInput);
+  var addBtn = document.createElement("button");
+  addBtn.textContent = "Add";
+  addRow.appendChild(addBtn);
+  panel.appendChild(addRow);
+
+  var gridEl = document.createElement("div");
+  gridEl.className = "crm-team-grid";
+  panel.appendChild(gridEl);
+
+  function renderTeamGrid() {
+    gridEl.textContent = "";
+    if (!people.length) {
+      var empty = document.createElement("p");
+      empty.style.cssText = "font-size:13px;color:#80868b;margin:0;padding:16px 0;";
+      empty.textContent = "No team members added yet";
+      gridEl.appendChild(empty);
+      return;
+    }
+    people.forEach(function(person) {
+      var card = document.createElement("div");
+      card.className = "crm-team-card";
+
+      // Header
+      var hdr = document.createElement("div");
+      hdr.className = "crm-team-card-header";
+
+      var avatar = document.createElement("div");
+      avatar.className = "crm-team-avatar";
+      if (person.profileImageUrl) {
+        var avImg = document.createElement("img");
+        avImg.src = person.profileImageUrl;
+        avatar.appendChild(avImg);
+      } else {
+        avatar.textContent = ((person.firstName || "")[0] || "") + ((person.lastName || "")[0] || "");
+      }
+      hdr.appendChild(avatar);
+
+      var info = document.createElement("div");
+      info.className = "crm-team-info";
+      var nameEl = document.createElement("div");
+      nameEl.className = "crm-team-name";
+      nameEl.textContent = ((person.firstName || "") + " " + (person.lastName || "")).trim() || "Unnamed";
+      info.appendChild(nameEl);
+      var roleEl = document.createElement("div");
+      roleEl.className = "crm-team-role";
+      roleEl.textContent = person.role || "";
+      info.appendChild(roleEl);
+      hdr.appendChild(info);
+
+      var actions = document.createElement("div");
+      actions.className = "crm-person-actions";
+      var delBtn = document.createElement("button");
+      delBtn.title = "Delete";
+      delBtn.textContent = "\uD83D\uDDD1";
+      delBtn.addEventListener("click", function(e) {
+        e.stopPropagation();
+        var pName = ((person.firstName || "") + " " + (person.lastName || "")).trim() || "this person";
+        if (!confirm("Remove " + pName + "?")) return;
+        var spliceIdx = people.findIndex(function(p) { return p.id === person.id; });
+        if (spliceIdx !== -1) people.splice(spliceIdx, 1);
+        savePeople();
+        renderTeamGrid();
+      });
+      actions.appendChild(delBtn);
+      hdr.appendChild(actions);
+
+      // Detail panel
+      var detail = document.createElement("div");
+      detail.className = "crm-team-detail";
+
+      hdr.addEventListener("click", function() {
+        detail.classList.toggle("open");
+      });
+
+      // --- Edit fields ---
+      var fields = [
+        { label: "First Name", key: "firstName", placeholder: "First name" },
+        { label: "Last Name", key: "lastName", placeholder: "Last name" },
+        { label: "Email", key: "email", placeholder: "email@example.com" },
+        { label: "Phone", key: "phone", placeholder: "080-1234-5678" },
+        { label: "Role", key: "role", placeholder: "e.g. Brand Director" }
+      ];
+      var fieldInputs = {};
+      fields.forEach(function(f) {
+        var row = document.createElement("div");
+        row.className = "crm-person-field";
+        var lbl = document.createElement("label");
+        lbl.textContent = f.label;
+        row.appendChild(lbl);
+        var inp = document.createElement("input");
+        inp.type = "text";
+        inp.value = person[f.key] || "";
+        inp.placeholder = f.placeholder;
+        row.appendChild(inp);
+        detail.appendChild(row);
+        fieldInputs[f.key] = inp;
+      });
+
+      // Notes textarea
+      var notesRow = document.createElement("div");
+      notesRow.className = "crm-person-field";
+      var notesLbl = document.createElement("label");
+      notesLbl.textContent = "Notes";
+      notesRow.appendChild(notesLbl);
+      var notesInput = document.createElement("textarea");
+      notesInput.value = person.notes || "";
+      notesInput.placeholder = "Notes about this person\u2026";
+      notesRow.appendChild(notesInput);
+      detail.appendChild(notesRow);
+
+      // --- Avatar upload ---
+      var avSection = document.createElement("div");
+      avSection.style.cssText = "margin-top:10px;";
+      var avLabel = document.createElement("div");
+      avLabel.style.cssText = "font-size:12px;color:#5f6368;margin-bottom:4px;";
+      avLabel.textContent = "Profile Photo";
+      avSection.appendChild(avLabel);
+      var avUploadRow = document.createElement("div");
+      avUploadRow.className = "crm-team-upload-row";
+      var avBtn = document.createElement("label");
+      avBtn.className = "crm-team-upload-btn";
+      avBtn.textContent = "Upload Photo";
+      var avInput = document.createElement("input");
+      avInput.type = "file";
+      avInput.accept = "image/*";
+      avInput.style.display = "none";
+      avInput.addEventListener("change", function() {
+        handlePersonAvatarUpload(person, avInput, avatar, savePeople);
+      });
+      avBtn.appendChild(avInput);
+      avUploadRow.appendChild(avBtn);
+      avSection.appendChild(avUploadRow);
+      detail.appendChild(avSection);
+
+      // --- Business card uploads ---
+      var cardSection = document.createElement("div");
+      cardSection.style.cssText = "margin-top:10px;";
+      var cardLabel = document.createElement("div");
+      cardLabel.style.cssText = "font-size:12px;color:#5f6368;margin-bottom:4px;";
+      cardLabel.textContent = "Business Cards";
+      cardSection.appendChild(cardLabel);
+
+      var cardsGrid = document.createElement("div");
+      cardsGrid.className = "crm-team-cards-grid";
+
+      // Front card
+      var frontWrap = document.createElement("div");
+      var frontImg = document.createElement("img");
+      frontImg.className = "crm-team-card-img";
+      if (person.businessCardFrontUrl) {
+        frontImg.src = person.businessCardFrontUrl;
+        frontImg.onclick = function() { openImageLightbox(person.businessCardFrontUrl); };
+      } else {
+        frontImg.style.display = "none";
+      }
+      frontWrap.appendChild(frontImg);
+      var frontLbl = document.createElement("div");
+      frontLbl.className = "crm-team-card-label";
+      frontLbl.textContent = "Front";
+      frontWrap.appendChild(frontLbl);
+      cardsGrid.appendChild(frontWrap);
+
+      // Back card
+      var backWrap = document.createElement("div");
+      var backImg = document.createElement("img");
+      backImg.className = "crm-team-card-img";
+      if (person.businessCardBackUrl) {
+        backImg.src = person.businessCardBackUrl;
+        backImg.onclick = function() { openImageLightbox(person.businessCardBackUrl); };
+      } else {
+        backImg.style.display = "none";
+      }
+      backWrap.appendChild(backImg);
+      var backLbl = document.createElement("div");
+      backLbl.className = "crm-team-card-label";
+      backLbl.textContent = "Back";
+      backWrap.appendChild(backLbl);
+      cardsGrid.appendChild(backWrap);
+
+      cardSection.appendChild(cardsGrid);
+
+      // Upload buttons for cards
+      var cardUploadRow = document.createElement("div");
+      cardUploadRow.className = "crm-team-upload-row";
+
+      var frontUpBtn = document.createElement("label");
+      frontUpBtn.className = "crm-team-upload-btn";
+      frontUpBtn.textContent = "Upload Front";
+      var frontUpInput = document.createElement("input");
+      frontUpInput.type = "file";
+      frontUpInput.accept = "image/*";
+      frontUpInput.style.display = "none";
+      frontUpInput.addEventListener("change", function() {
+        handlePersonCardUpload(person, "front", frontUpInput, frontImg, savePeople);
+        frontImg.onclick = function() { openImageLightbox(person.businessCardFrontUrl); };
+      });
+      frontUpBtn.appendChild(frontUpInput);
+      cardUploadRow.appendChild(frontUpBtn);
+
+      var backUpBtn = document.createElement("label");
+      backUpBtn.className = "crm-team-upload-btn";
+      backUpBtn.textContent = "Upload Back";
+      var backUpInput = document.createElement("input");
+      backUpInput.type = "file";
+      backUpInput.accept = "image/*";
+      backUpInput.style.display = "none";
+      backUpInput.addEventListener("change", function() {
+        handlePersonCardUpload(person, "back", backUpInput, backImg, savePeople);
+        backImg.onclick = function() { openImageLightbox(person.businessCardBackUrl); };
+      });
+      backUpBtn.appendChild(backUpInput);
+      cardUploadRow.appendChild(backUpBtn);
+
+      cardSection.appendChild(cardUploadRow);
+      detail.appendChild(cardSection);
+
+      // Save button
+      var saveBtn = document.createElement("button");
+      saveBtn.className = "crm-person-save-btn";
+      saveBtn.textContent = "Save";
+      saveBtn.addEventListener("click", function(e) {
+        e.stopPropagation();
+        person.firstName = fieldInputs.firstName.value.trim();
+        person.lastName = fieldInputs.lastName.value.trim();
+        person.email = fieldInputs.email.value.trim();
+        person.phone = fieldInputs.phone.value.trim();
+        person.role = fieldInputs.role.value.trim();
+        person.notes = notesInput.value.trim();
+        nameEl.textContent = ((person.firstName || "") + " " + (person.lastName || "")).trim() || "Unnamed";
+        roleEl.textContent = person.role;
+        detail.classList.remove("open");
+        savePeople();
+      });
+      detail.appendChild(saveBtn);
+
+      card.appendChild(hdr);
+      card.appendChild(detail);
+      gridEl.appendChild(card);
+    });
+  }
+
+  renderTeamGrid();
+
+  addBtn.addEventListener("click", function() {
+    var fn = fnInput.value.trim();
+    var ln = lnInput.value.trim();
+    if (!fn && !ln) return;
+    people.push({
+      id: "person-" + Date.now(),
+      firstName: fn,
+      lastName: ln,
+      email: "",
+      phone: "",
+      role: "",
+      notes: ""
+    });
+    fnInput.value = "";
+    lnInput.value = "";
+    savePeople();
+    renderTeamGrid();
+  });
+
+  lnInput.addEventListener("keydown", function(e) {
+    if (e.key === "Enter") addBtn.click();
+  });
+  fnInput.addEventListener("keydown", function(e) {
+    if (e.key === "Enter") lnInput.focus();
+  });
 }
 
 // ── Orders Tab ─────────────────────────────────────────────────────────────
