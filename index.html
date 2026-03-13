@@ -2086,7 +2086,7 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
   display: flex;
   align-items: flex-start;
   gap: 12px;
-  margin-bottom: 8px;
+  margin-bottom: 4px;
 }
 .crm-detail-header-actions {
   display: flex;
@@ -2141,18 +2141,11 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
   margin: 0;
   line-height: 1.2;
 }
-.crm-detail-name-en {
-  font-size: 13px;
-  color: #5f6368;
-  margin-top: 0;
-}
 .crm-detail-subtitle {
   font-size: 13px;
   color: #5f6368;
-  margin-top: 4px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  margin-top: 2px;
+  line-height: 1.4;
 }
 .crm-detail-body {
   flex: 1;
@@ -2437,7 +2430,7 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
   display: flex;
   align-items: center;
   gap: 12px;
-  margin-top: 10px;
+  margin-top: 6px;
   padding: 0 4px;
 }
 .crm-detail-pipeline {
@@ -2525,12 +2518,10 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
 .crm-detail-summary-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px 16px;
-  margin-top: 8px;
+  gap: 6px 14px;
+  margin-top: 6px;
   font-size: 12px;
-  color: #5f6368;
-  border-top: 1px solid #f0f0f0;
-  padding-top: 8px;
+  color: #80868b;
 }
 .crm-detail-summary-item {
   display: flex;
@@ -2542,10 +2533,10 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
 
 /* ── Contact info rows ─────────────────────────────────────── */
 .crm-detail-contact-info {
-  margin-top: 10px;
+  margin-top: 6px;
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 4px 16px;
+  gap: 2px 16px;
 }
 .crm-detail-contact-info-row {
   display: flex;
@@ -2823,6 +2814,11 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
 .crm-people-add-row button { padding: 8px 16px; background: #0e413b; color: #fff; border: none; border-radius: 8px; cursor: pointer; font-size: 13px; white-space: nowrap; }
 .crm-people-add-row button:hover { background: #1a5c54; }
 .crm-people-count-badge { display: inline-block; font-size: 12px; color: #5f6368; background: #f1f3f4; padding: 2px 8px; border-radius: 10px; margin-left: 8px; font-weight: 400; vertical-align: middle; }
+.crm-detail-name-row { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.crm-detail-type-badge { font-size: 11px; padding: 2px 8px; border-radius: 10px; font-weight: 500; line-height: 1; white-space: nowrap; }
+.crm-detail-type-badge.type-vendor { background: #e8f0fe; color: #1a73e8; }
+.crm-detail-type-badge.type-partner { background: #e6f4ea; color: #137333; }
+.crm-detail-type-badge.type-contact { background: #f1f3f4; color: #5f6368; }
 
 /* ── Team tab person cards ─────────────────────────────────── */
 .crm-team-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; margin-top: 8px; }
@@ -3254,7 +3250,7 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
   .crm-header-row { grid-template-columns: 1fr; }
   .crm-modal-actions { padding: 14px 20px; }
   .crm-detail-header { padding: 16px 18px 12px; }
-  .crm-detail-subtitle { white-space: normal; }
+
   .crm-detail-section { padding: 12px 0; }
   .crm-detail-tab-panel { padding: 0 18px 12px; }
   .crm-detail-biz-row { grid-template-columns: 1fr; }
@@ -8044,25 +8040,32 @@ function openCrmDetailView(contactId) {
     peopleBadge.textContent = detailPeople.length + (detailPeople.length === 1 ? " contact" : " contacts");
     nameEl.appendChild(peopleBadge);
   }
-  infoDiv.appendChild(nameEl);
-  // Registered company name below brand name
-  var _regName = c.name && c.name !== (c.company || "") ? c.name : "";
-  if (_regName) {
-    var regNameEl = document.createElement("div");
-    regNameEl.className = "crm-detail-name-en";
-    regNameEl.textContent = _regName;
-    infoDiv.appendChild(regNameEl);
+  // Wrap name + type badge in a flex row
+  var nameRow = document.createElement("div");
+  nameRow.className = "crm-detail-name-row";
+  nameRow.appendChild(nameEl);
+  if (c.type) {
+    var typeBadge = document.createElement("span");
+    typeBadge.className = "crm-detail-type-badge type-" + (c.type || "contact").toLowerCase();
+    typeBadge.textContent = c.type;
+    nameRow.appendChild(typeBadge);
   }
-  // First person name as subtitle
+  infoDiv.appendChild(nameRow);
+  // Combined subtitle: registered name · person name · role
+  var _subParts = [];
+  var _regName = c.name && c.name !== (c.company || "") ? c.name : "";
+  if (_regName) _subParts.push(_regName);
   if (detailPeople.length > 0) {
     var firstP = detailPeople[0];
     var pFullName = ((firstP.firstName || "") + " " + (firstP.lastName || "")).trim();
-    if (pFullName) {
-      var personEl = document.createElement("div");
-      personEl.className = "crm-detail-subtitle";
-      personEl.textContent = pFullName + (firstP.role ? " \u00B7 " + firstP.role : "");
-      infoDiv.appendChild(personEl);
-    }
+    if (pFullName) _subParts.push(pFullName);
+    if (firstP.role) _subParts.push(firstP.role);
+  }
+  if (_subParts.length > 0) {
+    var personEl = document.createElement("div");
+    personEl.className = "crm-detail-subtitle";
+    personEl.textContent = _subParts.join(" \u00B7 ");
+    infoDiv.appendChild(personEl);
   }
   headerTop.appendChild(infoDiv);
 
@@ -8138,7 +8141,6 @@ function openCrmDetailView(contactId) {
 
   // Summary row (type, shop type, connected, last contact — no workspace)
   var summaryItems = [
-    { icon: ["M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4-4v2","cx=8.5 cy=7 r=4"], text: c.type },
     { icon: ["M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z","M9 22V12h6v10"], text: (c.products && c.products.trim()) ? c.products : null },
     { icon: ["M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z","M12 6v6l4 2"], text: c.connectedDate ? "Connected: " + formatDate(c.connectedDate) : null },
     { icon: ["M12 20h9","M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"], text: c.lastContactDate ? "Last contact: " + formatDate(c.lastContactDate) : null }
