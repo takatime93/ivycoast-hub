@@ -4444,7 +4444,7 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
     <div class="crm-modal-actions" id="crm-edit-actions">
       <button class="btn-delete" id="crm-modal-delete-btn" style="display: none" onclick="deleteCrmContactConfirm()">Delete</button>
       <div class="crm-actions-right">
-        <button onclick="closeCrmModal()">Cancel</button>
+        <button onclick="cancelCrmEdit()">Cancel</button>
         <button class="btn-save" onclick="saveCrmContact()">Save</button>
       </div>
     </div>
@@ -7878,6 +7878,17 @@ function openCrmEditModal(contactId) {
 
   document.getElementById("crm-modal-overlay").classList.add("open");
   setTimeout(function() { document.getElementById("crm-modal-company").focus(); }, 50);
+}
+
+function cancelCrmEdit() {
+  var id = document.getElementById("crm-modal-id").value;
+  if (id) {
+    // Editing existing contact — go back to detail view
+    openCrmDetailView(id);
+  } else {
+    // Adding new contact — close modal entirely
+    closeCrmModal();
+  }
 }
 
 function closeCrmModal() {
