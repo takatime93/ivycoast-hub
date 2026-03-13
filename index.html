@@ -7120,10 +7120,15 @@ function fetchCrmContacts(force) {
   if (!SCRIPT_URL) return;
   if (!force && crmContacts.length > 0 && Date.now() - lastFetched.crm < CACHE_TTL) {
     _restoreFilterState("crm", ["crm-filter-ws", "crm-filter-type"]);
-    if (crmActiveSubView !== "crm-vendors") switchCrmSubView(crmActiveSubView);
-    else renderCrmActiveView();
-    var savedC = localStorage.getItem("ivyhub_crmOpenContact");
-    if (savedC && crmContacts.find(function(x) { return x.id === savedC; })) openCrmDetailView(savedC);
+    // Only re-render list views; skip if detail view is already open to avoid
+    // destroying in-flight edits (people, notes, tasks closures)
+    var detailOpen = document.getElementById("crm-modal-overlay") && document.getElementById("crm-modal-overlay").classList.contains("open");
+    if (!detailOpen) {
+      if (crmActiveSubView !== "crm-vendors") switchCrmSubView(crmActiveSubView);
+      else renderCrmActiveView();
+      var savedC = localStorage.getItem("ivyhub_crmOpenContact");
+      if (savedC && crmContacts.find(function(x) { return x.id === savedC; })) openCrmDetailView(savedC);
+    }
     return;
   }
   setCrmSyncStatus("Syncing\u2026");
@@ -7139,13 +7144,21 @@ function fetchCrmContacts(force) {
       });
       lastFetched.crm = Date.now();
       _restoreFilterState("crm", ["crm-filter-ws", "crm-filter-type"]);
-      // Restore saved sub-view (vendors/pipeline)
-      if (crmActiveSubView !== "crm-vendors") switchCrmSubView(crmActiveSubView);
-      else renderCrmActiveView();
-      // Restore open contact modal
-      var savedContact = localStorage.getItem("ivyhub_crmOpenContact");
-      if (savedContact && crmContacts.find(function(x) { return x.id === savedContact; })) {
-        openCrmDetailView(savedContact);
+      // Only re-render list views; skip if detail view is already open to avoid
+      // destroying in-flight edits (people, notes, tasks closures)
+      var detailIsOpen = document.getElementById("crm-modal-overlay") && document.getElementById("crm-modal-overlay").classList.contains("open");
+      if (!detailIsOpen) {
+        if (crmActiveSubView !== "crm-vendors") switchCrmSubView(crmActiveSubView);
+        else renderCrmActiveView();
+        // Restore open contact modal
+        var savedContact = localStorage.getItem("ivyhub_crmOpenContact");
+        if (savedContact && crmContacts.find(function(x) { return x.id === savedContact; })) {
+          openCrmDetailView(savedContact);
+        }
+      } else {
+        // Update list views behind the modal without touching the detail panel
+        if (crmActiveSubView !== "crm-vendors") switchCrmSubView(crmActiveSubView);
+        else renderCrmActiveView();
       }
       renderHomeCrmStats();
       showCrmLastSynced();
