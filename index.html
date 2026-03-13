@@ -4319,7 +4319,7 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
 
     <!-- Profile Header (edit mode) -->
     <div class="crm-modal-header" id="crm-edit-header">
-      <div class="crm-avatar-wrap" onclick="document.getElementById('crm-avatar-input').click()" title="Upload profile photo">
+      <div class="crm-avatar-wrap" onclick="document.getElementById('crm-avatar-input').click()" title="Upload company logo">
         <div class="crm-avatar" id="crm-modal-avatar"></div>
         <div class="crm-avatar-upload-icon">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
@@ -4327,21 +4327,28 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
       </div>
       <div class="crm-header-fields">
         <div class="crm-header-row">
-          <input type="text" id="crm-modal-name" data-field="name" placeholder="名前 (JP)" oninput="updateCrmAvatar(this.value)" style="flex:1">
-          <input type="text" id="crm-modal-name-en" placeholder="Name (EN)" style="flex:1">
-        </div>
-        <div class="crm-header-row">
-          <input type="text" id="crm-modal-company" placeholder="Company">
-          <input type="text" id="crm-modal-role" placeholder="Role / Title">
+          <input type="text" id="crm-modal-company" placeholder="Company / Business Name" oninput="updateCrmAvatar(this.value)" style="flex:1">
         </div>
       </div>
     </div>
 
     <div class="crm-modal-body" id="crm-edit-body">
-    <!-- Contact Info Section -->
+    <!-- Primary Contact Section -->
     <div class="crm-modal-section">
-      <div class="crm-section-title">Contact Info</div>
+      <div class="crm-section-title">Primary Contact</div>
       <div class="crm-field-row">
+        <div class="crm-field">
+          <label for="crm-modal-name">Name (JP)</label>
+          <input type="text" id="crm-modal-name" data-field="name" placeholder="名前">
+        </div>
+        <div class="crm-field">
+          <label for="crm-modal-name-en">Name (EN)</label>
+          <input type="text" id="crm-modal-name-en" placeholder="English name">
+        </div>
+        <div class="crm-field">
+          <label for="crm-modal-role">Role / Title</label>
+          <input type="text" id="crm-modal-role" placeholder="e.g. CEO, Buyer">
+        </div>
         <div class="crm-field">
           <label for="crm-modal-email">Email</label>
           <input type="email" id="crm-modal-email">
@@ -4350,6 +4357,14 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
           <label for="crm-modal-phone">Phone</label>
           <input type="tel" id="crm-modal-phone">
         </div>
+      </div>
+      <p style="font-size:11px;color:#80868b;margin:6px 0 0;">Manage all team members in the Team tab</p>
+    </div>
+
+    <!-- Company Info Section -->
+    <div class="crm-modal-section">
+      <div class="crm-section-title">Company Info</div>
+      <div class="crm-field-row">
         <div class="crm-field">
           <label for="crm-modal-location">Location</label>
           <input type="text" id="crm-modal-location">
@@ -4421,32 +4436,7 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
       </div>
     </div>
 
-    <!-- Business Card Section -->
-    <div class="crm-modal-section">
-      <div class="crm-section-title">Business Card</div>
-      <div class="crm-card-pair">
-        <div class="crm-card-upload" id="crm-card-front-upload" onclick="document.getElementById('crm-card-front-input').click()">
-          <div class="crm-card-upload-label" id="crm-card-front-label">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#9aa0a6" stroke-width="1.5"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M8 10h8M8 14h5"/><circle cx="17" cy="14" r="2"/></svg>
-            Front
-          </div>
-          <div class="crm-card-preview" id="crm-card-front-preview">
-            <img id="crm-card-front-img" src="" alt="Front">
-            <button class="crm-card-remove" onclick="event.stopPropagation();removeCrmCard('front')" title="Remove">&times;</button>
-          </div>
-        </div>
-        <div class="crm-card-upload" id="crm-card-back-upload" onclick="document.getElementById('crm-card-back-input').click()">
-          <div class="crm-card-upload-label" id="crm-card-back-label">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#9aa0a6" stroke-width="1.5"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M8 10h8M8 14h5"/><circle cx="17" cy="14" r="2"/></svg>
-            Back
-          </div>
-          <div class="crm-card-preview" id="crm-card-back-preview">
-            <img id="crm-card-back-img" src="" alt="Back">
-            <button class="crm-card-remove" onclick="event.stopPropagation();removeCrmCard('back')" title="Remove">&times;</button>
-          </div>
-        </div>
-      </div>
-    </div>
+    <!-- Business Card: now managed per person in Team tab -->
 
     <!-- Pricing -->
     <div class="crm-modal-section">
@@ -7706,7 +7696,7 @@ function updateCrmAvatar(name, imageUrl) {
   } else if (crmExistingAvatarUrl) {
     setCrmAvatarImage(el, crmExistingAvatarUrl);
   } else {
-    el.textContent = getCrmInitials(name || document.getElementById("crm-modal-name").value) || "+";
+    el.textContent = getCrmInitials(name || document.getElementById("crm-modal-company").value || document.getElementById("crm-modal-name").value) || "+";
   }
 }
 
@@ -7863,11 +7853,8 @@ function openCrmCreateModal() {
   renderCrmChecklist(null);
   document.getElementById("crm-modal-invoices-section").style.display = "none";
   updateCrmAvatar("");
-  resetCrmCardPreview("front");
-  resetCrmCardPreview("back");
   document.getElementById("crm-modal-overlay").classList.add("open");
-  initCrmCardDragDrop();
-  setTimeout(function() { document.getElementById("crm-modal-name").focus(); }, 50);
+  setTimeout(function() { document.getElementById("crm-modal-company").focus(); }, 50);
 }
 
 function openCrmEditModal(contactId) {
@@ -7911,30 +7898,11 @@ function openCrmEditModal(contactId) {
   renderCrmChecklist(checklist);
   renderCrmInvoices(c.id);
 
-  // Avatar
-  updateCrmAvatar(c.name, crmExistingAvatarUrl || undefined);
-
-  // Business card previews (front + back)
-  if (crmExistingCardFrontUrl) {
-    document.getElementById("crm-card-front-img").src = crmExistingCardFrontUrl;
-    document.getElementById("crm-card-front-preview").classList.add("visible");
-    document.getElementById("crm-card-front-label").style.display = "none";
-    document.getElementById("crm-card-front-upload").classList.add("has-preview");
-  } else {
-    resetCrmCardPreview("front");
-  }
-  if (crmExistingCardBackUrl) {
-    document.getElementById("crm-card-back-img").src = crmExistingCardBackUrl;
-    document.getElementById("crm-card-back-preview").classList.add("visible");
-    document.getElementById("crm-card-back-label").style.display = "none";
-    document.getElementById("crm-card-back-upload").classList.add("has-preview");
-  } else {
-    resetCrmCardPreview("back");
-  }
+  // Avatar (use company name for initials)
+  updateCrmAvatar(c.company || c.name, crmExistingAvatarUrl || undefined);
 
   document.getElementById("crm-modal-overlay").classList.add("open");
-  initCrmCardDragDrop();
-  setTimeout(function() { document.getElementById("crm-modal-name").focus(); }, 50);
+  setTimeout(function() { document.getElementById("crm-modal-company").focus(); }, 50);
 }
 
 function closeCrmModal() {
@@ -8711,7 +8679,11 @@ function _migrateCrmPeople(c) {
     // Determine person name from vendor-level fields
     var pFirst = "", pLast = "";
     if (c.company && c.name && c.name !== c.company) {
-      // Company exists and name is a person name
+      // Company exists and name is a different person name
+      pFirst = (c.name || "").split(" ")[0] || "";
+      pLast = (c.name || "").split(" ").slice(1).join(" ") || "";
+    } else if (!c.company && c.name) {
+      // No company — name is likely a person name
       pFirst = (c.name || "").split(" ")[0] || "";
       pLast = (c.name || "").split(" ").slice(1).join(" ") || "";
     } else if (c.nameEn) {
@@ -10381,21 +10353,8 @@ function switchToCrmEditMode(contactId) {
   try { checklist = JSON.parse(c.checklist); } catch(e) { checklist = null; }
   renderCrmChecklist(checklist);
   renderCrmInvoices(c.id);
-  updateCrmAvatar(c.name, crmExistingAvatarUrl || undefined);
-  if (crmExistingCardFrontUrl) {
-    document.getElementById("crm-card-front-img").src = crmExistingCardFrontUrl;
-    document.getElementById("crm-card-front-preview").classList.add("visible");
-    document.getElementById("crm-card-front-label").style.display = "none";
-    document.getElementById("crm-card-front-upload").classList.add("has-preview");
-  } else { resetCrmCardPreview("front"); }
-  if (crmExistingCardBackUrl) {
-    document.getElementById("crm-card-back-img").src = crmExistingCardBackUrl;
-    document.getElementById("crm-card-back-preview").classList.add("visible");
-    document.getElementById("crm-card-back-label").style.display = "none";
-    document.getElementById("crm-card-back-upload").classList.add("has-preview");
-  } else { resetCrmCardPreview("back"); }
-  initCrmCardDragDrop();
-  setTimeout(function() { document.getElementById("crm-modal-name").focus(); }, 50);
+  updateCrmAvatar(c.company || c.name, crmExistingAvatarUrl || undefined);
+  setTimeout(function() { document.getElementById("crm-modal-company").focus(); }, 50);
 }
 
 function saveCrmContact() {
@@ -10422,7 +10381,7 @@ function saveCrmContact() {
     instagram: document.getElementById("crm-modal-instagram").value.trim(),
     socialMedia: document.getElementById("crm-modal-socialmedia").value.trim()
   };
-  if (!contact.name) { alert("Contact name is required."); return; }
+  if (!contact.company && !contact.name) { alert("Company or contact name is required."); return; }
 
   // Show saving spinner, hide edit form
   document.getElementById("crm-edit-header").style.display = "none";
@@ -10442,7 +10401,7 @@ function saveCrmContact() {
   var uploadAvatar = function(cb) {
     if (crmPendingAvatar) {
       savingText.textContent = "Uploading profile photo\u2026";
-      var fname = "avatar-" + contact.name.replace(/\s+/g, "-").toLowerCase() + "-" + Date.now() + ".jpg";
+      var fname = "avatar-" + (contact.company || contact.name).replace(/\s+/g, "-").toLowerCase() + "-" + Date.now() + ".jpg";
       uploadCrmFile(crmPendingAvatar.base64, crmPendingAvatar.mimeType, fname, function(url) {
         if (url) { contact.profileImageUrl = url; }
         else { console.error("Avatar upload returned null"); }
