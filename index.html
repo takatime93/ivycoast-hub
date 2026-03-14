@@ -20,8 +20,14 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 <style>
+@font-face { font-family: 'Tomato Grotesk'; src: url('fonts/TomatoGrotesk-Regular.otf') format('opentype'); font-weight: 400; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Tomato Grotesk'; src: url('fonts/TomatoGrotesk-Medium.otf') format('opentype'); font-weight: 500; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Tomato Grotesk'; src: url('fonts/TomatoGrotesk-SemiBold.otf') format('opentype'); font-weight: 600; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Tomato Grotesk'; src: url('fonts/TomatoGrotesk-Bold.otf') format('opentype'); font-weight: 700; font-style: normal; font-display: swap; }
+</style>
+<style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: 'DM Sans', 'Roboto', sans-serif; background: #fff; color: #181818; line-height: 1.6; }
+body { font-family: 'Tomato Grotesk', 'DM Sans', sans-serif; background: #fff; color: #181818; line-height: 1.6; }
 
 /* Header */
 .header {
@@ -917,6 +923,7 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
   font-weight: 600;
   color: #000;
   line-height: 21px;
+  word-break: break-word;
 }
 .crm-vendor-company { font-size: 11px; color: #424242; line-height: 15px; letter-spacing: 0.11px; }
 .crm-vendor-details { font-size: 11px; color: #424242; display: flex; flex-direction: column; gap: 10px; padding: 24px; flex: 1; }
@@ -930,17 +937,17 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
 .crm-vendor-details:empty { display: none; }
 
 /* CRM Product Tags */
-.crm-product-tags { display: flex; flex-wrap: wrap; gap: 4px; padding: 0 24px 12px; }
+.crm-product-tags { display: flex; flex-wrap: wrap; gap: 6px; padding: 0 24px 16px; }
 .crm-product-tag {
   display: inline-block;
-  padding: 3px 8px;
-  border-radius: 5px;
-  font-size: 10px;
-  font-weight: 600;
-  background: #f1f1f1;
-  color: #424242;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 500;
+  background: #fff;
+  color: #181818;
+  border: 1px solid #e3e3e3;
+  letter-spacing: 0.2px;
 }
 
 /* CRM Stage Badges */
