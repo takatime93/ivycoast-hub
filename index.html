@@ -24,10 +24,10 @@
 @font-face { font-family: 'Tomato Grotesk'; src: url('fonts/TomatoGrotesk-Medium.otf') format('opentype'); font-weight: 500; font-style: normal; font-display: swap; }
 @font-face { font-family: 'Tomato Grotesk'; src: url('fonts/TomatoGrotesk-SemiBold.otf') format('opentype'); font-weight: 600; font-style: normal; font-display: swap; }
 @font-face { font-family: 'Tomato Grotesk'; src: url('fonts/TomatoGrotesk-Bold.otf') format('opentype'); font-weight: 700; font-style: normal; font-display: swap; }
-@font-face { font-family: 'FA6 Pro'; src: url('fonts/Font Awesome 6 Pro-Light-300.otf') format('opentype'); font-weight: 300; font-style: normal; font-display: swap; }
-@font-face { font-family: 'FA6 Pro'; src: url('fonts/Font Awesome 6 Pro-Regular-400.otf') format('opentype'); font-weight: 400; font-style: normal; font-display: swap; }
-@font-face { font-family: 'FA6 Pro'; src: url('fonts/Font Awesome 6 Pro-Solid-900.otf') format('opentype'); font-weight: 900; font-style: normal; font-display: swap; }
-@font-face { font-family: 'FA6 Brands'; src: url('fonts/Font Awesome 6 Brands-Regular-400.otf') format('opentype'); font-weight: 400; font-style: normal; font-display: swap; }
+@font-face { font-family: 'FA6 Pro'; src: url('fonts/fa6-pro-light.otf') format('opentype'); font-weight: 300; font-style: normal; font-display: swap; }
+@font-face { font-family: 'FA6 Pro'; src: url('fonts/fa6-pro-regular.otf') format('opentype'); font-weight: 400; font-style: normal; font-display: swap; }
+@font-face { font-family: 'FA6 Pro'; src: url('fonts/fa6-pro-solid.otf') format('opentype'); font-weight: 900; font-style: normal; font-display: swap; }
+@font-face { font-family: 'FA6 Brands'; src: url('fonts/fa6-brands.otf') format('opentype'); font-weight: 400; font-style: normal; font-display: swap; }
 </style>
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -1045,7 +1045,7 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
 .crm-view-toggle-btn { width: 38px; height: 30px; border: none; background: transparent; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #0e413b; transition: all 0.15s; }
 .crm-view-toggle-btn:hover { color: #202124; }
 .crm-view-toggle-btn.active { background: #fff; color: #0e413b; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-.crm-view-toggle-btn svg { width: 16px; height: 16px; }
+.crm-view-toggle-btn span { font-size: 16px; }
 
 /* CRM Vendor Table Wrapper */
 .crm-vendor-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
@@ -3611,9 +3611,9 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
 /* Notification Bell */
 .notif-bell { position: relative; cursor: pointer; font-size: 18px; color: #0e413b; border: 1px solid #ebebeb; border-radius: 6px; width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; background: #fff; }
 .notif-bell:hover { background: #f1f3f4; }
-.notif-bell svg { width: 20px; height: 20px; fill: currentColor; transition: fill 0.15s; }
+.notif-bell span { font-size: 20px; color: currentColor; transition: color 0.15s; }
 .notif-bell.has-alert { color: #202124; }
-.notif-bell.has-alert svg { fill: #202124; }
+.notif-bell.has-alert span { color: #202124; }
 .notif-dot { position: absolute; width: 8px; height: 8px; background: #ff1818; border-radius: 50%; top: -3px; right: -3px; }
 .notif-dot.active { display: block; }
 .notif-dropdown {
@@ -3999,7 +3999,7 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
       <div class="header-user">
         <div class="presence-container" id="presence-container"></div>
         <div style="position:relative">
-          <button class="notif-bell" id="notif-bell" onclick="toggleNotifDropdown()" title="Notifications"><svg viewBox="0 0 24 24"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg><span class="notif-dot" id="notif-dot"></span></button>
+          <button class="notif-bell" id="notif-bell" onclick="toggleNotifDropdown()" title="Notifications"><span style="font-family:'FA6 Pro';font-weight:300;font-size:20px;line-height:1"></span><span class="notif-dot" id="notif-dot"></span></button>
           <div class="notif-dropdown" id="notif-dropdown">
             <div class="notif-dropdown-header"><span>Activity</span><button onclick="markAllNotifRead()">Mark all read</button></div>
             <div class="notif-list" id="notif-list"></div>
@@ -4008,7 +4008,7 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
         <div style="position:relative">
           <button class="header-user-chip" id="user-chip" onclick="toggleUserDropdown()" aria-haspopup="true" aria-expanded="false">
             <span id="user-name"></span>
-            <svg class="chevron" width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M3 4.5L6 7.5L9 4.5" stroke="#818181" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span class="chevron" style="font-family:'FA6 Pro';font-weight:300;font-size:10px;color:#818181"></span>
           </button>
           <div class="header-user-dropdown" id="user-dropdown" role="menu">
             <button onclick="signOut()" role="menuitem">Sign out</button>
@@ -4254,9 +4254,9 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
       <div class="crm-header-right">
         <div class="crm-view-toggle" id="crm-header-view-toggle"></div>
         <div class="crm-action-group">
-        <button class="btn-crm-refresh" onclick="fetchCrmContacts(true)" title="Refresh"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg></button>
+        <button class="btn-crm-refresh" onclick="fetchCrmContacts(true)" title="Refresh"><span style="font-family:'FA6 Pro';font-weight:300;font-size:16px;line-height:1"></span></button>
         <div class="crm-add-dropdown-wrap">
-          <button class="btn-crm-add" id="crm-add-btn" onclick="toggleCrmAddDropdown()">Add new <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style="margin-left:2px"><path d="M3 4.5L6 7.5L9 4.5" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <button class="btn-crm-add" id="crm-add-btn" onclick="toggleCrmAddDropdown()">Add new <span style="font-family:'FA6 Pro';font-weight:300;font-size:10px;margin-left:2px"></span></button>
           <div class="crm-add-dropdown" id="crm-add-dropdown">
             <button onclick="openCrmCreateModal('Vendor'); closeCrmAddDropdown()">New Vendor</button>
             <button onclick="openCrmCreateModal('Contact'); closeCrmAddDropdown()">New Contact</button>
@@ -4638,7 +4638,7 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
       <div class="crm-avatar-wrap" onclick="document.getElementById('crm-avatar-input').click()" title="Upload company logo">
         <div class="crm-avatar" id="crm-modal-avatar"></div>
         <div class="crm-avatar-upload-icon">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+          <span style="font-family:'FA6 Pro';font-weight:300;font-size:12px;line-height:1"></span>
         </div>
       </div>
       <div class="crm-header-fields">
@@ -7647,39 +7647,20 @@ function _renderCrmVendorViewBar(container, contacts) {
     var gridBtn = document.createElement("button");
     gridBtn.className = "crm-view-toggle-btn" + (crmVendorViewMode === "tile" ? " active" : "");
     gridBtn.title = "Tile view";
-    var gridSvg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-    gridSvg.setAttribute("width", "16"); gridSvg.setAttribute("height", "16");
-    gridSvg.setAttribute("viewBox", "0 0 24 24"); gridSvg.setAttribute("fill", "none");
-    gridSvg.setAttribute("stroke", "currentColor"); gridSvg.setAttribute("stroke-width", "2");
-    var gp1 = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-    gp1.setAttribute("x", "3"); gp1.setAttribute("y", "3"); gp1.setAttribute("width", "7"); gp1.setAttribute("height", "7"); gp1.setAttribute("rx", "1");
-    var gp2 = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-    gp2.setAttribute("x", "14"); gp2.setAttribute("y", "3"); gp2.setAttribute("width", "7"); gp2.setAttribute("height", "7"); gp2.setAttribute("rx", "1");
-    var gp3 = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-    gp3.setAttribute("x", "3"); gp3.setAttribute("y", "14"); gp3.setAttribute("width", "7"); gp3.setAttribute("height", "7"); gp3.setAttribute("rx", "1");
-    var gp4 = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-    gp4.setAttribute("x", "14"); gp4.setAttribute("y", "14"); gp4.setAttribute("width", "7"); gp4.setAttribute("height", "7"); gp4.setAttribute("rx", "1");
-    gridSvg.appendChild(gp1); gridSvg.appendChild(gp2); gridSvg.appendChild(gp3); gridSvg.appendChild(gp4);
-    gridBtn.appendChild(gridSvg);
+    var gridIcon = document.createElement("span");
+    gridIcon.style.cssText = "font-family:'FA6 Pro';font-weight:300;font-size:16px;line-height:1";
+    gridIcon.textContent = "\ue588";
+    gridBtn.appendChild(gridIcon);
     gridBtn.addEventListener("click", function() { switchCrmVendorView("tile"); });
     toggleContainer.appendChild(gridBtn);
     // List icon button
     var listBtn = document.createElement("button");
     listBtn.className = "crm-view-toggle-btn" + (crmVendorViewMode === "table" ? " active" : "");
     listBtn.title = "Table view";
-    var listSvg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-    listSvg.setAttribute("width", "16"); listSvg.setAttribute("height", "16");
-    listSvg.setAttribute("viewBox", "0 0 24 24"); listSvg.setAttribute("fill", "none");
-    listSvg.setAttribute("stroke", "currentColor"); listSvg.setAttribute("stroke-width", "2");
-    ["4", "10", "16"].forEach(function(y) {
-      var line = document.createElementNS("http://www.w3.org/2000/svg", "line");
-      line.setAttribute("x1", "8"); line.setAttribute("y1", y); line.setAttribute("x2", "21"); line.setAttribute("y2", y);
-      listSvg.appendChild(line);
-      var circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-      circle.setAttribute("cx", "3.5"); circle.setAttribute("cy", y); circle.setAttribute("r", "1.5"); circle.setAttribute("fill", "currentColor");
-      listSvg.appendChild(circle);
-    });
-    listBtn.appendChild(listSvg);
+    var listIcon = document.createElement("span");
+    listIcon.style.cssText = "font-family:'FA6 Pro';font-weight:300;font-size:16px;line-height:1";
+    listIcon.textContent = "\uf03a";
+    listBtn.appendChild(listIcon);
     listBtn.addEventListener("click", function() { switchCrmVendorView("table"); });
     toggleContainer.appendChild(listBtn);
   }
@@ -7775,7 +7756,8 @@ function _crmStatIcon(type) {
 function _crmDetailIcon(type) {
   // Returns FA6 Pro Light unicode character
   if (type === "user") return "\uf007";
-  if (type === "location") return "\ue07a";
+  if (type === "users") return "\uf0c0";
+  if (type === "location") return "\uf3c5";
   return "";
 }
 
@@ -7868,7 +7850,7 @@ function renderCrmVendors() {
         var personRow = document.createElement("span");
         var personIcon = document.createElement("span");
         personIcon.className = "crm-vendor-detail-icon";
-        personIcon.textContent = _crmDetailIcon("user");
+        personIcon.textContent = _crmDetailIcon(_people.length > 1 ? "users" : "user");
         personRow.appendChild(personIcon);
         var contactInfo = document.createElement("span");
         contactInfo.className = "crm-vendor-contact-info";
@@ -8368,37 +8350,12 @@ function closeCrmModal() {
   document.getElementById("crm-edit-actions").style.display = "";
 }
 
-function _crmSvgIcon(paths, w, h, strokeW) {
-  w = w || 16; h = h || 16; strokeW = strokeW || 2;
-  var svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-  svg.setAttribute("width", String(w));
-  svg.setAttribute("height", String(h));
-  svg.setAttribute("viewBox", "0 0 24 24");
-  svg.setAttribute("fill", "none");
-  svg.setAttribute("stroke", "currentColor");
-  svg.setAttribute("stroke-width", String(strokeW));
-  paths.forEach(function(d) {
-    var el;
-    if (d.indexOf("cx=") === 0) {
-      // circle: "cx=12 cy=10 r=3"
-      el = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-      d.split(" ").forEach(function(attr) { var kv = attr.split("="); el.setAttribute(kv[0], kv[1]); });
-    } else if (d.indexOf("points=") === 0) {
-      el = document.createElementNS("http://www.w3.org/2000/svg", "polyline");
-      el.setAttribute("points", d.replace("points=", ""));
-    } else if (d.indexOf("rect=") === 0) {
-      el = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-      var parts = d.replace("rect=", "").split(" ");
-      el.setAttribute("x", parts[0]); el.setAttribute("y", parts[1]);
-      el.setAttribute("width", parts[2]); el.setAttribute("height", parts[3]);
-      if (parts[4]) el.setAttribute("rx", parts[4]);
-    } else {
-      el = document.createElementNS("http://www.w3.org/2000/svg", "path");
-      el.setAttribute("d", d);
-    }
-    svg.appendChild(el);
-  });
-  return svg;
+function _crmFa6Icon(unicode, size, weight) {
+  size = size || 16; weight = weight || 300;
+  var span = document.createElement("span");
+  span.style.cssText = "font-family:'FA6 Pro';font-weight:" + weight + ";font-size:" + size + "px;line-height:1;display:inline-flex;align-items:center;justify-content:center";
+  span.textContent = unicode;
+  return span;
 }
 
 function openCrmDetailView(contactId) {
@@ -8486,7 +8443,7 @@ function openCrmDetailView(contactId) {
   var editBtn = document.createElement("button");
   editBtn.className = "crm-edit-btn";
   editBtn.title = "Edit";
-  editBtn.appendChild(_crmSvgIcon(["M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7","M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"]));
+  editBtn.appendChild(_crmFa6Icon("\uf044", 16, 300));
   editBtn.onclick = function() { switchToCrmEditMode(contactId); };
   headerActions.appendChild(editBtn);
   // More menu (three-dot) — just Delete
@@ -8513,7 +8470,7 @@ function openCrmDetailView(contactId) {
   headerActions.appendChild(moreWrap);
   var closeBtn = document.createElement("button");
   closeBtn.title = "Close";
-  closeBtn.appendChild(_crmSvgIcon(["M18 6L6 18","M6 6l12 12"], 16, 16, 2.5));
+  closeBtn.appendChild(_crmFa6Icon("\uf00d", 16, 300));
   closeBtn.onclick = closeCrmModal;
   headerActions.appendChild(closeBtn);
   headerTop.appendChild(headerActions);
@@ -8521,10 +8478,10 @@ function openCrmDetailView(contactId) {
 
   // Contact info row (email, phone, address, website — visible text)
   var contactInfoItems = [
-    { icon: ["M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z","points=22,6 12,13 2,6"], text: c.email },
-    { icon: ["M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.13.81.36 1.6.66 2.36a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.76.3 1.55.53 2.36.66A2 2 0 0122 16.92z"], text: c.phone },
-    { icon: ["M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z","cx=12 cy=10 r=3"], text: c.location },
-    { icon: ["M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z","M2 12h20","M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10A15.3 15.3 0 0112 2z"], text: c.website, isLink: true }
+    { fa6: "\uf0e0", text: c.email },
+    { fa6: "\uf095", text: c.phone },
+    { fa6: "\uf3c5", text: c.location },
+    { fa6: "\uf0ac", text: c.website, isLink: true }
   ];
   var hasContactInfo = contactInfoItems.some(function(i) { return !!i.text; });
   if (hasContactInfo) {
@@ -8534,7 +8491,7 @@ function openCrmDetailView(contactId) {
       if (!ci.text) return;
       var row = document.createElement("div");
       row.className = "crm-detail-contact-info-row";
-      row.appendChild(_crmSvgIcon(ci.icon, 14, 14, 1.5));
+      row.appendChild(_crmFa6Icon(ci.fa6, 14, 300));
       if (ci.isLink) {
         var a = document.createElement("a");
         a.href = ci.text.indexOf("http") === 0 ? ci.text : "https://" + ci.text;
@@ -8552,9 +8509,9 @@ function openCrmDetailView(contactId) {
 
   // Summary row (type, shop type, connected, last contact — no workspace)
   var summaryItems = [
-    { icon: ["M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z","M9 22V12h6v10"], text: (c.products && c.products.trim()) ? c.products : null },
-    { icon: ["M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z","M12 6v6l4 2"], text: c.connectedDate ? "Connected: " + formatDate(c.connectedDate) : null },
-    { icon: ["M12 20h9","M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"], text: c.lastContactDate ? "Last contact: " + formatDate(c.lastContactDate) : null }
+    { fa6: "\uf015", text: (c.products && c.products.trim()) ? c.products : null },
+    { fa6: "\uf017", text: c.connectedDate ? "Connected: " + formatDate(c.connectedDate) : null },
+    { fa6: "\uf303", text: c.lastContactDate ? "Last contact: " + formatDate(c.lastContactDate) : null }
   ];
   var hasSummary = summaryItems.some(function(i) { return !!i.text; });
   if (hasSummary) {
@@ -8564,7 +8521,7 @@ function openCrmDetailView(contactId) {
       if (!si.text) return;
       var item = document.createElement("div");
       item.className = "crm-detail-summary-item";
-      item.appendChild(_crmSvgIcon(si.icon, 13, 13, 1.5));
+      item.appendChild(_crmFa6Icon(si.fa6, 13, 300));
       item.appendChild(document.createTextNode(si.text));
       summaryRow.appendChild(item);
     });
@@ -8619,7 +8576,7 @@ function openCrmDetailView(contactId) {
   var cogBtn = document.createElement("button");
   cogBtn.className = "crm-pipeline-cog";
   cogBtn.title = "Change stage";
-  cogBtn.appendChild(_crmSvgIcon(["M12 15a3 3 0 100-6 3 3 0 000 6z","M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"], 15, 15, 1.8));
+  cogBtn.appendChild(_crmFa6Icon("\uf013", 15, 300));
   cogWrap.appendChild(cogBtn);
   var cogMenu = document.createElement("div");
   cogMenu.className = "crm-detail-more-menu";
@@ -8997,8 +8954,8 @@ function renderCrmOverviewTab(c, panel, contactId, tabsBar) {
   // --- SOCIAL LINKS (website is in header) ---
   var linksSec = _crmMakeSection("Social Links");
   var links = [
-    { label: "Instagram", value: c.instagram, icon: ["M16 2H8a6 6 0 00-6 6v8a6 6 0 006 6h8a6 6 0 006-6V8a6 6 0 00-6-6z","cx=12 cy=12 r=4.5","cx=17.5 cy=6.5 r=1.5"] },
-    { label: "Other Social", value: c.socialUrl, icon: ["M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71","M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"] }
+    { label: "Instagram", value: c.instagram, fa6: "\uf16d", brand: true },
+    { label: "Other Social", value: c.socialUrl, fa6: "\uf0c1" }
   ];
   var hasLinks = false;
   links.forEach(function(lnk) {
@@ -9006,7 +8963,10 @@ function renderCrmOverviewTab(c, panel, contactId, tabsBar) {
     hasLinks = true;
     var row = document.createElement("div");
     row.className = "crm-info-link-row";
-    row.appendChild(_crmSvgIcon(lnk.icon, 16, 16, 1.5));
+    var lnkIcon = document.createElement("span");
+    lnkIcon.style.cssText = "font-family:'" + (lnk.brand ? "FA6 Brands" : "FA6 Pro") + "';font-weight:" + (lnk.brand ? "400" : "300") + ";font-size:16px;line-height:1;display:inline-flex;align-items:center;justify-content:center";
+    lnkIcon.textContent = lnk.fa6;
+    row.appendChild(lnkIcon);
     var a = document.createElement("a");
     a.href = lnk.value.indexOf("http") === 0 ? lnk.value : "https://" + lnk.value;
     a.target = "_blank";
@@ -9102,7 +9062,7 @@ function renderCrmOverviewTab(c, panel, contactId, tabsBar) {
   var uploadBtn = document.createElement("button");
   uploadBtn.className = "crm-stock-add-btn";
   uploadBtn.style.marginTop = "8px";
-  uploadBtn.appendChild(_crmSvgIcon(["M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4","M17 8l-5-5-5 5","M12 3v12"], 14, 14, 2));
+  uploadBtn.appendChild(_crmFa6Icon("\uf093", 14, 300));
   var uploadText = document.createTextNode(" Upload Photo");
   uploadBtn.appendChild(uploadText);
   uploadBtn.onclick = function() {
@@ -9859,7 +9819,7 @@ function _renderPersonProfile(person, c, panel, contactId, tabsBar) {
   // Back button
   var backBtn = document.createElement("button");
   backBtn.className = "crm-person-profile-back";
-  backBtn.appendChild(_crmSvgIcon(["M19 12H5","M12 19l-7-7 7-7"], 16, 16, 2));
+  backBtn.appendChild(_crmFa6Icon("\uf060", 16, 300));
   backBtn.appendChild(document.createTextNode("Back"));
   backBtn.onclick = function() {
     var fresh = crmContacts.find(function(x) { return x.id === contactId; }) || c;
@@ -10509,7 +10469,7 @@ function renderCrmStockTab(c, panel, contactId) {
 
   var addBtn = document.createElement("button");
   addBtn.className = "crm-stock-add-btn";
-  addBtn.appendChild(_crmSvgIcon(["M12 5v14","M5 12h14"], 14, 14, 2));
+  addBtn.appendChild(_crmFa6Icon("\uf067", 14, 300));
   var addText = document.createTextNode(" Add Stock");
   addBtn.appendChild(addText);
   addBtn.onclick = function() { stockForm.style.display = stockForm.style.display === "none" ? "block" : "none"; };
@@ -10708,7 +10668,7 @@ function renderCrmDocumentsTab(c, panel, contactId) {
   var addDocBtn = document.createElement("button");
   addDocBtn.className = "crm-stock-add-btn";
   addDocBtn.style.marginBottom = "12px";
-  addDocBtn.appendChild(_crmSvgIcon(["M12 5v14","M5 12h14"], 14, 14, 2));
+  addDocBtn.appendChild(_crmFa6Icon("\uf067", 14, 300));
   var addDocText = document.createTextNode(" Add Document");
   addDocBtn.appendChild(addDocText);
   addDocBtn.onclick = function() { docForm.style.display = docForm.style.display === "none" ? "block" : "none"; };
@@ -10787,7 +10747,7 @@ function renderCrmDocumentsTab(c, panel, contactId) {
       if (doc.url || doc.fileUrl) {
         var openBtn = document.createElement("button");
         openBtn.title = "Open";
-        openBtn.appendChild(_crmSvgIcon(["M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6","M15 3h6v6","M10 14L21 3"], 14, 14));
+        openBtn.appendChild(_crmFa6Icon("\uf08e", 14, 300));
         openBtn.onclick = function(e) { e.stopPropagation(); window.open(doc.url || doc.fileUrl, "_blank"); };
         actions.appendChild(openBtn);
       }
@@ -10856,7 +10816,7 @@ function renderCrmDocumentsTab(c, panel, contactId) {
   // Create Invoice button
   var createInvBtn = document.createElement("button");
   createInvBtn.className = "crm-detail-create-inv-btn";
-  createInvBtn.appendChild(_crmSvgIcon(["M12 5v14","M5 12h14"], 14, 14, 2));
+  createInvBtn.appendChild(_crmFa6Icon("\uf067", 14, 300));
   var createInvText = document.createTextNode("Create Invoice");
   createInvBtn.appendChild(createInvText);
   createInvBtn.onclick = function() {
