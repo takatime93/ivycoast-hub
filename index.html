@@ -7880,14 +7880,14 @@ function renderCrmVendors() {
       nameGroup.className = "crm-vendor-name-group";
       var nameDiv = document.createElement("div");
       nameDiv.className = "crm-vendor-name";
-      nameDiv.textContent = c.name || c.nameEn || "Unnamed";
+      nameDiv.textContent = c.company || c.name || c.nameEn || "Unnamed";
       nameGroup.appendChild(nameDiv);
-      if (c.company) {
-        var companyDiv = document.createElement("div");
-        companyDiv.className = "crm-vendor-company";
-        companyDiv.textContent = c.company;
-        nameGroup.appendChild(companyDiv);
-      } else if (c.nameEn && c.name) {
+      if (c.company && c.name) {
+        var subtitleDiv = document.createElement("div");
+        subtitleDiv.className = "crm-vendor-company";
+        subtitleDiv.textContent = c.name;
+        nameGroup.appendChild(subtitleDiv);
+      } else if (c.nameEn && !c.company) {
         var nameEnDiv = document.createElement("div");
         nameEnDiv.className = "crm-vendor-company";
         nameEnDiv.textContent = c.nameEn;
@@ -7909,7 +7909,7 @@ function renderCrmVendors() {
       var _fpName = _fp ? ((_fp.firstName || "") + " " + (_fp.lastName || "")).trim() : "";
       var _fpEmail = _fp ? (_fp.email || c.email || "") : (c.email || "");
       // Skip showing person name if it matches the header name (avoids duplication)
-      var _headerName = (c.name || c.nameEn || "").toLowerCase().replace(/\s+/g, "");
+      var _headerName = (c.company || c.name || c.nameEn || "").toLowerCase().replace(/\s+/g, "");
       var _personLo = _fpName.toLowerCase().replace(/\s+/g, "");
       var _nameIsDuplicate = _personLo && (_headerName.indexOf(_personLo) >= 0 || _personLo.indexOf(_headerName) >= 0);
       var _showName = _fpName && !_nameIsDuplicate;
