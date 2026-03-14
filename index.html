@@ -925,7 +925,9 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
 .crm-vendor-detail-icon { flex-shrink: 0; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; color: #0e413b; font-size: 18px; }
 .crm-vendor-contact-info { flex: 1; min-width: 0; display: flex; flex-direction: column; }
 .crm-vendor-contact-name { font-size: 14px; font-weight: 500; color: #000; line-height: normal; }
-.crm-vendor-contact-email { font-size: 11px; color: #424242; line-height: normal; }
+.crm-vendor-contact-email { font-size: 12px; color: #424242; line-height: normal; }
+.crm-vendor-plus-badge { width: 28px; height: 28px; border: 1px solid #f3f3f3; border-radius: 50px; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #0e413b; flex-shrink: 0; padding: 2px; }
+.crm-vendor-details:empty { display: none; }
 
 /* CRM Product Tags */
 .crm-product-tags { display: flex; flex-wrap: wrap; gap: 4px; padding: 0 24px 12px; }
@@ -7752,7 +7754,7 @@ function _crmDetailIcon(type) {
   svg.setAttribute("viewBox", "0 0 24 24");
   svg.setAttribute("fill", "none");
   svg.setAttribute("stroke", "#0e413b");
-  svg.setAttribute("stroke-width", "1.5");
+  svg.setAttribute("stroke-width", "2");
   svg.setAttribute("stroke-linecap", "round");
   svg.setAttribute("stroke-linejoin", "round");
   if (type === "user") {
@@ -7846,10 +7848,14 @@ function renderCrmVendors() {
       cardHeader.appendChild(headerInfo);
       card.appendChild(cardHeader);
 
-      // Content: Contact person + address (Figma-matched layout)
+      // Content: Contact person + address (uses _migrateCrmPeople for person data)
       var details = document.createElement("div");
       details.className = "crm-vendor-details";
-      if (c.contactName || c.email) {
+      var _people = _migrateCrmPeople(c);
+      var _fp = _people.length > 0 ? _people[0] : null;
+      var _fpName = _fp ? ((_fp.firstName || "") + " " + (_fp.lastName || "")).trim() : "";
+      var _fpEmail = _fp ? (_fp.email || c.email || "") : (c.email || "");
+      if (_fpName || _fpEmail) {
         var personRow = document.createElement("span");
         var personIcon = document.createElement("span");
         personIcon.className = "crm-vendor-detail-icon";
@@ -7857,19 +7863,25 @@ function renderCrmVendors() {
         personRow.appendChild(personIcon);
         var contactInfo = document.createElement("span");
         contactInfo.className = "crm-vendor-contact-info";
-        if (c.contactName) {
+        if (_fpName) {
           var cName = document.createElement("span");
           cName.className = "crm-vendor-contact-name";
-          cName.textContent = c.contactName;
+          cName.textContent = _fpName;
           contactInfo.appendChild(cName);
         }
-        if (c.email) {
+        if (_fpEmail) {
           var cEmail = document.createElement("span");
-          cEmail.className = "crm-vendor-contact-email";
-          cEmail.textContent = c.email;
+          cEmail.className = _fpName ? "crm-vendor-contact-email" : "crm-vendor-contact-name";
+          cEmail.textContent = _fpEmail;
           contactInfo.appendChild(cEmail);
         }
         personRow.appendChild(contactInfo);
+        if (_people.length > 1) {
+          var plusBadge = document.createElement("span");
+          plusBadge.className = "crm-vendor-plus-badge";
+          plusBadge.textContent = "+" + (_people.length - 1);
+          personRow.appendChild(plusBadge);
+        }
         details.appendChild(personRow);
       }
       if (c.location) {
