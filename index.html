@@ -7746,6 +7746,59 @@ function _renderCrmVendorTable(container, contacts) {
   container.appendChild(wrap);
 }
 
+function _crmStatIcon(type) {
+  var ns = "http://www.w3.org/2000/svg";
+  var svg = document.createElementNS(ns, "svg");
+  svg.setAttribute("width", "14");
+  svg.setAttribute("height", "14");
+  svg.setAttribute("viewBox", "0 0 24 24");
+  svg.setAttribute("fill", "#0e413b");
+  if (type === "candle") {
+    svg.setAttribute("viewBox", "0 0 16 24");
+    var p = document.createElementNS(ns, "path");
+    p.setAttribute("d", "M8 0C7.3 0 6 2.2 6 3.5C6 4.9 6.9 6 8 6C9.1 6 10 4.9 10 3.5C10 2.2 8.7 0 8 0Z");
+    svg.appendChild(p);
+    var r = document.createElementNS(ns, "rect");
+    r.setAttribute("x", "5"); r.setAttribute("y", "7"); r.setAttribute("width", "6"); r.setAttribute("height", "15"); r.setAttribute("rx", "1");
+    svg.appendChild(r);
+    var r2 = document.createElementNS(ns, "rect");
+    r2.setAttribute("x", "3"); r2.setAttribute("y", "22"); r2.setAttribute("width", "10"); r2.setAttribute("height", "2"); r2.setAttribute("rx", "1");
+    svg.appendChild(r2);
+  } else if (type === "soap") {
+    svg.setAttribute("viewBox", "0 0 24 24");
+    var r = document.createElementNS(ns, "rect");
+    r.setAttribute("x", "2"); r.setAttribute("y", "10"); r.setAttribute("width", "20"); r.setAttribute("height", "12"); r.setAttribute("rx", "3");
+    svg.appendChild(r);
+    var c1 = document.createElementNS(ns, "circle");
+    c1.setAttribute("cx", "8"); c1.setAttribute("cy", "5"); c1.setAttribute("r", "2.5");
+    svg.appendChild(c1);
+    var c2 = document.createElementNS(ns, "circle");
+    c2.setAttribute("cx", "14"); c2.setAttribute("cy", "3"); c2.setAttribute("r", "2");
+    svg.appendChild(c2);
+    var c3 = document.createElementNS(ns, "circle");
+    c3.setAttribute("cx", "18"); c3.setAttribute("cy", "6"); c3.setAttribute("r", "1.5");
+    svg.appendChild(c3);
+  } else if (type === "yen") {
+    svg.setAttribute("fill", "none");
+    svg.setAttribute("stroke", "#0e413b");
+    svg.setAttribute("stroke-width", "2.5");
+    svg.setAttribute("stroke-linecap", "round");
+    var p1 = document.createElementNS(ns, "path");
+    p1.setAttribute("d", "M4 2L12 12L20 2");
+    svg.appendChild(p1);
+    var p2 = document.createElementNS(ns, "path");
+    p2.setAttribute("d", "M12 12V22");
+    svg.appendChild(p2);
+    var p3 = document.createElementNS(ns, "path");
+    p3.setAttribute("d", "M6 14H18");
+    svg.appendChild(p3);
+    var p4 = document.createElementNS(ns, "path");
+    p4.setAttribute("d", "M6 18H18");
+    svg.appendChild(p4);
+  }
+  return svg;
+}
+
 function _crmDetailIcon(type) {
   var ns = "http://www.w3.org/2000/svg";
   var svg = document.createElementNS(ns, "svg");
@@ -7848,14 +7901,19 @@ function renderCrmVendors() {
       cardHeader.appendChild(headerInfo);
       card.appendChild(cardHeader);
 
-      // Content: Contact person + address (uses _migrateCrmPeople for person data)
+      // Content: Contact person + address
       var details = document.createElement("div");
       details.className = "crm-vendor-details";
       var _people = _migrateCrmPeople(c);
       var _fp = _people.length > 0 ? _people[0] : null;
       var _fpName = _fp ? ((_fp.firstName || "") + " " + (_fp.lastName || "")).trim() : "";
       var _fpEmail = _fp ? (_fp.email || c.email || "") : (c.email || "");
-      if (_fpName || _fpEmail) {
+      // Skip showing person name if it matches the header name (avoids duplication)
+      var _headerName = (c.name || c.nameEn || "").toLowerCase().replace(/\s+/g, "");
+      var _personLo = _fpName.toLowerCase().replace(/\s+/g, "");
+      var _nameIsDuplicate = _personLo && (_headerName.indexOf(_personLo) >= 0 || _personLo.indexOf(_headerName) >= 0);
+      var _showName = _fpName && !_nameIsDuplicate;
+      if (_showName || _fpEmail) {
         var personRow = document.createElement("span");
         var personIcon = document.createElement("span");
         personIcon.className = "crm-vendor-detail-icon";
@@ -7863,7 +7921,7 @@ function renderCrmVendors() {
         personRow.appendChild(personIcon);
         var contactInfo = document.createElement("span");
         contactInfo.className = "crm-vendor-contact-info";
-        if (_fpName) {
+        if (_showName) {
           var cName = document.createElement("span");
           cName.className = "crm-vendor-contact-name";
           cName.textContent = _fpName;
@@ -7871,7 +7929,7 @@ function renderCrmVendors() {
         }
         if (_fpEmail) {
           var cEmail = document.createElement("span");
-          cEmail.className = _fpName ? "crm-vendor-contact-email" : "crm-vendor-contact-name";
+          cEmail.className = _showName ? "crm-vendor-contact-email" : "crm-vendor-contact-name";
           cEmail.textContent = _fpEmail;
           contactInfo.appendChild(cEmail);
         }
@@ -7897,6 +7955,48 @@ function renderCrmVendors() {
         details.appendChild(locRow);
       }
       card.appendChild(details);
+
+      // Footer stats: only for active_partner stage
+      if ((c.stage || "").toLowerCase() === "active_partner") {
+        var _cStock = partnerStock.filter(function(s) { return s.contactId === c.id; });
+        var _candleQty = 0, _soapQty = 0;
+        _cStock.forEach(function(s) {
+          var pn = (s.productName || "").toLowerCase();
+          var qty = parseInt(s.quantity) || 0;
+          if (pn.indexOf("candle") >= 0) _candleQty += qty;
+          else if (pn.indexOf("soap") >= 0) _soapQty += qty;
+        });
+        var _cEmail2 = (c.email || "").toLowerCase();
+        var _cName2 = (c.name || "").toLowerCase();
+        var _totalSales = 0;
+        shopifyOrders.forEach(function(o) {
+          if ((_cEmail2 && (o.email || "").toLowerCase() === _cEmail2) ||
+              (_cName2 && (o.customerName || "").toLowerCase() === _cName2)) {
+            _totalSales += parseFloat(o.totalPrice) || 0;
+          }
+        });
+        var footer = document.createElement("div");
+        footer.className = "crm-vendor-card-footer";
+        var stats = [
+          { type: "candle", value: String(_candleQty) },
+          { type: "soap", value: String(_soapQty) },
+          { type: "yen", value: _totalSales > 0 ? "\u00a5" + _totalSales.toLocaleString() : "\u00a50" }
+        ];
+        stats.forEach(function(s) {
+          var stat = document.createElement("div");
+          stat.className = "crm-card-stat";
+          var icon = document.createElement("span");
+          icon.className = "crm-card-stat-icon";
+          icon.appendChild(_crmStatIcon(s.type));
+          stat.appendChild(icon);
+          var val = document.createElement("span");
+          val.className = "crm-card-stat-value";
+          val.textContent = s.value;
+          stat.appendChild(val);
+          footer.appendChild(stat);
+        });
+        card.appendChild(footer);
+      }
 
       // Product tags
       if (c.products) {
