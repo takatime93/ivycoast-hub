@@ -31,19 +31,22 @@ body { font-family: 'DM Sans', 'Roboto', sans-serif; background: #fff; color: #1
   top: 0;
   z-index: 100;
 }
-.header-inner { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
+.header-inner { max-width: 100%; padding: 0 28px; margin: 0; }
 
 /* Tabs */
 .tabs {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
+  border-top: 1px solid #ebebeb;
   border-bottom: 1px solid #ebebeb;
   overflow-x: auto;
 }
 .tabs-left {
   display: flex;
   align-items: center;
+  flex: 1;
+  justify-content: center;
 }
 .tabs-right {
   display: flex;
@@ -56,10 +59,10 @@ body { font-family: 'DM Sans', 'Roboto', sans-serif; background: #fff; color: #1
   background: #ebebeb;
 }
 .tab {
-  padding: 12px 10px;
+  padding: 12px 16px;
   font-size: 14px;
-  font-weight: 500;
-  color: rgba(24,24,24,0.8);
+  font-weight: 400;
+  color: #181818;
   background: none;
   border: none;
   border-bottom: 2px solid transparent;
@@ -67,16 +70,20 @@ body { font-family: 'DM Sans', 'Roboto', sans-serif; background: #fff; color: #1
   white-space: nowrap;
   font-family: inherit;
   transition: color 0.15s, border-color 0.15s;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 .tab:hover { color: rgba(14,65,59,0.9); }
-.tab.active { color: #0e413b; font-weight: 700; border-bottom-color: #0e413b; opacity: 1; }
+.tab.active { color: #0e413b; font-weight: 600; border-bottom-color: #0e413b; opacity: 1; }
+#tab-boldoath { font-weight: 600; letter-spacing: 1.12px; }
 .tab:focus-visible,
 .btn-add-task:focus-visible,
 .board-modal-actions button:focus-visible,
 .crm-modal-actions button:focus-visible,
 .sync-indicator button:focus-visible,
 .pill:focus-visible {
-  outline: 2px solid #1a73e8;
+  outline: 2px solid #0e413b;
   outline-offset: 2px;
 }
 .search-input:focus,
@@ -84,13 +91,13 @@ body { font-family: 'DM Sans', 'Roboto', sans-serif; background: #fff; color: #1
 .board-modal input:focus,
 .board-modal select:focus,
 .board-modal textarea:focus {
-  border-color: #1a73e8;
-  box-shadow: 0 0 0 2px rgba(26,115,232,0.2);
+  border-color: #0e413b;
+  box-shadow: 0 0 0 2px rgba(14,65,59,0.2);
 }
 
 /* Main Content */
 .main { max-width: 1100px; margin: 0 auto; padding: 32px 24px; transition: max-width 0.2s ease; }
-.main.main-full-width { max-width: 100%; padding-left: 48px; padding-right: 48px; }
+.main.main-full-width { max-width: 100%; padding: 12px 80px 32px; }
 .view { display: none; }
 .view.active { display: block; }
 
@@ -113,7 +120,7 @@ a.pill, .pill {
 }
 a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none; }
 .pill:hover { opacity: 0.85; }
-.pill-figma { background: #1a73e8; }
+.pill-figma { background: #0e413b; }
 .pill-shopify { background: #5a7a00; }
 .pill-instagram { background: #c0285a; }
 .pill-yamato { background: #1b1b1b; }
@@ -141,7 +148,7 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
   margin-bottom: 12px;
 }
 .info-card p { font-size: 15px; color: #202124; }
-.info-card a { color: #1a73e8; text-decoration: none; }
+.info-card a { color: #0e413b; text-decoration: none; }
 .info-card a:hover { text-decoration: underline; }
 .stat-grid {
   display: grid;
@@ -193,7 +200,7 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
   transition: background 0.15s, color 0.15s;
 }
 .doc-embed-tab:hover { background: #e8eaed; }
-.doc-embed-tab.active { background: #1a73e8; color: #fff; border-color: #1a73e8; }
+.doc-embed-tab.active { background: #0e413b; color: #fff; border-color: #0e413b; }
 .home-list-row {
   display: flex;
   align-items: flex-start;
@@ -203,7 +210,7 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
 }
 .home-list-row:last-child { border-bottom: none; }
 .home-list-row-name { flex: 1; font-size: 14px; }
-.home-list-row-name a { color: #1a73e8; text-decoration: none; }
+.home-list-row-name a { color: #0e413b; text-decoration: none; }
 .home-list-row-name a:hover { text-decoration: underline; }
 .home-list-row-date { font-size: 13px; color: #5f6368; white-space: nowrap; flex-shrink: 0; }
 .home-list-row-desc { font-size: 13px; color: #5f6368; margin-top: 2px; }
@@ -219,7 +226,7 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
 .home-task-row:hover { background: rgba(0,0,0,0.02); }
 .home-task-row:last-child { border-bottom: none; }
 .home-task-name { flex: 1; font-size: 14px; }
-.home-task-name a { color: #1a73e8; text-decoration: none; }
+.home-task-name a { color: #0e413b; text-decoration: none; }
 .home-task-name a:hover { text-decoration: underline; }
 .home-task-meta { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
 .info-card-footer {
@@ -228,7 +235,7 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
   margin-top: 8px;
   text-align: right;
 }
-.info-card-footer a { color: #1a73e8; text-decoration: none; font-size: 13px; font-weight: 500; }
+.info-card-footer a { color: #0e413b; text-decoration: none; font-size: 13px; font-weight: 500; }
 .info-card-footer a:hover { text-decoration: underline; }
 .home-grid-2col {
   display: grid;
@@ -240,7 +247,7 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
 .home-placeholder { font-size: 14px; color: #5f6368; padding: 16px 0; text-align: center; }
 .recent-doc-row { display: flex; align-items: center; gap: 8px; padding: 6px 0; font-size: 14px; }
 .recent-doc-row + .recent-doc-row { border-top: 1px solid #f0f0f0; }
-.recent-doc-row a { color: #1a73e8; text-decoration: none; }
+.recent-doc-row a { color: #0e413b; text-decoration: none; }
 .recent-doc-row a:hover { text-decoration: underline; }
 .recent-doc-date { font-size: 12px; color: #5f6368; flex-shrink: 0; min-width: 70px; }
 
@@ -298,7 +305,7 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.file-name a { color: #1a73e8; text-decoration: none; }
+.file-name a { color: #0e413b; text-decoration: none; }
 .file-name a:hover { text-decoration: underline; }
 .file-name span { color: #202124; }
 .badge {
@@ -361,7 +368,7 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
   user-select: none;
   white-space: nowrap;
 }
-.doc-table th:hover { color: #1a73e8; }
+.doc-table th:hover { color: #0e413b; }
 .doc-table td {
   padding: 10px 12px;
   border-bottom: 1px solid #f0f0f0;
@@ -381,7 +388,7 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
 .board-toolbar .filter-select { min-width: 140px; }
 .btn-add-task {
   padding: 8px 18px;
-  background: #1a73e8;
+  background: #0e413b;
   color: #fff;
   border: none;
   border-radius: 8px;
@@ -390,7 +397,7 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
   cursor: pointer;
   font-family: inherit;
 }
-.btn-add-task:hover { background: #1557b0; }
+.btn-add-task:hover { background: #1a5c50; }
 .sync-indicator {
   margin-left: auto;
   font-size: 12px;
@@ -439,7 +446,7 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
   border-radius: 10px;
   font-size: 11px;
 }
-.kanban-col.drag-over { background: #e8f0fe; }
+.kanban-col.drag-over { background: #e8f0ee; }
 .task-card {
   background: #fff;
   border-radius: 8px;
@@ -460,7 +467,7 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
   margin-bottom: 6px;
   line-height: 1.3;
 }
-.task-card-name a { color: #1a73e8; text-decoration: none; }
+.task-card-name a { color: #0e413b; text-decoration: none; }
 .task-card-name a:hover { text-decoration: underline; }
 .task-card-meta {
   display: flex;
@@ -529,7 +536,7 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
 }
 .btn-add-card {
   padding: 6px 16px;
-  background: #1a73e8;
+  background: #0e413b;
   color: #fff;
   border: none;
   border-radius: 4px;
@@ -538,7 +545,7 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
   cursor: pointer;
   font-family: inherit;
 }
-.btn-add-card:hover { background: #1557b0; }
+.btn-add-card:hover { background: #1a5c50; }
 .btn-cancel-card {
   background: none;
   border: none;
@@ -585,14 +592,14 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
 .mention-item-name { font-weight: 500; color: #202124; }
 .mention-item-detail { font-size: 11px; color: #5f6368; }
 .crm-mention-link {
-  color: #1a73e8;
+  color: #0e413b;
   cursor: pointer;
   font-weight: 500;
   border-radius: 3px;
   padding: 0 2px;
 }
 .crm-mention-link:hover {
-  background: #e8f0fe;
+  background: #e8f0ee;
   text-decoration: underline;
 }
 .crm-product-link { color: #0d652d; cursor: pointer; font-weight: 500; border-radius: 3px; padding: 0 2px; }
@@ -649,7 +656,7 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
 }
 .board-modal input:focus,
 .board-modal select:focus,
-.board-modal textarea:focus { border-color: #1a73e8; }
+.board-modal textarea:focus { border-color: #0e413b; }
 .board-modal textarea { resize: vertical; min-height: 60px; }
 .board-modal-actions {
   display: flex;
@@ -669,11 +676,11 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
   color: #5f6368;
 }
 .board-modal-actions .btn-save {
-  background: #1a73e8;
+  background: #0e413b;
   color: #fff;
-  border-color: #1a73e8;
+  border-color: #0e413b;
 }
-.board-modal-actions .btn-save:hover { background: #1557b0; }
+.board-modal-actions .btn-save:hover { background: #1a5c50; }
 .board-modal-actions .btn-delete {
   background: #fff;
   color: #c5221f;
@@ -719,7 +726,7 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
   text-align: left;
 }
 .status-picker button:hover { background: #f8f9fa; }
-.status-picker button.current { background: #e8f0fe; border-color: #1a73e8; }
+.status-picker button.current { background: #e8f0ee; border-color: #0e413b; }
 
 /* Done column de-emphasis */
 .kanban-col[data-status="done"] .task-card { opacity: 0.65; }
@@ -747,7 +754,7 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
 }
 .board-setup button {
   padding: 6px 14px;
-  background: #1a73e8;
+  background: #0e413b;
   color: #fff;
   border: none;
   border-radius: 6px;
@@ -764,19 +771,126 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
   border-bottom: 1px solid #e0e0e0;
 }
 .crm-subtab {
-  padding: 8px 18px;
-  font-size: 13px;
-  font-weight: 500;
-  color: #5f6368;
+  padding: 12px 16px;
+  font-size: 14px;
+  font-weight: 400;
+  color: #181818;
   background: none;
   border: none;
   border-bottom: 2px solid transparent;
   cursor: pointer;
   font-family: inherit;
   transition: color 0.15s, border-color 0.15s;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
-.crm-subtab:hover { color: #1a73e8; }
-.crm-subtab.active { color: #1a73e8; border-bottom-color: #1a73e8; }
+.crm-subtab:hover { color: #0e413b; }
+.crm-subtab.active { color: #0e413b; font-weight: 600; border-bottom-color: #0e413b; }
+.crm-subtab-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 18px;
+  padding: 0 4px;
+  background: #f1f1f1;
+  border-radius: 4px;
+  font-size: 12px;
+  line-height: 16px;
+  letter-spacing: 0.24px;
+  color: #181818;
+  font-weight: 500;
+}
+
+/* CRM Header Row */
+.crm-header-row {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  margin-bottom: 48px;
+}
+.crm-title {
+  font-size: 28px;
+  font-weight: 600;
+  color: #181818;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.crm-header-center {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  min-width: 0;
+}
+.crm-header-right {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex-shrink: 0;
+}
+.crm-action-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.crm-add-dropdown-wrap { position: relative; }
+.crm-add-dropdown {
+  display: none;
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 4px;
+  background: #fff;
+  border: 1px solid #ebebeb;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  z-index: 200;
+  min-width: 180px;
+  padding: 4px 0;
+}
+.crm-add-dropdown.open { display: block; }
+.crm-add-dropdown button {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 10px 16px;
+  background: none;
+  border: none;
+  font-size: 14px;
+  font-family: inherit;
+  color: #181818;
+  cursor: pointer;
+}
+.crm-add-dropdown button:hover { background: #f5f5f5; }
+.btn-crm-add {
+  padding: 8px 8px 8px 12px;
+  background: #0e413b;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.btn-crm-refresh {
+  width: 38px;
+  height: 34px;
+  border: 1px solid #ebebeb;
+  border-radius: 6px;
+  background: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #0e413b;
+  font-size: 18px;
+  transition: all 0.15s;
+}
 
 .crm-subview { display: none; }
 .crm-subview.active { display: block; }
@@ -784,55 +898,100 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
 /* CRM Vendor Grid */
 .crm-vendor-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
 }
 .crm-vendor-card {
-  background: #f8f9fa;
-  border-radius: 12px;
-  padding: 20px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  background: #fff;
+  border: 1px solid #e3e3e3;
+  border-radius: 16px;
+  box-shadow: 0px 4px 14px rgba(0,0,0,0.03);
   cursor: pointer;
   transition: box-shadow 0.15s;
+  display: flex;
+  flex-direction: column;
 }
-.crm-vendor-card:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.13); }
+.crm-vendor-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
 .crm-vendor-name {
-  font-size: 15px;
-  font-weight: 500;
-  color: #202124;
-  margin-bottom: 4px;
+  font-size: 18px;
+  font-weight: 600;
+  color: #000;
+  line-height: 21px;
 }
-.crm-vendor-company { font-size: 13px; color: #5f6368; margin-bottom: 0; }
-.crm-vendor-details { font-size: 13px; color: #5f6368; margin-bottom: 8px; }
-.crm-vendor-details span { display: block; margin-bottom: 2px; }
+.crm-vendor-company { font-size: 11px; color: #424242; line-height: 15px; letter-spacing: 0.11px; }
+.crm-vendor-details { font-size: 11px; color: #424242; display: flex; flex-direction: column; gap: 10px; padding: 24px; flex: 1; }
+.crm-vendor-details span { display: flex; gap: 12px; align-items: center; line-height: 1.4; }
+.crm-vendor-details .crm-detail-address { align-items: flex-start; }
+.crm-vendor-detail-icon { flex-shrink: 0; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; color: #0e413b; font-size: 18px; }
+.crm-vendor-contact-info { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.crm-vendor-contact-name { font-size: 14px; font-weight: 500; color: #000; line-height: normal; }
+.crm-vendor-contact-email { font-size: 11px; color: #424242; line-height: normal; }
 
 /* CRM Product Tags */
-.crm-product-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px; }
+.crm-product-tags { display: flex; flex-wrap: wrap; gap: 4px; padding: 0 24px 12px; }
 .crm-product-tag {
   display: inline-block;
-  padding: 2px 8px;
-  border-radius: 12px;
-  font-size: 11px;
-  font-weight: 500;
-  background: #e6f4ea;
-  color: #137333;
+  padding: 3px 8px;
+  border-radius: 5px;
+  font-size: 10px;
+  font-weight: 600;
+  background: #f1f1f1;
+  color: #424242;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 /* CRM Stage Badges */
 .crm-stage-badge {
   display: inline-block;
-  padding: 2px 8px;
-  border-radius: 4px;
-  font-size: 11px;
-  font-weight: 500;
-  text-transform: capitalize;
+  padding: 3px 8px;
+  border-radius: 5px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  align-self: flex-start;
+  width: fit-content;
 }
-.crm-stage-prospect { background: #e8eaed; color: #5f6368; }
-.crm-stage-outreach { background: #e8f0fe; color: #1a73e8; }
-.crm-stage-negotiation { background: #fef7e0; color: #b06000; }
-.crm-stage-active_partner { background: #e6f4ea; color: #137333; }
-.crm-stage-inactive { background: #fce8e6; color: #c5221f; }
+.crm-stage-prospect { background: #3cb1ff; color: #fff; }
+.crm-stage-outreach { background: #fec553; color: #000; }
+.crm-stage-negotiation { background: #ff5e5e; color: #fff; }
+.crm-stage-active_partner { background: #0e413b; color: #fff; }
+.crm-stage-inactive { background: #f2f2f2; color: #353535; }
 
+
+/* CRM Card Footer */
+.crm-vendor-card-footer {
+  border-top: 1px solid #f3f3f3;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 24px 12px;
+}
+.crm-card-stat {
+  flex: 1;
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  padding: 4px 8px 4px 6px;
+  border-radius: 4px;
+}
+.crm-card-stat-icon {
+  width: 14px;
+  height: 14px;
+  color: #0e413b;
+  flex-shrink: 0;
+}
+.crm-card-stat-value {
+  font-size: 12px;
+  font-weight: 500;
+  color: #000;
+  letter-spacing: 0.48px;
+  white-space: nowrap;
+}
 /* CRM Contacts Table */
 .crm-table {
   width: 100%;
@@ -862,11 +1021,11 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
 .crm-view-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
 .crm-view-bar-left { display: flex; align-items: center; gap: 8px; }
 .crm-view-bar-count { font-size: 13px; color: #5f6368; }
-.crm-view-toggle { display: flex; gap: 2px; background: #f1f3f4; border-radius: 8px; padding: 2px; }
-.crm-view-toggle-btn { width: 32px; height: 32px; border: none; background: transparent; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #5f6368; transition: all 0.15s; }
+.crm-view-toggle { display: flex; gap: 2px; background: #f1f1f1; border: 1px solid #ebebeb; border-radius: 8px; padding: 2px; }
+.crm-view-toggle-btn { width: 38px; height: 30px; border: none; background: transparent; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #0e413b; transition: all 0.15s; }
 .crm-view-toggle-btn:hover { color: #202124; }
-.crm-view-toggle-btn.active { background: #fff; color: #202124; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-.crm-view-toggle-btn svg { width: 18px; height: 18px; }
+.crm-view-toggle-btn.active { background: #fff; color: #0e413b; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+.crm-view-toggle-btn svg { width: 16px; height: 16px; }
 
 /* CRM Vendor Table Wrapper */
 .crm-vendor-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
@@ -888,7 +1047,7 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
   font-size: 11px;
   font-weight: 500;
 }
-.crm-type-vendor { background: #e8f0fe; color: #1a73e8; }
+.crm-type-vendor { background: #e8f0ee; color: #0e413b; }
 .crm-type-contact { background: #e8eaed; color: #5f6368; }
 .crm-type-partner { background: #e6f4ea; color: #137333; }
 
@@ -934,8 +1093,8 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
   width: 64px;
   height: 64px;
   border-radius: 50%;
-  background: #e8f0fe;
-  color: #1a73e8;
+  background: #e8f0ee;
+  color: #0e413b;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -956,7 +1115,7 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
   width: 24px;
   height: 24px;
   border-radius: 50%;
-  background: #1a73e8;
+  background: #0e413b;
   color: #fff;
   display: flex;
   align-items: center;
@@ -965,7 +1124,7 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
   border: 2px solid #fff;
   cursor: pointer;
 }
-.crm-avatar-upload-icon:hover { background: #1557b0; }
+.crm-avatar-upload-icon:hover { background: #1a5c50; }
 .crm-header-fields {
   flex: 1;
   min-width: 0;
@@ -980,24 +1139,24 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
   margin-bottom: 6px;
 }
 .crm-header-fields input[data-field="name"]:hover { border-color: #dadce0; }
-.crm-header-fields input[data-field="name"]:focus { border-color: #1a73e8; box-shadow: 0 0 0 2px rgba(26,115,232,0.2); }
-.crm-header-row {
+.crm-header-fields input[data-field="name"]:focus { border-color: #0e413b; box-shadow: 0 0 0 2px rgba(14,65,59,0.2); }
+.crm-modal-header-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 8px;
 }
-.crm-header-row input,
-.crm-header-row select {
+.crm-modal-header-row input,
+.crm-modal-header-row select {
   font-size: 13px;
   padding: 5px 8px;
   border: 1px solid transparent;
   border-radius: 6px;
   color: #202124;
 }
-.crm-header-row input:hover,
-.crm-header-row select:hover { border-color: #dadce0; }
-.crm-header-row input:focus,
-.crm-header-row select:focus { border-color: #1a73e8; box-shadow: 0 0 0 2px rgba(26,115,232,0.2); }
+.crm-modal-header-row input:hover,
+.crm-modal-header-row select:hover { border-color: #dadce0; }
+.crm-modal-header-row input:focus,
+.crm-modal-header-row select:focus { border-color: #0e413b; box-shadow: 0 0 0 2px rgba(14,65,59,0.2); }
 .crm-modal-section {
   padding: 16px 28px;
   border-bottom: 1px solid #ebebeb;
@@ -1043,8 +1202,8 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
 .crm-field input:focus,
 .crm-field select:focus,
 .crm-field textarea:focus {
-  border-color: #1a73e8;
-  box-shadow: 0 0 0 2px rgba(26,115,232,0.2);
+  border-color: #0e413b;
+  box-shadow: 0 0 0 2px rgba(14,65,59,0.2);
 }
 .crm-field textarea { resize: vertical; min-height: 56px; }
 .crm-card-pair {
@@ -1061,8 +1220,8 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
   transition: border-color 0.15s, background 0.15s;
   position: relative;
 }
-.crm-card-upload:hover { border-color: #1a73e8; background: #f8f9ff; }
-.crm-card-upload.drag-over { border-color: #1a73e8; background: #e8f0fe; border-width: 2px; box-shadow: 0 0 0 3px rgba(26,115,232,0.15); }
+.crm-card-upload:hover { border-color: #0e413b; background: #f5f9f8; }
+.crm-card-upload.drag-over { border-color: #0e413b; background: #e8f0ee; border-width: 2px; box-shadow: 0 0 0 3px rgba(14,65,59,0.15); }
 .crm-card-upload.has-preview {
   padding: 8px;
   border-style: solid;
@@ -1126,11 +1285,11 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
   color: #5f6368;
 }
 .crm-modal-actions .btn-save {
-  background: #1a73e8;
+  background: #0e413b;
   color: #fff;
-  border-color: #1a73e8;
+  border-color: #0e413b;
 }
-.crm-modal-actions .btn-save:hover { background: #1557b0; }
+.crm-modal-actions .btn-save:hover { background: #1a5c50; }
 .crm-modal-actions .btn-delete {
   background: #fff;
   color: #c5221f;
@@ -1145,15 +1304,15 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
 }
 /* CRM Vendor Avatar */
 .crm-vendor-avatar {
-  width: 36px;
-  height: 36px;
+  width: 52px;
+  height: 52px;
   border-radius: 50%;
-  background: #e8f0fe;
-  color: #1a73e8;
+  background: #e8f0ee;
+  color: #0e413b;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 13px;
+  font-size: 16px;
   font-weight: 700;
   flex-shrink: 0;
   overflow: hidden;
@@ -1166,8 +1325,21 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
 .crm-vendor-card-header {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-bottom: 8px;
+  gap: 12px;
+  padding: 24px 20px;
+  border-bottom: 1px solid #f3f3f3;
+}
+.crm-vendor-card-header-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.crm-vendor-name-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 /* Products */
@@ -1204,7 +1376,7 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
 .stock-edit-input {
   width: 60px;
   padding: 4px 8px;
-  border: 1px solid #1a73e8;
+  border: 1px solid #0e413b;
   border-radius: 4px;
   font-size: 13px;
   font-family: inherit;
@@ -1212,7 +1384,7 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
 }
 .stock-save-btn {
   padding: 4px 10px;
-  background: #1a73e8;
+  background: #0e413b;
   color: #fff;
   border: none;
   border-radius: 4px;
@@ -1222,7 +1394,7 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
   font-family: inherit;
   margin-left: 4px;
 }
-.stock-save-btn:hover { background: #1557b0; }
+.stock-save-btn:hover { background: #1a5c50; }
 .status-badge-active { background: #e6f4ea; color: #137333; }
 .status-badge-draft { background: #e8eaed; color: #5f6368; }
 .status-badge-archived { background: #fce8e6; color: #c5221f; }
@@ -1239,11 +1411,11 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
 .fin-paid { background: #e6f4ea; color: #137333; }
 .fin-pending { background: #fef7e0; color: #b06000; }
 .fin-refunded { background: #e8eaed; color: #5f6368; }
-.fin-authorized { background: #e8f0fe; color: #1a73e8; }
+.fin-authorized { background: #e8f0ee; color: #0e413b; }
 .fin-voided { background: #fce8e6; color: #c5221f; }
 .ful-fulfilled { background: #e6f4ea; color: #137333; }
 .ful-unfulfilled { background: #fef7e0; color: #b06000; }
-.ful-partial { background: #e8f0fe; color: #1a73e8; }
+.ful-partial { background: #e8f0ee; color: #0e413b; }
 .fin-draft { background: #e8eaed; color: #5f6368; }
 
 /* Order doc status icons */
@@ -1257,7 +1429,7 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
   letter-spacing: 0.3px;
 }
 .order-doc-icon.doc-missing { background: #f1f3f4; color: #bdc1c6; }
-.order-doc-icon.doc-created { background: #e8f0fe; color: #1a73e8; }
+.order-doc-icon.doc-created { background: #e8f0ee; color: #0e413b; }
 .order-doc-icon.doc-sent { background: #e6f4ea; color: #137333; }
 
 /* Documents table — clickable doc cells */
@@ -1270,7 +1442,7 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
   align-items: center;
   gap: 6px;
 }
-.doc-cell:hover { background: #e8f0fe; }
+.doc-cell:hover { background: #e8f0ee; }
 .doc-cell-empty { color: #bdc1c6; font-size: 13px; }
 .doc-cell-number { font-weight: 500; font-size: 13px; color: #202124; }
 .doc-cell-badge { margin-left: 2px; }
@@ -1280,7 +1452,7 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
   margin-top: 16px;
   padding: 14px 16px;
   background: #f8f9fa;
-  border: 1px solid #ebebeb;
+  border: 1px solid #bbb;
   border-radius: 8px;
 }
 .order-doc-checklist-label {
@@ -1329,8 +1501,8 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
   font-family: inherit;
   transition: color 0.15s, border-color 0.15s;
 }
-.orders-subtab:hover { color: #1a73e8; }
-.orders-subtab.active { color: #1a73e8; border-bottom-color: #1a73e8; }
+.orders-subtab:hover { color: #0e413b; }
+.orders-subtab.active { color: #0e413b; border-bottom-color: #0e413b; }
 
 /* Order detail modal */
 .order-detail-grid {
@@ -1493,14 +1665,14 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
 }
 .customer-drawer-body input[type="text"]:focus,
 .customer-drawer-body textarea:focus {
-  border-color: #1a73e8;
-  box-shadow: 0 0 0 2px rgba(26,115,232,0.2);
+  border-color: #0e413b;
+  box-shadow: 0 0 0 2px rgba(14,65,59,0.2);
   outline: none;
 }
 .customer-drawer-body .btn-save {
   margin-top: 12px;
   padding: 8px 20px;
-  background: #1a73e8;
+  background: #0e413b;
   color: #fff;
   border: none;
   border-radius: 6px;
@@ -1537,12 +1709,12 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
 .customer-order-row { display: flex; justify-content: space-between; align-items: center; font-size: 13px; }
 .customer-order-items-text { font-size: 12px; color: #5f6368; margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .customer-order-docs { display: flex; gap: 6px; margin-top: 4px; flex-wrap: wrap; }
-.customer-order-doc-chip { font-size: 11px; padding: 2px 8px; border-radius: 4px; background: #e8f0fe; color: #1a73e8; cursor: pointer; border: none; font-family: inherit; }
+.customer-order-doc-chip { font-size: 11px; padding: 2px 8px; border-radius: 4px; background: #e8f0ee; color: #0e413b; cursor: pointer; border: none; font-family: inherit; }
 .customer-order-doc-chip:hover { background: #d2e3fc; }
 .customer-order-doc-chip.receipt { background: #e6f4ea; color: #137333; }
 .customer-order-doc-chip.receipt:hover { background: #ceead6; }
 .customer-link {
-  color: #1a73e8;
+  color: #0e413b;
   text-decoration: none;
   cursor: pointer;
 }
@@ -1550,8 +1722,8 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
 .customer-tag {
   display: inline-block;
   padding: 2px 8px;
-  background: #e8f0fe;
-  color: #1a73e8;
+  background: #e8f0ee;
+  color: #0e413b;
   border-radius: 12px;
   font-size: 12px;
   margin: 2px 2px 2px 0;
@@ -1593,7 +1765,7 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
   text-transform: capitalize;
 }
 .inv-draft { background: #e8eaed; color: #5f6368; }
-.inv-sent { background: #e8f0fe; color: #1a73e8; }
+.inv-sent { background: #e8f0ee; color: #0e413b; }
 .inv-paid { background: #e6f4ea; color: #137333; }
 
 /* Invoice Modal */
@@ -1631,7 +1803,7 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
   font-family: inherit;
   outline: none;
 }
-.inv-line-items input:focus { border-color: #1a73e8; }
+.inv-line-items input:focus { border-color: #0e413b; }
 .inv-line-items .inv-amount { text-align: right; font-weight: 500; padding: 6px 8px; color: #202124; }
 .inv-line-items .inv-remove-row {
   background: none;
@@ -1649,12 +1821,12 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
   padding: 8px;
   width: 100%;
   font-size: 13px;
-  color: #1a73e8;
+  color: #0e413b;
   cursor: pointer;
   font-family: inherit;
   margin-top: 4px;
 }
-.inv-add-row-btn:hover { background: #f8f9ff; border-color: #1a73e8; }
+.inv-add-row-btn:hover { background: #f5f9f8; border-color: #0e413b; }
 .inv-totals {
   display: flex;
   flex-direction: column;
@@ -1689,7 +1861,7 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
   cursor: pointer;
   color: #5f6368;
 }
-.inv-pricing-toggle button.active { background: #e8f0fe; border-color: #1a73e8; color: #1a73e8; font-weight: 500; }
+.inv-pricing-toggle button.active { background: #e8f0ee; border-color: #0e413b; color: #0e413b; font-weight: 500; }
 
 /* Pricing Parties */
 .inv-pricing-parties { margin-top: 6px; }
@@ -1743,13 +1915,13 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
   border-radius: 6px;
   padding: 6px 12px;
   font-size: 12px;
-  color: #1a73e8;
+  color: #0e413b;
   cursor: pointer;
   font-family: inherit;
   margin-top: 4px;
   width: 100%;
 }
-.inv-add-party-btn:hover { background: #f8f9ff; border-color: #1a73e8; }
+.inv-add-party-btn:hover { background: #f5f9f8; border-color: #0e413b; }
 .inv-line-items .inv-applied-price,
 .inv-line-items .rec-applied-price { text-align: right; font-size: 12px; color: #0e413b; padding: 6px 4px; }
 .inv-line-items .inv-applied-amount,
@@ -1772,7 +1944,7 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
   outline: none;
   box-sizing: border-box;
 }
-.inv-address-grid input:focus { border-color: #1a73e8; }
+.inv-address-grid input:focus { border-color: #0e413b; }
 
 /* Invoice Product Dropdown */
 .inv-product-wrapper { position: relative; }
@@ -1978,7 +2150,7 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
 /* Receipt-specific styles */
 .rec-prev-invnum { font-size: 18px; font-weight: 600; color: #202124; text-align: right; }
 .rec-badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 500; background: #e6f4ea; color: #137333; }
-.rec-prev-invref { font-size: 12px; color: #1a73e8; margin-top: 12px; font-weight: 500; }
+.rec-prev-invref { font-size: 12px; color: #0e413b; margin-top: 12px; font-weight: 500; }
 
 /* CRM Documents Checklist */
 .crm-checklist-list { display: flex; flex-direction: column; gap: 8px; }
@@ -1990,7 +2162,7 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
   border-bottom: 1px solid #f0f0f0;
 }
 .crm-checklist-item:last-child { border-bottom: none; }
-.crm-checklist-item input[type="checkbox"] { width: 18px; height: 18px; accent-color: #1a73e8; cursor: pointer; flex-shrink: 0; }
+.crm-checklist-item input[type="checkbox"] { width: 18px; height: 18px; accent-color: #0e413b; cursor: pointer; flex-shrink: 0; }
 .crm-checklist-item .checklist-label { flex: 1; font-size: 14px; color: #202124; }
 .crm-checklist-item .checklist-label.checked { text-decoration: line-through; color: #5f6368; }
 .crm-checklist-item .checklist-date { font-size: 12px; color: #5f6368; white-space: nowrap; }
@@ -2006,11 +2178,11 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
   white-space: nowrap;
 }
 .crm-checklist-item .checklist-attach-btn:hover { background: #f8f9fa; }
-.crm-checklist-item .checklist-attach-btn.attached { color: #1a73e8; border-color: #1a73e8; }
+.crm-checklist-item .checklist-attach-btn.attached { color: #0e413b; border-color: #0e413b; }
 .crm-checklist-add {
   border: none;
   background: none;
-  color: #1a73e8;
+  color: #0e413b;
   font-size: 13px;
   cursor: pointer;
   font-family: inherit;
@@ -2037,12 +2209,12 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
   border-radius: 4px;
   padding: 3px 8px;
   font-size: 12px;
-  color: #1a73e8;
+  color: #0e413b;
   cursor: pointer;
   font-family: inherit;
   margin-left: auto;
 }
-.crm-invoice-download:hover { background: #e8f0fe; }
+.crm-invoice-download:hover { background: #e8f0ee; }
 
 /* CRM Detail View (Read-Only) */
 .crm-saving-overlay {
@@ -2060,7 +2232,7 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
   width: 32px;
   height: 32px;
   border: 3px solid #e8eaed;
-  border-top-color: #1a73e8;
+  border-top-color: #0e413b;
   border-radius: 50%;
   animation: crm-spin 0.8s linear infinite;
 }
@@ -2109,8 +2281,8 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
   transition: all 0.15s;
 }
 .crm-detail-header-actions button:hover { background: #f1f3f4; color: #202124; border-color: #e0e0e0; }
-.crm-detail-header-actions .crm-edit-btn { color: #1a73e8; border-color: #c2d7f5; }
-.crm-detail-header-actions .crm-edit-btn:hover { background: #e8f0fe; }
+.crm-detail-header-actions .crm-edit-btn { color: #0e413b; border-color: #c2d7f5; }
+.crm-detail-header-actions .crm-edit-btn:hover { background: #e8f0ee; }
 .crm-detail-avatar {
   width: 56px;
   height: 56px;
@@ -2186,7 +2358,7 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
 }
 .crm-detail-field.full-width { grid-column: 1 / -1; }
 .crm-detail-field a {
-  color: #1a73e8;
+  color: #0e413b;
   text-decoration: none;
 }
 .crm-detail-field a:hover { text-decoration: underline; }
@@ -2355,8 +2527,8 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
   font-size: 13px;
   font-weight: 500;
   font-family: inherit;
-  color: #1a73e8;
-  background: #e8f0fe;
+  color: #0e413b;
+  background: #e8f0ee;
   border: none;
   border-radius: 8px;
   cursor: pointer;
@@ -2550,7 +2722,7 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
   min-width: 0;
 }
 .crm-detail-contact-info-row svg { color: #80868b; flex-shrink: 0; }
-.crm-detail-contact-info-row a { color: #1a73e8; text-decoration: none; }
+.crm-detail-contact-info-row a { color: #0e413b; text-decoration: none; }
 .crm-detail-contact-info-row a:hover { text-decoration: underline; }
 
 /* ── More menu (three-dot dropdown) ────────────────────────── */
@@ -2697,7 +2869,7 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
   outline: none;
   transition: border-color 0.15s;
 }
-.crm-notes-input-wrap textarea:focus { border-color: #1a73e8; }
+.crm-notes-input-wrap textarea:focus { border-color: #0e413b; }
 .crm-notes-add-btn {
   padding: 8px 14px;
   font-size: 13px;
@@ -2743,7 +2915,7 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
 .crm-reference-source {
   font-size: 12px;
   font-weight: 600;
-  color: #1a73e8;
+  color: #0e413b;
   margin-bottom: 3px;
 }
 .crm-reference-text {
@@ -2777,7 +2949,7 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
   outline: none;
   transition: border-color 0.15s;
 }
-.crm-tickets-add-row input[type="text"]:focus { border-color: #1a73e8; }
+.crm-tickets-add-row input[type="text"]:focus { border-color: #0e413b; }
 .crm-tickets-add-row input[type="date"] {
   padding: 7px 10px;
   font-size: 13px;
@@ -2867,7 +3039,7 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
 .crm-people-count-badge { display: inline-block; font-size: 12px; color: #5f6368; background: #f1f3f4; padding: 2px 8px; border-radius: 10px; margin-left: 8px; font-weight: 400; vertical-align: middle; }
 .crm-detail-name-row { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
 .crm-detail-type-badge { font-size: 11px; padding: 2px 8px; border-radius: 10px; font-weight: 500; line-height: 1; white-space: nowrap; }
-.crm-detail-type-badge.type-vendor { background: #e8f0fe; color: #1a73e8; }
+.crm-detail-type-badge.type-vendor { background: #e8f0ee; color: #0e413b; }
 .crm-detail-type-badge.type-partner { background: #e6f4ea; color: #137333; }
 .crm-detail-type-badge.type-contact { background: #f1f3f4; color: #5f6368; }
 
@@ -2951,7 +3123,7 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
   font-size: 12px;
 }
 .crm-activity-icon.act-created { background: #e6f4ea; color: #137333; }
-.crm-activity-icon.act-updated { background: #e8f0fe; color: #1a73e8; }
+.crm-activity-icon.act-updated { background: #e8f0ee; color: #0e413b; }
 .crm-activity-icon.act-deleted { background: #fce8e6; color: #c5221f; }
 .crm-activity-icon.act-uploaded { background: #fef7e0; color: #b06000; }
 .crm-activity-content { flex: 1; min-width: 0; }
@@ -3180,7 +3352,7 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
   font-weight: 700;
   color: #fff;
 }
-.crm-doc-icon.brandBook { background: #1a73e8; }
+.crm-doc-icon.brandBook { background: #0e413b; }
 .crm-doc-icon.contract { background: #c5221f; }
 .crm-doc-icon.invoice { background: #137333; }
 .crm-doc-icon.receipt { background: #b06000; }
@@ -3212,7 +3384,7 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
   font-size: 13px;
 }
 .crm-info-link-row svg { flex-shrink: 0; color: #5f6368; }
-.crm-info-link-row a { color: #1a73e8; text-decoration: none; word-break: break-all; }
+.crm-info-link-row a { color: #0e413b; text-decoration: none; word-break: break-all; }
 .crm-info-link-row a:hover { text-decoration: underline; }
 .crm-og-preview {
   margin-top: 14px;
@@ -3250,6 +3422,13 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
 }
 
 /* Responsive */
+@media (max-width: 1200px) {
+  .crm-vendor-grid { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 900px) {
+  .crm-vendor-grid { grid-template-columns: repeat(2, 1fr); }
+  .main.main-full-width { padding: 12px 32px 32px; }
+}
 @media (max-width: 600px) {
   .header { padding: 16px 16px 0; }
   .main { padding: 20px 16px; }
@@ -3298,7 +3477,7 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
   .crm-modal-header { padding: 16px 20px 14px; }
   .crm-modal-section { padding: 14px 20px; }
   .crm-field-row { grid-template-columns: 1fr; }
-  .crm-header-row { grid-template-columns: 1fr; }
+  .crm-modal-header-row { grid-template-columns: 1fr; }
   .crm-modal-actions { padding: 14px 20px; }
   .crm-detail-header { padding: 16px 18px 12px; }
 
@@ -3376,7 +3555,7 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
   align-items: center;
   gap: 10px;
   padding: 12px 32px;
-  background: #1a73e8;
+  background: #0e413b;
   color: #fff;
   border: none;
   border-radius: 6px;
@@ -3386,7 +3565,7 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
   cursor: pointer;
   transition: background 0.15s;
 }
-#sign-in-btn:hover { background: #1557b0; }
+#sign-in-btn:hover { background: #1a5c50; }
 #auth-error {
   margin-top: 20px;
   color: #d93025;
@@ -3397,7 +3576,7 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 0;
+  padding: 16px 0;
 }
 .header-user {
   display: flex;
@@ -3410,35 +3589,12 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
 }
 
 /* Notification Bell */
-.notif-bell {
-  position: relative;
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 6px;
-  line-height: 0;
-  color: #5f6368;
-  border-radius: 50%;
-  transition: background 0.15s, color 0.15s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
+.notif-bell { position: relative; cursor: pointer; font-size: 18px; color: #0e413b; border: 1px solid #ebebeb; border-radius: 6px; width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; background: #fff; }
 .notif-bell:hover { background: #f1f3f4; }
 .notif-bell svg { width: 20px; height: 20px; fill: currentColor; transition: fill 0.15s; }
 .notif-bell.has-alert { color: #202124; }
 .notif-bell.has-alert svg { fill: #202124; }
-.notif-dot {
-  display: none;
-  position: absolute;
-  top: 4px;
-  right: 4px;
-  width: 8px;
-  height: 8px;
-  background: #ea4335;
-  border-radius: 50%;
-  border: 1.5px solid #fff;
-}
+.notif-dot { position: absolute; width: 8px; height: 8px; background: #ff1818; border-radius: 50%; top: -3px; right: -3px; }
 .notif-dot.active { display: block; }
 .notif-dropdown {
   display: none;
@@ -3466,7 +3622,7 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
 .notif-dropdown-header button {
   background: none;
   border: none;
-  color: #1a73e8;
+  color: #0e413b;
   font-size: 12px;
   cursor: pointer;
   font-family: inherit;
@@ -3486,7 +3642,7 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
   transition: background 0.1s;
 }
 .notif-item:hover { background: #f8f9fa; }
-.notif-item-unread { background: #e8f0fe; }
+.notif-item-unread { background: #e8f0ee; }
 .notif-item-unread:hover { background: #d2e3fc; }
 .notif-avatar {
   width: 28px;
@@ -3510,17 +3666,8 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
 
 /* Tab Dots */
 .tab { position: relative; }
-.tab-dot {
-  display: none;
-  position: absolute;
-  top: 6px;
-  right: 2px;
-  width: 6px;
-  height: 6px;
-  background: #ea4335;
-  border-radius: 50%;
-}
-.tab-dot.active { display: block; }
+.tab-dot { display: none; min-width: 20px; height: 18px; padding: 0 4px; background: #ff1818; border-radius: 4px; font-size: 11px; line-height: 18px; color: #fff; text-align: center; font-weight: 500; }
+.tab-dot.active { display: inline-flex; align-items: center; justify-content: center; }
 
 /* Presence Indicators */
 .presence-container {
@@ -3530,27 +3677,28 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
 }
 .presence-avatar {
   position: relative;
-  width: 28px;
-  height: 28px;
+  width: 34px;
+  height: 34px;
   border-radius: 50%;
   background: #e8eaed;
   overflow: visible;
   cursor: default;
 }
 .presence-avatar img {
-  width: 28px;
-  height: 28px;
+  width: 100%;
+  height: 100%;
   border-radius: 50%;
+  object-fit: cover;
   display: block;
 }
 .presence-avatar-initial {
-  width: 28px;
-  height: 28px;
+  width: 100%;
+  height: 100%;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 600;
   color: #fff;
 }
@@ -3558,10 +3706,11 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
   position: absolute;
   bottom: -1px;
   right: -1px;
-  width: 10px;
-  height: 10px;
+  width: 12px;
+  height: 12px;
   border-radius: 50%;
   border: 2px solid #fff;
+  z-index: 1;
 }
 .presence-online { background: #0f9d58; }
 .presence-offline { background: #9aa0a6; }
@@ -3579,11 +3728,55 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
 }
 #sign-out-btn:hover { background: #f5f5f5; border-color: #555; }
 
+/* User Chip Dropdown */
+.header-user-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 8px 8px 12px;
+  border: 1px solid #ebebeb;
+  border-radius: 6px;
+  background: #fff;
+  cursor: pointer;
+  font-size: 14px;
+  color: #0e413b;
+  font-family: inherit;
+}
+.header-user-chip:hover { border-color: #ccc; }
+.header-user-dropdown {
+  display: none;
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 4px;
+  background: #fff;
+  border: 1px solid #ebebeb;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  z-index: 200;
+  min-width: 140px;
+  padding: 4px 0;
+}
+.header-user-dropdown.open { display: block; }
+.header-user-dropdown button {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 10px 16px;
+  background: none;
+  border: none;
+  font-size: 14px;
+  font-family: inherit;
+  color: #181818;
+  cursor: pointer;
+}
+.header-user-dropdown button:hover { background: #f5f5f5; }
+
 /* Global Search */
-.global-search { position: relative; flex: 1; max-width: 360px; margin: 0 20px; }
+.global-search { position: relative; flex: 1; max-width: 514px; margin: 0 20px; }
 .global-search input {
   width: 100%;
-  padding: 10px 18px;
+  padding: 12px 24px;
   border: 1px solid #ebebeb;
   border-radius: 50px;
   font-size: 14px;
@@ -3592,7 +3785,7 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
   transition: background 0.15s, border-color 0.15s, box-shadow 0.15s;
 }
 .global-search input::placeholder {
-  color: rgba(0,0,0,0.5);
+  color: rgba(0,0,0,0.6);
 }
 .global-search input:focus {
   background: #fff;
@@ -3777,10 +3970,10 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
   <div class="header-inner">
     <div class="header-top">
       <div>
-        <img src="icons/logo.png" alt="Ivycoast" style="height:32px">
+        <img src="icons/logo.png" alt="Ivycoast" style="height:46px">
       </div>
       <div class="global-search">
-        <input type="text" id="global-search" placeholder="Search..." autocomplete="off">
+        <input type="text" id="global-search" placeholder="Search for anything..." autocomplete="off">
         <div id="search-results" class="search-results"></div>
       </div>
       <div class="header-user">
@@ -3792,8 +3985,15 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
             <div class="notif-list" id="notif-list"></div>
           </div>
         </div>
-        <span id="user-name"></span>
-        <button id="sign-out-btn" onclick="signOut()">Sign out</button>
+        <div style="position:relative">
+          <button class="header-user-chip" id="user-chip" onclick="toggleUserDropdown()" aria-haspopup="true" aria-expanded="false">
+            <span id="user-name"></span>
+            <svg class="chevron" width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M3 4.5L6 7.5L9 4.5" stroke="#818181" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <div class="header-user-dropdown" id="user-dropdown" role="menu">
+            <button onclick="signOut()" role="menuitem">Sign out</button>
+          </div>
+        </div>
       </div>
     </div>
     <nav class="tabs" role="tablist">
@@ -4024,31 +4224,29 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
 
   <!-- CRM -->
   <div id="crm" class="view" role="tabpanel" aria-labelledby="tab-crm">
-    <h2 class="section-title">CRM</h2>
-
-    <div class="board-toolbar" id="crm-toolbar">
-      <button class="btn-add-task" onclick="openCrmCreateModal()">+ Add Contact</button>
-      <select class="filter-select" id="crm-filter-ws" onchange="renderCrmActiveView()">
-        <option value="">All Workspaces</option>
-        <option value="IVYCOAST">IVYCOAST</option>
-        <option value="BOLDOATH">BOLDOATH</option>
-      </select>
-      <select class="filter-select" id="crm-filter-type" onchange="renderCrmActiveView()">
-        <option value="">All Types</option>
-        <option value="Vendor">Vendor</option>
-        <option value="Contact">Contact</option>
-        <option value="Partner">Partner</option>
-      </select>
-      <div class="sync-indicator">
-        <span id="crm-sync-status"></span>
-        <button onclick="fetchCrmContacts(true)">Refresh</button>
+    <div class="crm-header-row">
+      <h2 class="crm-title">CRM</h2>
+      <div class="crm-header-center">
+        <button class="crm-subtab active" data-subview="crm-vendors" onclick="switchCrmSubView('crm-vendors')">Vendors</button>
+        <button class="crm-subtab" data-subview="crm-contacts" onclick="switchCrmSubView('crm-contacts')">Contacts</button>
+        <button class="crm-subtab" data-subview="crm-pipeline" onclick="switchCrmSubView('crm-pipeline')">Pipeline</button>
       </div>
-    </div>
-
-    <div class="crm-subtabs">
-      <button class="crm-subtab active" data-subview="crm-vendors" onclick="switchCrmSubView('crm-vendors')">Vendors</button>
-      <button class="crm-subtab" data-subview="crm-contacts" onclick="switchCrmSubView('crm-contacts')">Contacts</button>
-      <button class="crm-subtab" data-subview="crm-pipeline" onclick="switchCrmSubView('crm-pipeline')">Pipeline</button>
+      <div class="crm-header-right">
+        <div class="crm-view-toggle" id="crm-header-view-toggle"></div>
+        <div class="crm-action-group">
+        <button class="btn-crm-refresh" onclick="fetchCrmContacts(true)" title="Refresh"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg></button>
+        <div class="crm-add-dropdown-wrap">
+          <button class="btn-crm-add" id="crm-add-btn" onclick="toggleCrmAddDropdown()">Add new <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style="margin-left:2px"><path d="M3 4.5L6 7.5L9 4.5" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <div class="crm-add-dropdown" id="crm-add-dropdown">
+            <button onclick="openCrmCreateModal('Vendor'); closeCrmAddDropdown()">New Vendor</button>
+            <button onclick="openCrmCreateModal('Contact'); closeCrmAddDropdown()">New Contact</button>
+          </div>
+        </div>
+        </div>
+        <div class="sync-indicator">
+          <span id="crm-sync-status"></span>
+        </div>
+      </div>
     </div>
 
     <!-- Contacts sub-tab -->
@@ -4293,8 +4491,8 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
     <div id="order-doc-checklist" style="display:none"></div>
     <div id="order-linked-docs" style="display:none;margin-top:16px;padding-top:16px;border-top:1px solid #ebebeb"></div>
     <div class="board-modal-actions" style="margin-top:20px">
-      <button id="order-create-invoice-btn" onclick="createInvoiceFromOrder()" style="color:#1a73e8;border-color:#1a73e8;display:none">Create Invoice</button>
-      <button id="order-create-receipt-btn" onclick="createReceiptFromOrder()" style="color:#1a73e8;border-color:#1a73e8;display:none">Create Receipt</button>
+      <button id="order-create-invoice-btn" onclick="createInvoiceFromOrder()" style="color:#0e413b;border-color:#0e413b;display:none">Create Invoice</button>
+      <button id="order-create-receipt-btn" onclick="createReceiptFromOrder()" style="color:#0e413b;border-color:#0e413b;display:none">Create Receipt</button>
       <button onclick="closeOrderDetailModal()">Close</button>
     </div>
   </div>
@@ -4424,10 +4622,10 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
         </div>
       </div>
       <div class="crm-header-fields">
-        <div class="crm-header-row">
+        <div class="crm-modal-header-row">
           <input type="text" id="crm-modal-company" placeholder="Brand / Display Name" oninput="updateCrmAvatar(this.value)" style="flex:1;font-size:15px;font-weight:500;">
         </div>
-        <div class="crm-header-row">
+        <div class="crm-modal-header-row">
           <input type="text" id="crm-modal-name" data-field="name" placeholder="Registered Company Name (e.g. 株式会社...)" style="flex:1;font-size:12px;color:#5f6368;">
         </div>
       </div>
@@ -4710,7 +4908,7 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
 
     <div class="board-modal-actions">
       <button class="btn-delete" id="inv-modal-delete-btn" style="display:none" onclick="deleteInvoiceConfirm()">Delete</button>
-      <button type="button" id="inv-preview-toggle-btn" onclick="toggleInvSplitPreview()" style="color:#1a73e8;border-color:#1a73e8">Preview</button>
+      <button type="button" id="inv-preview-toggle-btn" onclick="toggleInvSplitPreview()" style="color:#0e413b;border-color:#0e413b">Preview</button>
       <button onclick="closeInvoiceModal()">Cancel</button>
       <button class="btn-save" onclick="saveInvoice()">Save</button>
     </div>
@@ -4728,7 +4926,7 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
   <div class="inv-preview-container">
     <div class="inv-preview-actions">
       <button onclick="closeInvoicePreview()">Back to Edit</button>
-      <button onclick="downloadInvoicePdf()" style="background:#1a73e8;color:#fff;border-color:#1a73e8">Download PDF</button>
+      <button onclick="downloadInvoicePdf()" style="background:#0e413b;color:#fff;border-color:#0e413b">Download PDF</button>
     </div>
     <div class="inv-preview-page" id="inv-preview-page"></div>
   </div>
@@ -4773,7 +4971,7 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
     <div id="rec-linked-invoice-row" class="inv-field-row" style="display:none">
       <div style="grid-column:1/-1">
         <label>Linked Invoice</label>
-        <span id="rec-linked-invoice-display" style="font-size:14px;color:#1a73e8;font-weight:500"></span>
+        <span id="rec-linked-invoice-display" style="font-size:14px;color:#0e413b;font-weight:500"></span>
       </div>
     </div>
 
@@ -4885,7 +5083,7 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
 
     <div class="board-modal-actions">
       <button class="btn-delete" id="rec-modal-delete-btn" style="display:none" onclick="deleteReceiptConfirm()">Delete</button>
-      <button type="button" onclick="previewReceipt()" style="color:#1a73e8;border-color:#1a73e8">Preview</button>
+      <button type="button" onclick="previewReceipt()" style="color:#0e413b;border-color:#0e413b">Preview</button>
       <button onclick="closeReceiptModal()">Cancel</button>
       <button class="btn-save" onclick="saveReceipt()">Save</button>
     </div>
@@ -4897,7 +5095,7 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
   <div class="inv-preview-container">
     <div class="inv-preview-actions">
       <button onclick="closeReceiptPreview()">Back to Edit</button>
-      <button onclick="downloadReceiptPdf()" style="background:#1a73e8;color:#fff;border-color:#1a73e8">Download PDF</button>
+      <button onclick="downloadReceiptPdf()" style="background:#0e413b;color:#fff;border-color:#0e413b">Download PDF</button>
     </div>
     <div class="inv-preview-page" id="rec-preview-page"></div>
   </div>
@@ -5254,7 +5452,7 @@ function renderHomeKeyStats() {
   today.setHours(0,0,0,0);
   var overdueCount = boardTasks.filter(function(t) { return isOverdue(t, today); }).length;
   var stats = [
-    { num: productCount, label: "Products", color: "#1a73e8", action: "navigateTo('library','Products')" },
+    { num: productCount, label: "Products", color: "#0e413b", action: "navigateTo('library','Products')" },
     { num: activeCount, label: "In Progress", color: "#34a853", action: "navigateTo('board','','in_progress')" },
     { num: overdueCount, label: "Overdue", color: overdueCount > 0 ? "#d93025" : "#5f6368", action: "navigateTo('board')" }
   ];
@@ -5681,6 +5879,19 @@ function fetchActivityLog() {
     .catch(function() {});
 }
 
+function toggleUserDropdown() {
+  var dd = document.getElementById("user-dropdown");
+  var btn = document.getElementById("user-chip");
+  dd.classList.toggle("open");
+  btn.setAttribute("aria-expanded", dd.classList.contains("open"));
+}
+function closeUserDropdown() {
+  var dd = document.getElementById("user-dropdown");
+  var btn = document.getElementById("user-chip");
+  if (dd) { dd.classList.remove("open"); }
+  if (btn) { btn.setAttribute("aria-expanded", "false"); }
+}
+
 function toggleNotifDropdown() {
   var dd = document.getElementById("notif-dropdown");
   var isOpen = dd.classList.contains("open");
@@ -5765,6 +5976,12 @@ document.addEventListener("click", function(e) {
   if (dd && dd.classList.contains("open") && !dd.contains(e.target) && !bell.contains(e.target)) {
     dd.classList.remove("open");
   }
+  if (!e.target.closest("#user-chip") && !e.target.closest("#user-dropdown")) {
+    closeUserDropdown();
+  }
+  if (!e.target.closest(".crm-add-dropdown-wrap")) {
+    closeCrmAddDropdown();
+  }
 });
 
 // Tab dot mappings
@@ -5779,12 +5996,15 @@ function updateTabDots() {
   var tabIds = ["board", "crm", "products", "orders", "customers", "tools"];
   tabIds.forEach(function(viewId) {
     var lastVisited = getTabLastVisited(viewId);
-    var hasNew = activityLog.some(function(a) {
+    var count = activityLog.filter(function(a) {
       var tab = ITEM_TYPE_TO_TAB[a.itemType] || "";
       return tab === viewId && a.userId !== myEmail && a.timestamp > lastVisited;
-    });
+    }).length;
     var dot = document.getElementById("tab-dot-" + viewId);
-    if (dot) dot.classList.toggle("active", hasNew);
+    if (dot) {
+      dot.classList.toggle("active", count > 0);
+      dot.textContent = count > 99 ? "99+" : String(count);
+    }
   });
 }
 
@@ -6540,6 +6760,7 @@ document.addEventListener("keydown", function(e) {
     if (typeof closeInvoicePreview === "function") closeInvoicePreview();
     if (typeof closeInvoiceModal === "function") closeInvoiceModal();
     if (typeof closeOrderDetailModal === "function") closeOrderDetailModal();
+    closeUserDropdown();
   }
   // "/" focuses search on Library tab
   if (e.key === "/" && document.activeElement.tagName !== "INPUT" && document.activeElement.tagName !== "TEXTAREA") {
@@ -7252,6 +7473,23 @@ function fetchCrmContacts(force) {
     });
 }
 
+function updateCrmSubtabBadges() {
+  var all = getFilteredCrmContacts();
+  var vendors = all.filter(function(c) { return c.type === "Vendor" || c.type === "Partner"; });
+  var contacts = all.filter(function(c) { return c.type !== "Vendor" && c.type !== "Partner"; });
+  var badges = { "crm-vendors": vendors.length, "crm-contacts": contacts.length };
+  document.querySelectorAll(".crm-subtab").forEach(function(t) {
+    var existing = t.querySelector(".crm-subtab-badge");
+    if (existing) existing.remove();
+    var count = badges[t.dataset.subview];
+    if (count > 0) {
+      var badge = document.createElement("span");
+      badge.className = "crm-subtab-badge";
+      badge.textContent = String(count);
+      t.appendChild(badge);
+    }
+  });
+}
 function switchCrmSubView(viewId) {
   crmActiveSubView = viewId;
   localStorage.setItem("ivyhub_crmSubView", viewId);
@@ -7261,13 +7499,19 @@ function switchCrmSubView(viewId) {
   document.querySelectorAll(".crm-subview").forEach(function(v) {
     v.classList.toggle("active", v.id === viewId);
   });
+  var headerToggle = document.getElementById("crm-header-view-toggle");
+  if (headerToggle) {
+    headerToggle.style.display = (viewId === "crm-pipeline") ? "none" : "";
+  }
   renderCrmActiveView();
 }
 
 function getFilteredCrmContacts() {
   _saveFilterState("crm", ["crm-filter-ws", "crm-filter-type"]);
-  var wsFilter = document.getElementById("crm-filter-ws").value;
-  var typeFilter = document.getElementById("crm-filter-type").value;
+  var wsEl = document.getElementById("crm-filter-ws");
+  var typeEl = document.getElementById("crm-filter-type");
+  var wsFilter = wsEl ? wsEl.value : "";
+  var typeFilter = typeEl ? typeEl.value : "";
   return crmContacts.filter(function(c) {
     if (wsFilter && c.workspace !== wsFilter) return false;
     if (typeFilter && c.type !== typeFilter) return false;
@@ -7279,6 +7523,7 @@ function renderCrmActiveView() {
   if (crmActiveSubView === "crm-vendors") renderCrmVendors();
   else if (crmActiveSubView === "crm-contacts") renderCrmContacts();
   else if (crmActiveSubView === "crm-pipeline") renderCrmPipeline();
+  updateCrmSubtabBadges();
 }
 
 function renderCrmContacts() {
@@ -7320,7 +7565,7 @@ function renderCrmContacts() {
       var a = document.createElement("a");
       a.href = "mailto:" + displayEmail;
       a.textContent = displayEmail;
-      a.style.cssText = "color:#1a73e8;text-decoration:none;";
+      a.style.cssText = "color:#0e413b;text-decoration:none;";
       a.addEventListener("click", function(e) { e.stopPropagation(); });
       tdEmail.appendChild(a);
     } else { tdEmail.textContent = "\u2014"; }
@@ -7374,58 +7619,50 @@ function _renderCrmVendorViewBar(container, contacts) {
   // Remove existing bar if any
   var existing = container.querySelector(".crm-view-bar");
   if (existing) existing.remove();
-  var bar = document.createElement("div");
-  bar.className = "crm-view-bar";
-  var left = document.createElement("div");
-  left.className = "crm-view-bar-left";
-  var countSpan = document.createElement("span");
-  countSpan.className = "crm-view-bar-count";
-  countSpan.textContent = contacts.length + " vendor" + (contacts.length !== 1 ? "s" : "");
-  left.appendChild(countSpan);
-  bar.appendChild(left);
-  var toggle = document.createElement("div");
-  toggle.className = "crm-view-toggle";
-  // Grid icon button
-  var gridBtn = document.createElement("button");
-  gridBtn.className = "crm-view-toggle-btn" + (crmVendorViewMode === "tile" ? " active" : "");
-  gridBtn.title = "Tile view";
-  var gridSvg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-  gridSvg.setAttribute("width", "18"); gridSvg.setAttribute("height", "18");
-  gridSvg.setAttribute("viewBox", "0 0 24 24"); gridSvg.setAttribute("fill", "none");
-  gridSvg.setAttribute("stroke", "currentColor"); gridSvg.setAttribute("stroke-width", "2");
-  var gp1 = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-  gp1.setAttribute("x", "3"); gp1.setAttribute("y", "3"); gp1.setAttribute("width", "7"); gp1.setAttribute("height", "7"); gp1.setAttribute("rx", "1");
-  var gp2 = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-  gp2.setAttribute("x", "14"); gp2.setAttribute("y", "3"); gp2.setAttribute("width", "7"); gp2.setAttribute("height", "7"); gp2.setAttribute("rx", "1");
-  var gp3 = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-  gp3.setAttribute("x", "3"); gp3.setAttribute("y", "14"); gp3.setAttribute("width", "7"); gp3.setAttribute("height", "7"); gp3.setAttribute("rx", "1");
-  var gp4 = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-  gp4.setAttribute("x", "14"); gp4.setAttribute("y", "14"); gp4.setAttribute("width", "7"); gp4.setAttribute("height", "7"); gp4.setAttribute("rx", "1");
-  gridSvg.appendChild(gp1); gridSvg.appendChild(gp2); gridSvg.appendChild(gp3); gridSvg.appendChild(gp4);
-  gridBtn.appendChild(gridSvg);
-  gridBtn.addEventListener("click", function() { switchCrmVendorView("tile"); });
-  toggle.appendChild(gridBtn);
-  // List icon button
-  var listBtn = document.createElement("button");
-  listBtn.className = "crm-view-toggle-btn" + (crmVendorViewMode === "table" ? " active" : "");
-  listBtn.title = "Table view";
-  var listSvg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-  listSvg.setAttribute("width", "18"); listSvg.setAttribute("height", "18");
-  listSvg.setAttribute("viewBox", "0 0 24 24"); listSvg.setAttribute("fill", "none");
-  listSvg.setAttribute("stroke", "currentColor"); listSvg.setAttribute("stroke-width", "2");
-  ["4", "10", "16"].forEach(function(y) {
-    var line = document.createElementNS("http://www.w3.org/2000/svg", "line");
-    line.setAttribute("x1", "8"); line.setAttribute("y1", y); line.setAttribute("x2", "21"); line.setAttribute("y2", y);
-    listSvg.appendChild(line);
-    var circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-    circle.setAttribute("cx", "3.5"); circle.setAttribute("cy", y); circle.setAttribute("r", "1.5"); circle.setAttribute("fill", "currentColor");
-    listSvg.appendChild(circle);
-  });
-  listBtn.appendChild(listSvg);
-  listBtn.addEventListener("click", function() { switchCrmVendorView("table"); });
-  toggle.appendChild(listBtn);
-  bar.appendChild(toggle);
-  container.insertBefore(bar, container.firstChild);
+  // Populate header view toggle
+  var toggleContainer = document.getElementById("crm-header-view-toggle");
+  if (toggleContainer) {
+    toggleContainer.textContent = "";
+    // Grid icon button
+    var gridBtn = document.createElement("button");
+    gridBtn.className = "crm-view-toggle-btn" + (crmVendorViewMode === "tile" ? " active" : "");
+    gridBtn.title = "Tile view";
+    var gridSvg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    gridSvg.setAttribute("width", "16"); gridSvg.setAttribute("height", "16");
+    gridSvg.setAttribute("viewBox", "0 0 24 24"); gridSvg.setAttribute("fill", "none");
+    gridSvg.setAttribute("stroke", "currentColor"); gridSvg.setAttribute("stroke-width", "2");
+    var gp1 = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+    gp1.setAttribute("x", "3"); gp1.setAttribute("y", "3"); gp1.setAttribute("width", "7"); gp1.setAttribute("height", "7"); gp1.setAttribute("rx", "1");
+    var gp2 = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+    gp2.setAttribute("x", "14"); gp2.setAttribute("y", "3"); gp2.setAttribute("width", "7"); gp2.setAttribute("height", "7"); gp2.setAttribute("rx", "1");
+    var gp3 = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+    gp3.setAttribute("x", "3"); gp3.setAttribute("y", "14"); gp3.setAttribute("width", "7"); gp3.setAttribute("height", "7"); gp3.setAttribute("rx", "1");
+    var gp4 = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+    gp4.setAttribute("x", "14"); gp4.setAttribute("y", "14"); gp4.setAttribute("width", "7"); gp4.setAttribute("height", "7"); gp4.setAttribute("rx", "1");
+    gridSvg.appendChild(gp1); gridSvg.appendChild(gp2); gridSvg.appendChild(gp3); gridSvg.appendChild(gp4);
+    gridBtn.appendChild(gridSvg);
+    gridBtn.addEventListener("click", function() { switchCrmVendorView("tile"); });
+    toggleContainer.appendChild(gridBtn);
+    // List icon button
+    var listBtn = document.createElement("button");
+    listBtn.className = "crm-view-toggle-btn" + (crmVendorViewMode === "table" ? " active" : "");
+    listBtn.title = "Table view";
+    var listSvg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    listSvg.setAttribute("width", "16"); listSvg.setAttribute("height", "16");
+    listSvg.setAttribute("viewBox", "0 0 24 24"); listSvg.setAttribute("fill", "none");
+    listSvg.setAttribute("stroke", "currentColor"); listSvg.setAttribute("stroke-width", "2");
+    ["4", "10", "16"].forEach(function(y) {
+      var line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+      line.setAttribute("x1", "8"); line.setAttribute("y1", y); line.setAttribute("x2", "21"); line.setAttribute("y2", y);
+      listSvg.appendChild(line);
+      var circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+      circle.setAttribute("cx", "3.5"); circle.setAttribute("cy", y); circle.setAttribute("r", "1.5"); circle.setAttribute("fill", "currentColor");
+      listSvg.appendChild(circle);
+    });
+    listBtn.appendChild(listSvg);
+    listBtn.addEventListener("click", function() { switchCrmVendorView("table"); });
+    toggleContainer.appendChild(listBtn);
+  }
 }
 
 function _renderCrmVendorTable(container, contacts) {
@@ -7462,7 +7699,7 @@ function _renderCrmVendorTable(container, contacts) {
       wLink.target = "_blank";
       wLink.rel = "noopener";
       wLink.textContent = c.website.replace(/^https?:\/\//, "").replace(/\/$/, "");
-      wLink.style.cssText = "color:#1a73e8;text-decoration:none;font-size:12px;";
+      wLink.style.cssText = "color:#0e413b;text-decoration:none;font-size:12px;";
       wLink.addEventListener("click", function(e) { e.stopPropagation(); });
       tdWeb.appendChild(wLink);
     } else { tdWeb.textContent = "\u2014"; }
@@ -7472,7 +7709,7 @@ function _renderCrmVendorTable(container, contacts) {
       var a = document.createElement("a");
       a.href = "mailto:" + c.email;
       a.textContent = c.email;
-      a.style.cssText = "color:#1a73e8;text-decoration:none;";
+      a.style.cssText = "color:#0e413b;text-decoration:none;";
       a.addEventListener("click", function(e) { e.stopPropagation(); });
       tdEmail.appendChild(a);
     } else { tdEmail.textContent = "\u2014"; }
@@ -7507,6 +7744,35 @@ function _renderCrmVendorTable(container, contacts) {
   container.appendChild(wrap);
 }
 
+function _crmDetailIcon(type) {
+  var ns = "http://www.w3.org/2000/svg";
+  var svg = document.createElementNS(ns, "svg");
+  svg.setAttribute("width", "18");
+  svg.setAttribute("height", "18");
+  svg.setAttribute("viewBox", "0 0 24 24");
+  svg.setAttribute("fill", "none");
+  svg.setAttribute("stroke", "#0e413b");
+  svg.setAttribute("stroke-width", "1.5");
+  svg.setAttribute("stroke-linecap", "round");
+  svg.setAttribute("stroke-linejoin", "round");
+  if (type === "user") {
+    var c = document.createElementNS(ns, "circle");
+    c.setAttribute("cx", "12"); c.setAttribute("cy", "8"); c.setAttribute("r", "4");
+    svg.appendChild(c);
+    var p = document.createElementNS(ns, "path");
+    p.setAttribute("d", "M20 21a8 8 0 0 0-16 0");
+    svg.appendChild(p);
+  } else if (type === "location") {
+    var p1 = document.createElementNS(ns, "path");
+    p1.setAttribute("d", "M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z");
+    svg.appendChild(p1);
+    var c2 = document.createElementNS(ns, "circle");
+    c2.setAttribute("cx", "12"); c2.setAttribute("cy", "10"); c2.setAttribute("r", "3");
+    svg.appendChild(c2);
+  }
+  return svg;
+}
+
 function renderCrmVendors() {
   hideSkeleton("crm-vendors-skeleton");
   var grid = document.getElementById("crm-vendor-grid");
@@ -7538,7 +7804,7 @@ function renderCrmVendors() {
       card.className = "crm-vendor-card";
       card.addEventListener("click", function() { openCrmDetailView(c.id); });
 
-      // Avatar + Name header
+      // Header: Avatar + Company info + Stage badge
       var cardHeader = document.createElement("div");
       cardHeader.className = "crm-vendor-card-header";
       var avatarDiv = document.createElement("div");
@@ -7553,50 +7819,72 @@ function renderCrmVendors() {
         avatarDiv.textContent = getCrmInitials(c.name);
       }
       cardHeader.appendChild(avatarDiv);
-      var nameWrap = document.createElement("div");
+      var headerInfo = document.createElement("div");
+      headerInfo.className = "crm-vendor-card-header-info";
+      var nameGroup = document.createElement("div");
+      nameGroup.className = "crm-vendor-name-group";
       var nameDiv = document.createElement("div");
       nameDiv.className = "crm-vendor-name";
       nameDiv.textContent = c.name || c.nameEn || "Unnamed";
-      nameWrap.appendChild(nameDiv);
-      if (c.nameEn && c.name) {
-        var nameEnDiv = document.createElement("div");
-        nameEnDiv.style.cssText = "font-size:12px;color:#5f6368;";
-        nameEnDiv.textContent = c.nameEn;
-        nameWrap.appendChild(nameEnDiv);
-      }
+      nameGroup.appendChild(nameDiv);
       if (c.company) {
         var companyDiv = document.createElement("div");
         companyDiv.className = "crm-vendor-company";
         companyDiv.textContent = c.company;
-        nameWrap.appendChild(companyDiv);
+        nameGroup.appendChild(companyDiv);
+      } else if (c.nameEn && c.name) {
+        var nameEnDiv = document.createElement("div");
+        nameEnDiv.className = "crm-vendor-company";
+        nameEnDiv.textContent = c.nameEn;
+        nameGroup.appendChild(nameEnDiv);
       }
-      cardHeader.appendChild(nameWrap);
-      card.appendChild(cardHeader);
-
-      var details = document.createElement("div");
-      details.className = "crm-vendor-details";
-      if (c.location) {
-        var locSpan = document.createElement("span");
-        locSpan.textContent = "\uD83D\uDCCD " + c.location;
-        details.appendChild(locSpan);
-      }
-      if (c.email) {
-        var emailSpan = document.createElement("span");
-        emailSpan.textContent = "\u2709 " + c.email;
-        details.appendChild(emailSpan);
-      }
-      if (c.role) {
-        var roleSpan = document.createElement("span");
-        roleSpan.textContent = c.role;
-        details.appendChild(roleSpan);
-      }
-      card.appendChild(details);
-
-      // Stage badge
+      headerInfo.appendChild(nameGroup);
       var stageBadge = document.createElement("span");
       stageBadge.className = "crm-stage-badge crm-stage-" + (c.stage || "prospect");
       stageBadge.textContent = (c.stage || "prospect").replace("_", " ");
-      card.appendChild(stageBadge);
+      headerInfo.appendChild(stageBadge);
+      cardHeader.appendChild(headerInfo);
+      card.appendChild(cardHeader);
+
+      // Content: Contact person + address (Figma-matched layout)
+      var details = document.createElement("div");
+      details.className = "crm-vendor-details";
+      if (c.contactName || c.email) {
+        var personRow = document.createElement("span");
+        var personIcon = document.createElement("span");
+        personIcon.className = "crm-vendor-detail-icon";
+        personIcon.appendChild(_crmDetailIcon("user"));
+        personRow.appendChild(personIcon);
+        var contactInfo = document.createElement("span");
+        contactInfo.className = "crm-vendor-contact-info";
+        if (c.contactName) {
+          var cName = document.createElement("span");
+          cName.className = "crm-vendor-contact-name";
+          cName.textContent = c.contactName;
+          contactInfo.appendChild(cName);
+        }
+        if (c.email) {
+          var cEmail = document.createElement("span");
+          cEmail.className = "crm-vendor-contact-email";
+          cEmail.textContent = c.email;
+          contactInfo.appendChild(cEmail);
+        }
+        personRow.appendChild(contactInfo);
+        details.appendChild(personRow);
+      }
+      if (c.location) {
+        var locRow = document.createElement("span");
+        locRow.className = "crm-detail-address";
+        var locIcon = document.createElement("span");
+        locIcon.className = "crm-vendor-detail-icon";
+        locIcon.appendChild(_crmDetailIcon("location"));
+        locRow.appendChild(locIcon);
+        var locText = document.createElement("span");
+        locText.textContent = c.location;
+        locRow.appendChild(locText);
+        details.appendChild(locRow);
+      }
+      card.appendChild(details);
 
       // Product tags
       if (c.products) {
@@ -7891,8 +8179,17 @@ function resetCrmCardPreview(side) {
   document.getElementById("crm-card-" + side + "-upload").classList.remove("has-preview");
 }
 
+function toggleCrmAddDropdown() {
+  var dd = document.getElementById("crm-add-dropdown");
+  dd.classList.toggle("open");
+}
+function closeCrmAddDropdown() {
+  var dd = document.getElementById("crm-add-dropdown");
+  if (dd) dd.classList.remove("open");
+}
+
 // CRM Modal
-function openCrmCreateModal() {
+function openCrmCreateModal(presetType) {
   document.getElementById("crm-detail-view").style.display = "none";
   document.getElementById("crm-edit-header").style.display = "";
   document.getElementById("crm-edit-body").style.display = "";
@@ -7909,7 +8206,7 @@ function openCrmCreateModal() {
   document.getElementById("crm-modal-id").value = "";
   document.getElementById("crm-modal-name").value = "";
   document.getElementById("crm-modal-name-en").value = "";
-  document.getElementById("crm-modal-type").value = "Vendor";
+  document.getElementById("crm-modal-type").value = presetType || "Vendor";
   document.getElementById("crm-modal-company").value = "";
   document.getElementById("crm-modal-role").value = "";
   document.getElementById("crm-modal-email").value = "";
@@ -10920,7 +11217,7 @@ function renderHomeCrmStats() {
   var active = crmContacts.filter(function(c) { return c.stage === "active_partner"; }).length;
   var total = crmContacts.length;
   var stats = [
-    { num: inPipeline, label: "In Pipeline", color: "#1a73e8", action: "navigateTo('crm');switchCrmSubView('crm-pipeline')" },
+    { num: inPipeline, label: "In Pipeline", color: "#0e413b", action: "navigateTo('crm');switchCrmSubView('crm-pipeline')" },
     { num: active, label: "Active", color: "#34a853", action: "navigateTo('crm');switchCrmSubView('crm-pipeline')" },
     { num: total, label: "Total", color: "#5f6368", action: "navigateTo('crm');switchCrmSubView('crm-contacts')" },
     { num: shopifyCustomers.length, label: "Customers", color: "#e8710a", action: "navigateTo('customers')" }
@@ -11268,7 +11565,7 @@ function renderDocuments() {
     if (row.invoice) {
       var prevBtn = document.createElement("button");
       prevBtn.textContent = "Preview";
-      prevBtn.style.cssText = "background:none;border:1px solid #dadce0;border-radius:4px;padding:3px 8px;font-size:12px;color:#1a73e8;cursor:pointer;font-family:inherit;";
+      prevBtn.style.cssText = "background:none;border:1px solid #dadce0;border-radius:4px;padding:3px 8px;font-size:12px;color:#0e413b;cursor:pointer;font-family:inherit;";
       prevBtn.addEventListener("click", (function(inv) {
         return function(e) { e.stopPropagation(); previewInvoiceFromData(inv); };
       })(row.invoice));
@@ -13672,7 +13969,7 @@ function downloadReceiptPdf(recData) {
     y += 6;
     doc.setFont("helvetica", "bold");
     doc.setFontSize(10);
-    doc.setTextColor(26, 115, 232); // #1a73e8
+    doc.setTextColor(14, 65, 59); // #0e413b
     doc.text("Invoice Reference: " + rec.invoiceNumber, marginL, y);
     y += 8;
   }
@@ -15046,7 +15343,7 @@ function openOrderDetailModal(order) {
     if (linkedInv) {
       var invCard = document.createElement("div");
       invCard.style.cssText = "display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#f8f9fa;border:1px solid #ebebeb;border-radius:8px;margin-bottom:8px;cursor:pointer";
-      invCard.onmouseover = function() { invCard.style.background = "#e8f0fe"; };
+      invCard.onmouseover = function() { invCard.style.background = "#e8f0ee"; };
       invCard.onmouseout = function() { invCard.style.background = "#f8f9fa"; };
       invCard.onclick = function() { closeOrderDetailModal(); openInvoiceEditModal(linkedInv.id); };
       var invLeft = document.createElement("div");
@@ -15072,7 +15369,7 @@ function openOrderDetailModal(order) {
     if (linkedRec) {
       var recCard = document.createElement("div");
       recCard.style.cssText = "display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#f8f9fa;border:1px solid #ebebeb;border-radius:8px;margin-bottom:8px;cursor:pointer";
-      recCard.onmouseover = function() { recCard.style.background = "#e8f0fe"; };
+      recCard.onmouseover = function() { recCard.style.background = "#e8f0ee"; };
       recCard.onmouseout = function() { recCard.style.background = "#f8f9fa"; };
       recCard.onclick = function() { closeOrderDetailModal(); openReceiptEditModal(linkedRec.id); };
       var recLeft = document.createElement("div");
@@ -15397,7 +15694,7 @@ function renderHomeShopifyStats() {
   var stats = [
     { num: inStock, label: "In Stock", color: "#34a853", action: "navigateTo('products')" },
     { num: lowStock, label: "Low Stock", color: lowStock > 0 ? "#b06000" : "#5f6368", action: "navigateTo('products')" },
-    { num: ordersToday, label: "Orders Today", color: "#1a73e8", action: "navigateTo('orders')" }
+    { num: ordersToday, label: "Orders Today", color: "#0e413b", action: "navigateTo('orders')" }
   ];
   stats.forEach(function(s) {
     var div = document.createElement("div");
