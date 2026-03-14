@@ -24,6 +24,10 @@
 @font-face { font-family: 'Tomato Grotesk'; src: url('fonts/TomatoGrotesk-Medium.otf') format('opentype'); font-weight: 500; font-style: normal; font-display: swap; }
 @font-face { font-family: 'Tomato Grotesk'; src: url('fonts/TomatoGrotesk-SemiBold.otf') format('opentype'); font-weight: 600; font-style: normal; font-display: swap; }
 @font-face { font-family: 'Tomato Grotesk'; src: url('fonts/TomatoGrotesk-Bold.otf') format('opentype'); font-weight: 700; font-style: normal; font-display: swap; }
+@font-face { font-family: 'FA6 Pro'; src: url('fonts/Font Awesome 6 Pro-Light-300.otf') format('opentype'); font-weight: 300; font-style: normal; font-display: swap; }
+@font-face { font-family: 'FA6 Pro'; src: url('fonts/Font Awesome 6 Pro-Regular-400.otf') format('opentype'); font-weight: 400; font-style: normal; font-display: swap; }
+@font-face { font-family: 'FA6 Pro'; src: url('fonts/Font Awesome 6 Pro-Solid-900.otf') format('opentype'); font-weight: 900; font-style: normal; font-display: swap; }
+@font-face { font-family: 'FA6 Brands'; src: url('fonts/Font Awesome 6 Brands-Regular-400.otf') format('opentype'); font-weight: 400; font-style: normal; font-display: swap; }
 </style>
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -929,7 +933,7 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
 .crm-vendor-details { font-size: 11px; color: #424242; display: flex; flex-direction: column; gap: 10px; padding: 24px; flex: 1; }
 .crm-vendor-details > span { display: flex; gap: 12px; align-items: center; line-height: 1.4; }
 .crm-vendor-details > .crm-detail-address { align-items: flex-start; }
-.crm-vendor-detail-icon { flex-shrink: 0; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; color: #0e413b; font-size: 18px; }
+.crm-vendor-detail-icon { flex-shrink: 0; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; color: #0e413b; font-family: 'FA6 Pro'; font-weight: 300; font-size: 18px; line-height: 0; }
 .crm-vendor-contact-info { flex: 1; min-width: 0; display: flex; flex-direction: column; }
 .crm-vendor-contact-name { font-size: 14px; font-weight: 500; color: #000; line-height: normal; }
 .crm-vendor-contact-email { font-size: 12px; color: #424242; line-height: normal; }
@@ -993,6 +997,13 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
   height: 14px;
   color: #0e413b;
   flex-shrink: 0;
+  font-family: 'FA6 Pro';
+  font-weight: 900;
+  font-size: 14px;
+  line-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 .crm-card-stat-value {
   font-size: 12px;
@@ -7754,85 +7765,18 @@ function _renderCrmVendorTable(container, contacts) {
 }
 
 function _crmStatIcon(type) {
-  var ns = "http://www.w3.org/2000/svg";
-  var svg = document.createElementNS(ns, "svg");
-  svg.setAttribute("width", "14");
-  svg.setAttribute("height", "14");
-  svg.setAttribute("viewBox", "0 0 24 24");
-  svg.setAttribute("fill", "#0e413b");
-  if (type === "candle") {
-    svg.setAttribute("viewBox", "0 0 16 24");
-    var p = document.createElementNS(ns, "path");
-    p.setAttribute("d", "M8 0C7.3 0 6 2.2 6 3.5C6 4.9 6.9 6 8 6C9.1 6 10 4.9 10 3.5C10 2.2 8.7 0 8 0Z");
-    svg.appendChild(p);
-    var r = document.createElementNS(ns, "rect");
-    r.setAttribute("x", "5"); r.setAttribute("y", "7"); r.setAttribute("width", "6"); r.setAttribute("height", "15"); r.setAttribute("rx", "1");
-    svg.appendChild(r);
-    var r2 = document.createElementNS(ns, "rect");
-    r2.setAttribute("x", "3"); r2.setAttribute("y", "22"); r2.setAttribute("width", "10"); r2.setAttribute("height", "2"); r2.setAttribute("rx", "1");
-    svg.appendChild(r2);
-  } else if (type === "soap") {
-    svg.setAttribute("viewBox", "0 0 24 24");
-    var r = document.createElementNS(ns, "rect");
-    r.setAttribute("x", "2"); r.setAttribute("y", "10"); r.setAttribute("width", "20"); r.setAttribute("height", "12"); r.setAttribute("rx", "3");
-    svg.appendChild(r);
-    var c1 = document.createElementNS(ns, "circle");
-    c1.setAttribute("cx", "8"); c1.setAttribute("cy", "5"); c1.setAttribute("r", "2.5");
-    svg.appendChild(c1);
-    var c2 = document.createElementNS(ns, "circle");
-    c2.setAttribute("cx", "14"); c2.setAttribute("cy", "3"); c2.setAttribute("r", "2");
-    svg.appendChild(c2);
-    var c3 = document.createElementNS(ns, "circle");
-    c3.setAttribute("cx", "18"); c3.setAttribute("cy", "6"); c3.setAttribute("r", "1.5");
-    svg.appendChild(c3);
-  } else if (type === "yen") {
-    svg.setAttribute("fill", "none");
-    svg.setAttribute("stroke", "#0e413b");
-    svg.setAttribute("stroke-width", "2.5");
-    svg.setAttribute("stroke-linecap", "round");
-    var p1 = document.createElementNS(ns, "path");
-    p1.setAttribute("d", "M4 2L12 12L20 2");
-    svg.appendChild(p1);
-    var p2 = document.createElementNS(ns, "path");
-    p2.setAttribute("d", "M12 12V22");
-    svg.appendChild(p2);
-    var p3 = document.createElementNS(ns, "path");
-    p3.setAttribute("d", "M6 14H18");
-    svg.appendChild(p3);
-    var p4 = document.createElementNS(ns, "path");
-    p4.setAttribute("d", "M6 18H18");
-    svg.appendChild(p4);
-  }
-  return svg;
+  // Returns FA6 Pro Solid unicode character
+  if (type === "candle") return "\uf6bc";
+  if (type === "soap") return "\ue06e";
+  if (type === "yen") return "\uf157";
+  return "";
 }
 
 function _crmDetailIcon(type) {
-  var ns = "http://www.w3.org/2000/svg";
-  var svg = document.createElementNS(ns, "svg");
-  svg.setAttribute("width", "18");
-  svg.setAttribute("height", "18");
-  svg.setAttribute("viewBox", "0 0 24 24");
-  svg.setAttribute("fill", "none");
-  svg.setAttribute("stroke", "#0e413b");
-  svg.setAttribute("stroke-width", "2");
-  svg.setAttribute("stroke-linecap", "round");
-  svg.setAttribute("stroke-linejoin", "round");
-  if (type === "user") {
-    var c = document.createElementNS(ns, "circle");
-    c.setAttribute("cx", "12"); c.setAttribute("cy", "8"); c.setAttribute("r", "4");
-    svg.appendChild(c);
-    var p = document.createElementNS(ns, "path");
-    p.setAttribute("d", "M20 21a8 8 0 0 0-16 0");
-    svg.appendChild(p);
-  } else if (type === "location") {
-    var p1 = document.createElementNS(ns, "path");
-    p1.setAttribute("d", "M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z");
-    svg.appendChild(p1);
-    var c2 = document.createElementNS(ns, "circle");
-    c2.setAttribute("cx", "12"); c2.setAttribute("cy", "10"); c2.setAttribute("r", "3");
-    svg.appendChild(c2);
-  }
-  return svg;
+  // Returns FA6 Pro Light unicode character
+  if (type === "user") return "\uf007";
+  if (type === "location") return "\ue07a";
+  return "";
 }
 
 function renderCrmVendors() {
@@ -7924,7 +7868,7 @@ function renderCrmVendors() {
         var personRow = document.createElement("span");
         var personIcon = document.createElement("span");
         personIcon.className = "crm-vendor-detail-icon";
-        personIcon.appendChild(_crmDetailIcon("user"));
+        personIcon.textContent = _crmDetailIcon("user");
         personRow.appendChild(personIcon);
         var contactInfo = document.createElement("span");
         contactInfo.className = "crm-vendor-contact-info";
@@ -7954,7 +7898,7 @@ function renderCrmVendors() {
         locRow.className = "crm-detail-address";
         var locIcon = document.createElement("span");
         locIcon.className = "crm-vendor-detail-icon";
-        locIcon.appendChild(_crmDetailIcon("location"));
+        locIcon.textContent = _crmDetailIcon("location");
         locRow.appendChild(locIcon);
         var locText = document.createElement("span");
         locText.textContent = c.location;
@@ -7994,7 +7938,7 @@ function renderCrmVendors() {
           stat.className = "crm-card-stat";
           var icon = document.createElement("span");
           icon.className = "crm-card-stat-icon";
-          icon.appendChild(_crmStatIcon(s.type));
+          icon.textContent = _crmStatIcon(s.type);
           stat.appendChild(icon);
           var val = document.createElement("span");
           val.className = "crm-card-stat-value";
