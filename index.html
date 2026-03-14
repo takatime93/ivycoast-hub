@@ -2612,6 +2612,57 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
   color: #202124;
 }
 
+/* ── Clickable team member chip (overview) ─────────────────── */
+.crm-team-chip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 10px 4px 4px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.crm-team-chip:hover { background: #f1f3f4; }
+.crm-team-chip-name { font-size: 13px; color: #202124; }
+
+/* ── Person profile (replaces overview panel) ──────────────── */
+.crm-person-profile-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: #5f6368;
+  cursor: pointer;
+  padding: 4px 0;
+  margin-bottom: 12px;
+  border: none;
+  background: none;
+}
+.crm-person-profile-back:hover { color: #202124; }
+.crm-person-profile-hero {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+.crm-person-profile-avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: #e8eaed;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  font-weight: 700;
+  color: #5f6368;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.crm-person-profile-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.crm-person-profile-name { font-size: 18px; font-weight: 600; color: #202124; }
+.crm-person-profile-role { font-size: 13px; color: #5f6368; margin-top: 2px; }
+
 /* ── Notes timeline ────────────────────────────────────────── */
 .crm-notes-container {
   display: flex;
@@ -8486,14 +8537,16 @@ function renderCrmOverviewTab(c, panel, contactId, tabsBar) {
     panel.appendChild(priceSec);
   }
 
-  // --- TEAM SUMMARY (compact, links to Team tab) ---
+  // --- TEAM SUMMARY (compact, clickable to person profile) ---
   var _ovPeople = _migrateCrmPeople(c);
   if (_ovPeople.length > 0) {
     var teamSec = _crmMakeSection("Team");
     var teamRow = document.createElement("div");
-    teamRow.style.cssText = "display:flex;align-items:center;gap:8px;flex-wrap:wrap;";
+    teamRow.style.cssText = "display:flex;align-items:center;gap:6px;flex-wrap:wrap;";
     var maxShow = 3;
     _ovPeople.slice(0, maxShow).forEach(function(p) {
+      var chip = document.createElement("div");
+      chip.className = "crm-team-chip";
       var av = document.createElement("div");
       av.style.cssText = "width:32px;height:32px;border-radius:50%;background:#e8eaed;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:#5f6368;overflow:hidden;flex-shrink:0;";
       if (p.profileImageUrl) {
@@ -8504,11 +8557,13 @@ function renderCrmOverviewTab(c, panel, contactId, tabsBar) {
       } else {
         av.textContent = ((p.firstName || "")[0] || "") + ((p.lastName || "")[0] || "");
       }
-      teamRow.appendChild(av);
+      chip.appendChild(av);
       var nm = document.createElement("span");
-      nm.style.cssText = "font-size:13px;color:#202124;margin-right:8px;";
+      nm.className = "crm-team-chip-name";
       nm.textContent = ((p.firstName || "") + " " + (p.lastName || "")).trim();
-      teamRow.appendChild(nm);
+      chip.appendChild(nm);
+      chip.onclick = function() { _renderPersonProfile(p, c, panel, contactId, tabsBar); };
+      teamRow.appendChild(chip);
     });
     if (_ovPeople.length > maxShow) {
       var more = document.createElement("span");
@@ -8517,15 +8572,17 @@ function renderCrmOverviewTab(c, panel, contactId, tabsBar) {
       teamRow.appendChild(more);
     }
     teamSec.appendChild(teamRow);
-    var viewAllLink = document.createElement("a");
-    viewAllLink.textContent = "View all " + _ovPeople.length + " \u2192";
-    viewAllLink.href = "#";
-    viewAllLink.style.cssText = "font-size:13px;color:#0e413b;cursor:pointer;display:inline-block;margin-top:8px;";
-    viewAllLink.onclick = function(e) {
-      e.preventDefault();
-      if (tabsBar) tabsBar.querySelectorAll(".crm-detail-tab")[1].click();
-    };
-    teamSec.appendChild(viewAllLink);
+    if (_ovPeople.length > maxShow) {
+      var viewAllLink = document.createElement("a");
+      viewAllLink.textContent = "View all " + _ovPeople.length + " \u2192";
+      viewAllLink.href = "#";
+      viewAllLink.style.cssText = "font-size:13px;color:#0e413b;cursor:pointer;display:inline-block;margin-top:8px;";
+      viewAllLink.onclick = function(e) {
+        e.preventDefault();
+        if (tabsBar) tabsBar.querySelectorAll(".crm-detail-tab")[1].click();
+      };
+      teamSec.appendChild(viewAllLink);
+    }
     panel.appendChild(teamSec);
   }
 
@@ -9433,6 +9490,116 @@ function handlePersonCardUpload(person, side, input, imgEl, savePeople) {
     });
   });
   input.value = "";
+}
+
+// ── Person profile view (replaces overview panel) ──────────────────────────
+function _renderPersonProfile(person, c, panel, contactId, tabsBar) {
+  panel.textContent = "";
+
+  // Back button
+  var backBtn = document.createElement("button");
+  backBtn.className = "crm-person-profile-back";
+  backBtn.appendChild(_crmSvgIcon(["M19 12H5","M12 19l-7-7 7-7"], 16, 16, 2));
+  backBtn.appendChild(document.createTextNode("Back"));
+  backBtn.onclick = function() {
+    var fresh = crmContacts.find(function(x) { return x.id === contactId; }) || c;
+    renderCrmOverviewTab(fresh, panel, contactId, tabsBar);
+  };
+  panel.appendChild(backBtn);
+
+  // Hero: avatar + name/role
+  var hero = document.createElement("div");
+  hero.className = "crm-person-profile-hero";
+  var av = document.createElement("div");
+  av.className = "crm-person-profile-avatar";
+  if (person.profileImageUrl) {
+    var img = document.createElement("img");
+    img.src = person.profileImageUrl;
+    av.appendChild(img);
+  } else {
+    av.textContent = ((person.firstName || "")[0] || "") + ((person.lastName || "")[0] || "");
+  }
+  hero.appendChild(av);
+  var heroInfo = document.createElement("div");
+  var heroName = document.createElement("div");
+  heroName.className = "crm-person-profile-name";
+  heroName.textContent = ((person.firstName || "") + " " + (person.lastName || "")).trim() || "Unnamed";
+  heroInfo.appendChild(heroName);
+  if (person.role) {
+    var heroRole = document.createElement("div");
+    heroRole.className = "crm-person-profile-role";
+    heroRole.textContent = person.role;
+    heroInfo.appendChild(heroRole);
+  }
+  hero.appendChild(heroInfo);
+  panel.appendChild(hero);
+
+  // Contact fields
+  var contactFields = [
+    { label: "Email", value: person.email, linkType: "email" },
+    { label: "Phone", value: person.phone, linkType: "phone" },
+    { label: "Notes", value: person.notes }
+  ];
+  var hasFields = contactFields.some(function(f) { return !!f.value; });
+  if (hasFields) {
+    var fieldsSec = _crmMakeSection("Contact Info");
+    var fieldsGrid = document.createElement("div");
+    fieldsGrid.className = "crm-detail-fields";
+    contactFields.forEach(function(f) {
+      if (!f.value) return;
+      fieldsGrid.appendChild(_crmMakeField(f.label, f.value, f.linkType ? { linkType: f.linkType } : {}));
+    });
+    fieldsSec.appendChild(fieldsGrid);
+    panel.appendChild(fieldsSec);
+  }
+
+  // Business cards
+  var hasFront = !!person.businessCardFrontUrl;
+  var hasBack = !!person.businessCardBackUrl;
+  if (hasFront || hasBack) {
+    var cardSec = _crmMakeSection("Business Card");
+    var cardsGrid = document.createElement("div");
+    cardsGrid.className = "crm-team-cards-grid";
+    if (hasFront) {
+      var fw = document.createElement("div");
+      var fi = document.createElement("img");
+      fi.className = "crm-team-card-img";
+      fi.src = person.businessCardFrontUrl;
+      fi.onclick = function() { openImageLightbox(person.businessCardFrontUrl); };
+      fw.appendChild(fi);
+      var fl = document.createElement("div");
+      fl.className = "crm-team-card-label";
+      fl.textContent = "Front";
+      fw.appendChild(fl);
+      cardsGrid.appendChild(fw);
+    }
+    if (hasBack) {
+      var bw = document.createElement("div");
+      var bi = document.createElement("img");
+      bi.className = "crm-team-card-img";
+      bi.src = person.businessCardBackUrl;
+      bi.onclick = function() { openImageLightbox(person.businessCardBackUrl); };
+      bw.appendChild(bi);
+      var bl = document.createElement("div");
+      bl.className = "crm-team-card-label";
+      bl.textContent = "Back";
+      bw.appendChild(bl);
+      cardsGrid.appendChild(bw);
+    }
+    cardSec.appendChild(cardsGrid);
+    panel.appendChild(cardSec);
+  }
+
+  // Edit link to Team tab
+  var editLink = document.createElement("a");
+  editLink.href = "#";
+  editLink.style.cssText = "font-size:13px;color:#0e413b;cursor:pointer;display:inline-block;margin-top:4px;";
+  editLink.textContent = "Edit in Team tab \u2192";
+  editLink.onclick = function(e) {
+    e.preventDefault();
+    if (tabsBar) tabsBar.querySelectorAll(".crm-detail-tab")[1].click();
+  };
+  panel.appendChild(editLink);
 }
 
 function renderCrmTeamTab(c, panel, contactId) {
