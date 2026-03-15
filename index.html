@@ -2273,6 +2273,8 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
   padding: 24px 32px;
   flex-shrink: 0;
   border-bottom: 1px solid #e3e3e3;
+  position: relative;
+  z-index: 10;
 }
 .crm-detail-header-top {
   display: flex;
@@ -2288,7 +2290,9 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
   margin-left: auto;
 }
 .crm-detail-header-actions .icon-group { display: flex; gap: 8px; }
-.crm-detail-header-actions button {
+.crm-detail-header-actions > .icon-group > button,
+.crm-detail-header-actions > .icon-group > .crm-more-menu-wrap > button,
+.crm-detail-header-actions > button {
   width: 38px;
   height: 38px;
   border-radius: 6px;
@@ -2302,7 +2306,9 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
   font-size: 18px;
   transition: all 0.15s;
 }
-.crm-detail-header-actions button:hover { background: #e8f0ee; }
+.crm-detail-header-actions > .icon-group > button:hover,
+.crm-detail-header-actions > .icon-group > .crm-more-menu-wrap > button:hover,
+.crm-detail-header-actions > button:hover { background: #e8f0ee; }
 .crm-detail-header-actions .crm-edit-btn { color: #0e413b; border-color: #0e413b; }
 .crm-detail-header-actions .crm-edit-btn:hover { background: #e8f0ee; }
 .crm-detail-header-actions .crm-close-btn { border: none; }
@@ -2714,72 +2720,79 @@ h2.crm-detail-name {
 /* ── Pipeline progress bar ─────────────────────────────────── */
 .crm-pipeline-wrap {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 12px;
-  padding: 20px 32px 16px;
+  padding: 12px 32px;
   flex-shrink: 0;
-  overflow: hidden;
+  overflow: visible;
+  position: relative;
+  z-index: 5;
 }
 .crm-detail-pipeline {
   flex: 1;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
   position: relative;
-  height: 38px;
-  margin: 0;
   min-width: 0;
 }
 .crm-pipeline-track {
   position: absolute;
-  top: 6px;
+  top: 8px;
   left: 0;
   right: 0;
-  height: 3px;
+  height: 4px;
   background: #d9d9d9;
-  border-radius: 2px;
 }
 .crm-pipeline-fill {
   position: absolute;
-  top: 6px;
-  height: 3px;
-  background: #0e413b;
-  border-radius: 2px;
+  top: 8px;
+  left: 0;
+  height: 4px;
+  background: #00433b;
   transition: width 0.3s ease;
 }
 .crm-pipeline-marker {
-  position: absolute;
-  top: 1px;
-  transform: translateX(-50%);
   display: flex;
   flex-direction: column;
   align-items: center;
-}
-.crm-pipeline-dot {
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  background: #d9d9d9;
-  border: 2px solid #fff;
-  box-shadow: 0 0 0 1px #d9d9d9;
+  gap: 4px;
+  cursor: pointer;
   position: relative;
   z-index: 1;
 }
-.crm-pipeline-dot.completed {
-  background: #0e413b;
-  box-shadow: 0 0 0 1px #0e413b;
-}
-.crm-pipeline-dot.active {
-  background: #0e413b;
-  box-shadow: 0 0 0 1px #0e413b, 0 0 0 3px rgba(14,65,59,0.15);
+.crm-pipeline-marker:hover .crm-pipeline-dot { transform: scale(1.15); }
+.crm-pipeline-dot {
   width: 16px;
   height: 16px;
+  border-radius: 50%;
+  background: #d9d9d9;
+  border: 3px solid #fff;
+  box-shadow: 0 0 0 1px #d9d9d9;
+  transition: transform 0.15s;
+  flex-shrink: 0;
+}
+.crm-pipeline-dot.completed {
+  background: #00433b;
+  box-shadow: 0 0 0 1px #00433b;
+}
+.crm-pipeline-dot.active {
+  background: #00433b;
+  box-shadow: 0 0 0 1px #00433b, 0 0 0 5px rgba(0,67,59,0.15);
+  width: 20px;
+  height: 20px;
   margin-top: -2px;
 }
 .crm-pipeline-label {
   font-size: 10px;
-  font-weight: 600;
-  color: #424242;
-  margin-top: 4px;
+  font-weight: 400;
+  color: rgba(66,66,66,0.5);
   white-space: nowrap;
   text-transform: capitalize;
+}
+.crm-pipeline-label.completed {
+  color: #424242;
+  font-weight: 400;
 }
 .crm-pipeline-label.active {
   color: #00433b;
@@ -2842,7 +2855,7 @@ h2.crm-detail-name {
 .crm-detail-contact-info-row a:hover { text-decoration: underline; }
 
 /* ── More menu (three-dot dropdown) ────────────────────────── */
-.crm-more-menu-wrap { position: relative; }
+.crm-more-menu-wrap { position: relative; z-index: 30; }
 .crm-detail-more-menu {
   position: absolute;
   top: 100%;
@@ -2875,6 +2888,61 @@ h2.crm-detail-name {
 .crm-detail-more-menu-item:hover { background: #f1f3f4; }
 .crm-detail-more-menu-item.danger { color: #c5221f; }
 .crm-detail-more-menu-item.danger:hover { background: #fce8e6; }
+.crm-stage-menu-wrap { position: relative; }
+.crm-stage-menu-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 9px 16px;
+  font-size: 13px;
+  font-family: inherit;
+  background: none;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  color: #202124;
+  transition: background 0.1s;
+}
+.crm-stage-menu-trigger:hover { background: #f1f3f4; }
+.crm-stage-menu-trigger .submenu-arrow {
+  font-family: 'FA6 Pro'; font-weight: 300; font-size: 10px; color: #80868b;
+}
+.crm-detail-submenu {
+  display: none;
+  position: absolute;
+  right: calc(100% + 4px);
+  top: 0;
+  min-width: 180px;
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 10px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+  z-index: 50;
+  padding: 4px 0;
+}
+.crm-stage-menu-wrap:hover .crm-detail-submenu { display: block; }
+.crm-detail-submenu-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 9px 16px;
+  font-size: 13px;
+  font-family: inherit;
+  background: none;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  color: #202124;
+  transition: background 0.1s;
+  white-space: nowrap;
+}
+.crm-detail-submenu-item:hover { background: #f1f3f4; }
+.crm-detail-submenu-item.active { font-weight: 600; color: #0e413b; }
+.crm-detail-submenu-item .stage-dot {
+  width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+}
 
 /* ── Quick stats grid ──────────────────────────────────────── */
 .crm-detail-quick-stats {
@@ -9183,7 +9251,7 @@ function openCrmDetailView(contactId) {
   editBtn.appendChild(_crmFa6Icon("\uf044", 18, 300));
   editBtn.onclick = function() { switchToCrmEditMode(contactId); };
   iconGroup.appendChild(editBtn);
-  // More menu (three-dot) — just Delete
+  // More menu (three-dot) — Stage selector + Delete
   var moreWrap = document.createElement("div");
   moreWrap.className = "crm-more-menu-wrap";
   var moreBtn = document.createElement("button");
@@ -9192,6 +9260,66 @@ function openCrmDetailView(contactId) {
   moreWrap.appendChild(moreBtn);
   var moreMenu = document.createElement("div");
   moreMenu.className = "crm-detail-more-menu";
+
+  // Vendor Stage item with submenu
+  var stageColors = { inactive: "#f2f2f2", prospect: "#3cb1ff", outreach: "#fec553", negotiation: "#ff5e5e", active_partner: "#0e413b" };
+  var stageLabelsAll = { inactive: "Inactive", prospect: "Prospect", outreach: "Outreach", negotiation: "Negotiation", active_partner: "Active Partner" };
+  var stageMenuWrap = document.createElement("div");
+  stageMenuWrap.className = "crm-stage-menu-wrap";
+  var stageTrigger = document.createElement("div");
+  stageTrigger.className = "crm-stage-menu-trigger";
+  var stageText = document.createElement("span");
+  stageText.textContent = "Vendor Stage";
+  stageTrigger.appendChild(stageText);
+  var stageArrow = document.createElement("span");
+  stageArrow.className = "submenu-arrow";
+  stageArrow.textContent = "\uf054";
+  stageTrigger.appendChild(stageArrow);
+  stageMenuWrap.appendChild(stageTrigger);
+  var stageSubmenu = document.createElement("div");
+  stageSubmenu.className = "crm-detail-submenu";
+  ["inactive", "prospect", "outreach", "negotiation", "active_partner"].forEach(function(st) {
+    var opt = document.createElement("button");
+    opt.className = "crm-detail-submenu-item" + (st === stageKey ? " active" : "");
+    var optDot = document.createElement("span");
+    optDot.className = "stage-dot";
+    optDot.style.background = stageColors[st];
+    if (st === "inactive") optDot.style.border = "1px solid #ccc";
+    opt.appendChild(optDot);
+    var optText = document.createElement("span");
+    optText.style.flex = "1";
+    optText.textContent = stageLabelsAll[st];
+    opt.appendChild(optText);
+    if (st === stageKey) {
+      var check = document.createElement("span");
+      check.style.cssText = "font-family:'FA6 Pro';font-weight:400;font-size:12px;color:#0e413b";
+      check.textContent = "\uf00c";
+      opt.appendChild(check);
+    }
+    opt.onclick = function(e) {
+      e.stopPropagation();
+      if (st === stageKey) return;
+      moreMenu.classList.remove("open");
+      crmContacts.forEach(function(x) { if (x.id === contactId) x.stage = st; });
+      renderCrmPipeline();
+      renderCrmActiveView();
+      renderHomeCrmStats();
+      saveDataCache();
+      openCrmDetailView(contactId);
+      crmApiPost({ action: "update", contact: { id: contactId, stage: st } })
+        .catch(function() { fetchCrmContacts(); });
+    };
+    stageSubmenu.appendChild(opt);
+  });
+  stageMenuWrap.appendChild(stageSubmenu);
+  moreMenu.appendChild(stageMenuWrap);
+
+  // Divider
+  var menuDivider = document.createElement("div");
+  menuDivider.style.cssText = "height:1px;background:#e0e0e0;margin:4px 0";
+  moreMenu.appendChild(menuDivider);
+
+  // Delete
   var deleteItem = document.createElement("button");
   deleteItem.className = "crm-detail-more-menu-item danger";
   deleteItem.textContent = "Delete Contact";
@@ -9217,10 +9345,11 @@ function openCrmDetailView(contactId) {
 
   // Pipeline will be inserted into detailView after header is built
 
-  // Pipeline progress bar with settings cog
-  var pipelineStages = ["inactive", "prospect", "outreach", "negotiation", "active_partner"];
-  var pipelineLabels = { inactive: "Inactive", prospect: "Prospect", outreach: "Outreach", negotiation: "Negotiation", active_partner: "Active Partner" };
+  // Pipeline progress bar with settings cog — hidden for active partners
+  var pipelineStages = ["prospect", "outreach", "negotiation", "active_partner"];
+  var pipelineLabels = { prospect: "Prospect", outreach: "Outreach", negotiation: "Negotiation", active_partner: "Active Partner" };
   var currentStage = (c.stage || "prospect").toLowerCase().replace(/\s+/g, "_");
+  if (currentStage === "inactive") currentStage = "prospect";
   var currentIdx = pipelineStages.indexOf(currentStage);
   if (currentIdx < 0) currentIdx = 0;
 
@@ -9233,32 +9362,54 @@ function openCrmDetailView(contactId) {
   var trackBar = document.createElement("div");
   trackBar.className = "crm-pipeline-track";
   pipelineRow.appendChild(trackBar);
-  // Fill bar (progress) — starts from Prospect (idx 1), not Inactive (idx 0)
+  // Fill bar — width calculated after layout
   var fillBar = document.createElement("div");
   fillBar.className = "crm-pipeline-fill";
-  var startPct = pipelineStages.length > 1 ? (1 / (pipelineStages.length - 1)) * 100 : 0;
-  var fillPct = pipelineStages.length > 1 ? ((currentIdx) / (pipelineStages.length - 1)) * 100 : 0;
-  var fillWidth = currentIdx > 0 ? (fillPct - startPct) : 0;
-  fillBar.style.left = startPct + "%";
-  fillBar.style.width = fillWidth + "%";
   pipelineRow.appendChild(fillBar);
-  // Dot markers with labels
+  // Dot markers with labels — flexbox handles even spacing
   pipelineStages.forEach(function(stage, idx) {
     var marker = document.createElement("div");
     marker.className = "crm-pipeline-marker";
-    var pct = pipelineStages.length > 1 ? (idx / (pipelineStages.length - 1)) * 100 : 0;
-    marker.style.left = pct + "%";
     var dot = document.createElement("div");
     dot.className = "crm-pipeline-dot";
-    if (idx < currentIdx && stage !== "inactive") dot.classList.add("completed");
+    if (idx < currentIdx) dot.classList.add("completed");
     if (idx === currentIdx) dot.classList.add("active");
     marker.appendChild(dot);
     var label = document.createElement("div");
     label.className = "crm-pipeline-label";
     if (idx === currentIdx) label.classList.add("active");
+    else if (idx < currentIdx) label.classList.add("completed");
     label.textContent = pipelineLabels[stage];
     marker.appendChild(label);
+    marker.onclick = function() {
+      if (stage === currentStage) return;
+      crmContacts.forEach(function(x) { if (x.id === contactId) x.stage = stage; });
+      renderCrmPipeline();
+      renderCrmActiveView();
+      renderHomeCrmStats();
+      saveDataCache();
+      openCrmDetailView(contactId);
+      crmApiPost({ action: "update", contact: { id: contactId, stage: stage } })
+        .catch(function() { fetchCrmContacts(); });
+    };
     pipelineRow.appendChild(marker);
+  });
+  // Calculate fill width after DOM render
+  requestAnimationFrame(function() {
+    var markers = pipelineRow.querySelectorAll(".crm-pipeline-marker");
+    if (markers.length > 1 && currentIdx >= 0) {
+      var rowRect = pipelineRow.getBoundingClientRect();
+      var firstDot = markers[0].querySelector(".crm-pipeline-dot");
+      var activeDot = markers[currentIdx].querySelector(".crm-pipeline-dot");
+      var firstCenter = firstDot.getBoundingClientRect().left + firstDot.getBoundingClientRect().width / 2 - rowRect.left;
+      var activeCenter = activeDot.getBoundingClientRect().left + activeDot.getBoundingClientRect().width / 2 - rowRect.left;
+      var lastDot = markers[markers.length - 1].querySelector(".crm-pipeline-dot");
+      var lastCenter = lastDot.getBoundingClientRect().left + lastDot.getBoundingClientRect().width / 2 - rowRect.left;
+      trackBar.style.left = firstCenter + "px";
+      trackBar.style.right = (rowRect.width - lastCenter) + "px";
+      fillBar.style.left = firstCenter + "px";
+      fillBar.style.width = (activeCenter - firstCenter) + "px";
+    }
   });
   pipelineWrap.appendChild(pipelineRow);
 
@@ -9272,11 +9423,14 @@ function openCrmDetailView(contactId) {
   cogWrap.appendChild(cogBtn);
   var cogMenu = document.createElement("div");
   cogMenu.className = "crm-detail-more-menu";
-  pipelineStages.forEach(function(stage) {
+  // All stages including inactive for the menu (inactive is not shown in the visual pipeline)
+  var allStages = ["inactive", "prospect", "outreach", "negotiation", "active_partner"];
+  var allLabels = { inactive: "Inactive", prospect: "Prospect", outreach: "Outreach", negotiation: "Negotiation", active_partner: "Active Partner" };
+  allStages.forEach(function(stage) {
     var stageItem = document.createElement("button");
     stageItem.className = "crm-detail-more-menu-item";
     if (stage === currentStage) { stageItem.style.fontWeight = "600"; stageItem.style.color = "#0e413b"; }
-    stageItem.textContent = pipelineLabels[stage];
+    stageItem.textContent = allLabels[stage];
     stageItem.onclick = function() {
       cogMenu.classList.remove("open");
       if (stage === currentStage) return;
@@ -9302,8 +9456,10 @@ function openCrmDetailView(contactId) {
   };
   document.addEventListener("click", _crmMoreMenuCleanup);
   pipelineWrap.appendChild(cogWrap);
-  // Insert pipeline between header and tabs
-  detailView.insertBefore(pipelineWrap, tabsBar);
+  // Insert pipeline between header and tabs — hide for active partners
+  if (currentStage !== "active_partner") {
+    detailView.insertBefore(pipelineWrap, tabsBar);
+  }
 
   // --- TAB BAR ---
   // Compute counts for tab badges
@@ -9970,7 +10126,23 @@ function renderCrmOverviewTab(c, panel, contactId, tabsBar) {
     stockList.style.cssText = "display:flex;flex-direction:column;gap:2px";
     activeStock.forEach(function(s) {
       var item = document.createElement("div");
-      item.style.cssText = "display:flex;align-items:center;gap:6px;background:#fff;border:1px solid #e3e3e3;border-radius:4px;padding:4px 12px 4px 4px";
+      item.style.cssText = "display:flex;align-items:center;gap:6px;background:#fff;border:1px solid #e3e3e3;border-radius:4px;padding:4px 12px 4px 4px;cursor:pointer;transition:background 0.1s";
+      item.onmouseenter = function() { item.style.background = "#f8f9fa"; };
+      item.onmouseleave = function() { item.style.background = "#fff"; };
+      item.onclick = (function(stockId) {
+        return function() {
+          var stockTab = tabsBar.querySelectorAll(".crm-detail-tab")[3];
+          if (stockTab) stockTab.click();
+          setTimeout(function() {
+            var targetRow = document.querySelector("tr[data-stock-id='" + stockId + "']");
+            if (targetRow) {
+              targetRow.scrollIntoView({ behavior: "smooth", block: "center" });
+              targetRow.classList.add("crm-stock-highlight", "crm-stock-flash");
+              setTimeout(function() { targetRow.classList.remove("crm-stock-highlight", "crm-stock-flash"); }, 3000);
+            }
+          }, 100);
+        };
+      })(s.id);
       var iconBox = document.createElement("div");
       var _sku = (s.sku || "").toUpperCase();
       var _isSoap = _sku.indexOf("SOP") === 0;
