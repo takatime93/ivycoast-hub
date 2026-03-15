@@ -2673,6 +2673,7 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
 .crm-detail-tab-panel { display: none; padding: 16px 24px; }
 .crm-detail-tab-panel.active { display: block; }
 .crm-detail-tab-panel.crm-tab-panel-flush { padding: 0; }
+.crm-tab-panel-flush .crm-detail-section { padding-left: 32px; padding-right: 32px; }
 
 /* ── Pipeline progress bar ─────────────────────────────────── */
 .crm-pipeline-wrap {
@@ -2692,8 +2693,8 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
 .crm-pipeline-track {
   position: absolute;
   top: 8px;
-  left: 24px;
-  right: 24px;
+  left: 0;
+  right: 0;
   height: 4px;
   background: #d9d9d9;
   border-radius: 2px;
@@ -2701,7 +2702,6 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
 .crm-pipeline-fill {
   position: absolute;
   top: 8px;
-  left: 24px;
   height: 4px;
   background: #0e413b;
   border-radius: 2px;
@@ -2935,6 +2935,11 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
   flex: 1;
   padding: 24px 0;
   min-width: 0;
+}
+.crm-notes-col .crm-detail-section,
+.crm-tasks-col .crm-detail-section {
+  padding-left: 20px;
+  padding-right: 20px;
 }
 .crm-notes-col .crm-section-header,
 .crm-tasks-col .crm-section-header { margin-bottom: 12px; }
@@ -8595,27 +8600,11 @@ function openCrmDetailView(contactId) {
   infoDiv.className = "crm-detail-header-info";
   // Company name is primary heading
   var companyName = c.company || c.name || c.nameEn || "Unnamed";
+  var detailPeople = _migrateCrmPeople(c);
   var nameEl = document.createElement("h2");
   nameEl.className = "crm-detail-name";
   nameEl.textContent = companyName;
-  var detailPeople = _migrateCrmPeople(c);
-  if (detailPeople.length > 0) {
-    var peopleBadge = document.createElement("span");
-    peopleBadge.className = "crm-people-count-badge";
-    peopleBadge.textContent = detailPeople.length + (detailPeople.length === 1 ? " contact" : " contacts");
-    nameEl.appendChild(peopleBadge);
-  }
-  // Wrap name + type badge in a flex row
-  var nameRow = document.createElement("div");
-  nameRow.className = "crm-detail-name-row";
-  nameRow.appendChild(nameEl);
-  if (c.type) {
-    var typeBadge = document.createElement("span");
-    typeBadge.className = "crm-detail-type-badge type-" + (c.type || "contact").toLowerCase();
-    typeBadge.textContent = c.type;
-    nameRow.appendChild(typeBadge);
-  }
-  infoDiv.appendChild(nameRow);
+  infoDiv.appendChild(nameEl);
   // Subtitle: registered name
   var _regName = c.name && c.name !== (c.company || "") ? c.name : "";
   if (_regName) {
@@ -8708,8 +8697,8 @@ function openCrmDetailView(contactId) {
   // Info bar and pipeline will be inserted into detailView after header is built
 
   // Pipeline progress bar with settings cog
-  var pipelineStages = ["prospect", "outreach", "negotiation", "active_partner", "inactive"];
-  var pipelineLabels = { prospect: "Prospect", outreach: "Outreach", negotiation: "Negotiation", active_partner: "Active Partner", inactive: "Inactive" };
+  var pipelineStages = ["inactive", "prospect", "outreach", "negotiation", "active_partner"];
+  var pipelineLabels = { inactive: "Inactive", prospect: "Prospect", outreach: "Outreach", negotiation: "Negotiation", active_partner: "Active Partner" };
   var currentStage = (c.stage || "prospect").toLowerCase().replace(/\s+/g, "_");
   var currentIdx = pipelineStages.indexOf(currentStage);
   if (currentIdx < 0) currentIdx = 0;
@@ -8723,11 +8712,14 @@ function openCrmDetailView(contactId) {
   var trackBar = document.createElement("div");
   trackBar.className = "crm-pipeline-track";
   pipelineRow.appendChild(trackBar);
-  // Fill bar (progress)
+  // Fill bar (progress) — starts from Prospect (idx 1), not Inactive (idx 0)
   var fillBar = document.createElement("div");
   fillBar.className = "crm-pipeline-fill";
+  var startPct = pipelineStages.length > 1 ? (1 / (pipelineStages.length - 1)) * 100 : 0;
   var fillPct = pipelineStages.length > 1 ? ((currentIdx) / (pipelineStages.length - 1)) * 100 : 0;
-  fillBar.style.width = fillPct + "%";
+  var fillWidth = currentIdx > 0 ? (fillPct - startPct) : 0;
+  fillBar.style.left = startPct + "%";
+  fillBar.style.width = fillWidth + "%";
   pipelineRow.appendChild(fillBar);
   // Dot markers with labels
   pipelineStages.forEach(function(stage, idx) {
@@ -8737,7 +8729,7 @@ function openCrmDetailView(contactId) {
     marker.style.left = pct + "%";
     var dot = document.createElement("div");
     dot.className = "crm-pipeline-dot";
-    if (idx < currentIdx) dot.classList.add("completed");
+    if (idx < currentIdx && stage !== "inactive") dot.classList.add("completed");
     if (idx === currentIdx) dot.classList.add("active");
     marker.appendChild(dot);
     var label = document.createElement("div");
