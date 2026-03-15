@@ -3432,7 +3432,7 @@ h2.crm-detail-name {
   letter-spacing: 0.11px;
   white-space: nowrap;
 }
-.crm-note-meta strong { color: #000; font-weight: 600; font-size: 14px; line-height: 20px; }
+.crm-note-meta strong { color: #000; font-weight: 600; font-size: 12px; line-height: 20px; }
 .crm-note-menu-icon {
   font-family: 'FA6 Pro';
   font-weight: 300;
@@ -5391,7 +5391,15 @@ h2.crm-detail-name {
             <option value="inactive">Inactive</option>
           </select>
         </div>
-        <div class="crm-field full-width">
+        <div class="crm-field">
+          <label for="crm-modal-relation">Vendor Relation</label>
+          <select id="crm-modal-relation">
+            <option value="DIRECT">Direct Partner</option>
+            <option value="MANAGED_VENUE">Via Connector</option>
+            <option value="CONNECTOR">B2B2B Connector</option>
+          </select>
+        </div>
+        <div class="crm-field">
           <label for="crm-modal-products">Shop Type</label>
           <input type="text" id="crm-modal-products" placeholder="e.g. Lifestyle shop, Cosmetics">
         </div>
@@ -8948,6 +8956,7 @@ function openCrmCreateModal(presetType) {
   document.getElementById("crm-modal-name").value = "";
   document.getElementById("crm-modal-name-en").value = "";
   document.getElementById("crm-modal-type").value = presetType || "Vendor";
+  document.getElementById("crm-modal-relation").value = "DIRECT";
   document.getElementById("crm-modal-company").value = "";
   document.getElementById("crm-modal-role").value = "";
   document.getElementById("crm-modal-email").value = "";
@@ -8995,6 +9004,7 @@ function openCrmEditModal(contactId) {
   document.getElementById("crm-modal-name").value = _editName;
   document.getElementById("crm-modal-name-en").value = c.nameEn || "";
   document.getElementById("crm-modal-type").value = c.type || "Vendor";
+  document.getElementById("crm-modal-relation").value = c.vendorRelation || "DIRECT";
   document.getElementById("crm-modal-company").value = _editCompany;
   document.getElementById("crm-modal-role").value = c.role || "";
   document.getElementById("crm-modal-email").value = c.email || "";
@@ -12322,6 +12332,7 @@ function switchToCrmEditMode(contactId) {
   document.getElementById("crm-modal-name").value = _editName;
   document.getElementById("crm-modal-name-en").value = c.nameEn || "";
   document.getElementById("crm-modal-type").value = c.type || "Vendor";
+  document.getElementById("crm-modal-relation").value = c.vendorRelation || "DIRECT";
   document.getElementById("crm-modal-company").value = _editCompany;
   document.getElementById("crm-modal-role").value = c.role || "";
   document.getElementById("crm-modal-email").value = c.email || "";
@@ -12353,6 +12364,7 @@ function saveCrmContact() {
     name: document.getElementById("crm-modal-name").value.trim(),
     nameEn: document.getElementById("crm-modal-name-en").value.trim(),
     type: document.getElementById("crm-modal-type").value,
+    vendorRelation: document.getElementById("crm-modal-relation").value,
     company: document.getElementById("crm-modal-company").value.trim(),
     role: document.getElementById("crm-modal-role").value.trim(),
     email: document.getElementById("crm-modal-email").value.trim(),
