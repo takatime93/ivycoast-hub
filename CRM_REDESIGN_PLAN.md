@@ -230,6 +230,150 @@ infoDiv (.crm-detail-header-info)
 
 ---
 
+## Phase 7 — Vendor Type Variants (Connector & Via Connector)
+
+This phase introduces type-specific UI for B2B2B connector vendors and partners connected via a connector. The vendor `type` field determines which variant renders. Three vendor types exist: **Direct Partner** (current default, `type: "Vendor"`), **B2B2B Connector** (`type: "Connector"`), and **Via Connector** (`type: "Partner"` with a `connectorId` linking to the connector).
+
+**Figma sources:**
+- B2B2B Connector: `node-id=123-11256` (Edgeof Creative example)
+- Via Connector: `node-id=123-10747` (Northshore Cafe example)
+
+### Phase 7a — Type Badge Variants
+
+**Current:** "Vendor" → "DIRECT PARTNER" blue outline badge (`rgba(60,177,255,0.3)` bg, `#0970b4` border, `#054169` text)
+
+**New badges:**
+| Type | Label | Background | Border | Text |
+|------|-------|-----------|--------|------|
+| Vendor | DIRECT PARTNER | `rgba(60,177,255,0.3)` | `#0970b4` | `#054169` |
+| Connector | B2B2B CONNECTOR | `rgba(141,255,95,0.3)` | `#0c5b20` | `#0c5b20` |
+| Partner (via connector) | VIA CONNECTOR | `rgba(255,196,60,0.3)` | `#5c4307` | `#75550d` |
+
+**JS change:** Update the type badge mapping in `openCrmDetailView` to handle these 3 types.
+
+### Phase 7b — Connector Banner Bar
+
+A colored banner bar appears below the header (above the pipeline/tabs) showing relationship context.
+
+**For B2B2B Connector (`type: "Connector"`):**
+- Background: `#ffedc4` (warm yellow)
+- Content: List of connected shop names, each with a link icon (`\uf0c1`), centered, `gap: 16px`
+- Text: `12px`, `font-weight: 600`, `color: #000`
+- Data source: query `crmContacts` for contacts whose `connectorId === thisContactId`
+
+**For Via Connector (`type: "Partner"` with `connectorId`):**
+- Background: `rgba(141,255,95,0.1)` (light green)
+- Content: "Connected by **{ConnectorName}**" with link icon, centered
+- Text: "Connected by" in regular, connector name in `font-weight: 600`
+- Clicking connector name opens that connector's detail view
+- Data source: look up `connectorId` in `crmContacts` to get connector name
+
+**CSS:** New `.crm-connector-banner` class. Inserted between header and pipeline/tabs.
+
+### Phase 7c — Connector-Specific Analytics Cards
+
+The 4 stat cards change based on vendor type:
+
+**Direct Partner (current, unchanged):**
+1. Earned this month (green `#00a52c`, bar chart)
+2. Earned all time (green, bar chart)
+3. Products with them (count + low stock list)
+4. Last sale (date + restock info)
+
+**B2B2B Connector:**
+1. **Sales across all shops** — `#000` value, "Combined (month)" sub-text, bar chart
+2. **Their total fee** — `#d9ab13` (gold) value, "10% of all shop sales (month)" sub-text, bar chart
+3. **We earn** — `#00a52c` (green) value, "after 30% shop + fee" sub-text, bar chart
+4. **Shops connected** — count + mini list of connected shop names with 12px avatars
+
+**Via Connector:**
+1. **Shop sales this month** — `#000` value, trend arrow, bar chart
+2. **Connector's cut** — `#d9ab13` (gold) value, "10% of sales" sub-text, bar chart
+3. **We earn** — `#00a52c` (green) value, "after 30% shop + fee" sub-text, bar chart
+4. **Product on display** — count + low stock list (same as Direct Partner card 3)
+
+### Phase 7d — "Where the Money Goes" Bar (Via Connector only)
+
+Full-width section below analytics cards showing revenue split:
+
+- **Stacked horizontal bar:** `height: 6px`, `border-radius: 30px`, `overflow: clip`
+  - Green segment (`#00a52c`): Ivycoast share (e.g. 70%)
+  - Dark segment (`#2a4030`): Shop share (e.g. 20%)
+  - Gold segment (`#d9ab13`): Connector fee (e.g. 10%)
+- **Legend row below:** colored dots + percentage + entity name + role label
+  - `font-size: 10px`, `gap: 24px` between items
+  - Percentage in colored bold, name in `#1e1e1e` bold, role in `#424242` regular
+
+**Data:** Calculated from `c.consignmentPercent` (shop share), connector fee from connector's record, remainder = Ivycoast share.
+
+### Phase 7e — Invoices Section (B2B2B Connector only)
+
+Full-width section below analytics, above the two-column layout:
+
+- Header: "Invoices" + count badge (light weight)
+- Invoice rows: `background: rgba(239,249,248,0.5)`, `border-radius: 8px`, `padding: 4px 16px 4px 4px`
+  - Left: Shop name (`13px`, medium, `tracking: 0.13px`) + date badge (white bg, `11px`, `border-radius: 4px`)
+  - Center: Amount (`14px`, `font-weight: 600`)
+  - Right: "View Invoice >" button (outline, `#0e413b` border, `6px` radius, `11px` semibold)
+- Data source: `invoices` filtered by connector's connected shop contactIds
+
+### Phase 7f — "Shops Connected" Section (B2B2B Connector only)
+
+Replaces "Products in Stock" in the left column:
+
+- Header: "Shops they've connected us to" + count + cog icon
+- Shop cards: `border: 1px solid #e3e3e3`, `border-radius: 8px`, `padding: 12px 16px`, white bg
+  - Left: 40px avatar + shop name (`13px`, bold) + address (`11px`, `#606060`) + stock counts (candle/soap icons with numbers)
+  - Right: "Sales this month" (`14px` bold value, `10px` label) + "Total sales" (same format)
+- Cards gap: `8px`
+
+### Phase 7g — Enhanced Rules Table
+
+The "How we work together" table adapts per type:
+
+**Direct Partner (current):** How we work | Their share | (future: We invoice, They pay within)
+
+**B2B2B Connector:**
+| Label | Value |
+|-------|-------|
+| Their Role | Connector |
+| Connector fee | 10% of sales |
+| We invoice | Monthly |
+| They pay within | 30 days |
+
+**Via Connector:**
+| Label | Value |
+|-------|-------|
+| How we work | Consignment |
+| {Shop name} (Seller) | 20% of sales |
+| {Connector name} (Connector) | 10% of sales |
+| We invoice | Monthly |
+| They pay within | 30 days |
+
+Connector name is underlined/clickable → opens connector's profile.
+
+### Data Model Requirements
+
+New fields needed on contacts:
+- `connectorId` — string, links a "Via Connector" partner to its B2B2B Connector contact
+- `connectorFeePercent` — number, the connector's cut (e.g. 10)
+
+The `type` field needs these values supported: `"Vendor"` (Direct Partner), `"Connector"` (B2B2B), `"Partner"` (generic/via connector when `connectorId` is set)
+
+### Implementation Order
+
+1. **7a** — Type badge variants (CSS + JS mapping, ~15 min)
+2. **7b** — Connector banner bar (CSS + JS, ~30 min)
+3. **7c** — Type-specific analytics cards (JS card builders, ~45 min)
+4. **7g** — Enhanced rules table (JS conditions, ~20 min)
+5. **7d** — Money flow bar for Via Connector (CSS + JS, ~30 min)
+6. **7e** — Invoices section for B2B2B Connector (CSS + JS, ~30 min)
+7. **7f** — Shops connected section for B2B2B Connector (CSS + JS, ~30 min)
+
+Each sub-phase is independently committable and testable.
+
+---
+
 ## Pre-Merge Checklist
 
 - [ ] Remove localhost dev auth bypass (search for "DEV BYPASS" in index.html)
