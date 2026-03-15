@@ -3703,18 +3703,19 @@ h2.crm-detail-name {
 }
 .crm-activity-item:last-child { border-bottom: none; }
 .crm-activity-icon {
-  width: 16px;
-  height: 16px;
+  width: 8px;
+  height: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
   font-family: 'FA6 Pro';
   font-weight: 900;
-  font-size: 13px;
+  font-size: 7px;
   line-height: 1;
   border-radius: 0;
   background: none;
+  margin-top: 4px;
 }
 .crm-activity-icon.act-order { color: #58bfb3; }
 .crm-activity-icon.act-payment { color: #58bfb3; }
@@ -10111,7 +10112,7 @@ function renderCrmOverviewTab(c, panel, contactId, tabsBar) {
   if (activeStock.length) {
     var stockCount = document.createElement("span");
     stockCount.className = "sec-count";
-    stockCount.textContent = "(" + activeStock.length + " - " + totalStockQty + " total)";
+    stockCount.textContent = "(" + activeStock.length + " products \u00B7 " + totalStockQty + " units)";
     stockTitle.appendChild(stockCount);
   }
   stockHdr.appendChild(stockTitle);
