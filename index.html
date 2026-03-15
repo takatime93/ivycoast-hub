@@ -2272,6 +2272,7 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
 .crm-detail-header {
   padding: 24px 32px;
   flex-shrink: 0;
+  border-bottom: 1px solid #e3e3e3;
 }
 .crm-detail-header-top {
   display: flex;
@@ -2330,22 +2331,22 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 0;
 }
-.crm-detail-name {
-  font-size: 24px;
+h2.crm-detail-name {
+  font-size: 20px;
   font-weight: 600;
   color: #000;
-  margin: 0;
+  margin: 0 0 2px 0;
   padding: 0;
-  line-height: 1;
+  line-height: 1.3;
 }
 .crm-detail-subtitle {
-  font-size: 14px;
+  font-size: 12px;
   color: #616161;
   margin-top: 0;
-  line-height: 15px;
-  letter-spacing: 0.14px;
+  line-height: 1.4;
+  letter-spacing: 0.12px;
 }
 /* Stage badge in header */
 .crm-detail-stage-badge {
@@ -2353,21 +2354,50 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
   align-items: center;
   justify-content: center;
   padding: 3px 8px;
-  border-radius: 5px;
+  border-radius: 3px;
   font-size: 10px;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 1.2px;
+  letter-spacing: 1px;
   white-space: nowrap;
   color: #fff;
-  align-self: flex-start;
-  margin-top: 2px;
 }
 .crm-detail-stage-badge.stage-prospect { background: #3cb1ff; }
 .crm-detail-stage-badge.stage-outreach { background: #fec553; }
 .crm-detail-stage-badge.stage-negotiation { background: #ff5e5e; }
 .crm-detail-stage-badge.stage-active_partner { background: #0e413b; }
 .crm-detail-stage-badge.stage-inactive { background: #f2f2f2; color: #353535; }
+/* Name block, badges row, contact rows in header */
+.crm-detail-name-block { display: flex; flex-direction: column; gap: 0; }
+.crm-detail-badges-row { display: flex; align-items: center; gap: 4px; margin-top: 6px; flex-wrap: wrap; }
+.crm-detail-type-badge-v2 {
+  display: inline-flex; align-items: center; padding: 3px 8px;
+  border-radius: 3px; font-size: 10px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 1px; white-space: nowrap;
+  color: #3b82f6; border: 1px solid #3b82f6; background: transparent;
+}
+.crm-detail-stage-split {
+  display: inline-flex; align-items: stretch; border-radius: 3px; overflow: hidden;
+  font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; white-space: nowrap;
+}
+.crm-detail-stage-split-left {
+  padding: 3px 8px; background: #0e413b; color: #fff;
+}
+.crm-detail-stage-split-right {
+  padding: 3px 8px; border: 1px solid #0e413b; border-left: none; color: #0e413b;
+  border-radius: 0 3px 3px 0;
+}
+.crm-detail-contact-rows { margin-top: 12px; display: flex; flex-direction: column; gap: 2px; }
+.crm-detail-contact-row {
+  display: flex; align-items: center; gap: 4px; font-size: 11px; color: #424242;
+}
+.crm-detail-contact-row .crm-icon { width: 16px; height: 16px; color: #0e413b; font-size: 12px; }
+.crm-detail-contact-row a { color: #157be1; text-decoration: none; font-size: 12px; font-weight: 500; }
+.crm-detail-contact-row a:hover { text-decoration: underline; }
+.crm-detail-social-row { display: flex; align-items: center; gap: 16px; }
+.crm-detail-social-row a { display: flex; align-items: center; gap: 4px; color: #157be1; text-decoration: none; font-size: 12px; font-weight: 500; }
+.crm-detail-social-row a .crm-icon { width: 16px; height: 16px; color: #0e413b; font-size: 12px; }
+.crm-detail-social-row a:hover { text-decoration: underline; }
 /* Info bar (website | address) */
 .crm-detail-info-bar {
   display: flex;
@@ -8609,27 +8639,120 @@ function openCrmDetailView(contactId) {
 
   var infoDiv = document.createElement("div");
   infoDiv.className = "crm-detail-header-info";
-  // Company name is primary heading
   var companyName = c.company || c.name || c.nameEn || "Unnamed";
   var detailPeople = _migrateCrmPeople(c);
+
+  // Name block (name + subtitle)
+  var nameBlock = document.createElement("div");
+  nameBlock.className = "crm-detail-name-block";
   var nameEl = document.createElement("h2");
   nameEl.className = "crm-detail-name";
   nameEl.textContent = companyName;
-  infoDiv.appendChild(nameEl);
-  // Subtitle: registered name
+  nameBlock.appendChild(nameEl);
   var _regName = c.name && c.name !== (c.company || "") ? c.name : "";
   if (_regName) {
     var personEl = document.createElement("div");
     personEl.className = "crm-detail-subtitle";
     personEl.textContent = _regName;
-    infoDiv.appendChild(personEl);
+    nameBlock.appendChild(personEl);
   }
-  // Stage badge
+  infoDiv.appendChild(nameBlock);
+
+  // Badges row (type badge + stage badge)
   var stageKey = (c.stage || "prospect").toLowerCase().replace(/\s+/g, "_");
-  var stageBadge = document.createElement("span");
-  stageBadge.className = "crm-detail-stage-badge stage-" + stageKey;
-  stageBadge.textContent = (c.stage || "Prospect").toUpperCase();
-  infoDiv.appendChild(stageBadge);
+  var badgesRow = document.createElement("div");
+  badgesRow.className = "crm-detail-badges-row";
+  if (c.type) {
+    var typeBadge = document.createElement("span");
+    typeBadge.className = "crm-detail-type-badge-v2";
+    var typeLabel = c.type === "Vendor" ? "DIRECT PARTNER" : c.type.toUpperCase();
+    typeBadge.textContent = typeLabel;
+    badgesRow.appendChild(typeBadge);
+  }
+  if (stageKey === "active_partner" && c.connectedDate) {
+    var splitBadge = document.createElement("span");
+    splitBadge.className = "crm-detail-stage-split";
+    var splitLeft = document.createElement("span");
+    splitLeft.className = "crm-detail-stage-split-left";
+    splitLeft.textContent = "ACTIVE PARTNER";
+    splitBadge.appendChild(splitLeft);
+    var splitRight = document.createElement("span");
+    splitRight.className = "crm-detail-stage-split-right";
+    splitRight.textContent = "Since " + c.connectedDate;
+    splitBadge.appendChild(splitRight);
+    badgesRow.appendChild(splitBadge);
+  } else {
+    var stageBadge = document.createElement("span");
+    stageBadge.className = "crm-detail-stage-badge stage-" + stageKey;
+    stageBadge.textContent = (c.stage || "Prospect").toUpperCase();
+    badgesRow.appendChild(stageBadge);
+  }
+  infoDiv.appendChild(badgesRow);
+
+  // Contact rows (address, website, social) — icons are 16px box, 12px font, #0e413b
+  function _crmContactIcon(unicode, brand) {
+    var s = document.createElement("span");
+    s.className = "crm-icon";
+    s.style.cssText = "font-family:'" + (brand ? "FA6 Brands" : "FA6 Pro") + "';font-weight:" + (brand ? "400" : "300") + ";font-size:12px;line-height:1;display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;color:#0e413b";
+    s.textContent = unicode;
+    return s;
+  }
+  var hasContactInfo = c.location || c.website || c.instagram || c.socialMedia;
+  if (hasContactInfo) {
+    var contactRows = document.createElement("div");
+    contactRows.className = "crm-detail-contact-rows";
+    if (c.location) {
+      var addrRow = document.createElement("div");
+      addrRow.className = "crm-detail-contact-row";
+      addrRow.appendChild(_crmContactIcon("\uf54e"));
+      var addrText = document.createElement("span");
+      addrText.textContent = c.location;
+      addrRow.appendChild(addrText);
+      contactRows.appendChild(addrRow);
+    }
+    if (c.website) {
+      var webRow = document.createElement("div");
+      webRow.className = "crm-detail-contact-row";
+      webRow.appendChild(_crmContactIcon("\uf0ac"));
+      var webLink = document.createElement("a");
+      webLink.href = c.website.indexOf("http") === 0 ? c.website : "https://" + c.website;
+      webLink.target = "_blank";
+      webLink.rel = "noopener";
+      webLink.textContent = c.website.replace(/^https?:\/\//, "").replace(/\/$/, "");
+      webRow.appendChild(webLink);
+      contactRows.appendChild(webRow);
+    }
+    if (c.instagram || c.socialMedia) {
+      var socialRow = document.createElement("div");
+      socialRow.className = "crm-detail-social-row";
+      if (c.instagram) {
+        var igLink = document.createElement("a");
+        var igUrl = c.instagram.indexOf("http") === 0 ? c.instagram : "https://instagram.com/" + c.instagram.replace(/^@/, "");
+        igLink.href = igUrl;
+        igLink.target = "_blank";
+        igLink.rel = "noopener";
+        igLink.appendChild(_crmContactIcon("\uf16d", true));
+        var igText = document.createElement("span");
+        igText.textContent = igUrl.replace(/^https?:\/\//, "").replace(/\/$/, "");
+        igLink.appendChild(igText);
+        socialRow.appendChild(igLink);
+      }
+      if (c.socialMedia) {
+        var smLink = document.createElement("a");
+        var smUrl = c.socialMedia.indexOf("http") === 0 ? c.socialMedia : "https://" + c.socialMedia;
+        smLink.href = smUrl;
+        smLink.target = "_blank";
+        smLink.rel = "noopener";
+        smLink.appendChild(_crmContactIcon("\uf09a", true));
+        var smText = document.createElement("span");
+        smText.textContent = smUrl.replace(/^https?:\/\//, "").replace(/\/$/, "");
+        smLink.appendChild(smText);
+        socialRow.appendChild(smLink);
+      }
+      contactRows.appendChild(socialRow);
+    }
+    infoDiv.appendChild(contactRows);
+  }
   headerTop.appendChild(infoDiv);
 
   // Header action buttons (Edit, More, Close)
@@ -8675,37 +8798,7 @@ function openCrmDetailView(contactId) {
   headerTop.appendChild(headerActions);
   header.appendChild(headerTop);
 
-  // Info bar (website | address) — placed after header, before pipeline
-  var infoBar = document.createElement("div");
-  infoBar.className = "crm-detail-info-bar";
-  if (c.website) {
-    var webItem = document.createElement("div");
-    webItem.className = "crm-info-bar-item";
-    webItem.appendChild(_crmFa6Icon("\uf0ac", 12, 300));
-    var webLink = document.createElement("a");
-    webLink.href = c.website.indexOf("http") === 0 ? c.website : "https://" + c.website;
-    webLink.target = "_blank";
-    webLink.rel = "noopener";
-    webLink.textContent = c.website;
-    webItem.appendChild(webLink);
-    infoBar.appendChild(webItem);
-  }
-  if (c.website && c.location) {
-    var sep = document.createElement("div");
-    sep.className = "crm-info-bar-sep";
-    infoBar.appendChild(sep);
-  }
-  if (c.location) {
-    var locItem = document.createElement("div");
-    locItem.className = "crm-info-bar-item";
-    locItem.appendChild(_crmFa6Icon("\uf54e", 12, 300));
-    var locText = document.createElement("span");
-    locText.className = "info-text";
-    locText.textContent = c.location;
-    locItem.appendChild(locText);
-    infoBar.appendChild(locItem);
-  }
-  // Info bar and pipeline will be inserted into detailView after header is built
+  // Pipeline will be inserted into detailView after header is built
 
   // Pipeline progress bar with settings cog
   var pipelineStages = ["inactive", "prospect", "outreach", "negotiation", "active_partner"];
@@ -8792,10 +8885,7 @@ function openCrmDetailView(contactId) {
   };
   document.addEventListener("click", _crmMoreMenuCleanup);
   pipelineWrap.appendChild(cogWrap);
-  // Insert info bar and pipeline between header and tabs
-  if (c.website || c.location) {
-    detailView.insertBefore(infoBar, tabsBar);
-  }
+  // Insert pipeline between header and tabs
   detailView.insertBefore(pipelineWrap, tabsBar);
 
   // --- TAB BAR ---
@@ -16064,6 +16154,10 @@ auth.onAuthStateChanged(function(user) {
     showLogin();
   }
 });
+// DEV BYPASS — remove before merging to GitHub
+if (location.hostname === "localhost" || location.hostname === "127.0.0.1") {
+  showApp({email: "taka@ivycoast.co", displayName: "Taka (dev)"});
+}
 
 function signIn() {
   var provider = new firebase.auth.GoogleAuthProvider();
