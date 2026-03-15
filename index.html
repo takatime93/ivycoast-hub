@@ -3576,7 +3576,7 @@ h2.crm-detail-name {
   overflow: clip;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 8px;
 }
 .crm-order-stat-card .stat-lbl {
   font-size: 10px;
@@ -3596,6 +3596,95 @@ h2.crm-detail-name {
   color: #424242;
   line-height: normal;
 }
+.crm-order-stat-card .stat-val.green { color: #00a52c; }
+.crm-order-stat-card .stat-trend {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  font-size: 10px;
+  color: #008a09;
+  white-space: nowrap;
+}
+.crm-order-stat-card .stat-bar-chart {
+  display: flex;
+  gap: 2px;
+  align-items: flex-end;
+  height: 36px;
+  width: 100%;
+  margin-top: auto;
+  position: relative;
+}
+.crm-order-stat-card .stat-bar-chart .bar {
+  flex: 1;
+  min-width: 0;
+  background: rgba(61,123,65,0.16);
+  border-radius: 1px;
+  cursor: pointer;
+  transition: background 0.1s;
+  position: relative;
+}
+.crm-order-stat-card .stat-bar-chart .bar.active { background: #31ea3d; }
+.crm-order-stat-card .stat-bar-chart .bar:hover { background: #31ea3d; }
+.crm-order-stat-card .stat-bar-chart .bar-tip {
+  display: none;
+  position: absolute;
+  bottom: calc(100% + 4px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1a1a1a;
+  color: #fff;
+  font-size: 9px;
+  font-weight: 500;
+  padding: 3px 6px;
+  border-radius: 4px;
+  white-space: nowrap;
+  z-index: 10;
+  pointer-events: none;
+}
+.crm-order-stat-card .stat-bar-chart .bar:hover .bar-tip { display: block; }
+.crm-order-stat-card .stat-product-list {
+  display: flex;
+  flex-direction: column;
+  font-size: 10px;
+  width: 100%;
+}
+.crm-order-stat-card .stat-product-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  line-height: 18px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.crm-order-stat-card .stat-product-row:hover .stat-product-name span:last-child { text-decoration: underline; color: #0e413b; }
+.crm-order-stat-card .stat-product-name {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: #3e3e3e;
+  overflow: hidden;
+}
+.crm-order-stat-card .stat-product-warn { color: #df0a0a; }
+.crm-order-stat-card .stat-restock {
+  display: flex;
+  flex-direction: column;
+  font-size: 10px;
+  color: #424242;
+  line-height: 18px;
+  margin-top: auto;
+  cursor: pointer;
+}
+.crm-order-stat-card .stat-restock:hover .stat-restock-date { text-decoration: underline; color: #0e413b; }
+.crm-order-stat-card .stat-restock-date {
+  display: flex;
+  gap: 4px;
+  font-weight: 700;
+}
+.crm-order-stat-card .stat-val-link {
+  cursor: pointer;
+  transition: color 0.15s;
+}
+.crm-order-stat-card .stat-val-link:hover { color: #0e413b; }
 .crm-order-item {
   display: flex;
   align-items: center;
@@ -3607,6 +3696,9 @@ h2.crm-detail-name {
   transition: background 0.1s;
 }
 .crm-order-item:hover { background: #f8f9fa; margin: 0 -24px; padding-left: 24px; padding-right: 24px; }
+.crm-order-item.crm-order-highlight { background: #e8f5e9; margin: 0 -24px; padding-left: 24px; padding-right: 24px; }
+@keyframes crm-order-flash { 0%,100% { background: transparent; } 50% { background: #e8f5e9; } }
+.crm-order-item.crm-order-flash { animation: crm-order-flash 0.6s ease 2; }
 .crm-order-item:last-child { border-bottom: none; }
 .crm-order-num { font-weight: 500; color: #202124; min-width: 70px; }
 .crm-order-date { color: #5f6368; font-size: 12px; min-width: 90px; }
@@ -3678,6 +3770,9 @@ h2.crm-detail-name {
   color: #202124;
 }
 .crm-stock-table tr:hover td { background: #f8f9fa; }
+.crm-stock-table tr.crm-stock-highlight td { background: #e8f5e9; transition: background 0.3s; }
+@keyframes crm-stock-flash { 0%,100% { background: transparent; } 50% { background: #e8f5e9; } }
+.crm-stock-table tr.crm-stock-flash td { animation: crm-stock-flash 0.6s ease 2; }
 .crm-stock-status {
   display: inline-block;
   font-size: 11px;
@@ -6172,6 +6267,8 @@ function fetchAllData() {
       if (data.partnerStock) { partnerStock = data.partnerStock; }
       if (data.contactDocuments) { contactDocuments = data.contactDocuments; }
       if (data.activities) { activityLog = data.activities; updateNotifBell(); updateTabDots(); }
+      // DEV TEST DATA — inject BEFORE re-renders — remove before merge
+      if (typeof _injectTestData === "function") _injectTestData();
       // Re-render all views
       renderBoard(); renderHomeActiveTasks(); renderHomeKeyStats(); renderHomeRecentlyUpdated();
       renderHomeCrmStats(); renderHomeShopifyStats();
@@ -6183,8 +6280,6 @@ function fetchAllData() {
       if (typeof populateProductTypeFilter === "function") populateProductTypeFilter();
       saveDataCache();
       showLastSynced();
-      // DEV TEST DATA — remove before merge
-      if (typeof _injectTestData === "function") _injectTestData();
     })
     .catch(function(err) { _batchFetching = false; console.error("Batch fetch error:", err); });
 }
@@ -9340,7 +9435,7 @@ function renderCrmOverviewTab(c, panel, contactId, tabsBar) {
       dropMenu.classList.remove("open");
       dropMenu.querySelectorAll(".crm-analytics-menu-item").forEach(function(mi) { mi.classList.remove("active"); });
       item.classList.add("active");
-      updateStatCards(p.days);
+      updateStatCards(p.days, p.key);
     };
     dropMenu.appendChild(item);
   });
@@ -9362,7 +9457,76 @@ function renderCrmOverviewTab(c, panel, contactId, tabsBar) {
   qsGrid.className = "crm-detail-quick-stats";
   analyticsSection.appendChild(qsGrid);
 
-  function updateStatCards(days) {
+  // Helper: build period-aware bar chart with hover interaction
+  // periodKey: "daily"|"monthly"|"90days"|"6months"|"yearly"|"alltime"
+  // onHover(label, amount) called when hovering a bar; onLeave() resets
+  var MONTHS_SHORT = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  function _buildBarChart(orders, periodKey, onHover, onLeave) {
+    var now = new Date();
+    var buckets = []; // [{label, start, end}]
+    if (periodKey === "daily") {
+      for (var h = 23; h >= 0; h--) {
+        var s = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours() - h, 0, 0);
+        var e = new Date(s.getTime() + 3600000 - 1);
+        buckets.push({ label: s.getHours() + ":00", start: s, end: e });
+      }
+    } else if (periodKey === "monthly") {
+      for (var i = 11; i >= 0; i--) {
+        var ms = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        var me = new Date(now.getFullYear(), now.getMonth() - i + 1, 0, 23, 59, 59);
+        buckets.push({ label: MONTHS_SHORT[ms.getMonth()] + " " + ms.getFullYear(), start: ms, end: me });
+      }
+    } else if (periodKey === "90days") {
+      for (var j = 2; j >= 0; j--) {
+        var ds = new Date(now.getTime() - (j + 1) * 30 * 86400000);
+        var de = new Date(now.getTime() - j * 30 * 86400000 - 1);
+        if (j === 0) de = now;
+        buckets.push({ label: MONTHS_SHORT[ds.getMonth()] + " " + ds.getDate() + " - " + MONTHS_SHORT[de.getMonth()] + " " + de.getDate(), start: ds, end: de });
+      }
+    } else if (periodKey === "6months") {
+      for (var k = 5; k >= 0; k--) {
+        var fs = new Date(now.getFullYear(), now.getMonth() - k, 1);
+        var fe = new Date(now.getFullYear(), now.getMonth() - k + 1, 0, 23, 59, 59);
+        buckets.push({ label: MONTHS_SHORT[fs.getMonth()] + " " + fs.getFullYear(), start: fs, end: fe });
+      }
+    } else { // yearly or alltime
+      var minYear = now.getFullYear();
+      orders.forEach(function(o) { if (o.createdAt) { var y = new Date(o.createdAt).getFullYear(); if (y < minYear) minYear = y; } });
+      var startYear = Math.max(minYear, now.getFullYear() - 9);
+      for (var yr = startYear; yr <= now.getFullYear(); yr++) {
+        buckets.push({ label: String(yr), start: new Date(yr, 0, 1), end: new Date(yr, 11, 31, 23, 59, 59) });
+      }
+    }
+    // Compute totals per bucket
+    var barData = buckets.map(function(b) {
+      var total = 0;
+      orders.forEach(function(o) {
+        var d = o.createdAt ? new Date(o.createdAt) : null;
+        if (d && d >= b.start && d <= b.end) total += Number(o.totalPrice || 0);
+      });
+      return { label: b.label, total: total };
+    });
+    var maxVal = Math.max.apply(null, barData.map(function(b) { return b.total; })) || 1;
+    var chart = document.createElement("div");
+    chart.className = "stat-bar-chart";
+    barData.forEach(function(bd, idx) {
+      var bar = document.createElement("div");
+      bar.className = "bar" + (idx === barData.length - 1 ? " active" : "");
+      bar.style.height = Math.max(2, Math.round((bd.total / maxVal) * 36)) + "px";
+      // Tooltip
+      var tip = document.createElement("div");
+      tip.className = "bar-tip";
+      tip.textContent = bd.label + ": \u00A5" + bd.total.toLocaleString();
+      bar.appendChild(tip);
+      // Hover updates the card header
+      bar.onmouseenter = function() { if (onHover) onHover(bd.label, bd.total); };
+      bar.onmouseleave = function() { if (onLeave) onLeave(); };
+      chart.appendChild(bar);
+    });
+    return chart;
+  }
+
+  function updateStatCards(days, periodKey) {
     qsGrid.textContent = "";
     var now = new Date();
     var cutoff = days > 0 ? new Date(now.getTime() - days * 86400000) : null;
@@ -9372,14 +9536,215 @@ function renderCrmOverviewTab(c, panel, contactId, tabsBar) {
     var periodEarned = 0;
     filtered.forEach(function(o) { periodEarned += Number(o.totalPrice || 0); });
     var periodLabel = days === 1 ? "Earned today" : days === 30 ? "Earned this month" : days === 90 ? "Earned (90 days)" : days === 180 ? "Earned (6 months)" : days === 365 ? "Earned this year" : "Earned all time";
-    var lastInPeriod = filtered.length && filtered[0].createdAt ? formatDate(filtered[0].createdAt) : "\u2014";
+    var defaultLabel = periodLabel;
+    var defaultVal = "\u00A5" + periodEarned.toLocaleString();
 
-    qsGrid.appendChild(_crmMakeStatCard(periodLabel, periodEarned ? "\u00A5" + periodEarned.toLocaleString() : "\u00A50", periodEarned ? null : "No sales recorded yet"));
-    qsGrid.appendChild(_crmMakeStatCard("Earned all time", totalSpent ? "\u00A5" + totalSpent.toLocaleString() : "\u00A50", totalSpent ? null : "Waiting on first order"));
-    qsGrid.appendChild(_crmMakeStatCard("Products with them", String(activeStock.length), activeStock.length ? null : "No order placed yet"));
-    qsGrid.appendChild(_crmMakeStatCard("Last sale", lastInPeriod, lastInPeriod === "\u2014" ? "No history" : null));
+    // --- Card 1: Period earnings with trend + bar chart ---
+    var card1 = document.createElement("div");
+    card1.className = "crm-order-stat-card";
+    var c1Top = document.createElement("div");
+    c1Top.style.cssText = "display:flex;flex-direction:column;gap:4px";
+    var c1Lbl = document.createElement("div"); c1Lbl.className = "stat-lbl"; c1Lbl.textContent = periodLabel; c1Top.appendChild(c1Lbl);
+    var c1Val = document.createElement("div"); c1Val.className = "stat-val" + (periodEarned ? " green" : ""); c1Val.textContent = defaultVal; c1Top.appendChild(c1Val);
+    if (!periodEarned) { var c1Sub = document.createElement("div"); c1Sub.className = "stat-sub"; c1Sub.textContent = "No sales recorded yet"; c1Top.appendChild(c1Sub); }
+    // Trend vs previous period
+    if (periodEarned && days > 0) {
+      var prevCutoff = new Date(now.getTime() - days * 2 * 86400000);
+      var prevEarned = 0;
+      matchedOrders.forEach(function(o) {
+        var d = o.createdAt ? new Date(o.createdAt) : null;
+        if (d && d >= prevCutoff && d < cutoff) prevEarned += Number(o.totalPrice || 0);
+      });
+      if (prevEarned > 0) {
+        var pctChange = Math.round(((periodEarned - prevEarned) / prevEarned) * 100);
+        var trend = document.createElement("div"); trend.className = "stat-trend";
+        var arrow = document.createElement("span");
+        arrow.style.cssText = "font-family:'FA6 Pro';font-weight:400;font-size:10px";
+        arrow.textContent = pctChange >= 0 ? "\uf062" : "\uf063";
+        if (pctChange < 0) { trend.style.color = "#df0a0a"; arrow.style.color = "#df0a0a"; }
+        trend.appendChild(arrow);
+        var pctText = document.createElement("span"); pctText.textContent = Math.abs(pctChange) + "% vs last period"; trend.appendChild(pctText);
+        c1Top.appendChild(trend);
+      }
+    }
+    card1.appendChild(c1Top);
+    if (matchedOrders.length) {
+      card1.appendChild(_buildBarChart(matchedOrders, periodKey || "monthly",
+        function(label, amount) {
+          c1Lbl.textContent = label;
+          c1Val.textContent = "\u00A5" + amount.toLocaleString();
+          c1Val.className = "stat-val" + (amount ? " green" : "");
+        },
+        function() {
+          c1Lbl.textContent = defaultLabel;
+          c1Val.textContent = defaultVal;
+          c1Val.className = "stat-val" + (periodEarned ? " green" : "");
+        }
+      ));
+    }
+    qsGrid.appendChild(card1);
+
+    // --- Card 2: All-time earnings + bar chart ---
+    var c2DefaultLabel = "Earned all time";
+    var c2DefaultVal = "\u00A5" + totalSpent.toLocaleString();
+    var card2 = document.createElement("div");
+    card2.className = "crm-order-stat-card";
+    var c2Top = document.createElement("div");
+    c2Top.style.cssText = "display:flex;flex-direction:column;gap:4px";
+    var c2Lbl = document.createElement("div"); c2Lbl.className = "stat-lbl"; c2Lbl.textContent = c2DefaultLabel; c2Top.appendChild(c2Lbl);
+    var c2Val = document.createElement("div"); c2Val.className = "stat-val" + (totalSpent ? " green" : ""); c2Val.textContent = c2DefaultVal; c2Top.appendChild(c2Val);
+    if (totalSpent && matchedOrders.length) {
+      var c2Sub = document.createElement("div"); c2Sub.className = "stat-sub";
+      c2Sub.textContent = "Across " + matchedOrders.length + " orders";
+      c2Top.appendChild(c2Sub);
+    } else if (!totalSpent) {
+      var c2Empty = document.createElement("div"); c2Empty.className = "stat-sub"; c2Empty.textContent = "Waiting on first order"; c2Top.appendChild(c2Empty);
+    }
+    card2.appendChild(c2Top);
+    if (matchedOrders.length) {
+      card2.appendChild(_buildBarChart(matchedOrders, "yearly",
+        function(label, amount) {
+          c2Lbl.textContent = label;
+          c2Val.textContent = "\u00A5" + amount.toLocaleString();
+          c2Val.className = "stat-val" + (amount ? " green" : "");
+        },
+        function() {
+          c2Lbl.textContent = c2DefaultLabel;
+          c2Val.textContent = c2DefaultVal;
+          c2Val.className = "stat-val" + (totalSpent ? " green" : "");
+        }
+      ));
+    }
+    qsGrid.appendChild(card2);
+
+    // --- Card 3: Products with them + low stock list ---
+    var card3 = document.createElement("div");
+    card3.className = "crm-order-stat-card";
+    var c3Top = document.createElement("div");
+    c3Top.style.cssText = "display:flex;flex-direction:column;gap:4px";
+    var c3Lbl = document.createElement("div"); c3Lbl.className = "stat-lbl"; c3Lbl.textContent = "Products with them"; c3Top.appendChild(c3Lbl);
+    var c3Val = document.createElement("div"); c3Val.className = "stat-val" + (activeStock.length ? " stat-val-link" : ""); c3Val.textContent = String(activeStock.length);
+    if (activeStock.length) {
+      c3Val.onclick = function() { var st = tabsBar.querySelectorAll(".crm-detail-tab")[3]; if (st) st.click(); };
+    }
+    c3Top.appendChild(c3Val);
+    var lowStock = activeStock.filter(function(s) { return Number(s.quantity || 0) <= 10; });
+    if (lowStock.length) {
+      var c3Warn = document.createElement("div"); c3Warn.className = "stat-sub"; c3Warn.textContent = lowStock.length + " Stock" + (lowStock.length > 1 ? "s" : "") + " running low"; c3Top.appendChild(c3Warn);
+    } else if (!activeStock.length) {
+      var c3Empty = document.createElement("div"); c3Empty.className = "stat-sub"; c3Empty.textContent = "No order placed yet"; c3Top.appendChild(c3Empty);
+    }
+    card3.appendChild(c3Top);
+    // Product mini-list (show up to 3 low-stock items)
+    if (activeStock.length) {
+      var prodList = document.createElement("div");
+      prodList.className = "stat-product-list";
+      var showItems = lowStock.length ? lowStock.slice(0, 3) : activeStock.slice(0, 3);
+      showItems.forEach(function(s) {
+        var row = document.createElement("div");
+        row.className = "stat-product-row";
+        row.style.cursor = "pointer";
+        var nameWrap = document.createElement("div");
+        nameWrap.className = "stat-product-name";
+        // Icon: \ue06e for soap (SOP-*), \uf6bc for candle (CND-*), fallback \uf4b8
+        var sku = (s.sku || "").toUpperCase();
+        var iconCode = sku.indexOf("SOP") === 0 ? "\ue06e" : sku.indexOf("CND") === 0 ? "\uf6bc" : "\uf4b8";
+        var isLow = Number(s.quantity || 0) <= 10;
+        var icon = document.createElement("span");
+        icon.style.cssText = "font-family:'FA6 Pro';font-weight:400;font-size:10px;color:" + (isLow ? "#df0a0a" : "#3e3e3e");
+        icon.textContent = iconCode;
+        nameWrap.appendChild(icon);
+        var nm = document.createElement("span");
+        var pName = s.productName || "Unknown";
+        nm.textContent = pName.length > 18 ? pName.substring(0, 16) + "..." : pName;
+        nameWrap.appendChild(nm);
+        row.appendChild(nameWrap);
+        if (isLow) {
+          var warn = document.createElement("span");
+          warn.className = "stat-product-warn";
+          warn.style.cssText = "font-family:'FA6 Pro';font-weight:400;font-size:10px";
+          warn.textContent = "\uf071";
+          row.appendChild(warn);
+        }
+        // Click: switch to Stock tab and highlight this item
+        row.onclick = (function(stockId) {
+          return function() {
+            // Click Stock tab (idx 3)
+            var stockTab = tabsBar.querySelectorAll(".crm-detail-tab")[3];
+            if (stockTab) stockTab.click();
+            // Find and highlight the row after render
+            setTimeout(function() {
+              var targetRow = document.querySelector("tr[data-stock-id='" + stockId + "']");
+              if (targetRow) {
+                targetRow.scrollIntoView({ behavior: "smooth", block: "center" });
+                targetRow.classList.add("crm-stock-highlight", "crm-stock-flash");
+                setTimeout(function() { targetRow.classList.remove("crm-stock-highlight", "crm-stock-flash"); }, 3000);
+              }
+            }, 100);
+          };
+        })(s.id);
+        prodList.appendChild(row);
+      });
+      card3.appendChild(prodList);
+    }
+    qsGrid.appendChild(card3);
+
+    // --- Card 4: Last sale + restock info ---
+    // Helper: navigate to Orders tab and highlight a specific order
+    function _goToOrder(orderId) {
+      var ordersTab = tabsBar.querySelectorAll(".crm-detail-tab")[2];
+      if (ordersTab) ordersTab.click();
+      setTimeout(function() {
+        var target = document.querySelector(".crm-order-item[data-order-id='" + orderId + "']");
+        if (target) {
+          target.scrollIntoView({ behavior: "smooth", block: "center" });
+          target.classList.add("crm-order-highlight", "crm-order-flash");
+          setTimeout(function() { target.classList.remove("crm-order-highlight", "crm-order-flash"); }, 3000);
+        }
+      }, 100);
+    }
+    // Helper: navigate to Stock tab
+    function _goToStock() {
+      var stockTab = tabsBar.querySelectorAll(".crm-detail-tab")[3];
+      if (stockTab) stockTab.click();
+    }
+
+    var card4 = document.createElement("div");
+    card4.className = "crm-order-stat-card";
+    var c4Top = document.createElement("div");
+    c4Top.style.cssText = "display:flex;flex-direction:column;gap:4px";
+    var c4Lbl = document.createElement("div"); c4Lbl.className = "stat-lbl"; c4Lbl.textContent = "Last sale"; c4Top.appendChild(c4Lbl);
+    var lastOrder = filtered.length ? filtered[0] : null;
+    var lastDate = lastOrder && lastOrder.createdAt ? formatDate(lastOrder.createdAt) : "\u2014";
+    var c4Val = document.createElement("div"); c4Val.className = "stat-val" + (lastOrder ? " stat-val-link" : ""); c4Val.textContent = lastDate;
+    if (lastOrder) {
+      c4Val.onclick = function() { _goToOrder(lastOrder.id); };
+    }
+    c4Top.appendChild(c4Val);
+    if (lastOrder) {
+      var c4Detail = document.createElement("div"); c4Detail.className = "stat-sub";
+      c4Detail.textContent = "\u00A5" + Number(lastOrder.totalPrice || 0).toLocaleString() + " \u00B7 " + (lastOrder.lineItems || "?") + " items";
+      c4Top.appendChild(c4Detail);
+    } else {
+      var c4Empty = document.createElement("div"); c4Empty.className = "stat-sub"; c4Empty.textContent = "No history"; c4Top.appendChild(c4Empty);
+    }
+    card4.appendChild(c4Top);
+    // Restock info — links to Stock tab for managing restock orders
+    if (lastOrder && lastOrder.createdAt) {
+      var restockDate = new Date(new Date(lastOrder.createdAt).getTime() + 30 * 86400000);
+      var restock = document.createElement("div");
+      restock.className = "stat-restock";
+      restock.style.cursor = "pointer";
+      var rLabel = document.createElement("span"); rLabel.textContent = "Automatic Restock"; restock.appendChild(rLabel);
+      var rDate = document.createElement("div"); rDate.className = "stat-restock-date";
+      rDate.textContent = formatDate(restockDate.toISOString()) + " \u00B7 " + (lastOrder.lineItems || "?") + " items";
+      restock.appendChild(rDate);
+      restock.onclick = function() { _goToStock(); };
+      card4.appendChild(restock);
+    }
+    qsGrid.appendChild(card4);
   }
-  updateStatCards(30); // default to monthly
+  updateStatCards(30, "monthly"); // default to monthly
   panel.appendChild(analyticsSection);
 
   // === TWO-COLUMN LAYOUT ===
@@ -9482,8 +9847,11 @@ function renderCrmOverviewTab(c, panel, contactId, tabsBar) {
       var item = document.createElement("div");
       item.style.cssText = "display:flex;align-items:center;gap:6px;background:#fff;border:1px solid #e3e3e3;border-radius:4px;padding:4px 12px 4px 4px";
       var iconBox = document.createElement("div");
-      iconBox.style.cssText = "width:24px;height:24px;border-radius:2px;background:#e6f3f1;display:flex;align-items:center;justify-content:center;flex-shrink:0";
-      iconBox.appendChild(_crmFa6Icon("\uf4b8", 14, 400));
+      var _sku = (s.sku || "").toUpperCase();
+      var _isSoap = _sku.indexOf("SOP") === 0;
+      var _isCandle = _sku.indexOf("CND") === 0;
+      iconBox.style.cssText = "width:24px;height:24px;border-radius:2px;background:" + (_isCandle ? "#ece6f3" : "#e6f3f1") + ";display:flex;align-items:center;justify-content:center;flex-shrink:0";
+      iconBox.appendChild(_crmFa6Icon(_isSoap ? "\ue06e" : _isCandle ? "\uf6bc" : "\uf4b8", 14, 400));
       item.appendChild(iconBox);
       var nameSpan = document.createElement("span");
       nameSpan.style.cssText = "flex:1;font-size:13px;font-weight:600;color:#000;white-space:nowrap;overflow:hidden;text-overflow:ellipsis";
@@ -11133,6 +11501,7 @@ function renderCrmOrdersTab(c, panel, contactId) {
   matched.forEach(function(order) {
     var row = document.createElement("div");
     row.className = "crm-order-item";
+    row.setAttribute("data-order-id", order.id || "");
     row.onclick = function() { openOrderDetailModal(order); };
 
     var num = document.createElement("span");
@@ -11307,6 +11676,7 @@ function renderCrmStockTab(c, panel, contactId) {
     var tbody = document.createElement("tbody");
     filtered.forEach(function(s) {
       var tr = document.createElement("tr");
+      tr.setAttribute("data-stock-id", s.id || "");
 
       var tdProd = document.createElement("td");
       tdProd.textContent = s.productName || s.sku || "\u2014";
