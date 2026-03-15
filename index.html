@@ -2642,19 +2642,20 @@ h2.crm-detail-name {
   display: flex;
   align-items: center;
   justify-content: center;
+  background: #fcfcfc;
   border-top: 1px solid #e3e3e3;
   border-bottom: 1px solid #e3e3e3;
   overflow-x: auto;
   flex-shrink: 0;
-  padding: 0 16px;
+  padding: 0 32px;
   gap: 0;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
 }
 .crm-detail-tabs::-webkit-scrollbar { display: none; }
 .crm-detail-tab {
-  padding: 12px 16px 14px;
-  font-size: 14px;
+  padding: 12px 12px 14px;
+  font-size: 12px;
   font-weight: 500;
   color: #181818;
   cursor: pointer;
@@ -2677,13 +2678,6 @@ h2.crm-detail-name {
 .crm-detail-tab .crm-tab-badge {
   vertical-align: middle;
 }
-.crm-detail-tab .crm-tab-dot {
-  display: inline-block;
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: #c5221f;
-}
 .crm-detail-tab .crm-tab-count {
   display: inline-flex;
   align-items: center;
@@ -2698,9 +2692,19 @@ h2.crm-detail-name {
   line-height: 16px;
   letter-spacing: 0.24px;
 }
-.crm-detail-tab.active .crm-tab-count {
-  background: #f1f1f1;
-  color: #181818;
+.crm-detail-tab .crm-tab-count-red {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  padding: 0 4px;
+  font-size: 12px;
+  font-weight: 500;
+  border-radius: 4px;
+  background: #ff1818;
+  color: #fff;
+  line-height: 16px;
+  letter-spacing: 0.24px;
 }
 .crm-detail-tab-panel { display: none; padding: 16px 24px; }
 .crm-detail-tab-panel.active { display: block; }
@@ -2876,8 +2880,111 @@ h2.crm-detail-name {
 .crm-detail-quick-stats {
   display: flex;
   gap: 8px;
-  padding: 20px 32px;
+  padding: 0 32px;
 }
+/* ── Reusable click-tooltip ──────────────────────────────── */
+.ivh-tooltip-trigger { position: relative; cursor: pointer; }
+.ivh-tooltip {
+  display: none;
+  position: absolute;
+  left: 50%;
+  top: calc(100% + 6px);
+  transform: translateX(-50%);
+  background: #1a1a1a;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 400;
+  line-height: 1.4;
+  padding: 8px 12px;
+  border-radius: 6px;
+  white-space: normal;
+  width: max-content;
+  max-width: 240px;
+  z-index: 20;
+  pointer-events: none;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+.ivh-tooltip::before {
+  content: "";
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-bottom-color: #1a1a1a;
+}
+.ivh-tooltip.open { display: block; }
+.ivh-tooltip.ivh-tooltip-right { left: auto; right: 0; transform: none; }
+.ivh-tooltip.ivh-tooltip-right::before { left: auto; right: 10px; transform: none; }
+.ivh-tooltip.ivh-tooltip-left { left: 0; right: auto; transform: none; }
+.ivh-tooltip.ivh-tooltip-left::before { left: 10px; right: auto; transform: none; }
+
+.crm-analytics-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px 0;
+}
+.crm-analytics-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 32px;
+}
+.crm-analytics-title {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.crm-analytics-title span { font-size: 11px; font-weight: 600; color: #424242; line-height: 18px; }
+.crm-analytics-title .crm-icon { width: 16px; height: 16px; color: #0e413b; }
+.crm-analytics-dropdown-wrap { position: relative; }
+.crm-analytics-dropdown {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #0e413b;
+  cursor: pointer;
+  background: none;
+  border: none;
+  border-radius: 6px;
+  font-family: inherit;
+  line-height: 18px;
+}
+.crm-analytics-dropdown:hover { opacity: 0.8; }
+.crm-analytics-menu {
+  display: none;
+  position: absolute;
+  right: 0;
+  top: 100%;
+  margin-top: 4px;
+  background: #fff;
+  border: 1px solid #e3e3e3;
+  border-radius: 6px;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+  z-index: 10;
+  min-width: 120px;
+  overflow: hidden;
+}
+.crm-analytics-menu.open { display: block; }
+.crm-analytics-menu-item {
+  display: block;
+  width: 100%;
+  padding: 8px 14px;
+  font-size: 11px;
+  font-weight: 500;
+  font-family: inherit;
+  color: #181818;
+  background: none;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.crm-analytics-menu-item:hover { background: #f5f5f5; }
+.crm-analytics-menu-item.active { font-weight: 600; color: #0e413b; }
 
 /* ── Pricing inline tags ───────────────────────────────────── */
 /* ── Contacts Summary (overview tab) ──────────────────────── */
@@ -3405,28 +3512,35 @@ h2.crm-detail-name {
   margin-bottom: 16px;
 }
 .crm-order-stat-card {
-  flex: 1;
+  width: 165px;
+  flex-shrink: 0;
   background: #fff;
   border: 1px solid #e3e3e3;
-  border-radius: 16px;
+  border-radius: 8px;
   box-shadow: 0 4px 14px rgba(0,0,0,0.03);
-  padding: 12px 16px 16px;
-  text-align: center;
-  overflow: hidden;
-}
-.crm-order-stat-card .stat-val {
-  font-size: 18px;
-  font-weight: 600;
-  color: #000;
-  line-height: 32px;
+  padding: 12px 18px;
+  overflow: clip;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 .crm-order-stat-card .stat-lbl {
   font-size: 10px;
   font-weight: 600;
   color: #424242;
-  margin-top: 0;
-  line-height: 18px;
-  letter-spacing: 0.5px;
+  line-height: normal;
+}
+.crm-order-stat-card .stat-val {
+  font-size: 18px;
+  font-weight: 600;
+  color: #000;
+  line-height: normal;
+}
+.crm-order-stat-card .stat-sub {
+  font-size: 10px;
+  font-weight: 400;
+  color: #424242;
+  line-height: normal;
 }
 .crm-order-item {
   display: flex;
@@ -3753,6 +3867,7 @@ h2.crm-detail-name {
   .crm-detail-contact-info { grid-template-columns: 1fr; }
   .crm-detail-summary-row { flex-direction: column; gap: 6px; }
   .crm-detail-quick-stats { flex-wrap: wrap; }
+  .crm-order-stat-card { width: auto; flex: 1; min-width: 140px; }
   .crm-tickets-add-row { flex-direction: column; align-items: stretch; }
   .crm-tickets-add-row input[type="date"] { width: 100%; }
   .crm-tasks-input-wrap { flex-direction: column; align-items: stretch; }
@@ -8588,6 +8703,34 @@ function closeCrmModal() {
   document.getElementById("crm-edit-actions").style.display = "";
 }
 
+// Reusable click-tooltip: returns { trigger, tooltip } elements.
+// Usage: var tt = _ivhTooltip("\uf05a", "Tooltip text here", opts);
+//        parent.appendChild(tt);
+// opts.align: "center" (default), "left", "right"
+function _ivhTooltip(iconUnicode, text, opts) {
+  opts = opts || {};
+  var wrap = document.createElement("span");
+  wrap.className = "ivh-tooltip-trigger";
+  var icon = document.createElement("span");
+  icon.style.cssText = "font-family:'FA6 Pro';font-weight:300;font-size:12px;line-height:1;display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;color:#0e413b;cursor:pointer";
+  icon.textContent = iconUnicode;
+  wrap.appendChild(icon);
+  var tip = document.createElement("div");
+  tip.className = "ivh-tooltip" + (opts.align === "right" ? " ivh-tooltip-right" : opts.align === "left" ? " ivh-tooltip-left" : "");
+  tip.textContent = text;
+  wrap.appendChild(tip);
+  icon.onclick = function(e) {
+    e.stopPropagation();
+    var wasOpen = tip.classList.contains("open");
+    document.querySelectorAll(".ivh-tooltip.open").forEach(function(t) { t.classList.remove("open"); });
+    if (!wasOpen) tip.classList.add("open");
+  };
+  document.addEventListener("click", function(e) {
+    if (!wrap.contains(e.target)) tip.classList.remove("open");
+  });
+  return wrap;
+}
+
 function _crmFa6Icon(unicode, size, weight) {
   size = size || 16; weight = weight || 300;
   var span = document.createElement("span");
@@ -8904,8 +9047,19 @@ function openCrmDetailView(contactId) {
   var _refsData = _findCrmReferences(contactId);
   var _refCount = _refsData.length;
   var _peopleCount = _migrateCrmPeople(c).length;
+  var _docCount = contactDocuments.filter(function(d) { return d.contactId === contactId; }).length;
 
+  // Badge config per tab: [count, "red"|"gray"]
+  // Red = actionable items, Gray = data counts
   var tabNames = ["Overview", "Contacts", "Orders", "Stock", "Documents", "References"];
+  var tabBadges = [
+    null,
+    _peopleCount > 0 ? [_peopleCount, "gray"] : null,
+    _orderCount > 0 ? [_orderCount, "gray"] : null,
+    [_stockCount, "gray"],
+    _docCount > 0 ? [_docCount, "gray"] : null,
+    _refCount > 0 ? [_refCount, "gray"] : null
+  ];
   var panels = [];
   tabNames.forEach(function(name, idx) {
     var btn = document.createElement("button");
@@ -8913,32 +9067,12 @@ function openCrmDetailView(contactId) {
     btn.setAttribute("data-tab", idx);
     btn.appendChild(document.createTextNode(name));
 
-    // Team tab (idx 1): show people count
-    if (idx === 1 && _peopleCount > 0) {
-      var teamBadge = document.createElement("span");
-      teamBadge.className = "crm-tab-badge crm-tab-count";
-      teamBadge.textContent = String(_peopleCount);
-      btn.appendChild(teamBadge);
-    }
-    // Orders tab (idx 2): dot notifier, replaced with count on click
-    if (idx === 2 && _orderCount > 0) {
-      var orderBadge = document.createElement("span");
-      orderBadge.className = "crm-tab-badge crm-tab-dot";
-      btn.appendChild(orderBadge);
-    }
-    // Stock tab (idx 3): always show count
-    if (idx === 3) {
-      var stockBadge = document.createElement("span");
-      stockBadge.className = "crm-tab-badge crm-tab-count";
-      stockBadge.textContent = String(_stockCount);
-      btn.appendChild(stockBadge);
-    }
-    // References tab (idx 5): show count if > 0
-    if (idx === 5 && _refCount > 0) {
-      var refBadge = document.createElement("span");
-      refBadge.className = "crm-tab-badge crm-tab-count";
-      refBadge.textContent = String(_refCount);
-      btn.appendChild(refBadge);
+    var badgeConf = tabBadges[idx];
+    if (badgeConf) {
+      var badge = document.createElement("span");
+      badge.className = "crm-tab-badge " + (badgeConf[1] === "red" ? "crm-tab-count-red" : "crm-tab-count");
+      badge.textContent = String(badgeConf[0]);
+      btn.appendChild(badge);
     }
 
     tabsBar.appendChild(btn);
@@ -8954,14 +9088,6 @@ function openCrmDetailView(contactId) {
       btn.classList.add("active");
       panels.forEach(function(p) { p.classList.remove("active"); });
       panel.classList.add("active");
-      // Orders tab: replace dot with count on first visit
-      if (idx === 2) {
-        var dot = btn.querySelector(".crm-tab-dot");
-        if (dot) {
-          dot.className = "crm-tab-badge crm-tab-count";
-          dot.textContent = String(_orderCount);
-        }
-      }
     };
   });
 
@@ -9022,17 +9148,25 @@ function _crmMakeBizCard(labelText, valueText) {
   return card;
 }
 
-function _crmMakeStatCard(val, label) {
+function _crmMakeStatCard(label, val, sub) {
   var card = document.createElement("div");
   card.className = "crm-order-stat-card";
-  var vEl = document.createElement("div");
-  vEl.className = "stat-val";
-  vEl.textContent = val;
-  card.appendChild(vEl);
   var lEl = document.createElement("div");
   lEl.className = "stat-lbl";
   lEl.textContent = label;
   card.appendChild(lEl);
+  var valWrap = document.createElement("div");
+  var vEl = document.createElement("div");
+  vEl.className = "stat-val";
+  vEl.textContent = val;
+  valWrap.appendChild(vEl);
+  if (sub) {
+    var sEl = document.createElement("div");
+    sEl.className = "stat-sub";
+    sEl.textContent = sub;
+    valWrap.appendChild(sEl);
+  }
+  card.appendChild(valWrap);
   return card;
 }
 
@@ -9097,13 +9231,99 @@ function renderCrmOverviewTab(c, panel, contactId, tabsBar) {
   var activeStock = partnerStock.filter(function(s) { return s.contactId === contactId && (s.status || "").toLowerCase() === "active"; });
   var lastOrderDate = matchedOrders.length && matchedOrders[0].createdAt ? formatDate(matchedOrders[0].createdAt) : "\u2014";
 
+  // --- ANALYTICS SECTION ---
+  var analyticsSection = document.createElement("div");
+  analyticsSection.className = "crm-analytics-section";
+
+  // Analytics header
+  var analyticsHeader = document.createElement("div");
+  analyticsHeader.className = "crm-analytics-header";
+  var titleWrap = document.createElement("div");
+  titleWrap.className = "crm-analytics-title";
+  var titleText = document.createElement("span");
+  titleText.textContent = "Analytics";
+  titleWrap.appendChild(titleText);
+  titleWrap.appendChild(_ivhTooltip("\uf05a", "Revenue and stock metrics for this vendor. Use the dropdown to change the time period.", { align: "left" }));
+  analyticsHeader.appendChild(titleWrap);
+  // Dropdown with period menu
+  var periods = [
+    { key: "daily", label: "Daily", days: 1 },
+    { key: "monthly", label: "Monthly", days: 30 },
+    { key: "90days", label: "90 Days", days: 90 },
+    { key: "6months", label: "6 Months", days: 180 },
+    { key: "yearly", label: "Yearly", days: 365 },
+    { key: "alltime", label: "All Time", days: 0 }
+  ];
+  var currentPeriod = "monthly";
+
+  var dropWrap = document.createElement("div");
+  dropWrap.className = "crm-analytics-dropdown-wrap";
+  var dropdownBtn = document.createElement("button");
+  dropdownBtn.className = "crm-analytics-dropdown";
+  var dropText = document.createElement("span");
+  dropText.textContent = "Monthly";
+  dropdownBtn.appendChild(dropText);
+  var chevIcon = document.createElement("span");
+  chevIcon.style.cssText = "font-family:'FA6 Pro';font-weight:300;font-size:12px;line-height:1;display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px";
+  chevIcon.textContent = "\uf078";
+  dropdownBtn.appendChild(chevIcon);
+  dropWrap.appendChild(dropdownBtn);
+
+  var dropMenu = document.createElement("div");
+  dropMenu.className = "crm-analytics-menu";
+  periods.forEach(function(p) {
+    var item = document.createElement("button");
+    item.className = "crm-analytics-menu-item" + (p.key === currentPeriod ? " active" : "");
+    item.textContent = p.label;
+    item.setAttribute("data-period", p.key);
+    item.onclick = function(e) {
+      e.stopPropagation();
+      currentPeriod = p.key;
+      dropText.textContent = p.label;
+      dropMenu.classList.remove("open");
+      dropMenu.querySelectorAll(".crm-analytics-menu-item").forEach(function(mi) { mi.classList.remove("active"); });
+      item.classList.add("active");
+      updateStatCards(p.days);
+    };
+    dropMenu.appendChild(item);
+  });
+  dropWrap.appendChild(dropMenu);
+
+  dropdownBtn.onclick = function(e) {
+    e.stopPropagation();
+    dropMenu.classList.toggle("open");
+  };
+  document.addEventListener("click", function closeAnalyticsMenu(e) {
+    if (!dropWrap.contains(e.target)) dropMenu.classList.remove("open");
+  });
+
+  analyticsHeader.appendChild(dropWrap);
+  analyticsSection.appendChild(analyticsHeader);
+
+  // Stat cards — recalculated on period change
   var qsGrid = document.createElement("div");
   qsGrid.className = "crm-detail-quick-stats";
-  qsGrid.appendChild(_crmMakeStatCard(String(matchedOrders.length), "Total Orders"));
-  qsGrid.appendChild(_crmMakeStatCard("\u00A5" + totalSpent.toLocaleString(), "Total Spent"));
-  qsGrid.appendChild(_crmMakeStatCard(String(activeStock.length), "Active Stock"));
-  qsGrid.appendChild(_crmMakeStatCard(lastOrderDate, "Last Order"));
-  panel.appendChild(qsGrid);
+  analyticsSection.appendChild(qsGrid);
+
+  function updateStatCards(days) {
+    qsGrid.textContent = "";
+    var now = new Date();
+    var cutoff = days > 0 ? new Date(now.getTime() - days * 86400000) : null;
+    var filtered = cutoff ? matchedOrders.filter(function(o) {
+      return o.createdAt && new Date(o.createdAt) >= cutoff;
+    }) : matchedOrders;
+    var periodEarned = 0;
+    filtered.forEach(function(o) { periodEarned += Number(o.totalPrice || 0); });
+    var periodLabel = days === 1 ? "Earned today" : days === 30 ? "Earned this month" : days === 90 ? "Earned (90 days)" : days === 180 ? "Earned (6 months)" : days === 365 ? "Earned this year" : "Earned all time";
+    var lastInPeriod = filtered.length && filtered[0].createdAt ? formatDate(filtered[0].createdAt) : "\u2014";
+
+    qsGrid.appendChild(_crmMakeStatCard(periodLabel, periodEarned ? "\u00A5" + periodEarned.toLocaleString() : "\u00A50", periodEarned ? null : "No sales recorded yet"));
+    qsGrid.appendChild(_crmMakeStatCard("Earned all time", totalSpent ? "\u00A5" + totalSpent.toLocaleString() : "\u00A50", totalSpent ? null : "Waiting on first order"));
+    qsGrid.appendChild(_crmMakeStatCard("Products with them", String(activeStock.length), activeStock.length ? null : "No order placed yet"));
+    qsGrid.appendChild(_crmMakeStatCard("Last sale", lastInPeriod, lastInPeriod === "\u2014" ? "No history" : null));
+  }
+  updateStatCards(30); // default to monthly
+  panel.appendChild(analyticsSection);
 
   // --- PRICING (compact inline) ---
   var ws = c.wholesalePercent;
@@ -10753,9 +10973,9 @@ function renderCrmOrdersTab(c, panel, contactId) {
 
   var statsGrid = document.createElement("div");
   statsGrid.className = "crm-order-summary-stats";
-  statsGrid.appendChild(_crmMakeStatCard(String(matched.length), "Total Orders"));
-  statsGrid.appendChild(_crmMakeStatCard("\u00A5" + totalSpent.toLocaleString(), "Total Spent"));
-  statsGrid.appendChild(_crmMakeStatCard(lastDate, "Last Order"));
+  statsGrid.appendChild(_crmMakeStatCard("Total Orders", String(matched.length)));
+  statsGrid.appendChild(_crmMakeStatCard("Total Spent", "\u00A5" + totalSpent.toLocaleString()));
+  statsGrid.appendChild(_crmMakeStatCard("Last Order", lastDate));
   panel.appendChild(statsGrid);
 
   if (!matched.length) {
@@ -10840,9 +11060,9 @@ function renderCrmStockTab(c, panel, contactId) {
     var soldCount = items.filter(function(s) { return s.status === "sold"; }).length;
     var totalVal = 0;
     items.forEach(function(s) { totalVal += Number(s.unitPrice || 0) * Number(s.quantity || 1); });
-    summaryDiv.appendChild(_crmMakeStatCard(String(activeCount), "Active"));
-    summaryDiv.appendChild(_crmMakeStatCard(String(soldCount), "Sold"));
-    summaryDiv.appendChild(_crmMakeStatCard("\u00A5" + totalVal.toLocaleString(), "Total Value"));
+    summaryDiv.appendChild(_crmMakeStatCard("Active", String(activeCount)));
+    summaryDiv.appendChild(_crmMakeStatCard("Sold", String(soldCount)));
+    summaryDiv.appendChild(_crmMakeStatCard("Total Value", "\u00A5" + totalVal.toLocaleString()));
   }
   refreshSummary();
   panel.appendChild(summaryDiv);
