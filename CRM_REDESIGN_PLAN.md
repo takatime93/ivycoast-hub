@@ -230,9 +230,14 @@ infoDiv (.crm-detail-header-info)
 
 ---
 
-## Phase 7 — Vendor Type Variants (Connector & Via Connector)
+## Phase 7 — Three Vendor Profile Types
 
-This phase introduces type-specific UI for B2B2B connector vendors and partners connected via a connector. The vendor `type` field determines which variant renders. Three vendor types exist: **Direct Partner** (current default, `type: "Vendor"`), **B2B2B Connector** (`type: "Connector"`), and **Via Connector** (`type: "Partner"` with a `connectorId` linking to the connector).
+> **Authoritative spec:** [`VENDOR_DATA_SPEC.md`](VENDOR_DATA_SPEC.md) defines the complete data model, relationships, financial calculations, and UI rules. This plan covers implementation order only.
+
+This phase builds three distinct vendor profile experiences based on `vendor.type`:
+- **DIRECT** — we sell to them directly (what Phases 1-6 built)
+- **MANAGED_VENUE** — a shop connected to us through a connector
+- **CONNECTOR** — a middleman who connects us to shops and takes a commission
 
 **Figma sources:**
 - B2B2B Connector: `node-id=123-11256` (Edgeof Creative example)
