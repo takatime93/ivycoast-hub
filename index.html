@@ -2681,17 +2681,17 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
 .crm-pipeline-wrap {
   display: flex;
   align-items: flex-start;
-  justify-content: space-between;
-  gap: 8px;
+  gap: 12px;
   padding: 20px 32px 16px;
   flex-shrink: 0;
+  overflow: hidden;
 }
 .crm-detail-pipeline {
   flex: 1;
   position: relative;
   height: 38px;
   margin: 0;
-  max-width: calc(100% - 44px);
+  min-width: 0;
 }
 .crm-pipeline-track {
   position: absolute;
@@ -2753,6 +2753,7 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
 }
 .crm-pipeline-cog {
   width: 32px;
+  min-width: 32px;
   height: 32px;
   border-radius: 50%;
   border: none;
