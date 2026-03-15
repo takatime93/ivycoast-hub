@@ -1076,7 +1076,7 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
   position: fixed;
   top: 0;
   right: 0;
-  width: 680px;
+  width: 748px;
   max-width: 92vw;
   height: 100vh;
   max-height: 100vh;
@@ -1087,7 +1087,7 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
   overflow-y: hidden;
   transform: translateX(100%);
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: -4px 0 24px rgba(0,0,0,0.15);
+  box-shadow: -10px 2px 27px rgba(0,0,0,0.04);
   z-index: 201;
 }
 #crm-modal-overlay.open { display: block; }
@@ -2270,49 +2270,52 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
   z-index: 2;
 }
 .crm-detail-header {
-  padding: 18px 22px 12px;
-  border-bottom: 1px solid #ebebeb;
+  padding: 24px 32px;
   flex-shrink: 0;
 }
 .crm-detail-header-top {
   display: flex;
   align-items: flex-start;
-  gap: 12px;
-  margin-bottom: 4px;
+  gap: 24px;
+  margin-bottom: 0;
 }
 .crm-detail-header-actions {
   display: flex;
-  gap: 6px;
+  align-items: center;
+  gap: 16px;
   flex-shrink: 0;
   margin-left: auto;
 }
+.crm-detail-header-actions .icon-group { display: flex; gap: 8px; }
 .crm-detail-header-actions button {
-  width: 30px;
-  height: 30px;
-  border-radius: 8px;
-  border: 1px solid transparent;
-  background: #fff;
+  width: 38px;
+  height: 38px;
+  border-radius: 6px;
+  border: 1px solid #0e413b;
+  background: transparent;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #5f6368;
-  font-size: 16px;
+  color: #0e413b;
+  font-size: 18px;
   transition: all 0.15s;
 }
-.crm-detail-header-actions button:hover { background: #f1f3f4; color: #202124; border-color: #e0e0e0; }
-.crm-detail-header-actions .crm-edit-btn { color: #0e413b; border-color: #c2d7f5; }
+.crm-detail-header-actions button:hover { background: #e8f0ee; }
+.crm-detail-header-actions .crm-edit-btn { color: #0e413b; border-color: #0e413b; }
 .crm-detail-header-actions .crm-edit-btn:hover { background: #e8f0ee; }
+.crm-detail-header-actions .crm-close-btn { border: none; }
+.crm-detail-header-actions .crm-close-btn:hover { background: #f1f3f4; }
 .crm-detail-avatar {
-  width: 56px;
-  height: 56px;
+  width: 70px;
+  height: 70px;
   border-radius: 50%;
-  background: #f1f3f4;
-  color: #5f6368;
+  background: #e8e8e8;
+  color: #888;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 20px;
+  font-size: 24px;
   font-weight: 700;
   overflow: hidden;
   flex-shrink: 0;
@@ -2325,20 +2328,66 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
 .crm-detail-header-info {
   flex: 1;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 .crm-detail-name {
-  font-size: 18px;
+  font-size: 24px;
   font-weight: 600;
-  color: #202124;
+  color: #000;
   margin: 0;
-  line-height: 1.2;
+  line-height: 21px;
 }
 .crm-detail-subtitle {
-  font-size: 13px;
-  color: #5f6368;
-  margin-top: 2px;
-  line-height: 1.4;
+  font-size: 14px;
+  color: #616161;
+  margin-top: 0;
+  line-height: 15px;
+  letter-spacing: 0.14px;
 }
+/* Stage badge in header */
+.crm-detail-stage-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3px 8px;
+  border-radius: 5px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  white-space: nowrap;
+  color: #fff;
+  align-self: flex-start;
+}
+.crm-detail-stage-badge.stage-prospect { background: #3cb1ff; }
+.crm-detail-stage-badge.stage-outreach { background: #fec553; }
+.crm-detail-stage-badge.stage-negotiation { background: #ff5e5e; }
+.crm-detail-stage-badge.stage-active_partner { background: #0e413b; }
+.crm-detail-stage-badge.stage-inactive { background: #f2f2f2; color: #353535; }
+/* Info bar (website | address) */
+.crm-detail-info-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 32px;
+  border-top: 1px solid #e3e3e3;
+  border-bottom: 1px solid #e3e3e3;
+  font-size: 12px;
+  flex-shrink: 0;
+}
+.crm-info-bar-item {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+.crm-info-bar-item a { color: #157be1; font-weight: 500; text-decoration: none; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.crm-info-bar-item a:hover { text-decoration: underline; }
+.crm-info-bar-item .info-text { color: #424242; font-weight: 400; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.crm-info-bar-sep { width: 1px; height: 16px; background: #e3e3e3; flex-shrink: 0; }
 .crm-detail-body {
   flex: 1;
   overflow-y: auto;
@@ -2559,20 +2608,23 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
 /* ── CRM Detail Tabs ────────────────────────────────────────── */
 .crm-detail-tabs {
   display: flex;
-  border-bottom: 1px solid #ebebeb;
+  align-items: center;
+  justify-content: center;
+  border-top: 1px solid #e3e3e3;
+  border-bottom: 1px solid #e3e3e3;
   overflow-x: auto;
   flex-shrink: 0;
-  padding: 0 24px;
+  padding: 0 16px;
   gap: 0;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
 }
 .crm-detail-tabs::-webkit-scrollbar { display: none; }
 .crm-detail-tab {
-  padding: 10px 16px;
-  font-size: 13px;
+  padding: 12px 16px 14px;
+  font-size: 14px;
   font-weight: 500;
-  color: #5f6368;
+  color: #181818;
   cursor: pointer;
   border-bottom: 2px solid transparent;
   white-space: nowrap;
@@ -2583,11 +2635,14 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
   border-left: none;
   border-right: none;
   font-family: inherit;
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  line-height: 18px;
 }
-.crm-detail-tab:hover { color: #202124; }
+.crm-detail-tab:hover { color: rgba(14,65,59,0.9); }
 .crm-detail-tab.active { color: #0e413b; border-bottom-color: #0e413b; font-weight: 600; }
 .crm-detail-tab .crm-tab-badge {
-  margin-left: 5px;
   vertical-align: middle;
 }
 .crm-detail-tab .crm-tab-dot {
@@ -2601,69 +2656,72 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 18px;
-  height: 18px;
-  padding: 0 5px;
-  font-size: 10px;
-  font-weight: 600;
-  border-radius: 9px;
-  background: #f1f3f4;
-  color: #5f6368;
+  min-width: 20px;
+  padding: 0 4px;
+  font-size: 12px;
+  font-weight: 500;
+  border-radius: 4px;
+  background: #f1f1f1;
+  color: #181818;
+  line-height: 16px;
+  letter-spacing: 0.24px;
 }
 .crm-detail-tab.active .crm-tab-count {
-  background: #e6f4ea;
-  color: #137333;
+  background: #f1f1f1;
+  color: #181818;
 }
 .crm-detail-tab-panel { display: none; padding: 16px 24px; }
 .crm-detail-tab-panel.active { display: block; }
+.crm-detail-tab-panel.crm-tab-panel-flush { padding: 0; }
 
 /* ── Pipeline progress bar ─────────────────────────────────── */
 .crm-pipeline-wrap {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
+  justify-content: space-between;
   gap: 12px;
-  margin-top: 6px;
-  padding: 0 4px;
+  padding: 24px 32px 20px;
+  flex-shrink: 0;
 }
 .crm-detail-pipeline {
   flex: 1;
   position: relative;
-  height: 38px;
-  margin: 0 28px;
+  height: 42px;
+  margin: 0 8px;
 }
 .crm-pipeline-track {
   position: absolute;
-  top: 7px;
-  left: 0;
-  right: 0;
-  height: 3px;
-  background: #e0e3e6;
+  top: 8px;
+  left: 24px;
+  right: 24px;
+  height: 4px;
+  background: #d9d9d9;
   border-radius: 2px;
 }
 .crm-pipeline-fill {
   position: absolute;
-  top: 7px;
-  left: 0;
-  height: 3px;
+  top: 8px;
+  left: 24px;
+  height: 4px;
   background: #0e413b;
   border-radius: 2px;
   transition: width 0.3s ease;
 }
 .crm-pipeline-marker {
   position: absolute;
-  top: 3px;
+  top: 0;
   transform: translateX(-50%);
   display: flex;
   flex-direction: column;
   align-items: center;
 }
 .crm-pipeline-dot {
-  width: 10px;
-  height: 10px;
+  width: 16px;
+  height: 16px;
   border-radius: 50%;
-  background: #e0e3e6;
+  background: #d9d9d9;
   border: 2px solid #fff;
-  box-shadow: 0 0 0 1px #e0e3e6;
+  box-shadow: 0 0 0 1px #d9d9d9;
   position: relative;
   z-index: 1;
 }
@@ -2674,37 +2732,37 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
 .crm-pipeline-dot.active {
   background: #0e413b;
   box-shadow: 0 0 0 1px #0e413b, 0 0 0 4px rgba(14,65,59,0.15);
-  width: 12px;
-  height: 12px;
-  margin-top: -1px;
+  width: 20px;
+  height: 20px;
+  margin-top: -2px;
 }
 .crm-pipeline-label {
-  font-size: 9px;
-  color: #80868b;
+  font-size: 10px;
+  font-weight: 600;
+  color: #424242;
   margin-top: 4px;
   white-space: nowrap;
   text-transform: capitalize;
 }
 .crm-pipeline-label.active {
-  color: #0e413b;
-  font-weight: 600;
-  font-size: 10px;
+  color: #00433b;
+  font-weight: 700;
 }
 .crm-pipeline-cog {
-  width: 26px;
-  height: 26px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
-  border: 1px solid #e0e0e0;
-  background: #fff;
+  border: none;
+  background: transparent;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #5f6368;
+  color: #9c9c9c;
   transition: all 0.15s;
   flex-shrink: 0;
 }
-.crm-pipeline-cog:hover { background: #f1f3f4; color: #202124; }
+.crm-pipeline-cog:hover { background: #f1f3f4; color: #424242; }
 
 /* ── Summary row ───────────────────────────────────────────── */
 .crm-detail-summary-row {
@@ -2782,12 +2840,140 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
 
 /* ── Quick stats grid ──────────────────────────────────────── */
 .crm-detail-quick-stats {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 10px;
+  display: flex;
+  gap: 8px;
+  padding: 20px 32px;
 }
 
 /* ── Pricing inline tags ───────────────────────────────────── */
+/* ── Contacts Summary (overview tab) ──────────────────────── */
+.crm-contacts-summary { padding: 24px 0; }
+.crm-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 32px;
+  margin-bottom: 12px;
+}
+.crm-section-title {
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 18px;
+  color: #424242;
+}
+.crm-section-add-btn {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #0e413b;
+  cursor: pointer;
+  background: none;
+  border: none;
+  font-family: inherit;
+}
+.crm-compact-cards {
+  display: flex;
+  gap: 8px;
+  padding: 0 32px;
+}
+.crm-compact-card {
+  flex: 1;
+  background: #fff;
+  border: 1px solid #e3e3e3;
+  border-radius: 16px;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.03);
+  overflow: hidden;
+  cursor: pointer;
+}
+.crm-compact-card-inner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+}
+.crm-compact-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: #d9d9d9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  font-weight: 600;
+  color: #000;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+.crm-compact-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.crm-compact-info { min-width: 0; }
+.crm-compact-name-row { display: flex; align-items: center; gap: 8px; }
+.crm-compact-name { font-size: 14px; font-weight: 600; color: #000; line-height: 21px; white-space: nowrap; }
+.crm-compact-sub { font-size: 11px; font-weight: 400; color: #606060; letter-spacing: 0.11px; }
+.crm-primary-badge {
+  display: inline-flex;
+  padding: 2px 6px;
+  background: #e6f3f1;
+  border-radius: 5px;
+  font-size: 10px;
+  font-weight: 600;
+  color: #353535;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  white-space: nowrap;
+}
+/* ── Divider ─────────────────────────────────────────────── */
+.crm-panel-divider { height: 1px; background: #e3e3e3; }
+/* ── Notes & Tasks Split ─────────────────────────────────── */
+.crm-notes-tasks-split {
+  display: flex;
+  min-height: 0;
+}
+.crm-notes-col, .crm-tasks-col {
+  flex: 1;
+  padding: 24px 0;
+  min-width: 0;
+}
+.crm-notes-col .crm-section-header,
+.crm-tasks-col .crm-section-header { margin-bottom: 12px; }
+.crm-split-divider { width: 1px; background: #e3e3e3; align-self: stretch; }
+.crm-note-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-left: 32px;
+  padding-right: 12px;
+}
+.crm-note-card {
+  background: #fff;
+  border: 1px solid #e3e3e3;
+  border-radius: 16px;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.03);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.crm-note-header { display: flex; align-items: center; gap: 12px; }
+.crm-note-header-left { flex: 1; display: flex; align-items: center; gap: 8px; min-width: 0; }
+.crm-note-author-group { display: flex; align-items: center; gap: 6px; }
+.crm-note-avatar { width: 20px; height: 20px; border-radius: 50%; background: #d9d9d9; flex-shrink: 0; overflow: hidden; }
+.crm-note-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.crm-note-author { font-size: 14px; font-weight: 600; color: #000; white-space: nowrap; }
+.crm-note-time { font-size: 11px; color: #606060; letter-spacing: 0.11px; white-space: nowrap; }
+.crm-note-content { font-size: 13px; color: #000; line-height: normal; }
+.crm-task-list { padding: 0 32px; }
+.crm-task-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 4px;
+}
+.crm-task-row:nth-child(odd) { background: #f7f7f7; }
+.crm-task-title { font-size: 14px; color: #000; line-height: 20px; }
+
 .crm-detail-pricing-inline {
   display: flex;
   gap: 8px;
@@ -3173,24 +3359,27 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
   margin-bottom: 16px;
 }
 .crm-order-stat-card {
-  background: #f8f9fa;
-  border: 1px solid #ebebeb;
-  border-radius: 10px;
-  padding: 14px 16px;
+  flex: 1;
+  background: #fff;
+  border: 1px solid #e3e3e3;
+  border-radius: 16px;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.03);
+  padding: 12px 16px 16px;
   text-align: center;
+  overflow: hidden;
 }
 .crm-order-stat-card .stat-val {
-  font-size: 22px;
-  font-weight: 700;
-  color: #202124;
-  line-height: 1.2;
+  font-size: 18px;
+  font-weight: 600;
+  color: #000;
+  line-height: 32px;
 }
 .crm-order-stat-card .stat-lbl {
-  font-size: 11px;
-  font-weight: 500;
-  color: #80868b;
-  margin-top: 4px;
-  text-transform: uppercase;
+  font-size: 10px;
+  font-weight: 600;
+  color: #424242;
+  margin-top: 0;
+  line-height: 18px;
   letter-spacing: 0.5px;
 }
 .crm-order-item {
@@ -3512,9 +3701,12 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
   .crm-shop-images { grid-template-columns: 1fr; }
   .crm-pipeline-label { font-size: 8px; }
   .crm-pipeline-label.active { font-size: 9px; }
+  .crm-notes-tasks-split { flex-direction: column; }
+  .crm-split-divider { height: 1px; width: 100%; }
+  .crm-compact-cards { flex-direction: column; }
   .crm-detail-contact-info { grid-template-columns: 1fr; }
   .crm-detail-summary-row { flex-direction: column; gap: 6px; }
-  .crm-detail-quick-stats { grid-template-columns: 1fr 1fr; }
+  .crm-detail-quick-stats { flex-wrap: wrap; }
   .crm-tickets-add-row { flex-direction: column; align-items: stretch; }
   .crm-tickets-add-row input[type="date"] { width: 100%; }
   .crm-tasks-input-wrap { flex-direction: column; align-items: stretch; }
@@ -8376,6 +8568,11 @@ function openCrmDetailView(contactId) {
   header.textContent = "";
   body.textContent = "";
   tabsBar.textContent = "";
+  // Remove previously inserted info bar and pipeline (siblings between header and tabs)
+  var oldInfoBar = detailView.querySelector(".crm-detail-info-bar");
+  if (oldInfoBar) oldInfoBar.remove();
+  var oldPipeline = detailView.querySelector(".crm-pipeline-wrap");
+  if (oldPipeline) oldPipeline.remove();
 
   // --- HEADER TOP ROW (avatar + info + action buttons) ---
   var headerTop = document.createElement("div");
@@ -8419,39 +8616,39 @@ function openCrmDetailView(contactId) {
     nameRow.appendChild(typeBadge);
   }
   infoDiv.appendChild(nameRow);
-  // Combined subtitle: registered name · person name · role
-  var _subParts = [];
+  // Subtitle: registered name
   var _regName = c.name && c.name !== (c.company || "") ? c.name : "";
-  if (_regName) _subParts.push(_regName);
-  if (detailPeople.length > 0) {
-    var firstP = detailPeople[0];
-    var pFullName = ((firstP.firstName || "") + " " + (firstP.lastName || "")).trim();
-    if (pFullName) _subParts.push(pFullName);
-    if (firstP.role) _subParts.push(firstP.role);
-  }
-  if (_subParts.length > 0) {
+  if (_regName) {
     var personEl = document.createElement("div");
     personEl.className = "crm-detail-subtitle";
-    personEl.textContent = _subParts.join(" \u00B7 ");
+    personEl.textContent = _regName;
     infoDiv.appendChild(personEl);
   }
+  // Stage badge
+  var stageKey = (c.stage || "prospect").toLowerCase().replace(/\s+/g, "_");
+  var stageBadge = document.createElement("span");
+  stageBadge.className = "crm-detail-stage-badge stage-" + stageKey;
+  stageBadge.textContent = (c.stage || "Prospect").toUpperCase();
+  infoDiv.appendChild(stageBadge);
   headerTop.appendChild(infoDiv);
 
   // Header action buttons (Edit, More, Close)
   var headerActions = document.createElement("div");
   headerActions.className = "crm-detail-header-actions";
+  var iconGroup = document.createElement("div");
+  iconGroup.className = "icon-group";
   var editBtn = document.createElement("button");
   editBtn.className = "crm-edit-btn";
   editBtn.title = "Edit";
-  editBtn.appendChild(_crmFa6Icon("\uf044", 16, 300));
+  editBtn.appendChild(_crmFa6Icon("\uf044", 18, 300));
   editBtn.onclick = function() { switchToCrmEditMode(contactId); };
-  headerActions.appendChild(editBtn);
+  iconGroup.appendChild(editBtn);
   // More menu (three-dot) — just Delete
   var moreWrap = document.createElement("div");
   moreWrap.className = "crm-more-menu-wrap";
   var moreBtn = document.createElement("button");
   moreBtn.title = "More";
-  moreBtn.textContent = "\u22EE";
+  moreBtn.appendChild(_crmFa6Icon("\uf142", 18, 300));
   moreWrap.appendChild(moreBtn);
   var moreMenu = document.createElement("div");
   moreMenu.className = "crm-detail-more-menu";
@@ -8467,66 +8664,48 @@ function openCrmDetailView(contactId) {
     if (!moreWrap.contains(e.target)) { moreMenu.classList.remove("open"); }
   };
   document.addEventListener("click", _crmMoreMenuCleanup);
-  headerActions.appendChild(moreWrap);
+  iconGroup.appendChild(moreWrap);
+  headerActions.appendChild(iconGroup);
   var closeBtn = document.createElement("button");
+  closeBtn.className = "crm-close-btn";
   closeBtn.title = "Close";
-  closeBtn.appendChild(_crmFa6Icon("\uf00d", 16, 300));
+  closeBtn.appendChild(_crmFa6Icon("\uf00d", 24, 300));
   closeBtn.onclick = closeCrmModal;
   headerActions.appendChild(closeBtn);
   headerTop.appendChild(headerActions);
   header.appendChild(headerTop);
 
-  // Contact info row (email, phone, address, website — visible text)
-  var contactInfoItems = [
-    { fa6: "\uf0e0", text: c.email },
-    { fa6: "\uf095", text: c.phone },
-    { fa6: "\uf3c5", text: c.location },
-    { fa6: "\uf0ac", text: c.website, isLink: true }
-  ];
-  var hasContactInfo = contactInfoItems.some(function(i) { return !!i.text; });
-  if (hasContactInfo) {
-    var contactInfo = document.createElement("div");
-    contactInfo.className = "crm-detail-contact-info";
-    contactInfoItems.forEach(function(ci) {
-      if (!ci.text) return;
-      var row = document.createElement("div");
-      row.className = "crm-detail-contact-info-row";
-      row.appendChild(_crmFa6Icon(ci.fa6, 14, 300));
-      if (ci.isLink) {
-        var a = document.createElement("a");
-        a.href = ci.text.indexOf("http") === 0 ? ci.text : "https://" + ci.text;
-        a.target = "_blank";
-        a.rel = "noopener";
-        a.textContent = ci.text;
-        row.appendChild(a);
-      } else {
-        row.appendChild(document.createTextNode(ci.text));
-      }
-      contactInfo.appendChild(row);
-    });
-    header.appendChild(contactInfo);
+  // Info bar (website | address) — placed after header, before pipeline
+  var infoBar = document.createElement("div");
+  infoBar.className = "crm-detail-info-bar";
+  if (c.website) {
+    var webItem = document.createElement("div");
+    webItem.className = "crm-info-bar-item";
+    webItem.appendChild(_crmFa6Icon("\uf0ac", 12, 300));
+    var webLink = document.createElement("a");
+    webLink.href = c.website.indexOf("http") === 0 ? c.website : "https://" + c.website;
+    webLink.target = "_blank";
+    webLink.rel = "noopener";
+    webLink.textContent = c.website;
+    webItem.appendChild(webLink);
+    infoBar.appendChild(webItem);
   }
-
-  // Summary row (type, shop type, connected, last contact — no workspace)
-  var summaryItems = [
-    { fa6: "\uf015", text: (c.products && c.products.trim()) ? c.products : null },
-    { fa6: "\uf017", text: c.connectedDate ? "Connected: " + formatDate(c.connectedDate) : null },
-    { fa6: "\uf303", text: c.lastContactDate ? "Last contact: " + formatDate(c.lastContactDate) : null }
-  ];
-  var hasSummary = summaryItems.some(function(i) { return !!i.text; });
-  if (hasSummary) {
-    var summaryRow = document.createElement("div");
-    summaryRow.className = "crm-detail-summary-row";
-    summaryItems.forEach(function(si) {
-      if (!si.text) return;
-      var item = document.createElement("div");
-      item.className = "crm-detail-summary-item";
-      item.appendChild(_crmFa6Icon(si.fa6, 13, 300));
-      item.appendChild(document.createTextNode(si.text));
-      summaryRow.appendChild(item);
-    });
-    header.appendChild(summaryRow);
+  if (c.website && c.location) {
+    var sep = document.createElement("div");
+    sep.className = "crm-info-bar-sep";
+    infoBar.appendChild(sep);
   }
+  if (c.location) {
+    var locItem = document.createElement("div");
+    locItem.className = "crm-info-bar-item";
+    locItem.appendChild(_crmFa6Icon("\uf54e", 12, 300));
+    var locText = document.createElement("span");
+    locText.className = "info-text";
+    locText.textContent = c.location;
+    locItem.appendChild(locText);
+    infoBar.appendChild(locItem);
+  }
+  // Info bar and pipeline will be inserted into detailView after header is built
 
   // Pipeline progress bar with settings cog
   var pipelineStages = ["prospect", "outreach", "negotiation", "active_partner", "inactive"];
@@ -8610,7 +8789,11 @@ function openCrmDetailView(contactId) {
   };
   document.addEventListener("click", _crmMoreMenuCleanup);
   pipelineWrap.appendChild(cogWrap);
-  header.appendChild(pipelineWrap);
+  // Insert info bar and pipeline between header and tabs
+  if (c.website || c.location) {
+    detailView.insertBefore(infoBar, tabsBar);
+  }
+  detailView.insertBefore(pipelineWrap, tabsBar);
 
   // --- TAB BAR ---
   // Compute counts for tab badges
@@ -8629,7 +8812,7 @@ function openCrmDetailView(contactId) {
   var _refCount = _refsData.length;
   var _peopleCount = _migrateCrmPeople(c).length;
 
-  var tabNames = ["Overview", "Team", "Orders", "Stock", "Documents", "References"];
+  var tabNames = ["Overview", "Contacts", "Orders", "Stock", "Documents", "References"];
   var panels = [];
   tabNames.forEach(function(name, idx) {
     var btn = document.createElement("button");
@@ -8668,7 +8851,7 @@ function openCrmDetailView(contactId) {
     tabsBar.appendChild(btn);
 
     var panel = document.createElement("div");
-    panel.className = "crm-detail-tab-panel" + (idx === 0 ? " active" : "");
+    panel.className = "crm-detail-tab-panel" + (idx === 0 ? " active crm-tab-panel-flush" : "");
     panel.setAttribute("data-tab-panel", idx);
     panels.push(panel);
     body.appendChild(panel);
@@ -8807,7 +8990,7 @@ function _crmBuildFormField(tag, id, type, label, opts) {
 function renderCrmOverviewTab(c, panel, contactId, tabsBar) {
   panel.textContent = "";
 
-  // --- QUICK STATS ---
+  // --- QUICK STATS (new Figma card style) ---
   var emailLower = (c.email || "").toLowerCase();
   var nameLower = (c.name || "").toLowerCase();
   var matchedOrders = shopifyOrders.filter(function(o) {
@@ -8821,15 +9004,13 @@ function renderCrmOverviewTab(c, panel, contactId, tabsBar) {
   var activeStock = partnerStock.filter(function(s) { return s.contactId === contactId && (s.status || "").toLowerCase() === "active"; });
   var lastOrderDate = matchedOrders.length && matchedOrders[0].createdAt ? formatDate(matchedOrders[0].createdAt) : "\u2014";
 
-  var qsSec = _crmMakeSection("Quick Stats");
   var qsGrid = document.createElement("div");
   qsGrid.className = "crm-detail-quick-stats";
   qsGrid.appendChild(_crmMakeStatCard(String(matchedOrders.length), "Total Orders"));
   qsGrid.appendChild(_crmMakeStatCard("\u00A5" + totalSpent.toLocaleString(), "Total Spent"));
   qsGrid.appendChild(_crmMakeStatCard(String(activeStock.length), "Active Stock"));
   qsGrid.appendChild(_crmMakeStatCard(lastOrderDate, "Last Order"));
-  qsSec.appendChild(qsGrid);
-  panel.appendChild(qsSec);
+  panel.appendChild(qsGrid);
 
   // --- PRICING (compact inline) ---
   var ws = c.wholesalePercent;
@@ -8854,60 +9035,110 @@ function renderCrmOverviewTab(c, panel, contactId, tabsBar) {
     panel.appendChild(priceSec);
   }
 
-  // --- TEAM SUMMARY (compact, clickable to person profile) ---
+  // --- CONTACTS SUMMARY (compact cards, Figma style) ---
   var _ovPeople = _migrateCrmPeople(c);
   if (_ovPeople.length > 0) {
-    var teamSec = _crmMakeSection("Team");
-    var teamRow = document.createElement("div");
-    teamRow.style.cssText = "display:flex;align-items:center;gap:6px;flex-wrap:wrap;";
-    var maxShow = 3;
-    _ovPeople.slice(0, maxShow).forEach(function(p) {
-      var chip = document.createElement("div");
-      chip.className = "crm-team-chip";
+    // Divider
+    var div1 = document.createElement("div");
+    div1.className = "crm-panel-divider";
+    panel.appendChild(div1);
+
+    var contactsSummary = document.createElement("div");
+    contactsSummary.className = "crm-contacts-summary";
+    // Section header
+    var sectionHdr = document.createElement("div");
+    sectionHdr.className = "crm-section-header";
+    var sectionTitle = document.createElement("div");
+    sectionTitle.className = "crm-section-title";
+    sectionTitle.textContent = "Contacts (" + _ovPeople.length + ")";
+    sectionHdr.appendChild(sectionTitle);
+    var addBtn = document.createElement("button");
+    addBtn.className = "crm-section-add-btn";
+    addBtn.appendChild(_crmFa6Icon("\uf067", 11, 300));
+    var addText = document.createElement("span");
+    addText.textContent = "Add Contact";
+    addBtn.appendChild(addText);
+    addBtn.onclick = function() {
+      if (tabsBar) tabsBar.querySelectorAll(".crm-detail-tab")[1].click();
+    };
+    sectionHdr.appendChild(addBtn);
+    contactsSummary.appendChild(sectionHdr);
+    // Compact cards
+    var cardsRow = document.createElement("div");
+    cardsRow.className = "crm-compact-cards";
+    _ovPeople.forEach(function(p) {
+      var card = document.createElement("div");
+      card.className = "crm-compact-card";
+      var inner = document.createElement("div");
+      inner.className = "crm-compact-card-inner";
       var av = document.createElement("div");
-      av.style.cssText = "width:32px;height:32px;border-radius:50%;background:#e8eaed;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:#5f6368;overflow:hidden;flex-shrink:0;";
+      av.className = "crm-compact-avatar";
       if (p.profileImageUrl) {
         var img = document.createElement("img");
         img.src = p.profileImageUrl;
-        img.style.cssText = "width:100%;height:100%;object-fit:cover;";
         av.appendChild(img);
       } else {
         av.textContent = ((p.firstName || "")[0] || "") + ((p.lastName || "")[0] || "");
       }
-      chip.appendChild(av);
+      inner.appendChild(av);
+      var info = document.createElement("div");
+      info.className = "crm-compact-info";
+      var nameRow = document.createElement("div");
+      nameRow.className = "crm-compact-name-row";
       var nm = document.createElement("span");
-      nm.className = "crm-team-chip-name";
-      nm.textContent = ((p.firstName || "") + " " + (p.lastName || "")).trim();
-      chip.appendChild(nm);
-      chip.onclick = function() { _renderPersonProfile(p, c, panel, contactId, tabsBar); };
-      teamRow.appendChild(chip);
+      nm.className = "crm-compact-name";
+      nm.textContent = ((p.firstName || "") + " " + (p.lastName || "")).trim() || "Unnamed";
+      nameRow.appendChild(nm);
+      if (p.isPrimary) {
+        var badge = document.createElement("span");
+        badge.className = "crm-primary-badge";
+        badge.textContent = "Primary Contact";
+        nameRow.appendChild(badge);
+      }
+      info.appendChild(nameRow);
+      if (p.role) {
+        var role = document.createElement("div");
+        role.className = "crm-compact-sub";
+        role.textContent = p.role;
+        info.appendChild(role);
+      }
+      inner.appendChild(info);
+      card.appendChild(inner);
+      card.onclick = function() { _renderPersonProfile(p, c, panel, contactId, tabsBar); };
+      cardsRow.appendChild(card);
     });
-    if (_ovPeople.length > maxShow) {
-      var more = document.createElement("span");
-      more.style.cssText = "font-size:12px;color:#5f6368;";
-      more.textContent = "+" + (_ovPeople.length - maxShow) + " more";
-      teamRow.appendChild(more);
-    }
-    teamSec.appendChild(teamRow);
-    if (_ovPeople.length > maxShow) {
-      var viewAllLink = document.createElement("a");
-      viewAllLink.textContent = "View all " + _ovPeople.length + " \u2192";
-      viewAllLink.href = "#";
-      viewAllLink.style.cssText = "font-size:13px;color:#0e413b;cursor:pointer;display:inline-block;margin-top:8px;";
-      viewAllLink.onclick = function(e) {
-        e.preventDefault();
-        if (tabsBar) tabsBar.querySelectorAll(".crm-detail-tab")[1].click();
-      };
-      teamSec.appendChild(viewAllLink);
-    }
-    panel.appendChild(teamSec);
+    contactsSummary.appendChild(cardsRow);
+    panel.appendChild(contactsSummary);
   }
 
-  // --- NOTES ---
-  renderCrmNotesSection(c, panel, contactId);
+  // --- DIVIDER ---
+  var div2 = document.createElement("div");
+  div2.className = "crm-panel-divider";
+  panel.appendChild(div2);
 
-  // --- TASKS ---
-  renderCrmTicketsSection(c, panel, contactId);
+  // --- NOTES & TASKS SPLIT ---
+  var splitWrap = document.createElement("div");
+  splitWrap.className = "crm-notes-tasks-split";
+  // Notes column
+  var notesCol = document.createElement("div");
+  notesCol.className = "crm-notes-col";
+  renderCrmNotesSection(c, notesCol, contactId);
+  splitWrap.appendChild(notesCol);
+  // Vertical divider
+  var splitDiv = document.createElement("div");
+  splitDiv.className = "crm-split-divider";
+  splitWrap.appendChild(splitDiv);
+  // Tasks column
+  var tasksCol = document.createElement("div");
+  tasksCol.className = "crm-tasks-col";
+  renderCrmTicketsSection(c, tasksCol, contactId);
+  splitWrap.appendChild(tasksCol);
+  panel.appendChild(splitWrap);
+
+  // --- DIVIDER ---
+  var div3 = document.createElement("div");
+  div3.className = "crm-panel-divider";
+  panel.appendChild(div3);
 
   // --- RECENT ACTIVITY ---
   renderCrmActivitySection(c, panel, contactId);
