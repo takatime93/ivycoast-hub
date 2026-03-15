@@ -3229,7 +3229,12 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
 .crm-tasks-input-wrap button:hover { background: #1a5c54; }
 
 /* ── People section ────────────────────────────────────────── */
-.crm-people-add-row { display: flex; gap: 8px; margin-bottom: 12px; }
+.crm-contacts-tab-header { display: flex; align-items: center; justify-content: space-between; padding: 32px 0 24px; }
+.crm-contacts-tab-title { font-size: 20px; font-weight: 600; color: #181818; }
+.crm-contacts-add-btn { display: flex; align-items: center; gap: 6px; padding: 8px 12px 8px 8px; background: #0e413b; color: #fff; border: none; border-radius: 6px; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 600; line-height: 18px; }
+.crm-contacts-add-btn:hover { background: #1a5c54; }
+.crm-people-add-row { display: none; gap: 8px; margin-bottom: 12px; }
+.crm-people-add-row.open { display: flex; }
 .crm-people-add-row input { flex: 1; padding: 8px 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 13px; }
 .crm-person-item { border: 1px solid #ebebeb; border-radius: 10px; margin-bottom: 8px; overflow: hidden; }
 .crm-person-header { display: flex; align-items: center; padding: 10px 14px; cursor: pointer; gap: 12px; }
@@ -3257,14 +3262,14 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
 .crm-detail-type-badge.type-contact { background: #f1f3f4; color: #5f6368; }
 
 /* ── Team tab person cards ─────────────────────────────────── */
-.crm-team-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; margin-top: 8px; }
-.crm-team-card { border: 1px solid #e8eaed; border-radius: 12px; overflow: hidden; background: #fff; }
-.crm-team-card-header { display: flex; align-items: center; gap: 12px; padding: 14px; }
-.crm-team-avatar { width: 44px; height: 44px; border-radius: 50%; background: #e8eaed; display: flex; align-items: center; justify-content: center; font-weight: 600; color: #5f6368; font-size: 16px; overflow: hidden; flex-shrink: 0; }
+.crm-team-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 0; }
+.crm-team-card { border: 1px solid #e3e3e3; border-radius: 16px; overflow: hidden; background: #fff; box-shadow: 0 4px 14px rgba(0,0,0,0.03); }
+.crm-team-card-header { display: flex; align-items: center; gap: 12px; padding: 20px; border-bottom: 1px solid #f3f3f3; }
+.crm-team-avatar { width: 52px; height: 52px; border-radius: 50%; background: #d9d9d9; display: flex; align-items: center; justify-content: center; font-weight: 600; color: #000; font-size: 20px; overflow: hidden; flex-shrink: 0; }
 .crm-team-avatar img { width: 100%; height: 100%; object-fit: cover; }
-.crm-team-info { flex: 1; min-width: 0; }
-.crm-team-name { font-weight: 500; font-size: 14px; color: #202124; }
-.crm-team-role { font-size: 12px; color: #5f6368; margin-top: 1px; }
+.crm-team-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+.crm-team-name { font-weight: 600; font-size: 18px; color: #000; line-height: 21px; }
+.crm-team-role { font-size: 11px; color: #606060; letter-spacing: 0.11px; }
 .crm-team-cards-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
 .crm-team-card-img { width: 100%; border-radius: 6px; cursor: pointer; border: 1px solid #e8eaed; }
 .crm-team-card-label { font-size: 11px; color: #80868b; text-align: center; margin-top: 2px; }
@@ -3273,10 +3278,12 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
 .crm-team-upload-btn:hover { background: #e8eaed; }
 
 /* Team card profile view (read-only) */
-.crm-team-profile-section { padding: 0 14px 14px; }
-.crm-team-profile-field { display: flex; align-items: baseline; padding: 3px 0; font-size: 13px; }
-.crm-team-profile-label { min-width: 80px; flex-shrink: 0; color: #5f6368; font-size: 12px; }
-.crm-team-profile-value { color: #202124; word-break: break-word; }
+.crm-team-profile-section { padding: 24px; display: flex; flex-direction: column; gap: 10px; }
+.crm-team-profile-field { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+.crm-team-profile-label { display: none; }
+.crm-team-profile-icon { flex-shrink: 0; width: 16px; height: 16px; display: flex; align-items: center; justify-content: center; }
+.crm-team-profile-value { color: #020202; word-break: break-word; font-size: 13px; }
+.crm-team-primary-footer { background: #e6f3f1; text-align: center; padding: 4px 8px; font-size: 10px; font-weight: 600; color: #353535; text-transform: uppercase; letter-spacing: 0.8px; }
 
 /* Avatar upload overlay */
 .crm-team-avatar-wrap { position: relative; cursor: pointer; }
@@ -10164,7 +10171,24 @@ function renderCrmTeamTab(c, panel, contactId) {
     savePeople();
   }
 
-  // Add person row
+  // Header row (Contacts title + Add new button)
+  var headerRow = document.createElement("div");
+  headerRow.className = "crm-contacts-tab-header";
+  var titleEl = document.createElement("div");
+  titleEl.className = "crm-contacts-tab-title";
+  titleEl.textContent = "Contacts";
+  headerRow.appendChild(titleEl);
+  var addNewBtn = document.createElement("button");
+  addNewBtn.className = "crm-contacts-add-btn";
+  addNewBtn.appendChild(_crmFa6Icon("\uf067", 12, 300));
+  var addNewText = document.createElement("span");
+  addNewText.textContent = "Add new";
+  addNewBtn.appendChild(addNewText);
+  addNewBtn.onclick = function() { addRow.classList.toggle("open"); if (addRow.classList.contains("open")) fnInput.focus(); };
+  headerRow.appendChild(addNewBtn);
+  panel.appendChild(headerRow);
+
+  // Add person row (hidden by default)
   var addRow = document.createElement("div");
   addRow.className = "crm-people-add-row";
   var fnInput = document.createElement("input");
@@ -10249,11 +10273,14 @@ function renderCrmTeamTab(c, panel, contactId) {
       info.className = "crm-team-info";
       var nameEl = document.createElement("div");
       nameEl.className = "crm-team-name";
-      nameEl.textContent = ((person.firstName || "") + " " + (person.lastName || "")).trim() || "Unnamed";
+      var fullName = ((person.firstName || "") + " " + (person.lastName || "")).trim() || "Unnamed";
+      nameEl.textContent = fullName;
       info.appendChild(nameEl);
       var roleEl = document.createElement("div");
       roleEl.className = "crm-team-role";
-      roleEl.textContent = person.role || "";
+      // Show alternate name or role as subtitle
+      var altName = person.nameAlt || person.nameEn || "";
+      roleEl.textContent = altName || (person.role ? person.role.substring(0, 40) : "");
       info.appendChild(roleEl);
       hdr.appendChild(info);
 
@@ -10306,10 +10333,10 @@ function renderCrmTeamTab(c, panel, contactId) {
       function refreshProfileView() {
         profileView.textContent = "";
         var profileFields = [
-          { label: "Email", value: person.email },
-          { label: "Phone", value: person.phone },
-          { label: "Role", value: person.role },
-          { label: "Notes", value: person.notes }
+          { icon: "\uf0b1", value: person.role, fontSize: 12, color: "#171717" },
+          { icon: "\uf0e0", value: person.email, fontSize: 13, color: "#020202" },
+          { icon: "\uf095", value: person.phone, fontSize: 13, color: "#020202" },
+          { icon: "\uf3c5", value: person.location || c.location, fontSize: 13, color: "#020202" }
         ];
         var hasAny = false;
         profileFields.forEach(function(pf) {
@@ -10317,12 +10344,15 @@ function renderCrmTeamTab(c, panel, contactId) {
           hasAny = true;
           var row = document.createElement("div");
           row.className = "crm-team-profile-field";
-          var lbl = document.createElement("span");
-          lbl.className = "crm-team-profile-label";
-          lbl.textContent = pf.label;
-          row.appendChild(lbl);
+          var iconEl = document.createElement("span");
+          iconEl.className = "crm-team-profile-icon";
+          iconEl.style.cssText = "font-family:'FA6 Pro';font-weight:300;font-size:14px;color:#0e413b;line-height:1";
+          iconEl.textContent = pf.icon;
+          row.appendChild(iconEl);
           var val = document.createElement("span");
           val.className = "crm-team-profile-value";
+          val.style.fontSize = pf.fontSize + "px";
+          val.style.color = pf.color;
           val.textContent = pf.value;
           row.appendChild(val);
           profileView.appendChild(row);
@@ -10374,6 +10404,14 @@ function renderCrmTeamTab(c, panel, contactId) {
       }
       refreshProfileView();
       card.appendChild(profileView);
+
+      // Primary contact footer
+      if (person.isPrimary) {
+        var primaryFooter = document.createElement("div");
+        primaryFooter.className = "crm-team-primary-footer";
+        primaryFooter.textContent = "PRIMARY CONTACT";
+        card.appendChild(primaryFooter);
+      }
 
       // ── Edit View (hidden by default) ────────────────
       var editView = document.createElement("div");
