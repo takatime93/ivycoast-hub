@@ -2986,6 +2986,60 @@ h2.crm-detail-name {
 .crm-analytics-menu-item:hover { background: #f5f5f5; }
 .crm-analytics-menu-item.active { font-weight: 600; color: #0e413b; }
 
+/* ── Two-column overview layout ────────────────────────────── */
+.crm-overview-columns {
+  display: flex;
+  gap: 24px;
+  padding: 0 32px;
+}
+.crm-overview-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.crm-overview-col-section {
+  border-top: 1px solid #e3e3e3;
+  padding: 16px 0 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.crm-overview-col-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.crm-overview-col-title {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  line-height: 18px;
+  white-space: nowrap;
+}
+.crm-overview-col-title .sec-label { font-weight: 600; color: #424242; }
+.crm-overview-col-title .sec-count { font-weight: 300; color: #424242; }
+.crm-overview-col-action {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #0e413b;
+  cursor: pointer;
+  background: none;
+  border: none;
+  border-radius: 6px;
+  font-family: inherit;
+  line-height: 18px;
+}
+.crm-overview-col-action:hover { opacity: 0.8; }
+.crm-overview-empty {
+  font-size: 12px;
+  color: #9c9c9c;
+  padding: 4px 0;
+}
 /* ── Pricing inline tags ───────────────────────────────────── */
 /* ── Contacts Summary (overview tab) ──────────────────────── */
 .crm-contacts-summary { padding: 24px 0; }
@@ -3868,6 +3922,7 @@ h2.crm-detail-name {
   .crm-detail-summary-row { flex-direction: column; gap: 6px; }
   .crm-detail-quick-stats { flex-wrap: wrap; }
   .crm-order-stat-card { width: auto; flex: 1; min-width: 140px; }
+  .crm-overview-columns { flex-direction: column; gap: 0; }
   .crm-tickets-add-row { flex-direction: column; align-items: stretch; }
   .crm-tickets-add-row input[type="date"] { width: 100%; }
   .crm-tasks-input-wrap { flex-direction: column; align-items: stretch; }
@@ -6128,6 +6183,8 @@ function fetchAllData() {
       if (typeof populateProductTypeFilter === "function") populateProductTypeFilter();
       saveDataCache();
       showLastSynced();
+      // DEV TEST DATA — remove before merge
+      if (typeof _injectTestData === "function") _injectTestData();
     })
     .catch(function(err) { _batchFetching = false; console.error("Batch fetch error:", err); });
 }
@@ -9325,138 +9382,254 @@ function renderCrmOverviewTab(c, panel, contactId, tabsBar) {
   updateStatCards(30); // default to monthly
   panel.appendChild(analyticsSection);
 
-  // --- PRICING (compact inline) ---
+  // === TWO-COLUMN LAYOUT ===
+  var columnsWrap = document.createElement("div");
+  columnsWrap.className = "crm-overview-columns";
+  var leftCol = document.createElement("div");
+  leftCol.className = "crm-overview-col";
+  var rightCol = document.createElement("div");
+  rightCol.className = "crm-overview-col";
+
+  // --- LEFT: Pricing / "How we work together" ---
+  var _ovPeople = _migrateCrmPeople(c);
   var ws = c.wholesalePercent;
   var cs = c.consignmentPercent;
-  if (ws || cs) {
-    var priceSec = _crmMakeSection("Pricing Terms");
-    var priceRow = document.createElement("div");
-    priceRow.className = "crm-detail-pricing-inline";
-    if (ws) {
-      var wsItem = document.createElement("span");
-      wsItem.className = "crm-pricing-tag";
-      wsItem.textContent = "Wholesale " + ws + "%";
-      priceRow.appendChild(wsItem);
-    }
-    if (cs) {
-      var csItem = document.createElement("span");
-      csItem.className = "crm-pricing-tag";
-      csItem.textContent = "Consignment " + cs + "%";
-      priceRow.appendChild(csItem);
-    }
-    priceSec.appendChild(priceRow);
-    panel.appendChild(priceSec);
+  var pricingType = cs ? "Consignment" : ws ? "Wholesale" : null;
+  var pricingPct = cs || ws || null;
+  // Always show this section (empty state if no rules set)
+  var rulesSection = document.createElement("div");
+  rulesSection.className = "crm-overview-col-section";
+  var rulesHdr = document.createElement("div");
+  rulesHdr.className = "crm-overview-col-header";
+  var rulesTitle = document.createElement("span");
+  rulesTitle.className = "crm-overview-col-title";
+  var rulesLabel = document.createElement("span");
+  rulesLabel.className = "sec-label";
+  rulesLabel.textContent = "How we work together";
+  rulesTitle.appendChild(rulesLabel);
+  rulesHdr.appendChild(rulesTitle);
+  var rulesCog = document.createElement("button");
+  rulesCog.className = "crm-overview-col-action";
+  rulesCog.appendChild(_crmFa6Icon("\uf013", 12, 300));
+  rulesCog.onclick = function() { switchToCrmEditMode(contactId); };
+  rulesHdr.appendChild(rulesCog);
+  rulesSection.appendChild(rulesHdr);
+  if (pricingType) {
+    var rulesTable = document.createElement("div");
+    rulesTable.style.cssText = "border:1px solid #e3e3e3;border-radius:8px;padding:8px 16px";
+    var rulesData = [
+      ["How we work", pricingType],
+      ["Their share", pricingPct + "%"]
+    ];
+    rulesData.forEach(function(r, i) {
+      var row = document.createElement("div");
+      row.style.cssText = "display:flex;align-items:center;justify-content:space-between;padding:6px 0;font-size:12px;color:#000" + (i < rulesData.length - 1 ? ";border-bottom:1px solid #e3e3e3" : "");
+      var lbl = document.createElement("span");
+      lbl.style.fontWeight = "400";
+      lbl.textContent = r[0];
+      row.appendChild(lbl);
+      var val = document.createElement("span");
+      val.style.cssText = "font-weight:600;text-align:right";
+      val.textContent = r[1];
+      row.appendChild(val);
+      rulesTable.appendChild(row);
+    });
+    rulesSection.appendChild(rulesTable);
+  } else {
+    var rulesEmpty = document.createElement("div");
+    rulesEmpty.className = "crm-overview-empty";
+    var setRulesBtn = document.createElement("button");
+    setRulesBtn.className = "crm-overview-col-action";
+    setRulesBtn.appendChild(_crmFa6Icon("\uf067", 11, 300));
+    var setRulesText = document.createElement("span");
+    setRulesText.textContent = "Set working rules";
+    setRulesBtn.appendChild(setRulesText);
+    setRulesBtn.onclick = function() { switchToCrmEditMode(contactId); };
+    rulesEmpty.appendChild(setRulesBtn);
+    rulesSection.appendChild(rulesEmpty);
   }
+  leftCol.appendChild(rulesSection);
 
-  // --- CONTACTS SUMMARY (compact cards, Figma style) ---
-  var _ovPeople = _migrateCrmPeople(c);
-  if (_ovPeople.length > 0) {
-    // Divider
-    var div1 = document.createElement("div");
-    div1.className = "crm-panel-divider";
-    panel.appendChild(div1);
+  // --- LEFT: Products in Stock ---
+  var stockSection = document.createElement("div");
+  stockSection.className = "crm-overview-col-section";
+  var stockHdr = document.createElement("div");
+  stockHdr.className = "crm-overview-col-header";
+  var stockTitle = document.createElement("span");
+  stockTitle.className = "crm-overview-col-title";
+  var stockLabel = document.createElement("span");
+  stockLabel.className = "sec-label";
+  stockLabel.textContent = "Products in Stock";
+  stockTitle.appendChild(stockLabel);
+  var totalStockQty = 0;
+  activeStock.forEach(function(s) { totalStockQty += Number(s.quantity || 0); });
+  if (activeStock.length) {
+    var stockCount = document.createElement("span");
+    stockCount.className = "sec-count";
+    stockCount.textContent = "(" + activeStock.length + " - " + totalStockQty + " total)";
+    stockTitle.appendChild(stockCount);
+  }
+  stockHdr.appendChild(stockTitle);
+  var stockCog = document.createElement("button");
+  stockCog.className = "crm-overview-col-action";
+  stockCog.appendChild(_crmFa6Icon("\uf013", 12, 300));
+  stockHdr.appendChild(stockCog);
+  stockSection.appendChild(stockHdr);
+  if (activeStock.length) {
+    var stockList = document.createElement("div");
+    stockList.style.cssText = "display:flex;flex-direction:column;gap:2px";
+    activeStock.forEach(function(s) {
+      var item = document.createElement("div");
+      item.style.cssText = "display:flex;align-items:center;gap:6px;background:#fff;border:1px solid #e3e3e3;border-radius:4px;padding:4px 12px 4px 4px";
+      var iconBox = document.createElement("div");
+      iconBox.style.cssText = "width:24px;height:24px;border-radius:2px;background:#e6f3f1;display:flex;align-items:center;justify-content:center;flex-shrink:0";
+      iconBox.appendChild(_crmFa6Icon("\uf4b8", 14, 400));
+      item.appendChild(iconBox);
+      var nameSpan = document.createElement("span");
+      nameSpan.style.cssText = "flex:1;font-size:13px;font-weight:600;color:#000;white-space:nowrap;overflow:hidden;text-overflow:ellipsis";
+      nameSpan.textContent = s.productName || "Unknown";
+      item.appendChild(nameSpan);
+      var rightInfo = document.createElement("div");
+      rightInfo.style.cssText = "display:flex;align-items:center;gap:6px";
+      var qty = Number(s.quantity || 0);
+      if (qty <= 10) {
+        var warn = document.createElement("span");
+        warn.style.cssText = "font-size:11px;color:#ff0202;white-space:nowrap";
+        warn.textContent = qty + " Left";
+        rightInfo.appendChild(warn);
+      }
+      var price = document.createElement("span");
+      price.style.cssText = "font-size:13px;font-weight:600;color:#000;width:64px;text-align:right;white-space:nowrap";
+      price.textContent = "\u00A5" + Number(s.unitPrice || 0).toLocaleString();
+      rightInfo.appendChild(price);
+      item.appendChild(rightInfo);
+      stockList.appendChild(item);
+    });
+    stockSection.appendChild(stockList);
+  } else {
+    var stockEmpty = document.createElement("div");
+    stockEmpty.className = "crm-overview-empty";
+    stockEmpty.textContent = "No products ordered";
+    stockSection.appendChild(stockEmpty);
+  }
+  leftCol.appendChild(stockSection);
 
-    var contactsSummary = document.createElement("div");
-    contactsSummary.className = "crm-contacts-summary";
-    // Section header
-    var sectionHdr = document.createElement("div");
-    sectionHdr.className = "crm-section-header";
-    var sectionTitle = document.createElement("div");
-    sectionTitle.className = "crm-section-title";
-    sectionTitle.textContent = "Contacts (" + _ovPeople.length + ")";
-    sectionHdr.appendChild(sectionTitle);
-    var addBtn = document.createElement("button");
-    addBtn.className = "crm-section-add-btn";
-    addBtn.appendChild(_crmFa6Icon("\uf067", 11, 300));
-    var addText = document.createElement("span");
-    addText.textContent = "Add Contact";
-    addBtn.appendChild(addText);
-    addBtn.onclick = function() {
-      if (tabsBar) tabsBar.querySelectorAll(".crm-detail-tab")[1].click();
-    };
-    sectionHdr.appendChild(addBtn);
-    contactsSummary.appendChild(sectionHdr);
-    // Compact cards
-    var cardsRow = document.createElement("div");
-    cardsRow.className = "crm-compact-cards";
+  // --- LEFT: Notes ---
+  var notesSection = document.createElement("div");
+  notesSection.className = "crm-overview-col-section";
+  renderCrmNotesSection(c, notesSection, contactId);
+  leftCol.appendChild(notesSection);
+
+  // --- RIGHT: Contacts ---
+  var contactsSection = document.createElement("div");
+  contactsSection.className = "crm-overview-col-section";
+  var contactsHdr = document.createElement("div");
+  contactsHdr.className = "crm-overview-col-header";
+  var contactsTitle = document.createElement("span");
+  contactsTitle.className = "crm-overview-col-title";
+  var contactsLabel = document.createElement("span");
+  contactsLabel.className = "sec-label";
+  contactsLabel.textContent = "Contacts";
+  contactsTitle.appendChild(contactsLabel);
+  if (_ovPeople.length) {
+    var contactsCount = document.createElement("span");
+    contactsCount.className = "sec-count";
+    contactsCount.textContent = "(" + _ovPeople.length + ")";
+    contactsTitle.appendChild(contactsCount);
+  }
+  contactsHdr.appendChild(contactsTitle);
+  var addContactBtn = document.createElement("button");
+  addContactBtn.className = "crm-overview-col-action";
+  addContactBtn.appendChild(_crmFa6Icon("\uf067", 11, 300));
+  var addContactText = document.createElement("span");
+  addContactText.textContent = "Add Contact";
+  addContactBtn.appendChild(addContactText);
+  addContactBtn.onclick = function() {
+    if (tabsBar) tabsBar.querySelectorAll(".crm-detail-tab")[1].click();
+  };
+  contactsHdr.appendChild(addContactBtn);
+  contactsSection.appendChild(contactsHdr);
+  if (_ovPeople.length) {
+    var contactsList = document.createElement("div");
+    contactsList.style.cssText = "display:flex;flex-direction:column;gap:8px";
     _ovPeople.forEach(function(p) {
       var card = document.createElement("div");
-      card.className = "crm-compact-card";
-      var inner = document.createElement("div");
-      inner.className = "crm-compact-card-inner";
+      card.style.cssText = "display:flex;align-items:center;gap:8px;padding:12px;border:1px solid #e3e3e3;border-radius:8px;background:#fff;cursor:pointer";
       var av = document.createElement("div");
-      av.className = "crm-compact-avatar";
+      av.style.cssText = "width:40px;height:40px;border-radius:50%;background:#e8e8e8;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;color:#497871;flex-shrink:0;overflow:hidden";
       if (p.profileImageUrl) {
         var img = document.createElement("img");
         img.src = p.profileImageUrl;
+        img.style.cssText = "width:100%;height:100%;object-fit:cover";
         av.appendChild(img);
       } else {
         av.textContent = ((p.firstName || "")[0] || "") + ((p.lastName || "")[0] || "");
       }
-      inner.appendChild(av);
+      card.appendChild(av);
       var info = document.createElement("div");
-      info.className = "crm-compact-info";
+      info.style.cssText = "flex:1;min-width:0;display:flex;flex-direction:column;gap:1px";
       var nameRow = document.createElement("div");
-      nameRow.className = "crm-compact-name-row";
+      nameRow.style.cssText = "display:flex;align-items:center;gap:6px";
       var nm = document.createElement("span");
-      nm.className = "crm-compact-name";
+      nm.style.cssText = "font-size:13px;font-weight:600;color:#000;white-space:nowrap";
       nm.textContent = ((p.firstName || "") + " " + (p.lastName || "")).trim() || "Unnamed";
       nameRow.appendChild(nm);
-      if (p.isPrimary) {
-        var badge = document.createElement("span");
-        badge.className = "crm-primary-badge";
-        badge.textContent = "Primary Contact";
-        nameRow.appendChild(badge);
+      if (p.firstNameEn || p.lastNameEn) {
+        var dot = document.createElement("span");
+        dot.style.cssText = "font-size:14px;color:#424242";
+        dot.textContent = "\u00B7";
+        nameRow.appendChild(dot);
+        var enName = document.createElement("span");
+        enName.style.cssText = "font-size:13px;font-weight:600;color:#000;letter-spacing:0.13px";
+        enName.textContent = ((p.firstNameEn || "") + " " + (p.lastNameEn || "")).trim();
+        nameRow.appendChild(enName);
       }
       info.appendChild(nameRow);
       if (p.role) {
-        var role = document.createElement("div");
-        role.className = "crm-compact-sub";
-        role.textContent = p.role;
-        info.appendChild(role);
+        var roleEl = document.createElement("div");
+        roleEl.style.cssText = "font-size:11px;color:#606060";
+        roleEl.textContent = p.role;
+        info.appendChild(roleEl);
       }
-      inner.appendChild(info);
-      card.appendChild(inner);
+      card.appendChild(info);
       card.onclick = function() { _renderPersonProfile(p, c, panel, contactId, tabsBar); };
-      cardsRow.appendChild(card);
+      contactsList.appendChild(card);
     });
-    contactsSummary.appendChild(cardsRow);
-    panel.appendChild(contactsSummary);
+    contactsSection.appendChild(contactsList);
+  } else {
+    var contactsEmpty = document.createElement("div");
+    contactsEmpty.className = "crm-overview-empty";
+    var addNewBtn = document.createElement("button");
+    addNewBtn.className = "crm-overview-col-action";
+    addNewBtn.appendChild(_crmFa6Icon("\uf067", 11, 300));
+    var addNewText = document.createElement("span");
+    addNewText.textContent = "Add new Contact";
+    addNewBtn.appendChild(addNewText);
+    addNewBtn.onclick = function() {
+      if (tabsBar) tabsBar.querySelectorAll(".crm-detail-tab")[1].click();
+    };
+    contactsEmpty.appendChild(addNewBtn);
+    contactsSection.appendChild(contactsEmpty);
   }
+  rightCol.appendChild(contactsSection);
 
-  // --- DIVIDER ---
-  var div2 = document.createElement("div");
-  div2.className = "crm-panel-divider";
-  panel.appendChild(div2);
+  // --- RIGHT: Tasks ---
+  var tasksSection = document.createElement("div");
+  tasksSection.className = "crm-overview-col-section";
+  renderCrmTicketsSection(c, tasksSection, contactId);
+  rightCol.appendChild(tasksSection);
 
-  // --- NOTES & TASKS SPLIT ---
-  var splitWrap = document.createElement("div");
-  splitWrap.className = "crm-notes-tasks-split";
-  // Notes column
-  var notesCol = document.createElement("div");
-  notesCol.className = "crm-notes-col";
-  renderCrmNotesSection(c, notesCol, contactId);
-  splitWrap.appendChild(notesCol);
-  // Vertical divider
-  var splitDiv = document.createElement("div");
-  splitDiv.className = "crm-split-divider";
-  splitWrap.appendChild(splitDiv);
-  // Tasks column
-  var tasksCol = document.createElement("div");
-  tasksCol.className = "crm-tasks-col";
-  renderCrmTicketsSection(c, tasksCol, contactId);
-  splitWrap.appendChild(tasksCol);
-  panel.appendChild(splitWrap);
+  // --- RIGHT: Activity ---
+  var activitySection = document.createElement("div");
+  activitySection.className = "crm-overview-col-section";
+  renderCrmActivitySection(c, activitySection, contactId);
+  rightCol.appendChild(activitySection);
 
-  // --- DIVIDER ---
-  var div3 = document.createElement("div");
-  div3.className = "crm-panel-divider";
-  panel.appendChild(div3);
+  columnsWrap.appendChild(leftCol);
+  columnsWrap.appendChild(rightCol);
+  panel.appendChild(columnsWrap);
 
-  // --- RECENT ACTIVITY ---
-  renderCrmActivitySection(c, panel, contactId);
-
-  // --- BUSINESS CARD ---
+  // --- BUSINESS CARD (below columns, full width) ---
   var cardFront = c.businessCardFrontUrl || c.businessCardUrl || "";
   var cardBack = c.businessCardBackUrl || "";
   if (cardFront || cardBack) {
@@ -9495,37 +9668,7 @@ function renderCrmOverviewTab(c, panel, contactId, tabsBar) {
     panel.appendChild(cardSec);
   }
 
-  // --- SOCIAL LINKS (website is in header) ---
-  var linksSec = _crmMakeSection("Social Links");
-  var links = [
-    { label: "Instagram", value: c.instagram, fa6: "\uf16d", brand: true },
-    { label: "Other Social", value: c.socialUrl, fa6: "\uf0c1" }
-  ];
-  var hasLinks = false;
-  links.forEach(function(lnk) {
-    if (!lnk.value) return;
-    hasLinks = true;
-    var row = document.createElement("div");
-    row.className = "crm-info-link-row";
-    var lnkIcon = document.createElement("span");
-    lnkIcon.style.cssText = "font-family:'" + (lnk.brand ? "FA6 Brands" : "FA6 Pro") + "';font-weight:" + (lnk.brand ? "400" : "300") + ";font-size:16px;line-height:1;display:inline-flex;align-items:center;justify-content:center";
-    lnkIcon.textContent = lnk.fa6;
-    row.appendChild(lnkIcon);
-    var a = document.createElement("a");
-    a.href = lnk.value.indexOf("http") === 0 ? lnk.value : "https://" + lnk.value;
-    a.target = "_blank";
-    a.rel = "noopener";
-    a.textContent = lnk.value;
-    row.appendChild(a);
-    linksSec.appendChild(row);
-  });
-  if (!hasLinks) {
-    var noLinks = document.createElement("p");
-    noLinks.style.cssText = "font-size:13px;color:#80868b;margin:0;";
-    noLinks.textContent = "No links added yet";
-    linksSec.appendChild(noLinks);
-  }
-  panel.appendChild(linksSec);
+  // Social links now in header — standalone section removed
 
   // --- OG PREVIEW ---
   if (c.website) {
@@ -16377,6 +16520,38 @@ auth.onAuthStateChanged(function(user) {
 // DEV BYPASS — remove before merging to GitHub
 if (location.hostname === "localhost" || location.hostname === "127.0.0.1") {
   showApp({email: "taka@ivycoast.co", displayName: "Taka (dev)"});
+  // Test data injector for Yoko Imoto — remove before merge
+  window._injectTestData = function() {
+    var yoko = crmContacts.find(function(c) { return (c.name || "").toLowerCase().indexOf("yoko") >= 0 || (c.company || "").toLowerCase().indexOf("yoko") >= 0; });
+    if (!yoko) return;
+    var yokoId = yoko.id;
+    var yokoEmail = (yoko.email || "").toLowerCase();
+    var yokoName = yoko.name || yoko.company || "Yoko Imoto";
+    // Inject orders if none matched
+    var existing = shopifyOrders.filter(function(o) { return yokoEmail && (o.email || "").toLowerCase() === yokoEmail; });
+    if (existing.length === 0) {
+      [
+        { id: "to1", orderNumber: "1001", email: yoko.email, customerName: yokoName, totalPrice: "142800", currency: "JPY", financialStatus: "paid", createdAt: "2026-03-08T10:00:00Z", lineItems: "12" },
+        { id: "to2", orderNumber: "1002", email: yoko.email, customerName: yokoName, totalPrice: "89500", currency: "JPY", financialStatus: "paid", createdAt: "2026-02-24T10:00:00Z", lineItems: "8" },
+        { id: "to3", orderNumber: "1003", email: yoko.email, customerName: yokoName, totalPrice: "210000", currency: "JPY", financialStatus: "paid", createdAt: "2026-01-15T10:00:00Z", lineItems: "15" },
+        { id: "to4", orderNumber: "1004", email: yoko.email, customerName: yokoName, totalPrice: "67200", currency: "JPY", financialStatus: "paid", createdAt: "2025-12-01T10:00:00Z", lineItems: "6" }
+      ].forEach(function(o) { shopifyOrders.push(o); });
+    }
+    // Inject stock if none exists
+    var existingStock = partnerStock.filter(function(s) { return s.contactId === yokoId; });
+    if (existingStock.length === 0) {
+      [
+        { id: "ts1", contactId: yokoId, contactName: yokoName, productName: "Tasmanian Citrus", sku: "CND-TC", quantity: "4", unitPrice: "42800", pricingType: "consignment", status: "active" },
+        { id: "ts2", contactId: yokoId, contactName: yokoName, productName: "Golden Bushland", sku: "CND-GB", quantity: "4", unitPrice: "42800", pricingType: "consignment", status: "active" },
+        { id: "ts3", contactId: yokoId, contactName: yokoName, productName: "Byron Bay", sku: "SOP-BB", quantity: "4", unitPrice: "42800", pricingType: "consignment", status: "active" },
+        { id: "ts4", contactId: yokoId, contactName: yokoName, productName: "Sunlight", sku: "SOP-SL", quantity: "12", unitPrice: "42800", pricingType: "consignment", status: "active" },
+        { id: "ts5", contactId: yokoId, contactName: yokoName, productName: "Moonlight", sku: "SOP-ML", quantity: "8", unitPrice: "42800", pricingType: "consignment", status: "active" },
+        { id: "ts6", contactId: yokoId, contactName: yokoName, productName: "Tsubaki", sku: "SOP-TS", quantity: "3", unitPrice: "42800", pricingType: "consignment", status: "active" },
+        { id: "ts7", contactId: yokoId, contactName: yokoName, productName: "Paradise", sku: "SOP-PR", quantity: "15", unitPrice: "42800", pricingType: "consignment", status: "active" },
+        { id: "ts8", contactId: yokoId, contactName: yokoName, productName: "Lemon Fields Forever", sku: "CND-LF", quantity: "6", unitPrice: "42800", pricingType: "consignment", status: "active" }
+      ].forEach(function(s) { partnerStock.push(s); });
+    }
+  };
 }
 
 function signIn() {
