@@ -2834,7 +2834,7 @@ h2.crm-detail-name {
   padding: 12px 12px 14px;
   font-size: var(--text-tab);
   font-weight: 500;
-  color: #181818;
+  color: var(--color-primary);
   cursor: pointer;
   border-bottom: 2px solid transparent;
   white-space: nowrap;
@@ -2862,10 +2862,10 @@ h2.crm-detail-name {
   min-width: 20px;
   padding: 0 4px;
   font-size: var(--text-sm);
-  font-weight: 400;
+  font-weight: 500;
   border-radius: 4px;
   background: #f1f1f1;
-  color: #181818;
+  color: var(--color-primary);
   line-height: 16px;
   letter-spacing: 0.24px;
 }
@@ -2876,7 +2876,7 @@ h2.crm-detail-name {
   min-width: 20px;
   padding: 0 4px;
   font-size: var(--text-sm);
-  font-weight: 400;
+  font-weight: 500;
   border-radius: 4px;
   background: #ff1818;
   color: #fff;
@@ -3193,7 +3193,7 @@ h2.crm-detail-name {
 .crm-conn-invoices-header {
   display: flex; align-items: center; gap: 6px; margin-bottom: 8px;
 }
-.crm-conn-invoices-header .sec-label { font-family: var(--font-display); font-size: var(--text-sm); font-weight: 600; color: var(--color-text-muted); }
+.crm-conn-invoices-header .sec-label { font-family: var(--font-display); font-size: var(--text-sm); font-weight: 600; color: #062420; }
 .crm-conn-invoices-header .sec-count { font-size: var(--text-sm); font-weight: 300; color: var(--color-text-muted); }
 .crm-conn-inv-row {
   display: flex; align-items: center; gap: 8px;
@@ -3226,7 +3226,7 @@ h2.crm-detail-name {
   align-items: center;
   gap: 4px;
 }
-.crm-analytics-title span { font-family: var(--font-display); font-size: var(--text-sm); font-weight: 600; color: var(--color-text-muted); line-height: normal; }
+.crm-analytics-title span { font-family: var(--font-display); font-size: var(--text-sm); font-weight: 600; color: #062420; line-height: normal; }
 .crm-analytics-title .crm-icon { width: 16px; height: 16px; color: var(--color-primary); }
 .crm-analytics-dropdown-wrap { position: relative; }
 .crm-analytics-dropdown {
@@ -3308,7 +3308,7 @@ h2.crm-detail-name {
   line-height: normal;
   white-space: nowrap;
 }
-.crm-overview-col-title .sec-label { font-family: var(--font-display); font-weight: 600; color: var(--color-text-muted); }
+.crm-overview-col-title .sec-label { font-family: var(--font-display); font-weight: 600; color: #062420; }
 .crm-overview-col-title .sec-count { font-weight: 300; color: var(--color-text-muted); }
 .crm-overview-col-action {
   display: flex;
@@ -3347,7 +3347,7 @@ h2.crm-detail-name {
 .crm-overview-col-section .crm-detail-section-title {
   text-transform: none;
   letter-spacing: 0;
-  color: var(--color-text-muted);
+  color: #062420;
   font-weight: 600;
   font-size: var(--text-sm);
   margin-bottom: 8px;
@@ -3492,7 +3492,7 @@ h2.crm-detail-name {
   display: flex;
   align-items: flex-start;
   gap: 8px;
-  padding: 4px;
+  padding: 8px 4px;
 }
 .crm-task-row:nth-child(odd) { background: #f7f7f7; }
 .crm-task-title { font-family: var(--font-text); font-size: var(--text-md); color: #000; line-height: var(--leading-normal); }
@@ -3677,7 +3677,7 @@ h2.crm-detail-name {
   font-size: var(--text-md);
   color: #000;
   white-space: pre-wrap;
-  line-height: normal;
+  line-height: var(--leading-normal);
   display: -webkit-box;
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
@@ -3931,15 +3931,15 @@ h2.crm-detail-name {
 }
 .crm-activity-item:last-child { border-bottom: none; }
 .crm-activity-icon {
-  width: 8px;
-  height: 8px;
+  width: 16px;
+  height: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
   font-family: 'FA6 Pro';
   font-weight: 900;
-  font-size: 7px;
+  font-size: 8px;
   line-height: 1;
   border-radius: 0;
   background: none;
@@ -3973,8 +3973,8 @@ h2.crm-detail-name {
   font-family: var(--font-mono);
   letter-spacing: var(--ls-mono);
   font-size: var(--text-xs);
-  font-weight: 500;
-  color: #000;
+  font-weight: 400;
+  color: var(--color-text-muted);
   white-space: nowrap;
   flex-shrink: 0;
   text-align: right;
@@ -11061,7 +11061,7 @@ function renderCrmOverviewTab(c, panel, contactId, tabsBar) {
       iconBox.appendChild(_crmFa6Icon(_isSoap ? "\ue06e" : _isCandle ? "\uf6bc" : "\uf4b8", 14, 400));
       item.appendChild(iconBox);
       var nameSpan = document.createElement("span");
-      nameSpan.style.cssText = "flex:1;font-size:13px;font-weight:600;color:#000;white-space:nowrap;overflow:hidden;text-overflow:ellipsis";
+      nameSpan.style.cssText = "flex:1;font-size:14px;font-weight:400;color:#000;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:var(--font-text)";
       nameSpan.textContent = s.productName || "Unknown";
       item.appendChild(nameSpan);
       var rightInfo = document.createElement("div");
@@ -11069,12 +11069,12 @@ function renderCrmOverviewTab(c, panel, contactId, tabsBar) {
       var qty = Number(s.quantity || 0);
       if (qty <= 10) {
         var warn = document.createElement("span");
-        warn.style.cssText = "font-size:11px;color:#ff0202;white-space:nowrap";
+        warn.style.cssText = "font-size:12px;color:#ff0202;white-space:nowrap;line-height:16px";
         warn.textContent = qty + " Left";
         rightInfo.appendChild(warn);
       }
       var price = document.createElement("span");
-      price.style.cssText = "font-size:13px;font-weight:600;color:#000;width:64px;text-align:right;white-space:nowrap";
+      price.style.cssText = "font-size:14px;font-weight:600;color:#000;width:70px;text-align:right;white-space:nowrap";
       price.textContent = "\u00A5" + Number(s.unitPrice || 0).toLocaleString();
       rightInfo.appendChild(price);
       item.appendChild(rightInfo);
@@ -11153,7 +11153,7 @@ function renderCrmOverviewTab(c, panel, contactId, tabsBar) {
       var nameRow = document.createElement("div");
       nameRow.style.cssText = "display:flex;align-items:center;gap:6px";
       var nm = document.createElement("span");
-      nm.style.cssText = "font-size:13px;font-weight:600;color:#000;white-space:nowrap";
+      nm.style.cssText = "font-size:14px;font-weight:600;color:#000;white-space:nowrap;line-height:20px";
       nm.textContent = ((p.firstName || "") + " " + (p.lastName || "")).trim() || "Unnamed";
       nameRow.appendChild(nm);
       if (p.firstNameEn || p.lastNameEn) {
@@ -11162,14 +11162,14 @@ function renderCrmOverviewTab(c, panel, contactId, tabsBar) {
         dot.textContent = "\u00B7";
         nameRow.appendChild(dot);
         var enName = document.createElement("span");
-        enName.style.cssText = "font-size:13px;font-weight:600;color:#000;letter-spacing:0.13px";
+        enName.style.cssText = "font-size:14px;font-weight:600;color:#000;line-height:20px";
         enName.textContent = ((p.firstNameEn || "") + " " + (p.lastNameEn || "")).trim();
         nameRow.appendChild(enName);
       }
       info.appendChild(nameRow);
       if (p.role) {
         var roleEl = document.createElement("div");
-        roleEl.style.cssText = "font-size:11px;color:#606060";
+        roleEl.style.cssText = "font-size:10px;color:#606060;font-family:var(--font-mono, 'SF Mono', monospace);letter-spacing:-0.3px";
         roleEl.textContent = p.role;
         info.appendChild(roleEl);
       }
