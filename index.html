@@ -3623,6 +3623,33 @@ h2.crm-detail-name {
 .contact-profile-section-action { font-family: var(--font-mono); font-size: 10px; color: var(--color-primary); cursor: pointer; background: none; border: none; letter-spacing: -0.3px; }
 .contact-profile-section-action:hover { opacity: 0.8; }
 
+/* ── Contact Profile (standalone view — Phase 3) ──────────── */
+.contact-standalone-header { padding: 24px 32px; display: flex; flex-direction: row; gap: 16px; align-items: flex-start; }
+.contact-standalone-avatar { width: 52px; height: 52px; border-radius: 50%; background: var(--color-primary-tint); color: var(--color-primary); font-family: var(--font-display); font-size: 16px; font-weight: 600; display: flex; align-items: center; justify-content: center; flex-shrink: 0; overflow: hidden; }
+.contact-standalone-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.contact-standalone-name-ja { font-family: var(--font-display); font-size: 24px; font-weight: 600; color: var(--color-text-heading); line-height: 30px; }
+.contact-standalone-vendor-pill { display: inline-flex; align-items: center; gap: 4px; font-family: var(--font-body); font-size: 12px; color: var(--color-primary); cursor: pointer; background: none; border: none; padding: 0; }
+.contact-standalone-vendor-pill:hover { text-decoration: underline; }
+.contact-standalone-vendor-dot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
+.contact-last-contact-bar { display: flex; align-items: center; justify-content: space-between; padding: 8px 32px; background: var(--color-surface-alt); border-bottom: 1px solid var(--color-border-subtle); }
+.contact-last-contact-text { font-family: var(--font-body); font-size: 12px; color: var(--color-text-subtle); display: flex; align-items: center; gap: 6px; }
+.contact-last-contact-dot { width: 7px; height: 7px; border-radius: 50%; background: #00a52c; flex-shrink: 0; }
+.contact-log-btn { font-family: var(--font-mono); font-size: 10px; color: var(--color-primary); letter-spacing: -0.3px; background: none; border: 1px solid var(--color-border); border-radius: 6px; padding: 4px 10px; cursor: pointer; }
+.contact-log-btn:hover { background: var(--color-surface-secondary); }
+.contact-stat-cards { display: flex; gap: 8px; padding: 0 32px 16px; }
+.contact-stat-card { flex: 1; border: 1px solid var(--color-border-subtle); border-radius: 8px; padding: 12px 16px; }
+.contact-stat-card-label { font-family: var(--font-display); font-size: 12px; font-weight: 600; color: #062420; }
+.contact-stat-card-value { font-family: var(--font-display); font-size: 24px; font-weight: 600; color: var(--color-text-heading); line-height: 30px; }
+.contact-stat-card-sub { font-family: var(--font-mono); font-size: 10px; color: var(--color-text-tertiary); letter-spacing: -0.3px; }
+.contact-vendor-ref { border: 1px solid var(--color-border-subtle); border-radius: 8px; padding: 14px 16px; margin-top: 12px; }
+.contact-vendor-ref-name { font-family: var(--font-display); font-size: 16px; font-weight: 600; color: var(--color-text-heading); }
+.contact-vendor-ref-meta { font-family: var(--font-mono); font-size: 10px; color: var(--color-text-tertiary); letter-spacing: -0.3px; margin-top: 4px; }
+.contact-vendor-ref-link { font-family: var(--font-mono); font-size: 10px; color: var(--color-primary); letter-spacing: -0.3px; cursor: pointer; margin-top: 6px; background: none; border: none; padding: 0; }
+.contact-vendor-ref-link:hover { text-decoration: underline; }
+.contact-standalone-actions { display: flex; gap: 8px; align-items: center; }
+.contact-standalone-info-strip { display: grid; grid-template-columns: repeat(4, 1fr); border-top: 1px solid var(--color-border-subtle); border-bottom: 1px solid var(--color-border-subtle); }
+.contact-standalone-two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px; }
+
 /* ── Notes timeline ────────────────────────────────────────── */
 .crm-notes-container {
   display: flex;
@@ -8484,6 +8511,8 @@ function fetchCrmContacts(force) {
       else renderCrmActiveView();
       var savedC = localStorage.getItem("ivyhub_crmOpenContact");
       if (savedC && crmContacts.find(function(x) { return x.id === savedC; })) openCrmDetailView(savedC);
+      var savedCP = localStorage.getItem("ivyhub_crmOpenContactProfile");
+      if (savedCP && contactPeople.find(function(p) { return p.id === savedCP; })) openContactProfileStandalone(savedCP);
     }
     return;
   }
@@ -8510,6 +8539,10 @@ function fetchCrmContacts(force) {
         var savedContact = localStorage.getItem("ivyhub_crmOpenContact");
         if (savedContact && crmContacts.find(function(x) { return x.id === savedContact; })) {
           openCrmDetailView(savedContact);
+        }
+        var savedContactProfile = localStorage.getItem("ivyhub_crmOpenContactProfile");
+        if (savedContactProfile && contactPeople.find(function(p) { return p.id === savedContactProfile; })) {
+          openContactProfileStandalone(savedContactProfile);
         }
       } else {
         // Update list views behind the modal without touching the detail panel
@@ -8638,6 +8671,115 @@ function renderCrmContacts() {
   var wrap = document.getElementById("crm-contacts-table-wrap");
   var empty = document.getElementById("crm-contacts-empty");
   wrap.textContent = "";
+
+  // Build from contactPeople if available, otherwise fall back to legacy
+  if (contactPeople.length > 0) {
+    _renderCrmContactsFromPeople(wrap, empty);
+  } else {
+    _renderCrmContactsLegacy(wrap, empty);
+  }
+}
+
+function _renderCrmContactsFromPeople(wrap, empty) {
+  if (contactPeople.length === 0) { empty.style.display = "block"; return; }
+  empty.style.display = "none";
+  var table = document.createElement("table");
+  table.className = "ivh-table crm-table";
+  var thead = document.createElement("thead");
+  var headerRow = document.createElement("tr");
+  ["Name", "Vendor", "Role", "Email", "Phone", "Last Contact"].forEach(function(h) {
+    var th = document.createElement("th");
+    th.textContent = h;
+    if (h === "Vendor") th.style.minWidth = "180px";
+    headerRow.appendChild(th);
+  });
+  thead.appendChild(headerRow);
+  table.appendChild(thead);
+  var tbody = document.createElement("tbody");
+
+  // Sort: contacts with last contact date first, then alphabetically
+  var sorted = contactPeople.slice().sort(function(a, b) {
+    var nameA = (a.nameJa || a.nameEn || "").toLowerCase();
+    var nameB = (b.nameJa || b.nameEn || "").toLowerCase();
+    return nameA.localeCompare(nameB);
+  });
+
+  sorted.forEach(function(cp) {
+    var tr = document.createElement("tr");
+    tr.style.cursor = "pointer";
+    tr.addEventListener("click", function() { openContactProfileStandalone(cp.id); });
+
+    // Name cell (nameJa + nameEn)
+    var tdName = document.createElement("td");
+    tdName.style.fontWeight = "500";
+    var nameMain = document.createElement("div");
+    nameMain.style.cssText = "font-weight:600;color:var(--color-text-heading)";
+    nameMain.textContent = cp.nameJa || cp.nameEn || "Unnamed";
+    tdName.appendChild(nameMain);
+    if (cp.nameJa && cp.nameEn) {
+      var nameSub = document.createElement("div");
+      nameSub.style.cssText = "font-size:11px;color:var(--color-text-subtle);margin-top:1px";
+      nameSub.textContent = cp.nameEn;
+      tdName.appendChild(nameSub);
+    }
+    tr.appendChild(tdName);
+
+    // Vendor cell
+    var tdVendor = document.createElement("td");
+    if (cp.vendorId) {
+      var vendor = crmContacts.find(function(v) { return v.id === cp.vendorId; });
+      tdVendor.textContent = vendor ? (vendor.company || vendor.name || "\u2014") : "\u2014";
+    } else {
+      tdVendor.textContent = "\u2014";
+      tdVendor.style.color = "var(--color-text-disabled)";
+    }
+    tr.appendChild(tdVendor);
+
+    // Role cell
+    var tdRole = document.createElement("td");
+    var roleLabels = { PRIMARY: "Primary", SECONDARY: "Secondary", DECISION_MAKER: "Decision Maker", OPERATIONAL: "Operational" };
+    tdRole.textContent = cp.vendorRole ? (roleLabels[cp.vendorRole] || cp.vendorRole) : "\u2014";
+    tr.appendChild(tdRole);
+
+    // Email cell
+    var tdEmail = document.createElement("td");
+    if (cp.email) {
+      var a = document.createElement("a");
+      a.href = "mailto:" + cp.email;
+      a.textContent = cp.email;
+      a.style.cssText = "color:#0e413b;text-decoration:none";
+      a.addEventListener("click", function(e) { e.stopPropagation(); });
+      tdEmail.appendChild(a);
+    } else {
+      tdEmail.textContent = "\u2014";
+      tdEmail.style.color = "var(--color-text-disabled)";
+    }
+    tr.appendChild(tdEmail);
+
+    // Phone cell
+    var tdPhone = document.createElement("td");
+    tdPhone.textContent = cp.phone || "\u2014";
+    if (!cp.phone) tdPhone.style.color = "var(--color-text-disabled)";
+    tr.appendChild(tdPhone);
+
+    // Last Contact cell
+    var tdLast = document.createElement("td");
+    if (cp.lastContactedAt) {
+      var d = new Date(cp.lastContactedAt);
+      tdLast.textContent = d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+    } else {
+      tdLast.textContent = "\u2014";
+      tdLast.style.color = "var(--color-text-disabled)";
+    }
+    tr.appendChild(tdLast);
+
+    tbody.appendChild(tr);
+  });
+  table.appendChild(tbody);
+  wrap.appendChild(table);
+}
+
+function _renderCrmContactsLegacy(wrap, empty) {
   var contacts = getFilteredCrmContacts();
   if (contacts.length === 0) { empty.style.display = "block"; return; }
   empty.style.display = "none";
@@ -8701,7 +8843,6 @@ function renderCrmContacts() {
         _addContactRow(tbody, c, fullName, p.role, p.email, p.phone);
       });
     } else {
-      // No people — show original contact row
       var name;
       if (c.company && c.name && c.name !== c.company) {
         name = c.name;
@@ -9880,6 +10021,7 @@ function cancelCrmEdit() {
 function closeCrmModal() {
   crmCurrentDetailContactId = null;
   localStorage.removeItem("ivyhub_crmOpenContact");
+  localStorage.removeItem("ivyhub_crmOpenContactProfile");
   if (_crmMoreMenuCleanup) { document.removeEventListener("click", _crmMoreMenuCleanup); _crmMoreMenuCleanup = null; }
   document.getElementById("crm-modal-overlay").classList.remove("open");
   document.body.classList.remove("crm-panel-open");
@@ -13304,6 +13446,668 @@ function renderContactAttachmentsTab(contact, panel) {
     empty.textContent = "No attachments yet";
     panel.insertBefore(empty, addFile);
   }
+}
+
+// ── Contact Profile — Standalone View (Phase 3) ─────────────────────────────
+
+function openContactProfileStandalone(contactId) {
+  var contact = contactPeople.find(function(p) { return p.id === contactId; });
+  if (!contact) { console.error("openContactProfileStandalone: contact not found:", contactId); return; }
+
+  // Hide edit form views
+  document.getElementById("crm-edit-header").style.display = "none";
+  document.getElementById("crm-edit-body").style.display = "none";
+  document.getElementById("crm-edit-actions").style.display = "none";
+
+  var detailView = document.getElementById("crm-detail-view");
+  var header = document.getElementById("crm-detail-header");
+  var body = document.getElementById("crm-detail-body");
+  var tabsBar = document.getElementById("crm-detail-tabs");
+  header.textContent = "";
+  body.textContent = "";
+  tabsBar.textContent = "";
+  // Remove previously inserted info bar, pipeline, banner
+  var oldInfoBar = detailView.querySelector(".crm-detail-info-bar");
+  if (oldInfoBar) oldInfoBar.remove();
+  var oldPipeline = detailView.querySelector(".crm-pipeline-wrap");
+  if (oldPipeline) oldPipeline.remove();
+  var oldBanner = detailView.querySelector(".crm-connector-banner");
+  if (oldBanner) oldBanner.remove();
+
+  renderContactProfileStandalone(contact, detailView, header, body, tabsBar);
+
+  detailView.style.display = "";
+  document.getElementById("crm-modal-overlay").classList.add("open");
+  document.body.classList.add("crm-panel-open");
+  crmCurrentDetailContactId = null;
+  localStorage.setItem("ivyhub_crmOpenContactProfile", contactId);
+}
+
+function _getStageColorForVendor(vendor) {
+  if (!vendor) return "#dadce0";
+  var colors = {
+    prospect: "#3cb1ff",
+    outreach: "#fec553",
+    negotiation: "#ff5e5e",
+    active_partner: "#0e413b",
+    inactive: "#f2f2f2"
+  };
+  return colors[vendor.stage] || "#dadce0";
+}
+
+function _getVendorTypeLabel(vendor) {
+  if (!vendor || !vendor.type) return "";
+  var labels = { DIRECT: "Direct", MANAGED_VENUE: "Managed Venue", CONNECTOR: "Connector", Vendor: "Vendor" };
+  return labels[vendor.type] || vendor.type;
+}
+
+function _getStageName(vendor) {
+  if (!vendor || !vendor.stage) return "";
+  var names = { prospect: "Prospect", outreach: "Outreach", negotiation: "Negotiation", active_partner: "Active Partner", inactive: "Inactive" };
+  return names[vendor.stage] || vendor.stage;
+}
+
+function renderContactProfileStandalone(contact, detailView, headerEl, bodyEl, tabsBarEl) {
+  var derived = getContactDerived(contact);
+  var vendor = contact.vendorId ? crmContacts.find(function(v) { return v.id === contact.vendorId; }) : null;
+
+  // ─── Header ───
+  var headerWrap = document.createElement("div");
+  headerWrap.style.cssText = "display:flex;flex-direction:column";
+
+  // Back bar with actions
+  var backBar = document.createElement("div");
+  backBar.style.cssText = "display:flex;align-items:center;padding:12px 32px;justify-content:space-between";
+  var backBtn = document.createElement("button");
+  backBtn.className = "contact-profile-back";
+  backBtn.textContent = "\u2190 All contacts";
+  backBtn.onclick = function() {
+    closeCrmModal();
+    localStorage.removeItem("ivyhub_crmOpenContactProfile");
+  };
+  backBar.appendChild(backBtn);
+
+  var actionsDiv = document.createElement("div");
+  actionsDiv.className = "contact-standalone-actions";
+
+  // More menu (ellipsis)
+  var moreBtn = document.createElement("button");
+  moreBtn.style.cssText = "background:none;border:1px solid var(--color-border);border-radius:6px;padding:4px 8px;cursor:pointer;position:relative";
+  moreBtn.appendChild(_crmFa6Icon("\uf141", 14, 400));
+  var moreMenuOpen = false;
+  var moreMenu = null;
+  moreBtn.onclick = function(e) {
+    e.stopPropagation();
+    if (moreMenuOpen && moreMenu) { moreMenu.remove(); moreMenuOpen = false; return; }
+    moreMenu = document.createElement("div");
+    moreMenu.style.cssText = "position:absolute;top:100%;right:0;margin-top:4px;background:#fff;border:1px solid var(--color-border);border-radius:8px;box-shadow:var(--shadow-lg);z-index:100;min-width:140px;padding:4px 0";
+    var menuItems = [
+      { label: "Edit contact", icon: "\uf303", action: function() { /* edit form — future phase */ } },
+      { label: "Archive", icon: "\uf187", action: function() { /* archive — future phase */ } },
+      { label: "Delete", icon: "\uf2ed", action: function() {
+          var deleted = deleteContactPermanently(contact.id);
+          if (deleted) {
+            closeCrmModal();
+            renderCrmActiveView();
+          }
+        }, color: "var(--color-error-text)" }
+    ];
+    menuItems.forEach(function(item) {
+      var row = document.createElement("div");
+      row.style.cssText = "display:flex;align-items:center;gap:8px;padding:8px 14px;cursor:pointer;font-family:var(--font-body);font-size:12px;color:" + (item.color || "var(--color-text)");
+      row.onmouseenter = function() { row.style.background = "var(--color-surface-secondary)"; };
+      row.onmouseleave = function() { row.style.background = ""; };
+      var ic = _crmFa6Icon(item.icon, 12, 300);
+      if (item.color) ic.style.color = item.color;
+      row.appendChild(ic);
+      var lbl = document.createElement("span");
+      lbl.textContent = item.label;
+      row.appendChild(lbl);
+      row.onclick = function() { moreMenu.remove(); moreMenuOpen = false; item.action(); };
+      moreMenu.appendChild(row);
+    });
+    moreBtn.appendChild(moreMenu);
+    moreMenuOpen = true;
+    var closeMenu = function() { if (moreMenu && moreMenu.parentNode) moreMenu.remove(); moreMenuOpen = false; document.removeEventListener("click", closeMenu); };
+    setTimeout(function() { document.addEventListener("click", closeMenu); }, 0);
+  };
+  actionsDiv.appendChild(moreBtn);
+
+  // Close button
+  var closeBtn = document.createElement("button");
+  closeBtn.style.cssText = "background:none;border:1px solid var(--color-border);border-radius:6px;padding:4px 8px;cursor:pointer";
+  closeBtn.appendChild(_crmFa6Icon("\uf00d", 14, 300));
+  closeBtn.onclick = function() {
+    closeCrmModal();
+    localStorage.removeItem("ivyhub_crmOpenContactProfile");
+  };
+  actionsDiv.appendChild(closeBtn);
+  backBar.appendChild(actionsDiv);
+  headerWrap.appendChild(backBar);
+
+  // Main header row: avatar + name block
+  var mainHeader = document.createElement("div");
+  mainHeader.className = "contact-standalone-header";
+  var avatar = document.createElement("div");
+  avatar.className = "contact-standalone-avatar";
+  if (contact.avatarImageUrl) {
+    var avatarImg = document.createElement("img");
+    avatarImg.src = contact.avatarImageUrl;
+    avatar.appendChild(avatarImg);
+  } else {
+    avatar.textContent = contact.initials || "??";
+  }
+  mainHeader.appendChild(avatar);
+
+  var nameBlock = document.createElement("div");
+  nameBlock.style.cssText = "display:flex;flex-direction:column;gap:2px;flex:1;min-width:0";
+  var nameJa = document.createElement("div");
+  nameJa.className = "contact-standalone-name-ja";
+  nameJa.textContent = contact.nameJa || contact.nameEn || "Unnamed";
+  nameBlock.appendChild(nameJa);
+  if (contact.nameJa && contact.nameEn) {
+    var nameEn = document.createElement("div");
+    nameEn.style.cssText = "font-family:var(--font-body);font-size:12px;color:var(--color-text-subtle)";
+    nameEn.textContent = contact.nameEn;
+    nameBlock.appendChild(nameEn);
+  }
+  if (contact.title) {
+    var titleEl = document.createElement("div");
+    titleEl.style.cssText = "font-family:var(--font-body);font-size:12px;color:var(--color-text-secondary)";
+    titleEl.textContent = contact.title;
+    nameBlock.appendChild(titleEl);
+  }
+
+  // Badge row
+  var badgeRow = document.createElement("div");
+  badgeRow.style.cssText = "display:flex;gap:4px;margin-top:4px;flex-wrap:wrap;align-items:center";
+  if (contact.isPrimary) {
+    var primaryBadge = document.createElement("span");
+    primaryBadge.style.cssText = "font-family:var(--font-mono);font-size:10px;background:var(--color-primary-tint);color:var(--color-primary);border:1px solid rgba(14,65,59,.15);border-radius:2px;padding:1px 5px;letter-spacing:-0.3px";
+    primaryBadge.textContent = "Primary Contact";
+    badgeRow.appendChild(primaryBadge);
+  }
+  if (vendor && vendor.type) {
+    var typeBadge = document.createElement("span");
+    typeBadge.style.cssText = "font-family:var(--font-mono);font-size:10px;background:var(--color-surface-tertiary);color:var(--color-text-secondary);border-radius:2px;padding:1px 5px;letter-spacing:-0.3px";
+    typeBadge.textContent = _getVendorTypeLabel(vendor);
+    badgeRow.appendChild(typeBadge);
+  }
+  nameBlock.appendChild(badgeRow);
+
+  // Vendor pill
+  if (vendor) {
+    var vendorPill = document.createElement("button");
+    vendorPill.className = "contact-standalone-vendor-pill";
+    var vendorDot = document.createElement("span");
+    vendorDot.className = "contact-standalone-vendor-dot";
+    vendorDot.style.backgroundColor = _getStageColorForVendor(vendor);
+    vendorPill.appendChild(vendorDot);
+    var vendorLabel = document.createElement("span");
+    vendorLabel.textContent = vendor.company || vendor.name || "Unknown vendor";
+    vendorPill.appendChild(vendorLabel);
+    vendorPill.onclick = function() {
+      closeCrmModal();
+      localStorage.removeItem("ivyhub_crmOpenContactProfile");
+      setTimeout(function() { openCrmDetailView(vendor.id); }, 50);
+    };
+    nameBlock.appendChild(vendorPill);
+  }
+
+  mainHeader.appendChild(nameBlock);
+  headerWrap.appendChild(mainHeader);
+
+  // Info strip (4 cells: Email, Phone, LINE, Preferred)
+  var strip = document.createElement("div");
+  strip.className = "contact-standalone-info-strip";
+  var stripFields = [
+    { label: "Email", value: contact.email, linkType: "email" },
+    { label: "Phone", value: contact.phone, linkType: "phone" },
+    { label: "LINE", value: contact.lineId },
+    { label: "Preferred", value: contact.preferredContact }
+  ];
+  stripFields.forEach(function(f) {
+    var cell = document.createElement("div");
+    cell.className = "contact-profile-info-cell";
+    var lbl = document.createElement("div");
+    lbl.className = "contact-profile-info-label";
+    lbl.textContent = f.label;
+    cell.appendChild(lbl);
+    var val = document.createElement("div");
+    val.className = "contact-profile-info-value";
+    if (f.value) {
+      if (f.linkType === "email") {
+        var link = document.createElement("a");
+        link.href = "mailto:" + f.value;
+        link.textContent = f.value;
+        val.appendChild(link);
+      } else if (f.linkType === "phone") {
+        var plink = document.createElement("a");
+        plink.href = "tel:" + f.value;
+        plink.textContent = f.value;
+        val.appendChild(plink);
+      } else {
+        val.textContent = f.value;
+      }
+    } else {
+      val.textContent = "\u2014";
+      val.style.color = "var(--color-text-disabled)";
+    }
+    cell.appendChild(val);
+    strip.appendChild(cell);
+  });
+  headerWrap.appendChild(strip);
+
+  // Last-contact banner
+  var lastBar = document.createElement("div");
+  lastBar.className = "contact-last-contact-bar";
+  var lastText = document.createElement("div");
+  lastText.className = "contact-last-contact-text";
+  if (contact.lastContactedAt) {
+    var lcDot = document.createElement("span");
+    lcDot.className = "contact-last-contact-dot";
+    lastText.appendChild(lcDot);
+    var lcDate = new Date(contact.lastContactedAt);
+    var lcTypeLabels = { EMAIL: "Email", CALL: "Call", MEETING: "Meeting", EVENT: "Event", MESSAGE: "Message", OTHER: "Other" };
+    var lcStr = "Last contact " + lcDate.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+    if (contact.lastContactedType) lcStr += " \u00B7 " + (lcTypeLabels[contact.lastContactedType] || contact.lastContactedType);
+    // Find the most recent interaction for summary
+    var recentInteraction = contactInteractions.filter(function(i) { return i.contactId === contact.id; }).sort(function(a, b) { return (b.occurredAt || "").localeCompare(a.occurredAt || ""); })[0];
+    if (recentInteraction && recentInteraction.summary) lcStr += " \u2014 " + recentInteraction.summary;
+    var lcSpan = document.createElement("span");
+    lcSpan.textContent = lcStr;
+    lastText.appendChild(lcSpan);
+  } else {
+    var noContactSpan = document.createElement("span");
+    noContactSpan.textContent = "No interactions logged";
+    noContactSpan.style.color = "var(--color-text-disabled)";
+    lastText.appendChild(noContactSpan);
+  }
+  lastBar.appendChild(lastText);
+  var logBtn = document.createElement("button");
+  logBtn.className = "contact-log-btn";
+  logBtn.textContent = "+ Log interaction";
+  logBtn.onclick = function() {
+    var typeInput = prompt("Interaction type (Email, Call, Meeting, Event, Message):");
+    if (!typeInput) return;
+    var typeMap = { email: "EMAIL", call: "CALL", meeting: "MEETING", event: "EVENT", message: "MESSAGE" };
+    var normalizedType = typeMap[(typeInput || "").trim().toLowerCase()];
+    if (!normalizedType) { alert("Invalid type. Use: Email, Call, Meeting, Event, or Message."); return; }
+    var summaryInput = prompt("Summary (optional):");
+    createContactInteraction(contact.id, { type: normalizedType, summary: summaryInput || null });
+    saveDataCache();
+    // Re-render
+    var freshContact = contactPeople.find(function(p) { return p.id === contact.id; });
+    if (freshContact) {
+      headerEl.textContent = "";
+      bodyEl.textContent = "";
+      tabsBarEl.textContent = "";
+      var oldIB = detailView.querySelector(".crm-detail-info-bar");
+      if (oldIB) oldIB.remove();
+      renderContactProfileStandalone(freshContact, detailView, headerEl, bodyEl, tabsBarEl);
+    }
+  };
+  lastBar.appendChild(logBtn);
+  headerWrap.appendChild(lastBar);
+
+  headerEl.appendChild(headerWrap);
+
+  // ─── Tab bar ───
+  var contactNotesForThis = contactNotes.filter(function(n) { return n.contactId === contact.id; });
+  var contactEventsForThis = contactActivityEvents.filter(function(e) { return e.contactId === contact.id; });
+  var contactAttachmentsForThis = contactAttachments.filter(function(a) { return a.contactId === contact.id; });
+  var tabDefs = [
+    { name: "Overview", count: null },
+    { name: "Notes", count: contactNotesForThis.length },
+    { name: "Activity", count: contactEventsForThis.length },
+    { name: "Attachments", count: contactAttachmentsForThis.length }
+  ];
+  var tabPanels = [];
+  tabDefs.forEach(function(td, idx) {
+    var tab = document.createElement("button");
+    tab.className = "contact-profile-tab" + (idx === 0 ? " active" : "");
+    tab.textContent = td.name;
+    if (td.count !== null && td.count > 0) {
+      var badge = document.createElement("span");
+      badge.className = "contact-profile-tab-badge";
+      badge.textContent = String(td.count);
+      tab.appendChild(badge);
+    }
+    tab.onclick = function() {
+      tabsBarEl.querySelectorAll(".contact-profile-tab").forEach(function(t) { t.classList.remove("active"); });
+      tab.classList.add("active");
+      tabPanels.forEach(function(p) { p.classList.remove("active"); });
+      tabPanels[idx].classList.add("active");
+    };
+    tabsBarEl.appendChild(tab);
+    var panel = document.createElement("div");
+    panel.className = "contact-profile-panel" + (idx === 0 ? " active" : "");
+    tabPanels.push(panel);
+  });
+
+  // ─── Overview tab ───
+  _renderContactStandaloneOverview(contact, derived, vendor, tabPanels[0], detailView, headerEl, bodyEl, tabsBarEl);
+
+  // ─── Notes tab (reuse Phase 2 renderer) ───
+  renderContactNotesTab(contact, tabPanels[1], bodyEl, contact.id, tabsBarEl, null);
+  // Patch notes save to re-render standalone instead of embedded
+  var notesSaveBtn = tabPanels[1].querySelector(".btn-save");
+  if (notesSaveBtn) {
+    var notesTextarea = tabPanels[1].querySelector("textarea");
+    var notesSelect = tabPanels[1].querySelector("select");
+    notesSaveBtn.onclick = function() {
+      var bodyText = notesTextarea ? notesTextarea.value.trim() : "";
+      if (!bodyText) return;
+      createContactNote(contact.id, { body: bodyText, context: notesSelect ? notesSelect.value : "GENERAL" });
+      saveDataCache();
+      var freshContact = contactPeople.find(function(p) { return p.id === contact.id; });
+      if (freshContact) {
+        headerEl.textContent = "";
+        bodyEl.textContent = "";
+        tabsBarEl.textContent = "";
+        renderContactProfileStandalone(freshContact, detailView, headerEl, bodyEl, tabsBarEl);
+      }
+    };
+  }
+
+  // ─── Activity tab (reuse Phase 2 renderer) ───
+  renderContactActivityTab(contact, tabPanels[2]);
+
+  // ─── Attachments tab (reuse Phase 2 renderer) ───
+  renderContactAttachmentsTab(contact, tabPanels[3]);
+
+  tabPanels.forEach(function(p) { bodyEl.appendChild(p); });
+}
+
+function _renderContactStandaloneOverview(contact, derived, vendor, panel, detailView, headerEl, bodyEl, tabsBarEl) {
+  panel.textContent = "";
+
+  // Stat cards
+  var statsRow = document.createElement("div");
+  statsRow.className = "contact-stat-cards";
+  // Card 1: Interactions logged
+  var card1 = document.createElement("div");
+  card1.className = "contact-stat-card";
+  var card1Label = document.createElement("div");
+  card1Label.className = "contact-stat-card-label";
+  card1Label.textContent = "Interactions logged";
+  card1.appendChild(card1Label);
+  var card1Value = document.createElement("div");
+  card1Value.className = "contact-stat-card-value";
+  card1Value.textContent = String(derived.interactionsCount || 0);
+  card1.appendChild(card1Value);
+  statsRow.appendChild(card1);
+
+  // Card 2: Shops introduced or Vendors connected
+  var card2 = document.createElement("div");
+  card2.className = "contact-stat-card";
+  var card2Label = document.createElement("div");
+  card2Label.className = "contact-stat-card-label";
+  var isConnector = vendor && vendor.type === "CONNECTOR";
+  card2Label.textContent = isConnector ? "Shops introduced" : "Vendors connected";
+  card2.appendChild(card2Label);
+  var card2Value = document.createElement("div");
+  card2Value.className = "contact-stat-card-value";
+  card2Value.textContent = isConnector ? String(derived.shopsIntroducedCount || 0) : "0";
+  card2.appendChild(card2Value);
+  statsRow.appendChild(card2);
+
+  // Card 3: Days since contact
+  var card3 = document.createElement("div");
+  card3.className = "contact-stat-card";
+  var card3Label = document.createElement("div");
+  card3Label.className = "contact-stat-card-label";
+  card3Label.textContent = "Days since contact";
+  card3.appendChild(card3Label);
+  var card3Value = document.createElement("div");
+  card3Value.className = "contact-stat-card-value";
+  if (derived.daysSinceContact !== null) {
+    card3Value.textContent = String(derived.daysSinceContact);
+    if (derived.daysSinceContact > 30) {
+      card3Value.style.color = "#c5221f";
+    } else if (derived.daysSinceContact >= 14) {
+      card3Value.style.color = "#b06000";
+    }
+  } else {
+    card3Value.textContent = "\u2014";
+    card3Value.style.color = "var(--color-text-disabled)";
+  }
+  card3.appendChild(card3Value);
+  var card3Sub = document.createElement("div");
+  card3Sub.className = "contact-stat-card-sub";
+  if (derived.daysSinceContact !== null) {
+    if (derived.daysSinceContact > 30) card3Sub.textContent = "Overdue follow-up";
+    else if (derived.daysSinceContact >= 14) card3Sub.textContent = "Follow up soon";
+    else card3Sub.textContent = "On track";
+  }
+  card3.appendChild(card3Sub);
+  statsRow.appendChild(card3);
+  panel.appendChild(statsRow);
+
+  // Personal context table (same as embedded)
+  var contextTable = document.createElement("div");
+  contextTable.className = "contact-context-table";
+  var contextRows = [
+    { key: "Languages", value: contact.languages, type: "lang-chips" },
+    { key: "Reaches back on", value: contact.communicationPrefs, type: "comm-chips" },
+    { key: "Background", value: contact.background, type: "text" },
+    { key: "How we met", value: contact.howWeMet, type: "text" }
+  ];
+  contextRows.forEach(function(r) {
+    var row = document.createElement("div");
+    row.className = "contact-context-row";
+    var key = document.createElement("div");
+    key.className = "contact-context-key";
+    key.textContent = r.key;
+    row.appendChild(key);
+    var val = document.createElement("div");
+    val.className = "contact-context-value";
+    if (r.type === "lang-chips" && r.value && r.value.length) {
+      r.value.forEach(function(lang) {
+        var chip = document.createElement("span");
+        chip.className = "chip-lang";
+        chip.textContent = lang;
+        val.appendChild(chip);
+      });
+    } else if (r.type === "comm-chips" && r.value && r.value.length) {
+      r.value.forEach(function(pref) {
+        var chip = document.createElement("span");
+        chip.className = "chip-comm";
+        chip.textContent = pref;
+        val.appendChild(chip);
+      });
+    } else if (r.type === "text" && r.value) {
+      val.textContent = r.value;
+    } else {
+      val.textContent = "\u2014";
+      val.style.color = "var(--color-text-disabled)";
+    }
+    row.appendChild(val);
+    contextTable.appendChild(row);
+  });
+  panel.appendChild(contextTable);
+
+  // Two-column layout: Left = To-do, Right = Peers + Vendor ref
+  var twoCols = document.createElement("div");
+  twoCols.className = "contact-standalone-two-col";
+
+  // Left column: To-do
+  var leftCol = document.createElement("div");
+  var contactTasks = boardTasks.filter(function(t) { return t.contactId === contact.id; });
+  var todoHeader = document.createElement("div");
+  todoHeader.className = "contact-profile-section-header";
+  var todoTitle = document.createElement("span");
+  todoTitle.className = "contact-profile-section-title";
+  todoTitle.textContent = "To-do";
+  todoHeader.appendChild(todoTitle);
+  var todoAdd = document.createElement("button");
+  todoAdd.className = "contact-profile-section-action";
+  todoAdd.textContent = "+ Add";
+  todoAdd.onclick = function() {
+    var text = prompt("Task description:");
+    if (!text) return;
+    var dueDateStr = prompt("Due date (YYYY-MM-DD, or leave empty):");
+    var newTask = {
+      id: "ct-" + Date.now(),
+      vendorId: contact.vendorId || null,
+      contactId: contact.id,
+      text: text,
+      dueDate: dueDateStr || null,
+      isCompleted: false,
+      completedAt: null,
+      createdAt: new Date().toISOString()
+    };
+    boardTasks.push(newTask);
+    saveDataCache();
+    var freshContact = contactPeople.find(function(p) { return p.id === contact.id; });
+    if (freshContact) {
+      headerEl.textContent = "";
+      bodyEl.textContent = "";
+      tabsBarEl.textContent = "";
+      renderContactProfileStandalone(freshContact, detailView, headerEl, bodyEl, tabsBarEl);
+    }
+  };
+  todoHeader.appendChild(todoAdd);
+  leftCol.appendChild(todoHeader);
+
+  if (contactTasks.length) {
+    var todoCard = document.createElement("div");
+    todoCard.className = "contact-todo-card";
+    var sorted = contactTasks.slice().sort(function(a, b) {
+      if (a.isCompleted !== b.isCompleted) return a.isCompleted ? 1 : -1;
+      return (a.dueDate || "9999").localeCompare(b.dueDate || "9999");
+    });
+    sorted.forEach(function(task) {
+      var row = document.createElement("div");
+      row.className = "contact-todo-row";
+      var cb = document.createElement("div");
+      cb.className = "contact-todo-checkbox" + (task.isCompleted ? " done" : "");
+      if (task.isCompleted) {
+        cb.appendChild(_crmFa6Icon("\uf00c", 10, 900));
+      }
+      cb.onclick = function() {
+        task.isCompleted = !task.isCompleted;
+        task.completedAt = task.isCompleted ? new Date().toISOString() : null;
+        if (task.isCompleted) {
+          contactActivityEvents.push({
+            id: "cae-" + Date.now(),
+            contactId: contact.id,
+            eventType: "TASK_COMPLETED",
+            title: "Task completed",
+            detail: task.text,
+            relatedId: task.id,
+            occurredAt: new Date().toISOString()
+          });
+        }
+        saveDataCache();
+        var freshContact = contactPeople.find(function(p) { return p.id === contact.id; });
+        if (freshContact) {
+          headerEl.textContent = "";
+          bodyEl.textContent = "";
+          tabsBarEl.textContent = "";
+          renderContactProfileStandalone(freshContact, detailView, headerEl, bodyEl, tabsBarEl);
+        }
+      };
+      row.appendChild(cb);
+      var txt = document.createElement("span");
+      txt.className = "contact-todo-text" + (task.isCompleted ? " done" : "");
+      txt.textContent = task.text;
+      row.appendChild(txt);
+      if (task.dueDate) {
+        var dateEl = document.createElement("span");
+        dateEl.className = "contact-todo-date";
+        var isOverdue = !task.isCompleted && task.dueDate < new Date().toISOString().slice(0, 10);
+        if (isOverdue) dateEl.classList.add("overdue");
+        dateEl.textContent = formatDate(task.dueDate);
+        row.appendChild(dateEl);
+      }
+      todoCard.appendChild(row);
+    });
+    leftCol.appendChild(todoCard);
+  } else {
+    var emptyTodo = document.createElement("div");
+    emptyTodo.style.cssText = "font-family:var(--font-body);font-size:12px;color:var(--color-text-disabled);padding:8px 0";
+    emptyTodo.textContent = "No tasks yet";
+    leftCol.appendChild(emptyTodo);
+  }
+  twoCols.appendChild(leftCol);
+
+  // Right column: Peers + Vendor reference card
+  var rightCol = document.createElement("div");
+
+  // "Also at [vendor name]" — peer contacts
+  if (derived.peerContacts && derived.peerContacts.length > 0) {
+    var peerHeader = document.createElement("div");
+    peerHeader.className = "contact-profile-section-header";
+    var peerTitle = document.createElement("span");
+    peerTitle.className = "contact-profile-section-title";
+    var vendorName = vendor ? (vendor.company || vendor.name || "") : "";
+    peerTitle.textContent = "Also at " + vendorName;
+    peerHeader.appendChild(peerTitle);
+    rightCol.appendChild(peerHeader);
+
+    derived.peerContacts.forEach(function(peer) {
+      var peerRow = document.createElement("div");
+      peerRow.className = "contact-peer-row";
+      var peerAv = document.createElement("div");
+      peerAv.style.cssText = "width:36px;height:36px;border-radius:50%;background:var(--color-primary-tint);color:var(--color-primary);font-family:var(--font-display);font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0";
+      peerAv.textContent = peer.initials || "??";
+      peerRow.appendChild(peerAv);
+      var peerInfo = document.createElement("div");
+      peerInfo.style.cssText = "flex:1;min-width:0";
+      var peerName = document.createElement("div");
+      peerName.style.cssText = "font-family:var(--font-text);font-size:14px;font-weight:600;color:var(--color-text-heading)";
+      peerName.textContent = peer.nameJa || peer.nameEn || "Unnamed";
+      peerInfo.appendChild(peerName);
+      var peerSub = document.createElement("div");
+      peerSub.style.cssText = "font-family:var(--font-body);font-size:12px;color:var(--color-text-subtle)";
+      var subParts = [];
+      var roleLabels = { PRIMARY: "Primary", SECONDARY: "Secondary", DECISION_MAKER: "Decision Maker", OPERATIONAL: "Operational" };
+      if (peer.vendorRole) subParts.push(roleLabels[peer.vendorRole] || peer.vendorRole);
+      if (peer.email) subParts.push(peer.email);
+      peerSub.textContent = subParts.join(" \u00B7 ");
+      peerInfo.appendChild(peerSub);
+      peerRow.appendChild(peerInfo);
+      peerRow.onclick = function() {
+        // Open this peer's standalone profile
+        headerEl.textContent = "";
+        bodyEl.textContent = "";
+        tabsBarEl.textContent = "";
+        renderContactProfileStandalone(peer, detailView, headerEl, bodyEl, tabsBarEl);
+        localStorage.setItem("ivyhub_crmOpenContactProfile", peer.id);
+      };
+      rightCol.appendChild(peerRow);
+    });
+  }
+
+  // Vendor reference card
+  if (vendor) {
+    var refCard = document.createElement("div");
+    refCard.className = "contact-vendor-ref";
+    var refName = document.createElement("div");
+    refName.className = "contact-vendor-ref-name";
+    refName.textContent = vendor.company || vendor.name || "Unknown";
+    refCard.appendChild(refName);
+    var refMeta = document.createElement("div");
+    refMeta.className = "contact-vendor-ref-meta";
+    var metaParts = [];
+    if (vendor.type) metaParts.push(_getVendorTypeLabel(vendor));
+    if (vendor.stage) metaParts.push(_getStageName(vendor));
+    refMeta.textContent = metaParts.join(" \u00B7 ");
+    refCard.appendChild(refMeta);
+    var refLink = document.createElement("button");
+    refLink.className = "contact-vendor-ref-link";
+    refLink.textContent = "Open vendor profile \u2192";
+    refLink.onclick = function() {
+      closeCrmModal();
+      localStorage.removeItem("ivyhub_crmOpenContactProfile");
+      setTimeout(function() { openCrmDetailView(vendor.id); }, 50);
+    };
+    refCard.appendChild(refLink);
+    rightCol.appendChild(refCard);
+  }
+  twoCols.appendChild(rightCol);
+  panel.appendChild(twoCols);
 }
 
 // ── Helper: Match a legacy person record to a Contact from contactPeople ────
