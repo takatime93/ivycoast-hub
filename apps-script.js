@@ -132,7 +132,8 @@ function deleteRow(sheetName, id) {
 var SHEET_TO_ITEM_TYPE = {
   Tasks: "task", Contacts: "contact", Products: "product",
   Orders: "order", Customers: "customer", Invoices: "invoice", Receipts: "receipt",
-  PartnerStock: "stock", ContactDocuments: "document", People: "person"
+  PartnerStock: "stock", ContactDocuments: "document", People: "person",
+  ContactNotes: "contactNote", ContactInteractions: "contactInteraction", ContactActivityLog: "contactActivity"
 };
 
 function ensureSheet(name, headers) {
@@ -152,6 +153,9 @@ function ensureActivityAndPresenceSheets() {
   ensureSheet("ActivityLog", ["id","action","itemType","itemId","itemName","detail","userId","userName","timestamp"]);
   ensureSheet("Presence", ["email","lastActive","currentTab","photoUrl"]);
   ensureSheet("People", ["id","nameJa","nameEn","initials","title","avatarImageUrl","email","phone","lineId","instagramHandle","preferredContact","vendorId","vendorRole","isPrimary","languages","communicationPrefs","background","howWeMet","lastContactedAt","lastContactedType","firstMetAt","createdAt","updatedAt"]);
+  ensureSheet("ContactNotes", ["id","contactId","body","context","createdAt","createdBy"]);
+  ensureSheet("ContactInteractions", ["id","contactId","vendorId","type","summary","occurredAt","createdAt"]);
+  ensureSheet("ContactActivityLog", ["id","contactId","eventType","title","detail","relatedId","occurredAt"]);
 }
 
 function logActivity(action, itemType, itemId, itemName, detail, userId, userName) {
@@ -189,6 +193,9 @@ function doGet(e) {
       partnerStock: getAllRows("PartnerStock"),
       contactDocuments: getAllRows("ContactDocuments"),
       people: getAllRows("People"),
+      contactNotes: getAllRows("ContactNotes"),
+      contactInteractions: getAllRows("ContactInteractions"),
+      contactActivityLog: getAllRows("ContactActivityLog"),
       activities: actAll.slice(-100).reverse()
     });
     try { cache.put("batchList", payload, 60); } catch(ex) { /* payload too large for cache */ }
@@ -201,7 +208,7 @@ function doGet(e) {
       var last100 = all.slice(-100).reverse();
       return jsonResponse({ activities: last100 });
     }
-    var keyMap = { "Contacts": "contacts", "Products": "products", "Orders": "orders", "Customers": "customers", "Invoices": "invoices", "Receipts": "receipts", "PartnerStock": "partnerStock", "ContactDocuments": "contactDocuments", "People": "people" };
+    var keyMap = { "Contacts": "contacts", "Products": "products", "Orders": "orders", "Customers": "customers", "Invoices": "invoices", "Receipts": "receipts", "PartnerStock": "partnerStock", "ContactDocuments": "contactDocuments", "People": "people", "ContactNotes": "contactNotes", "ContactInteractions": "contactInteractions", "ContactActivityLog": "contactActivityLog" };
     var key = keyMap[sheetName] || "tasks";
     var result = {};
     result[key] = getAllRows(sheetName);
@@ -225,7 +232,7 @@ function doPost(e) {
 
   var action = body.action;
   var sheetName = body.sheet || "Tasks";
-  var itemKeyMap = { "Contacts": "contact", "Products": "product", "Orders": "order", "Customers": "customer", "Invoices": "invoice", "Receipts": "receipt", "PartnerStock": "stock", "ContactDocuments": "document", "People": "person" };
+  var itemKeyMap = { "Contacts": "contact", "Products": "product", "Orders": "order", "Customers": "customer", "Invoices": "invoice", "Receipts": "receipt", "PartnerStock": "stock", "ContactDocuments": "document", "People": "person", "ContactNotes": "contactNote", "ContactInteractions": "contactInteraction", "ContactActivityLog": "contactActivity" };
   var itemKey = itemKeyMap[sheetName] || "task";
   var item = body[itemKey] || body.task || body.contact || body.invoice || body.receipt || {};
   var userId = body.userId || "";

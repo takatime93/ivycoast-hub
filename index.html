@@ -6859,6 +6859,18 @@ function fetchAllData() {
           }
         });
       }
+      if (data.contactNotes && data.contactNotes.length) {
+        var noteIds = {}; contactNotes.forEach(function(n) { noteIds[n.id] = true; });
+        data.contactNotes.forEach(function(n) { if (!noteIds[n.id]) contactNotes.push(n); });
+      }
+      if (data.contactInteractions && data.contactInteractions.length) {
+        var intIds = {}; contactInteractions.forEach(function(i) { intIds[i.id] = true; });
+        data.contactInteractions.forEach(function(i) { if (!intIds[i.id]) contactInteractions.push(i); });
+      }
+      if (data.contactActivityLog && data.contactActivityLog.length) {
+        var evtIds = {}; contactActivityEvents.forEach(function(e) { evtIds[e.id] = true; });
+        data.contactActivityLog.forEach(function(e) { if (!evtIds[e.id]) contactActivityEvents.push(e); });
+      }
       if (data.activities) { activityLog = data.activities; updateNotifBell(); updateTabDots(); }
       // Demo mode: ?demo=true injects test vendors — remove after partner review
       if (new URLSearchParams(location.search).get("demo") === "true" && typeof _injectDemoVendors === "function") _injectDemoVendors();
@@ -8551,6 +8563,18 @@ function peopleApiPost(body) {
     body: JSON.stringify(body)
   }).then(function(r) { return r.json(); }).then(function(data) { setTimeout(fetchActivityLog, 500); return data; });
 }
+function contactNotesApiPost(body) {
+  body.sheet = "ContactNotes"; body.userId = getCurrentUserEmail(); body.userName = getCurrentUserName();
+  return fetch(SCRIPT_URL, { method: "POST", headers: { "Content-Type": "text/plain" }, body: JSON.stringify(body) }).then(function(r) { return r.json(); });
+}
+function contactInteractionsApiPost(body) {
+  body.sheet = "ContactInteractions"; body.userId = getCurrentUserEmail(); body.userName = getCurrentUserName();
+  return fetch(SCRIPT_URL, { method: "POST", headers: { "Content-Type": "text/plain" }, body: JSON.stringify(body) }).then(function(r) { return r.json(); });
+}
+function contactActivityApiPost(body) {
+  body.sheet = "ContactActivityLog"; body.userId = getCurrentUserEmail(); body.userName = getCurrentUserName();
+  return fetch(SCRIPT_URL, { method: "POST", headers: { "Content-Type": "text/plain" }, body: JSON.stringify(body) }).then(function(r) { return r.json(); });
+}
 
 function fetchCrmContacts(force) {
   if (!SCRIPT_URL) return;
@@ -9877,16 +9901,24 @@ function createContactInteraction(contactId, data) {
     MESSAGE: "Message logged",
     OTHER: "Interaction logged"
   };
-  contactActivityEvents.push({
+  var intEvent = {
     id: _generateContactId(),
     contactId: contactId,
-    eventType: eventTypeMap[interaction.type] || "INTERACTION_EMAIL",
+    eventType: eventTypeMap[interaction.type] || "INTERACTION_OTHER",
     title: eventTitle[interaction.type] || "Interaction logged",
     detail: interaction.summary || null,
     relatedId: interaction.id,
     occurredAt: interaction.occurredAt
-  });
+  };
+  contactActivityEvents.push(intEvent);
   saveDataCache();
+  // Persist to backend
+  contactInteractionsApiPost({ action: "create", contactInteraction: interaction }).catch(function() {});
+  contactActivityApiPost({ action: "create", contactActivity: intEvent }).catch(function() {});
+  // Update contact's lastContactedAt on backend too
+  if (interactionTime > currentLastTime) {
+    peopleApiPost({ action: "update", person: { id: contact.id, lastContactedAt: contact.lastContactedAt, lastContactedType: contact.lastContactedType, updatedAt: contact.updatedAt } }).catch(function() {});
+  }
   return interaction;
 }
 
@@ -9911,7 +9943,7 @@ function createContactNote(contactId, data) {
   };
   contactNotes.push(note);
   // Create NOTE_ADDED activity event
-  contactActivityEvents.push({
+  var noteEvent = {
     id: _generateContactId(),
     contactId: contactId,
     eventType: "NOTE_ADDED",
@@ -9919,8 +9951,12 @@ function createContactNote(contactId, data) {
     detail: note.body.length > 60 ? note.body.substring(0, 60) + "..." : note.body,
     relatedId: note.id,
     occurredAt: note.createdAt
-  });
+  };
+  contactActivityEvents.push(noteEvent);
   saveDataCache();
+  // Persist to backend
+  contactNotesApiPost({ action: "create", contactNote: note }).catch(function() {});
+  contactActivityApiPost({ action: "create", contactActivity: noteEvent }).catch(function() {});
   return note;
 }
 
