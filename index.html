@@ -156,6 +156,25 @@
   --transition-slow: 0.3s;
 }
 
+/* ── Utility Classes ── */
+.ivh-flex { display: flex; }
+.ivh-flex-col { display: flex; flex-direction: column; }
+.ivh-flex-center { display: flex; align-items: center; }
+.ivh-gap-1 { gap: 4px; }
+.ivh-gap-2 { gap: 8px; }
+.ivh-gap-3 { gap: 12px; }
+.ivh-text-heading-2 { font-family: var(--font-display); font-size: var(--text-lg); font-weight: 600; line-height: var(--leading-heading-2); }
+.ivh-text-heading-3 { font-family: var(--font-display); font-size: var(--text-h3); font-weight: 600; line-height: var(--leading-normal); }
+.ivh-text-body { font-family: var(--font-text); font-size: var(--text-md); font-weight: 400; line-height: var(--leading-normal); }
+.ivh-text-body-emph { font-family: var(--font-text); font-size: var(--text-md); font-weight: 600; line-height: var(--leading-normal); }
+.ivh-text-small { font-size: var(--text-sm); font-weight: 400; line-height: var(--leading-tight); }
+.ivh-text-subtitle { font-family: var(--font-display); font-size: var(--text-sm); font-weight: 600; }
+.ivh-text-mono { font-family: var(--font-mono); font-size: var(--text-xs); font-weight: 400; letter-spacing: var(--ls-mono); }
+.ivh-icon { font-family: 'FA6 Pro'; font-weight: 300; display: inline-flex; align-items: center; justify-content: center; line-height: 0; }
+.ivh-icon-sm { width: 16px; height: 16px; font-size: 12px; }
+.ivh-icon-md { width: 18px; height: 18px; font-size: 14px; }
+.ivh-icon-lg { width: 24px; height: 24px; font-size: 18px; }
+
 body { font-family: var(--font-body); background: var(--color-surface); color: var(--color-text); line-height: var(--leading-normal); }
 
 /* Header */
@@ -8540,7 +8559,8 @@ function _renderCrmVendorViewBar(container, contacts) {
     gridBtn.className = "crm-view-toggle-btn" + (crmVendorViewMode === "tile" ? " active" : "");
     gridBtn.title = "Tile view";
     var gridIcon = document.createElement("span");
-    gridIcon.style.cssText = "font-family:'FA6 Pro';font-weight:300;font-size:16px;line-height:1";
+    gridIcon.className = "ivh-icon ivh-icon-sm";
+    gridIcon.style.fontSize = "16px";
     gridIcon.textContent = "\ue195";
     gridBtn.appendChild(gridIcon);
     gridBtn.addEventListener("click", function() { switchCrmVendorView("tile"); });
@@ -8550,7 +8570,8 @@ function _renderCrmVendorViewBar(container, contacts) {
     listBtn.className = "crm-view-toggle-btn" + (crmVendorViewMode === "table" ? " active" : "");
     listBtn.title = "Table view";
     var listIcon = document.createElement("span");
-    listIcon.style.cssText = "font-family:'FA6 Pro';font-weight:300;font-size:16px;line-height:1";
+    listIcon.className = "ivh-icon ivh-icon-sm";
+    listIcon.style.fontSize = "16px";
     listIcon.textContent = "\uf03a";
     listBtn.appendChild(listIcon);
     listBtn.addEventListener("click", function() { switchCrmVendorView("table"); });
@@ -9297,7 +9318,9 @@ function _ivhTooltip(iconUnicode, text, opts) {
   var wrap = document.createElement("span");
   wrap.className = "ivh-tooltip-trigger";
   var icon = document.createElement("span");
-  icon.style.cssText = "font-family:'FA6 Pro';font-weight:300;font-size:12px;line-height:1;display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;color:#0e413b;cursor:pointer";
+  icon.className = "ivh-icon ivh-icon-sm";
+  icon.style.color = "#0e413b";
+  icon.style.cursor = "pointer";
   icon.textContent = iconUnicode;
   wrap.appendChild(icon);
   var tip = document.createElement("div");
@@ -9316,10 +9339,53 @@ function _ivhTooltip(iconUnicode, text, opts) {
   return wrap;
 }
 
+// ── Shared UI Builders ──
+
+// Icon builder using CSS classes instead of inline styles
+function _ivhIcon(unicode, size, weight) {
+  var el = document.createElement("span");
+  el.className = "ivh-icon" + (size === 12 || size === 16 ? " ivh-icon-sm" : size === 14 || size === 18 ? " ivh-icon-md" : size === 24 ? " ivh-icon-lg" : "");
+  if (weight === 900) el.style.fontWeight = "900";
+  else if (weight === 400) el.style.fontWeight = "400";
+  if (size && size !== 12 && size !== 14 && size !== 16 && size !== 18 && size !== 24) {
+    el.style.fontSize = size + "px";
+  }
+  el.textContent = unicode;
+  return el;
+}
+
+// Empty state builder
+function _ivhEmptyState(message) {
+  var el = document.createElement("div");
+  el.className = "crm-empty-state";
+  el.textContent = message;
+  return el;
+}
+
+// Avatar builder (sizes: 20, 28, 34, 40, 48, 52, 64, 70)
+function _ivhAvatar(name, imageUrl, size) {
+  size = size || 40;
+  var el = document.createElement("div");
+  el.style.cssText = "width:" + size + "px;height:" + size + "px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;background:#e8e8e8;font-weight:600;color:#497871;font-size:" + Math.round(size * 0.35) + "px";
+  if (imageUrl) {
+    var img = document.createElement("img");
+    img.src = imageUrl;
+    img.alt = name || "";
+    img.style.cssText = "width:100%;height:100%;object-fit:cover";
+    img.onerror = function() { el.removeChild(img); el.textContent = (name || "?").charAt(0).toUpperCase(); };
+    el.appendChild(img);
+  } else {
+    el.textContent = (name || "?").charAt(0).toUpperCase();
+  }
+  return el;
+}
+
 function _crmFa6Icon(unicode, size, weight) {
   size = size || 16; weight = weight || 300;
   var span = document.createElement("span");
-  span.style.cssText = "font-family:'FA6 Pro';font-weight:" + weight + ";font-size:" + size + "px;line-height:1;display:inline-flex;align-items:center;justify-content:center";
+  span.className = "ivh-icon";
+  span.style.fontWeight = weight;
+  span.style.fontSize = size + "px";
   span.textContent = unicode;
   return span;
 }
@@ -9543,7 +9609,7 @@ function openCrmDetailView(contactId) {
     opt.appendChild(optText);
     if (st === stageKey) {
       var check = document.createElement("span");
-      check.style.cssText = "font-family:'FA6 Pro';font-weight:400;font-size:12px;color:#0e413b";
+      check.className = "ivh-icon ivh-icon-sm"; check.style.fontWeight = "400"; check.style.color = "#0e413b";
       check.textContent = "\uf00c";
       opt.appendChild(check);
     }
@@ -10025,7 +10091,8 @@ function renderCrmOverviewTab(c, panel, contactId, tabsBar) {
   dropText.textContent = "Monthly";
   dropdownBtn.appendChild(dropText);
   var chevIcon = document.createElement("span");
-  chevIcon.style.cssText = "font-family:'FA6 Pro';font-weight:300;font-size:12px;line-height:1;display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px";
+  chevIcon.className = "ivh-icon ivh-icon-md";
+  chevIcon.style.fontSize = "12px";
   chevIcon.textContent = "\uf078";
   dropdownBtn.appendChild(chevIcon);
   dropWrap.appendChild(dropdownBtn);
@@ -10162,7 +10229,7 @@ function renderCrmOverviewTab(c, panel, contactId, tabsBar) {
 
       // Card 1: Sales across all shops
       var cc1 = document.createElement("div"); cc1.className = "crm-order-stat-card";
-      var cc1Top = document.createElement("div"); cc1Top.style.cssText = "display:flex;flex-direction:column;gap:4px";
+      var cc1Top = document.createElement("div"); cc1Top.className = "ivh-flex-col ivh-gap-1";
       var cc1DefLbl = "Sales across all shops";
       var cc1Lbl = document.createElement("div"); cc1Lbl.className = "stat-lbl"; cc1Lbl.textContent = cc1DefLbl; cc1Top.appendChild(cc1Lbl);
       var cc1DefVal = "\u00A5" + cTotalSales.toLocaleString();
@@ -10179,7 +10246,7 @@ function renderCrmOverviewTab(c, panel, contactId, tabsBar) {
 
       // Card 2: Their total fee
       var cc2 = document.createElement("div"); cc2.className = "crm-order-stat-card";
-      var cc2Top = document.createElement("div"); cc2Top.style.cssText = "display:flex;flex-direction:column;gap:4px";
+      var cc2Top = document.createElement("div"); cc2Top.className = "ivh-flex-col ivh-gap-1";
       var cc2DefLbl = "Their total fee";
       var cc2Lbl = document.createElement("div"); cc2Lbl.className = "stat-lbl"; cc2Lbl.textContent = cc2DefLbl; cc2Top.appendChild(cc2Lbl);
       var cc2DefVal = "\u00A5" + cFeeAmount.toLocaleString();
@@ -10197,7 +10264,7 @@ function renderCrmOverviewTab(c, panel, contactId, tabsBar) {
 
       // Card 3: We earn
       var cc3 = document.createElement("div"); cc3.className = "crm-order-stat-card";
-      var cc3Top = document.createElement("div"); cc3Top.style.cssText = "display:flex;flex-direction:column;gap:4px";
+      var cc3Top = document.createElement("div"); cc3Top.className = "ivh-flex-col ivh-gap-1";
       var cc3DefLbl = "We earn";
       var cc3Lbl = document.createElement("div"); cc3Lbl.className = "stat-lbl"; cc3Lbl.textContent = cc3DefLbl; cc3Top.appendChild(cc3Lbl);
       var cc3DefVal = "\u00A5" + cWeEarn.toLocaleString();
@@ -10219,7 +10286,7 @@ function renderCrmOverviewTab(c, panel, contactId, tabsBar) {
 
       // Card 4: Shops connected (count + mini list)
       var cc4 = document.createElement("div"); cc4.className = "crm-order-stat-card";
-      var cc4Top = document.createElement("div"); cc4Top.style.cssText = "display:flex;flex-direction:column;gap:4px";
+      var cc4Top = document.createElement("div"); cc4Top.className = "ivh-flex-col ivh-gap-1";
       var cc4Lbl = document.createElement("div"); cc4Lbl.className = "stat-lbl"; cc4Lbl.textContent = "Shops connected"; cc4Top.appendChild(cc4Lbl);
       var cc4Val = document.createElement("div"); cc4Val.className = "stat-val"; cc4Val.textContent = String(connectedShops.length); cc4Top.appendChild(cc4Val);
       if (!connectedShops.length) {
@@ -10258,7 +10325,7 @@ function renderCrmOverviewTab(c, panel, contactId, tabsBar) {
     if (_isViaConnector) {
       // Card 1: Shop sales this month
       var vc1 = document.createElement("div"); vc1.className = "crm-order-stat-card";
-      var vc1Top = document.createElement("div"); vc1Top.style.cssText = "display:flex;flex-direction:column;gap:4px";
+      var vc1Top = document.createElement("div"); vc1Top.className = "ivh-flex-col ivh-gap-1";
       var vc1DefLbl = days === 1 ? "Shop sales today" : days === 30 ? "Shop sales this month" : days === 0 ? "Shop sales all time" : "Shop sales (" + _friendlyPeriod + ")";
       var vc1Lbl = document.createElement("div"); vc1Lbl.className = "stat-lbl"; vc1Lbl.textContent = vc1DefLbl; vc1Top.appendChild(vc1Lbl);
       var vc1DefVal = "\u00A5" + periodEarned.toLocaleString();
@@ -10272,7 +10339,7 @@ function renderCrmOverviewTab(c, panel, contactId, tabsBar) {
         if (vcPrevEarned > 0) {
           var vcPct = Math.round(((periodEarned - vcPrevEarned) / vcPrevEarned) * 100);
           var vcTrend = document.createElement("div"); vcTrend.className = "stat-trend";
-          var vcArrow = document.createElement("span"); vcArrow.style.cssText = "font-family:'FA6 Pro';font-weight:400;font-size:10px";
+          var vcArrow = document.createElement("span"); vcArrow.className = "ivh-icon"; vcArrow.style.fontWeight = "400"; vcArrow.style.fontSize = "10px";
           vcArrow.textContent = vcPct >= 0 ? "\uf062" : "\uf063";
           if (vcPct < 0) { vcTrend.style.color = "#df0a0a"; vcArrow.style.color = "#df0a0a"; }
           vcTrend.appendChild(vcArrow);
@@ -10292,7 +10359,7 @@ function renderCrmOverviewTab(c, panel, contactId, tabsBar) {
       // Card 2: Connector's cut
       var vcFeeAmount = Math.round(periodEarned * viaConnectorFeePct / 100);
       var vc2 = document.createElement("div"); vc2.className = "crm-order-stat-card";
-      var vc2Top = document.createElement("div"); vc2Top.style.cssText = "display:flex;flex-direction:column;gap:4px";
+      var vc2Top = document.createElement("div"); vc2Top.className = "ivh-flex-col ivh-gap-1";
       var vc2DefLbl = "Connector\u2019s cut";
       var vc2Lbl = document.createElement("div"); vc2Lbl.className = "stat-lbl"; vc2Lbl.textContent = vc2DefLbl; vc2Top.appendChild(vc2Lbl);
       var vc2DefVal = "\u00A5" + vcFeeAmount.toLocaleString();
@@ -10312,7 +10379,7 @@ function renderCrmOverviewTab(c, panel, contactId, tabsBar) {
       var vcShopCut = Math.round(periodEarned * shopSharePct / 100);
       var vcWeEarn = Math.max(0, periodEarned - vcShopCut - vcFeeAmount);
       var vc3 = document.createElement("div"); vc3.className = "crm-order-stat-card";
-      var vc3Top = document.createElement("div"); vc3Top.style.cssText = "display:flex;flex-direction:column;gap:4px";
+      var vc3Top = document.createElement("div"); vc3Top.className = "ivh-flex-col ivh-gap-1";
       var vc3DefLbl = "We earn";
       var vc3Lbl = document.createElement("div"); vc3Lbl.className = "stat-lbl"; vc3Lbl.textContent = vc3DefLbl; vc3Top.appendChild(vc3Lbl);
       var vc3DefVal = "\u00A5" + vcWeEarn.toLocaleString();
@@ -10333,7 +10400,7 @@ function renderCrmOverviewTab(c, panel, contactId, tabsBar) {
 
       // Card 4: Product on display (same as Direct Partner card 3)
       var vc4 = document.createElement("div"); vc4.className = "crm-order-stat-card";
-      var vc4Top = document.createElement("div"); vc4Top.style.cssText = "display:flex;flex-direction:column;gap:4px";
+      var vc4Top = document.createElement("div"); vc4Top.className = "ivh-flex-col ivh-gap-1";
       var vc4Lbl = document.createElement("div"); vc4Lbl.className = "stat-lbl"; vc4Lbl.textContent = "Product on display"; vc4Top.appendChild(vc4Lbl);
       var vc4Val = document.createElement("div"); vc4Val.className = "stat-val" + (activeStock.length ? " stat-val-link" : ""); vc4Val.textContent = String(activeStock.length);
       if (activeStock.length) { vc4Val.onclick = function() { var st = tabsBar.querySelectorAll(".crm-detail-tab")[3]; if (st) st.click(); }; }
@@ -10351,12 +10418,12 @@ function renderCrmOverviewTab(c, panel, contactId, tabsBar) {
           var sku = (s.sku || "").toUpperCase();
           var iconCode = sku.indexOf("SOP") === 0 ? "\ue06e" : sku.indexOf("CND") === 0 ? "\uf6bc" : "\uf4b8";
           var isLow = Number(s.quantity || 0) <= 10;
-          var icon = document.createElement("span"); icon.style.cssText = "font-family:'FA6 Pro';font-weight:400;font-size:10px;color:" + (isLow ? "#df0a0a" : "#3e3e3e"); icon.textContent = iconCode;
+          var icon = document.createElement("span"); icon.className = "ivh-icon"; icon.style.fontWeight = "400"; icon.style.fontSize = "10px"; icon.style.color = isLow ? "#df0a0a" : "#3e3e3e"; icon.textContent = iconCode;
           nameWrap.appendChild(icon);
           var nm = document.createElement("span"); var pName = s.productName || "Unknown"; nm.textContent = pName.length > 18 ? pName.substring(0, 16) + "\u2026" : pName;
           nameWrap.appendChild(nm);
           row.appendChild(nameWrap);
-          if (isLow) { var warn = document.createElement("span"); warn.className = "stat-product-warn"; warn.style.cssText = "font-family:'FA6 Pro';font-weight:400;font-size:10px"; warn.textContent = "\uf071"; row.appendChild(warn); }
+          if (isLow) { var warn = document.createElement("span"); warn.className = "stat-product-warn ivh-icon"; warn.style.fontWeight = "400"; warn.style.fontSize = "10px"; warn.textContent = "\uf071"; row.appendChild(warn); }
           row.onclick = (function(stockId) { return function() { var stockTab = tabsBar.querySelectorAll(".crm-detail-tab")[3]; if (stockTab) stockTab.click(); setTimeout(function() { var tr = document.querySelector("tr[data-stock-id='" + stockId + "']"); if (tr) { tr.scrollIntoView({ behavior: "smooth", block: "center" }); tr.classList.add("crm-stock-highlight", "crm-stock-flash"); setTimeout(function() { tr.classList.remove("crm-stock-highlight", "crm-stock-flash"); }, 3000); } }, 100); }; })(s.id);
           vc4List.appendChild(row);
         });
@@ -10374,7 +10441,7 @@ function renderCrmOverviewTab(c, panel, contactId, tabsBar) {
     var card1 = document.createElement("div");
     card1.className = "crm-order-stat-card";
     var c1Top = document.createElement("div");
-    c1Top.style.cssText = "display:flex;flex-direction:column;gap:4px";
+    c1Top.className = "ivh-flex-col ivh-gap-1";
     var c1Lbl = document.createElement("div"); c1Lbl.className = "stat-lbl"; c1Lbl.textContent = periodLabel; c1Top.appendChild(c1Lbl);
     var c1Val = document.createElement("div"); c1Val.className = "stat-val" + (periodEarned ? " green" : ""); c1Val.textContent = defaultVal; c1Top.appendChild(c1Val);
     if (!periodEarned) { var c1Sub = document.createElement("div"); c1Sub.className = "stat-sub"; c1Sub.textContent = "No sales recorded yet"; c1Top.appendChild(c1Sub); }
@@ -10390,7 +10457,7 @@ function renderCrmOverviewTab(c, panel, contactId, tabsBar) {
         var pctChange = Math.round(((periodEarned - prevEarned) / prevEarned) * 100);
         var trend = document.createElement("div"); trend.className = "stat-trend";
         var arrow = document.createElement("span");
-        arrow.style.cssText = "font-family:'FA6 Pro';font-weight:400;font-size:10px";
+        arrow.className = "ivh-icon"; arrow.style.fontWeight = "400"; arrow.style.fontSize = "10px";
         arrow.textContent = pctChange >= 0 ? "\uf062" : "\uf063";
         if (pctChange < 0) { trend.style.color = "#df0a0a"; arrow.style.color = "#df0a0a"; }
         trend.appendChild(arrow);
@@ -10421,7 +10488,7 @@ function renderCrmOverviewTab(c, panel, contactId, tabsBar) {
     var card2 = document.createElement("div");
     card2.className = "crm-order-stat-card";
     var c2Top = document.createElement("div");
-    c2Top.style.cssText = "display:flex;flex-direction:column;gap:4px";
+    c2Top.className = "ivh-flex-col ivh-gap-1";
     var c2Lbl = document.createElement("div"); c2Lbl.className = "stat-lbl"; c2Lbl.textContent = c2DefaultLabel; c2Top.appendChild(c2Lbl);
     var c2Val = document.createElement("div"); c2Val.className = "stat-val" + (totalSpent ? " green" : ""); c2Val.textContent = c2DefaultVal; c2Top.appendChild(c2Val);
     if (totalSpent && matchedOrders.length) {
@@ -10452,7 +10519,7 @@ function renderCrmOverviewTab(c, panel, contactId, tabsBar) {
     var card3 = document.createElement("div");
     card3.className = "crm-order-stat-card";
     var c3Top = document.createElement("div");
-    c3Top.style.cssText = "display:flex;flex-direction:column;gap:4px";
+    c3Top.className = "ivh-flex-col ivh-gap-1";
     var c3Lbl = document.createElement("div"); c3Lbl.className = "stat-lbl"; c3Lbl.textContent = "Products with them"; c3Top.appendChild(c3Lbl);
     var c3Val = document.createElement("div"); c3Val.className = "stat-val" + (activeStock.length ? " stat-val-link" : ""); c3Val.textContent = String(activeStock.length);
     if (activeStock.length) {
@@ -10482,7 +10549,7 @@ function renderCrmOverviewTab(c, panel, contactId, tabsBar) {
         var iconCode = sku.indexOf("SOP") === 0 ? "\ue06e" : sku.indexOf("CND") === 0 ? "\uf6bc" : "\uf4b8";
         var isLow = Number(s.quantity || 0) <= 10;
         var icon = document.createElement("span");
-        icon.style.cssText = "font-family:'FA6 Pro';font-weight:400;font-size:10px;color:" + (isLow ? "#df0a0a" : "#3e3e3e");
+        icon.className = "ivh-icon"; icon.style.fontWeight = "400"; icon.style.fontSize = "10px"; icon.style.color = isLow ? "#df0a0a" : "#3e3e3e";
         icon.textContent = iconCode;
         nameWrap.appendChild(icon);
         var nm = document.createElement("span");
@@ -10492,8 +10559,7 @@ function renderCrmOverviewTab(c, panel, contactId, tabsBar) {
         row.appendChild(nameWrap);
         if (isLow) {
           var warn = document.createElement("span");
-          warn.className = "stat-product-warn";
-          warn.style.cssText = "font-family:'FA6 Pro';font-weight:400;font-size:10px";
+          warn.className = "stat-product-warn ivh-icon"; warn.style.fontWeight = "400"; warn.style.fontSize = "10px";
           warn.textContent = "\uf071";
           row.appendChild(warn);
         }
@@ -10543,7 +10609,7 @@ function renderCrmOverviewTab(c, panel, contactId, tabsBar) {
     var card4 = document.createElement("div");
     card4.className = "crm-order-stat-card";
     var c4Top = document.createElement("div");
-    c4Top.style.cssText = "display:flex;flex-direction:column;gap:4px";
+    c4Top.className = "ivh-flex-col ivh-gap-1";
     var c4Lbl = document.createElement("div"); c4Lbl.className = "stat-lbl"; c4Lbl.textContent = "Last sale"; c4Top.appendChild(c4Lbl);
     var lastOrder = filtered.length ? filtered[0] : null;
     var lastDate = lastOrder && lastOrder.createdAt ? formatDate(lastOrder.createdAt) : "\u2014";
@@ -10820,7 +10886,7 @@ function renderCrmOverviewTab(c, panel, contactId, tabsBar) {
     stockSection.appendChild(stockHdr);
     if (connectedShops.length) {
       var shopCards = document.createElement("div");
-      shopCards.style.cssText = "display:flex;flex-direction:column;gap:8px";
+      shopCards.className = "ivh-flex-col ivh-gap-2";
       connectedShops.forEach(function(shop) {
         var card = document.createElement("div");
         card.style.cssText = "display:flex;align-items:flex-start;gap:12px;border:1px solid #e3e3e3;border-radius:8px;padding:12px 16px;background:#fff;cursor:pointer;transition:background 0.1s";
@@ -10867,7 +10933,7 @@ function renderCrmOverviewTab(c, panel, contactId, tabsBar) {
             var soapChip = document.createElement("span");
             soapChip.style.cssText = "display:flex;align-items:center;gap:2px;font-size:10px;color:#3e3e3e";
             var soapIcon = document.createElement("span");
-            soapIcon.style.cssText = "font-family:'FA6 Pro';font-weight:400;font-size:10px";
+            soapIcon.className = "ivh-icon"; soapIcon.style.fontWeight = "400"; soapIcon.style.fontSize = "10px";
             soapIcon.textContent = "\ue06e";
             soapChip.appendChild(soapIcon);
             soapChip.appendChild(document.createTextNode(soapCount));
@@ -10877,7 +10943,7 @@ function renderCrmOverviewTab(c, panel, contactId, tabsBar) {
             var candleChip = document.createElement("span");
             candleChip.style.cssText = "display:flex;align-items:center;gap:2px;font-size:10px;color:#3e3e3e";
             var candleIcon = document.createElement("span");
-            candleIcon.style.cssText = "font-family:'FA6 Pro';font-weight:400;font-size:10px";
+            candleIcon.className = "ivh-icon"; candleIcon.style.fontWeight = "400"; candleIcon.style.fontSize = "10px";
             candleIcon.textContent = "\uf6bc";
             candleChip.appendChild(candleIcon);
             candleChip.appendChild(document.createTextNode(candleCount));
@@ -10955,7 +11021,7 @@ function renderCrmOverviewTab(c, panel, contactId, tabsBar) {
     stockSection.appendChild(stockHdr);
   if (activeStock.length) {
     var stockList = document.createElement("div");
-    stockList.style.cssText = "display:flex;flex-direction:column;gap:2px";
+    stockList.className = "ivh-flex-col"; stockList.style.gap = "2px";
     activeStock.forEach(function(s) {
       var item = document.createElement("div");
       item.style.cssText = "display:flex;align-items:center;gap:6px;background:#fff;border:1px solid #e3e3e3;border-radius:4px;padding:4px 12px 4px 4px;cursor:pointer;transition:background 0.1s";
@@ -11055,7 +11121,7 @@ function renderCrmOverviewTab(c, panel, contactId, tabsBar) {
   contactsSection.appendChild(contactsHdr);
   if (_ovPeople.length) {
     var contactsList = document.createElement("div");
-    contactsList.style.cssText = "display:flex;flex-direction:column;gap:8px";
+    contactsList.className = "ivh-flex-col ivh-gap-2";
     _ovPeople.forEach(function(p) {
       var card = document.createElement("div");
       card.style.cssText = "display:flex;align-items:center;gap:8px;padding:12px;border:1px solid #e3e3e3;border-radius:8px;background:#fff;cursor:pointer";
@@ -12205,7 +12271,8 @@ function renderCrmTeamTab(c, panel, contactId) {
           row.className = "crm-team-profile-field";
           var iconEl = document.createElement("span");
           iconEl.className = "crm-team-profile-icon";
-          iconEl.style.cssText = "font-family:'FA6 Pro';font-weight:300;font-size:14px;color:#0e413b;line-height:1";
+          iconEl.className += " ivh-icon ivh-icon-md";
+          iconEl.style.color = "#0e413b";
           iconEl.textContent = pf.icon;
           row.appendChild(iconEl);
           var val = document.createElement("span");
