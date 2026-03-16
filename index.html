@@ -8825,10 +8825,25 @@ function renderCrmVendors() {
         nameGroup.appendChild(nameEnDiv);
       }
       headerInfo.appendChild(nameGroup);
-      var stageBadge = document.createElement("span");
-      stageBadge.className = "crm-stage-badge crm-stage-" + (c.stage || "prospect");
-      stageBadge.textContent = (c.stage || "prospect").replace("_", " ");
-      headerInfo.appendChild(stageBadge);
+      var stageKey = (c.stage || "prospect");
+      if (stageKey === "active_partner" && c.connectedDate) {
+        var splitBadge = document.createElement("span");
+        splitBadge.className = "crm-detail-stage-split";
+        var splitLeft = document.createElement("span");
+        splitLeft.className = "crm-detail-stage-split-left";
+        splitLeft.textContent = "Partner";
+        splitBadge.appendChild(splitLeft);
+        var splitRight = document.createElement("span");
+        splitRight.className = "crm-detail-stage-split-right";
+        splitRight.textContent = "Since " + formatDate(c.connectedDate);
+        splitBadge.appendChild(splitRight);
+        headerInfo.appendChild(splitBadge);
+      } else {
+        var stageBadge = document.createElement("span");
+        stageBadge.className = "crm-stage-badge crm-stage-" + stageKey;
+        stageBadge.textContent = stageKey.replace("_", " ");
+        headerInfo.appendChild(stageBadge);
+      }
       cardHeader.appendChild(headerInfo);
       card.appendChild(cardHeader);
 
