@@ -2799,7 +2799,8 @@ h2.crm-detail-name {
   border-bottom: 1px solid var(--color-border-subtle);
   overflow-x: auto;
   flex-shrink: 0;
-  padding: 0 32px;
+  flex-wrap: nowrap;
+  padding: 0 16px;
   gap: 0;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
@@ -2814,7 +2815,8 @@ h2.crm-detail-name {
   border-bottom: 2px solid transparent;
   white-space: nowrap;
   transition: color 0.15s, border-color 0.15s;
-  flex-shrink: 0;
+  flex-shrink: 1;
+  min-width: 0;
   background: none;
   border-top: none;
   border-left: none;
@@ -2822,8 +2824,9 @@ h2.crm-detail-name {
   font-family: var(--font-text);
   display: flex;
   align-items: flex-end;
-  gap: 6px;
+  gap: 4px;
   line-height: var(--leading-normal);
+  padding: 12px 10px 14px;
 }
 .crm-detail-tab:hover { color: rgba(14,65,59,0.9); }
 .crm-detail-tab.active { color: var(--color-primary); border-bottom-color: var(--color-primary); font-weight: 600; }
@@ -9498,7 +9501,7 @@ function openCrmDetailView(contactId) {
     splitBadge.appendChild(splitLeft);
     var splitRight = document.createElement("span");
     splitRight.className = "crm-detail-stage-split-right";
-    splitRight.textContent = "Since " + c.connectedDate;
+    splitRight.textContent = "Since " + (c.connectedDate ? formatDate(c.connectedDate) : "");
     splitBadge.appendChild(splitRight);
     badgesRow.appendChild(splitBadge);
   } else {
