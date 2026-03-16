@@ -3546,6 +3546,83 @@ h2.crm-detail-name {
 .crm-person-profile-name { font-size: var(--text-lg); font-weight: 600; color: var(--color-text-heading); }
 .crm-person-profile-role { font-size: var(--text-md); color: var(--color-text-secondary); margin-top: 2px; }
 
+/* ── Contact Profile (embedded view) ───────────────────────── */
+.contact-profile { display: flex; flex-direction: column; }
+.contact-profile-back { display: flex; align-items: center; gap: 4px; font-family: var(--font-mono); font-size: 10px; color: var(--color-primary); cursor: pointer; padding: 12px 0; background: none; border: none; letter-spacing: -0.3px; }
+.contact-profile-back:hover { opacity: 0.8; }
+.contact-profile-header { display: flex; align-items: flex-start; gap: 12px; padding: 16px 32px; }
+.contact-profile-avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--color-primary-tint); color: var(--color-primary); font-family: var(--font-display); font-size: 13px; font-weight: 600; display: flex; align-items: center; justify-content: center; flex-shrink: 0; overflow: hidden; }
+.contact-profile-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.contact-profile-name-block { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
+.contact-profile-name-ja { font-family: var(--font-display); font-size: 16px; font-weight: 600; color: var(--color-text-heading); display: flex; align-items: center; gap: 6px; }
+.contact-profile-name-en { font-family: var(--font-body); font-size: 12px; color: var(--color-text-subtle); }
+.contact-profile-title { font-family: var(--font-mono); font-size: 10px; color: var(--color-text-tertiary); letter-spacing: -0.3px; }
+.contact-profile-badges { display: flex; flex-direction: row; gap: 4px; margin-top: 4px; }
+.contact-profile-info-strip { display: grid; grid-template-columns: repeat(3, 1fr); border-top: 1px solid var(--color-border-subtle); border-bottom: 1px solid var(--color-border-subtle); }
+.contact-profile-info-cell { padding: 10px 16px; display: flex; flex-direction: column; gap: 2px; }
+.contact-profile-info-label { font-family: var(--font-mono); font-size: 10px; color: var(--color-text-tertiary); letter-spacing: -0.3px; }
+.contact-profile-info-value { font-family: var(--font-text); font-size: 14px; color: var(--color-text-heading); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.contact-profile-info-value a { color: var(--color-link-external); text-decoration: none; }
+.contact-profile-info-value a:hover { text-decoration: underline; }
+.contact-profile-tabs { display: flex; flex-direction: row; border-bottom: 1px solid var(--color-border-subtle); padding: 0 32px; }
+.contact-profile-tab { font-family: var(--font-text); font-size: 13px; font-weight: 500; color: var(--color-text-secondary); padding: 12px 12px 14px; border-bottom: 2px solid transparent; cursor: pointer; background: none; border-top: none; border-left: none; border-right: none; }
+.contact-profile-tab:hover { color: var(--color-text-heading); }
+.contact-profile-tab.active { color: var(--color-primary); border-bottom-color: var(--color-primary); }
+.contact-profile-tab-badge { font-family: var(--font-mono); font-size: 10px; background: var(--color-surface-tertiary); color: var(--color-text-secondary); border-radius: 4px; padding: 0 4px; margin-left: 4px; }
+.contact-profile-panel { padding: 16px 32px; display: none; }
+.contact-profile-panel.active { display: block; }
+.contact-context-table { border: 1px solid var(--color-border-subtle); border-radius: 8px; overflow: hidden; }
+.contact-context-row { display: flex; border-bottom: 1px solid var(--color-border-separator); }
+.contact-context-row:last-child { border-bottom: none; }
+.contact-context-key { min-width: 120px; font-family: var(--font-body); font-size: 12px; color: var(--color-text-tertiary); padding: 10px 14px; background: var(--color-surface-alt); }
+.contact-context-value { flex: 1; padding: 10px 14px; font-family: var(--font-text); font-size: 14px; color: var(--color-text-muted); }
+.chip-lang { background: var(--color-surface-tertiary); color: var(--color-text-muted); padding: 3px 8px; border-radius: 4px; font-family: var(--font-body); font-size: 12px; font-weight: 400; display: inline-block; margin: 2px; }
+.chip-comm { background: var(--color-primary-tint); color: var(--color-primary); border: 1px solid rgba(14,65,59,0.15); padding: 3px 8px; border-radius: 4px; font-family: var(--font-body); font-size: 12px; font-weight: 400; display: inline-block; margin: 2px; }
+.contact-todo-card { border: 1px solid var(--color-border-subtle); border-radius: 8px; overflow: hidden; }
+.contact-todo-row { display: flex; align-items: center; gap: 8px; padding: 10px 14px; border-bottom: 1px solid var(--color-border-separator); }
+.contact-todo-row:last-child { border-bottom: none; }
+.contact-todo-checkbox { width: 16px; height: 16px; border-radius: 4px; border: 1.5px solid var(--color-border); cursor: pointer; flex-shrink: 0; display: flex; align-items: center; justify-content: center; background: none; }
+.contact-todo-checkbox.done { background: var(--color-primary); border-color: var(--color-primary); color: var(--color-text-inverse); }
+.contact-todo-text { font-family: var(--font-text); font-size: 14px; color: var(--color-text); flex: 1; }
+.contact-todo-text.done { text-decoration: line-through; color: var(--color-text-disabled); }
+.contact-todo-date { font-family: var(--font-mono); font-size: 10px; color: var(--color-text-tertiary); letter-spacing: -0.3px; }
+.contact-todo-date.overdue { color: var(--color-error-text); }
+.contact-note-input { border: 1px solid var(--color-border); border-radius: 8px; padding: 12px; margin-bottom: 12px; }
+.contact-note-input textarea { width: 100%; border: none; outline: none; font-family: var(--font-text); font-size: 14px; color: var(--color-text); resize: vertical; min-height: 60px; background: transparent; }
+.contact-note-input textarea::placeholder { color: var(--color-text-disabled); }
+.contact-note-input-actions { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
+.contact-note-input select { font-family: var(--font-mono); font-size: 10px; background: var(--color-surface-tertiary); border: 1px solid var(--color-border); border-radius: 4px; padding: 4px 8px; color: var(--color-text-secondary); }
+.contact-note-input .btn-save { font-family: var(--font-mono); font-size: 10px; background: var(--color-primary); color: var(--color-text-inverse); border: none; border-radius: 6px; padding: 5px 12px; cursor: pointer; margin-left: auto; }
+.contact-note-input .btn-save:hover { background: var(--color-primary-hover); }
+.contact-note-card { border: 1px solid var(--color-border-subtle); border-radius: 8px; padding: 14px; margin-bottom: 8px; box-shadow: var(--shadow-sm); }
+.contact-note-meta { display: flex; justify-content: space-between; margin-bottom: 6px; align-items: center; }
+.contact-note-date { font-family: var(--font-mono); font-size: 10px; color: var(--color-text-subtle); letter-spacing: -0.3px; }
+.contact-note-context { font-family: var(--font-mono); font-size: 10px; color: var(--color-text-secondary); background: var(--color-surface-tertiary); border-radius: 4px; padding: 1px 6px; }
+.contact-note-body { font-family: var(--font-text); font-size: 14px; color: var(--color-text-muted); line-height: 20px; }
+.contact-activity-item { display: flex; align-items: flex-start; gap: 8px; padding: 8px 0; border-bottom: 1px solid var(--color-border-separator); }
+.contact-activity-item:last-child { border-bottom: none; }
+.contact-activity-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; margin-top: 5px; }
+.contact-activity-content { flex: 1; min-width: 0; }
+.contact-activity-title { font-family: var(--font-body); font-size: 12px; font-weight: 600; color: var(--color-text-muted); }
+.contact-activity-detail { font-family: var(--font-body); font-size: 12px; color: var(--color-text-subtle); }
+.contact-activity-time { font-family: var(--font-mono); font-size: 10px; color: var(--color-text-tertiary); letter-spacing: -0.3px; white-space: nowrap; }
+.contact-peer-row { display: flex; align-items: center; gap: 8px; padding: 10px 0; border-bottom: 1px solid var(--color-border-separator); cursor: pointer; }
+.contact-peer-row:last-child { border-bottom: none; }
+.contact-peer-row:hover { background: var(--color-surface-secondary); }
+.contact-attach-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.contact-attach-card { border: 1px solid var(--color-border-subtle); border-radius: 8px; overflow: hidden; }
+.contact-attach-preview { height: 90px; background: var(--color-surface-secondary); display: flex; align-items: center; justify-content: center; }
+.contact-attach-preview img { max-width: 100%; max-height: 100%; object-fit: contain; }
+.contact-attach-label { font-family: var(--font-mono); font-size: 10px; color: var(--color-text-tertiary); padding: 7px 10px; border-top: 1px solid var(--color-border-separator); }
+.contact-attach-add { border: 1.5px dashed var(--color-border); border-radius: 8px; padding: 16px; text-align: center; font-family: var(--font-mono); font-size: 10px; color: var(--color-text-tertiary); cursor: pointer; }
+.contact-attach-add:hover { border-color: var(--color-primary); color: var(--color-primary); }
+.contact-profile-edit-btn { background: none; border: none; cursor: pointer; color: var(--color-text-tertiary); padding: 4px; margin-left: auto; }
+.contact-profile-edit-btn:hover { color: var(--color-primary); }
+.contact-profile-section-header { display: flex; align-items: center; justify-content: space-between; margin: 16px 0 8px; }
+.contact-profile-section-title { font-family: var(--font-display); font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.8px; color: var(--color-text-tertiary); }
+.contact-profile-section-action { font-family: var(--font-mono); font-size: 10px; color: var(--color-primary); cursor: pointer; background: none; border: none; letter-spacing: -0.3px; }
+.contact-profile-section-action:hover { opacity: 0.8; }
+
 /* ── Notes timeline ────────────────────────────────────────── */
 .crm-notes-container {
   display: flex;
@@ -11721,7 +11798,14 @@ function renderCrmOverviewTab(c, panel, contactId, tabsBar) {
         info.appendChild(roleEl);
       }
       card.appendChild(info);
-      card.onclick = function() { _renderPersonProfile(p, c, panel, contactId, tabsBar); };
+      card.onclick = function() {
+        var matched = _matchPersonToContact(p, c);
+        if (matched) {
+          renderContactProfileEmbedded(matched, c, panel, contactId, tabsBar);
+        } else {
+          _renderPersonProfile(p, c, panel, contactId, tabsBar);
+        }
+      };
       contactsList.appendChild(card);
     });
     contactsSection.appendChild(contactsList);
@@ -12636,6 +12720,615 @@ function _renderPersonProfile(person, c, panel, contactId, tabsBar) {
     if (tabsBar) tabsBar.querySelectorAll(".crm-detail-tab")[1].click();
   };
   panel.appendChild(editLink);
+}
+
+// ── Contact Profile — Embedded View (Phase 2) ──────────────────────────────
+
+function renderContactProfileEmbedded(contact, vendorRecord, bodyEl, contactId, tabsBar) {
+  bodyEl.textContent = "";
+  var derived = getContactDerived(contact);
+
+  // Wrapper
+  var wrap = document.createElement("div");
+  wrap.className = "contact-profile";
+
+  // Back button bar
+  var backBar = document.createElement("div");
+  backBar.style.cssText = "display:flex;align-items:center;padding:0 32px";
+  var backBtn = document.createElement("button");
+  backBtn.className = "contact-profile-back";
+  backBtn.textContent = "\u2190 Contacts";
+  backBtn.onclick = function() {
+    var fresh = crmContacts.find(function(x) { return x.id === contactId; }) || vendorRecord;
+    renderCrmOverviewTab(fresh, bodyEl, contactId, tabsBar);
+  };
+  backBar.appendChild(backBtn);
+  // Edit pencil button
+  var editBtn = document.createElement("button");
+  editBtn.className = "contact-profile-edit-btn";
+  editBtn.appendChild(_crmFa6Icon("\uf303", 14, 300));
+  editBtn.style.marginLeft = "auto";
+  backBar.appendChild(editBtn);
+  wrap.appendChild(backBar);
+
+  // Header
+  var header = document.createElement("div");
+  header.className = "contact-profile-header";
+  var avatar = document.createElement("div");
+  avatar.className = "contact-profile-avatar";
+  if (contact.avatarImageUrl) {
+    var avatarImg = document.createElement("img");
+    avatarImg.src = contact.avatarImageUrl;
+    avatar.appendChild(avatarImg);
+  } else {
+    avatar.textContent = contact.initials || "??";
+  }
+  header.appendChild(avatar);
+  var nameBlock = document.createElement("div");
+  nameBlock.className = "contact-profile-name-block";
+  // Name (Japanese) + Primary badge on same line
+  var nameJaRow = document.createElement("div");
+  nameJaRow.className = "contact-profile-name-ja";
+  nameJaRow.textContent = contact.nameJa || contact.nameEn || "Unnamed";
+  if (contact.isPrimary) {
+    var primaryBadge = document.createElement("span");
+    primaryBadge.className = "crm-badge";
+    primaryBadge.style.cssText = "font-family:var(--font-mono);font-size:10px;background:var(--color-primary-tint);color:var(--color-primary);border:1px solid rgba(14,65,59,.15);border-radius:2px;padding:1px 5px";
+    primaryBadge.textContent = "Primary Contact";
+    nameJaRow.appendChild(primaryBadge);
+  }
+  nameBlock.appendChild(nameJaRow);
+  // Name (English) — show if Japanese name is displayed as primary
+  if (contact.nameJa && contact.nameEn) {
+    var nameEn = document.createElement("div");
+    nameEn.className = "contact-profile-name-en";
+    nameEn.textContent = contact.nameEn;
+    nameBlock.appendChild(nameEn);
+  }
+  // Title
+  if (contact.title) {
+    var titleEl = document.createElement("div");
+    titleEl.className = "contact-profile-title";
+    titleEl.textContent = contact.title;
+    nameBlock.appendChild(titleEl);
+  }
+  // Role badge
+  if (contact.vendorRole) {
+    var badges = document.createElement("div");
+    badges.className = "contact-profile-badges";
+    var roleBadge = document.createElement("span");
+    roleBadge.className = "crm-badge";
+    roleBadge.style.cssText = "font-family:var(--font-mono);font-size:10px;background:var(--color-surface-tertiary);color:var(--color-text-secondary);border-radius:2px;padding:1px 5px";
+    var roleLabels = { PRIMARY: "Primary", SECONDARY: "Secondary", DECISION_MAKER: "Decision Maker", OPERATIONAL: "Operational" };
+    roleBadge.textContent = roleLabels[contact.vendorRole] || contact.vendorRole;
+    badges.appendChild(roleBadge);
+    nameBlock.appendChild(badges);
+  }
+  header.appendChild(nameBlock);
+  wrap.appendChild(header);
+
+  // Info strip (Email, Phone, LINE)
+  var strip = document.createElement("div");
+  strip.className = "contact-profile-info-strip";
+  var stripFields = [
+    { label: "Email", value: contact.email, linkType: "email" },
+    { label: "Phone", value: contact.phone, linkType: "phone" },
+    { label: "LINE", value: contact.lineId }
+  ];
+  stripFields.forEach(function(f) {
+    var cell = document.createElement("div");
+    cell.className = "contact-profile-info-cell";
+    var lbl = document.createElement("div");
+    lbl.className = "contact-profile-info-label";
+    lbl.textContent = f.label;
+    cell.appendChild(lbl);
+    var val = document.createElement("div");
+    val.className = "contact-profile-info-value";
+    if (f.value) {
+      if (f.linkType === "email") {
+        var link = document.createElement("a");
+        link.href = "mailto:" + f.value;
+        link.textContent = f.value;
+        val.appendChild(link);
+      } else if (f.linkType === "phone") {
+        var plink = document.createElement("a");
+        plink.href = "tel:" + f.value;
+        plink.textContent = f.value;
+        val.appendChild(plink);
+      } else {
+        val.textContent = f.value;
+      }
+    } else {
+      val.textContent = "\u2014";
+      val.style.color = "var(--color-text-disabled)";
+    }
+    cell.appendChild(val);
+    strip.appendChild(cell);
+  });
+  wrap.appendChild(strip);
+
+  // Tab bar
+  var tabBar = document.createElement("div");
+  tabBar.className = "contact-profile-tabs";
+  var contactNotesForThis = contactNotes.filter(function(n) { return n.contactId === contact.id; });
+  var contactEventsForThis = contactActivityEvents.filter(function(e) { return e.contactId === contact.id; });
+  var contactAttachmentsForThis = contactAttachments.filter(function(a) { return a.contactId === contact.id; });
+  var tabDefs = [
+    { name: "Overview", count: null },
+    { name: "Notes", count: contactNotesForThis.length },
+    { name: "Activity", count: contactEventsForThis.length },
+    { name: "Attachments", count: contactAttachmentsForThis.length }
+  ];
+  var tabPanels = [];
+  tabDefs.forEach(function(td, idx) {
+    var tab = document.createElement("button");
+    tab.className = "contact-profile-tab" + (idx === 0 ? " active" : "");
+    tab.textContent = td.name;
+    if (td.count !== null && td.count > 0) {
+      var badge = document.createElement("span");
+      badge.className = "contact-profile-tab-badge";
+      badge.textContent = String(td.count);
+      tab.appendChild(badge);
+    }
+    tab.onclick = function() {
+      tabBar.querySelectorAll(".contact-profile-tab").forEach(function(t) { t.classList.remove("active"); });
+      tab.classList.add("active");
+      tabPanels.forEach(function(p) { p.classList.remove("active"); });
+      tabPanels[idx].classList.add("active");
+    };
+    tabBar.appendChild(tab);
+
+    var panel = document.createElement("div");
+    panel.className = "contact-profile-panel" + (idx === 0 ? " active" : "");
+    tabPanels.push(panel);
+  });
+  wrap.appendChild(tabBar);
+
+  // Render tab content
+  renderContactOverviewEmbedded(contact, derived, vendorRecord, tabPanels[0], bodyEl, contactId, tabsBar);
+  renderContactNotesTab(contact, tabPanels[1], bodyEl, contactId, tabsBar, vendorRecord);
+  renderContactActivityTab(contact, tabPanels[2]);
+  renderContactAttachmentsTab(contact, tabPanels[3]);
+
+  tabPanels.forEach(function(p) { wrap.appendChild(p); });
+  bodyEl.appendChild(wrap);
+}
+
+// ── Contact Profile: Overview tab ───────────────────────────────────────────
+
+function renderContactOverviewEmbedded(contact, derived, vendorRecord, panel, bodyEl, contactId, tabsBar) {
+  panel.textContent = "";
+
+  // Personal context table
+  var contextTable = document.createElement("div");
+  contextTable.className = "contact-context-table";
+  var contextRows = [
+    { key: "Languages", value: contact.languages, type: "lang-chips" },
+    { key: "Reaches back on", value: contact.communicationPrefs, type: "comm-chips" },
+    { key: "Background", value: contact.background, type: "text" },
+    { key: "How we met", value: contact.howWeMet, type: "text" }
+  ];
+  contextRows.forEach(function(r) {
+    var row = document.createElement("div");
+    row.className = "contact-context-row";
+    var key = document.createElement("div");
+    key.className = "contact-context-key";
+    key.textContent = r.key;
+    row.appendChild(key);
+    var val = document.createElement("div");
+    val.className = "contact-context-value";
+    if (r.type === "lang-chips" && r.value && r.value.length) {
+      r.value.forEach(function(lang) {
+        var chip = document.createElement("span");
+        chip.className = "chip-lang";
+        chip.textContent = lang;
+        val.appendChild(chip);
+      });
+    } else if (r.type === "comm-chips" && r.value && r.value.length) {
+      r.value.forEach(function(pref) {
+        var chip = document.createElement("span");
+        chip.className = "chip-comm";
+        chip.textContent = pref;
+        val.appendChild(chip);
+      });
+    } else if (r.type === "text" && r.value) {
+      val.textContent = r.value;
+    } else {
+      val.textContent = "\u2014";
+      val.style.color = "var(--color-text-disabled)";
+    }
+    row.appendChild(val);
+    contextTable.appendChild(row);
+  });
+  panel.appendChild(contextTable);
+
+  // To-do section
+  var contactTasks = boardTasks.filter(function(t) { return t.contactId === contact.id; });
+  var todoHeader = document.createElement("div");
+  todoHeader.className = "contact-profile-section-header";
+  var todoTitle = document.createElement("span");
+  todoTitle.className = "contact-profile-section-title";
+  todoTitle.textContent = "To-do";
+  todoHeader.appendChild(todoTitle);
+  var todoAdd = document.createElement("button");
+  todoAdd.className = "contact-profile-section-action";
+  todoAdd.textContent = "+ Add";
+  todoAdd.onclick = function() {
+    var text = prompt("Task description:");
+    if (!text) return;
+    var dueDateStr = prompt("Due date (YYYY-MM-DD, or leave empty):");
+    var newTask = {
+      id: "ct-" + Date.now(),
+      vendorId: contact.vendorId || null,
+      contactId: contact.id,
+      text: text,
+      dueDate: dueDateStr || null,
+      isCompleted: false,
+      completedAt: null,
+      createdAt: new Date().toISOString()
+    };
+    boardTasks.push(newTask);
+    saveDataCache();
+    renderContactProfileEmbedded(contact, vendorRecord, bodyEl, contactId, tabsBar);
+  };
+  todoHeader.appendChild(todoAdd);
+  panel.appendChild(todoHeader);
+
+  if (contactTasks.length) {
+    var todoCard = document.createElement("div");
+    todoCard.className = "contact-todo-card";
+    // Sort: incomplete first, then by due date
+    var sorted = contactTasks.slice().sort(function(a, b) {
+      if (a.isCompleted !== b.isCompleted) return a.isCompleted ? 1 : -1;
+      return (a.dueDate || "9999").localeCompare(b.dueDate || "9999");
+    });
+    sorted.forEach(function(task) {
+      var row = document.createElement("div");
+      row.className = "contact-todo-row";
+      var cb = document.createElement("div");
+      cb.className = "contact-todo-checkbox" + (task.isCompleted ? " done" : "");
+      if (task.isCompleted) {
+        cb.appendChild(_crmFa6Icon("\uf00c", 10, 900));
+      }
+      cb.onclick = function() {
+        task.isCompleted = !task.isCompleted;
+        task.completedAt = task.isCompleted ? new Date().toISOString() : null;
+        if (task.isCompleted) {
+          contactActivityEvents.push({
+            id: "cae-" + Date.now(),
+            contactId: contact.id,
+            eventType: "TASK_COMPLETED",
+            title: "Task completed",
+            detail: task.text,
+            relatedId: task.id,
+            occurredAt: new Date().toISOString()
+          });
+        }
+        saveDataCache();
+        renderContactProfileEmbedded(contact, vendorRecord, bodyEl, contactId, tabsBar);
+      };
+      row.appendChild(cb);
+      var txt = document.createElement("span");
+      txt.className = "contact-todo-text" + (task.isCompleted ? " done" : "");
+      txt.textContent = task.text;
+      row.appendChild(txt);
+      if (task.dueDate) {
+        var dateEl = document.createElement("span");
+        dateEl.className = "contact-todo-date";
+        var isOverdue = !task.isCompleted && task.dueDate < new Date().toISOString().slice(0, 10);
+        if (isOverdue) dateEl.classList.add("overdue");
+        dateEl.textContent = formatDate(task.dueDate);
+        row.appendChild(dateEl);
+      }
+      todoCard.appendChild(row);
+    });
+    panel.appendChild(todoCard);
+  } else {
+    var emptyTodo = document.createElement("div");
+    emptyTodo.style.cssText = "font-family:var(--font-body);font-size:12px;color:var(--color-text-disabled);padding:8px 0";
+    emptyTodo.textContent = "No tasks yet";
+    panel.appendChild(emptyTodo);
+  }
+
+  // "Also at [vendor name]" — peer contacts
+  if (derived.peerContacts && derived.peerContacts.length > 0) {
+    var peerHeader = document.createElement("div");
+    peerHeader.className = "contact-profile-section-header";
+    var peerTitle = document.createElement("span");
+    peerTitle.className = "contact-profile-section-title";
+    var vendorName = vendorRecord ? (vendorRecord.company || vendorRecord.name || "") : "";
+    peerTitle.textContent = "Also at " + vendorName;
+    peerHeader.appendChild(peerTitle);
+    panel.appendChild(peerHeader);
+
+    derived.peerContacts.forEach(function(peer) {
+      var peerRow = document.createElement("div");
+      peerRow.className = "contact-peer-row";
+      var peerAv = document.createElement("div");
+      peerAv.style.cssText = "width:36px;height:36px;border-radius:50%;background:var(--color-primary-tint);color:var(--color-primary);font-family:var(--font-display);font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0";
+      peerAv.textContent = peer.initials || "??";
+      peerRow.appendChild(peerAv);
+      var peerInfo = document.createElement("div");
+      peerInfo.style.cssText = "flex:1;min-width:0";
+      var peerName = document.createElement("div");
+      peerName.style.cssText = "font-family:var(--font-text);font-size:14px;font-weight:600;color:var(--color-text-heading)";
+      peerName.textContent = peer.nameJa || peer.nameEn || "Unnamed";
+      peerInfo.appendChild(peerName);
+      var peerSub = document.createElement("div");
+      peerSub.style.cssText = "font-family:var(--font-body);font-size:12px;color:var(--color-text-subtle)";
+      var subParts = [];
+      var roleLabels = { PRIMARY: "Primary", SECONDARY: "Secondary", DECISION_MAKER: "Decision Maker", OPERATIONAL: "Operational" };
+      if (peer.vendorRole) subParts.push(roleLabels[peer.vendorRole] || peer.vendorRole);
+      if (peer.email) subParts.push(peer.email);
+      peerSub.textContent = subParts.join(" \u00B7 ");
+      peerInfo.appendChild(peerSub);
+      peerRow.appendChild(peerInfo);
+      peerRow.onclick = function() {
+        renderContactProfileEmbedded(peer, vendorRecord, bodyEl, contactId, tabsBar);
+      };
+      panel.appendChild(peerRow);
+    });
+  }
+}
+
+// ── Contact Profile: Notes tab ──────────────────────────────────────────────
+
+function renderContactNotesTab(contact, panel, bodyEl, contactId, tabsBar, vendorRecord) {
+  panel.textContent = "";
+
+  // Add note input
+  var inputWrap = document.createElement("div");
+  inputWrap.className = "contact-note-input";
+  var textarea = document.createElement("textarea");
+  textarea.placeholder = "Add a note about " + (contact.nameEn || contact.nameJa || "this contact") + "...";
+  textarea.rows = 3;
+  inputWrap.appendChild(textarea);
+  var actions = document.createElement("div");
+  actions.className = "contact-note-input-actions";
+  var contextSelect = document.createElement("select");
+  ["General", "Meeting", "Call", "Email", "Event"].forEach(function(opt) {
+    var option = document.createElement("option");
+    option.value = opt.toUpperCase();
+    option.textContent = opt;
+    contextSelect.appendChild(option);
+  });
+  actions.appendChild(contextSelect);
+  var saveBtn = document.createElement("button");
+  saveBtn.className = "btn-save";
+  saveBtn.textContent = "Save";
+  saveBtn.onclick = function() {
+    var body = textarea.value.trim();
+    if (!body) return;
+    createContactNote(contact.id, {
+      body: body,
+      context: contextSelect.value
+    });
+    saveDataCache();
+    renderContactProfileEmbedded(contact, vendorRecord, bodyEl, contactId, tabsBar);
+  };
+  actions.appendChild(saveBtn);
+  inputWrap.appendChild(actions);
+  panel.appendChild(inputWrap);
+
+  // Note cards
+  var notes = contactNotes.filter(function(n) { return n.contactId === contact.id; });
+  notes.sort(function(a, b) { return (b.createdAt || "").localeCompare(a.createdAt || ""); });
+  notes.forEach(function(note) {
+    var card = document.createElement("div");
+    card.className = "contact-note-card";
+    var meta = document.createElement("div");
+    meta.className = "contact-note-meta";
+    var dateEl = document.createElement("span");
+    dateEl.className = "contact-note-date";
+    if (note.createdAt) {
+      var d = new Date(note.createdAt);
+      dateEl.textContent = d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+    }
+    meta.appendChild(dateEl);
+    if (note.context) {
+      var ctx = document.createElement("span");
+      ctx.className = "contact-note-context";
+      ctx.textContent = note.context.charAt(0) + note.context.slice(1).toLowerCase();
+      meta.appendChild(ctx);
+    }
+    card.appendChild(meta);
+    var bodyEl2 = document.createElement("div");
+    bodyEl2.className = "contact-note-body";
+    bodyEl2.textContent = note.body;
+    card.appendChild(bodyEl2);
+    panel.appendChild(card);
+  });
+
+  if (notes.length === 0) {
+    var empty = document.createElement("div");
+    empty.style.cssText = "font-family:var(--font-body);font-size:12px;color:var(--color-text-disabled);padding:8px 0";
+    empty.textContent = "No notes yet";
+    panel.appendChild(empty);
+  }
+}
+
+// ── Contact Profile: Activity tab ───────────────────────────────────────────
+
+function renderContactActivityTab(contact, panel) {
+  panel.textContent = "";
+  var events = contactActivityEvents.filter(function(e) { return e.contactId === contact.id; });
+  events.sort(function(a, b) { return (b.occurredAt || "").localeCompare(a.occurredAt || ""); });
+
+  var dotColors = {
+    INTERACTION_EMAIL: "#3cb1ff",
+    INTERACTION_MESSAGE: "#3cb1ff",
+    INTERACTION_MEETING: "#00a52c",
+    INTERACTION_EVENT: "#00a52c",
+    INTERACTION_CALL: "#3cb1ff",
+    SHOP_INTRODUCED: "#00a52c",
+    SHOP_WENT_LIVE: "#00a52c",
+    TASK_COMPLETED: "#0e413b",
+    NOTE_ADDED: "#dadce0",
+    CONTACT_CREATED: "#b06000",
+    VENDOR_LINKED: "#0e413b",
+    VENDOR_LINK_CHANGED: "#0e413b",
+    PRIMARY_ASSIGNED: "#0e413b"
+  };
+
+  if (events.length === 0) {
+    var empty = document.createElement("div");
+    empty.style.cssText = "font-family:var(--font-body);font-size:12px;color:var(--color-text-disabled);padding:8px 0";
+    empty.textContent = "No activity yet";
+    panel.appendChild(empty);
+    return;
+  }
+
+  events.forEach(function(ev) {
+    var item = document.createElement("div");
+    item.className = "contact-activity-item";
+    var dot = document.createElement("div");
+    dot.className = "contact-activity-dot";
+    dot.style.backgroundColor = dotColors[ev.eventType] || "#dadce0";
+    item.appendChild(dot);
+    var content = document.createElement("div");
+    content.className = "contact-activity-content";
+    var title = document.createElement("div");
+    title.className = "contact-activity-title";
+    title.textContent = ev.title || ev.eventType;
+    content.appendChild(title);
+    if (ev.detail) {
+      var detail = document.createElement("div");
+      detail.className = "contact-activity-detail";
+      detail.textContent = ev.detail;
+      content.appendChild(detail);
+    }
+    item.appendChild(content);
+    var time = document.createElement("div");
+    time.className = "contact-activity-time";
+    if (ev.occurredAt) {
+      var d = new Date(ev.occurredAt);
+      time.textContent = d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+    }
+    item.appendChild(time);
+    panel.appendChild(item);
+  });
+}
+
+// ── Contact Profile: Attachments tab ────────────────────────────────────────
+
+function renderContactAttachmentsTab(contact, panel) {
+  panel.textContent = "";
+  var atts = contactAttachments.filter(function(a) { return a.contactId === contact.id; });
+
+  // Business cards section (filter for cards)
+  var businessCards = atts.filter(function(a) {
+    var label = (a.label || "").toLowerCase();
+    return label.indexOf("card") >= 0 || label.indexOf("front") >= 0 || label.indexOf("back") >= 0;
+  });
+
+  if (businessCards.length > 0) {
+    var bcHeader = document.createElement("div");
+    bcHeader.className = "contact-profile-section-header";
+    var bcTitle = document.createElement("span");
+    bcTitle.className = "contact-profile-section-title";
+    bcTitle.textContent = "Business Cards";
+    bcHeader.appendChild(bcTitle);
+    panel.appendChild(bcHeader);
+
+    var grid = document.createElement("div");
+    grid.className = "contact-attach-grid";
+    businessCards.forEach(function(att) {
+      var card = document.createElement("div");
+      card.className = "contact-attach-card";
+      var preview = document.createElement("div");
+      preview.className = "contact-attach-preview";
+      if (att.fileType === "IMAGE" && att.fileUrl) {
+        var img = document.createElement("img");
+        img.src = att.fileUrl;
+        img.alt = att.label || "Business card";
+        preview.appendChild(img);
+      } else {
+        var icon = _crmFa6Icon("\uf0f6", 24, 300);
+        icon.style.color = "var(--color-text-disabled)";
+        preview.appendChild(icon);
+      }
+      card.appendChild(preview);
+      var label = document.createElement("div");
+      label.className = "contact-attach-label";
+      label.textContent = att.label || "Attachment";
+      card.appendChild(label);
+      grid.appendChild(card);
+    });
+    panel.appendChild(grid);
+  }
+
+  // Other attachments
+  var otherAtts = atts.filter(function(a) {
+    var label = (a.label || "").toLowerCase();
+    return !(label.indexOf("card") >= 0 || label.indexOf("front") >= 0 || label.indexOf("back") >= 0);
+  });
+  if (otherAtts.length > 0) {
+    var otherHeader = document.createElement("div");
+    otherHeader.className = "contact-profile-section-header";
+    var otherTitle = document.createElement("span");
+    otherTitle.className = "contact-profile-section-title";
+    otherTitle.textContent = "Files";
+    otherHeader.appendChild(otherTitle);
+    panel.appendChild(otherHeader);
+
+    var otherGrid = document.createElement("div");
+    otherGrid.className = "contact-attach-grid";
+    otherAtts.forEach(function(att) {
+      var card = document.createElement("div");
+      card.className = "contact-attach-card";
+      var preview = document.createElement("div");
+      preview.className = "contact-attach-preview";
+      var icon = _crmFa6Icon("\uf0f6", 24, 300);
+      icon.style.color = "var(--color-text-disabled)";
+      preview.appendChild(icon);
+      card.appendChild(preview);
+      var label = document.createElement("div");
+      label.className = "contact-attach-label";
+      label.textContent = att.label || "Attachment";
+      card.appendChild(label);
+      otherGrid.appendChild(card);
+    });
+    panel.appendChild(otherGrid);
+  }
+
+  // Add file button
+  var addFile = document.createElement("div");
+  addFile.className = "contact-attach-add";
+  addFile.textContent = "+ Add file";
+  addFile.style.marginTop = "12px";
+  panel.appendChild(addFile);
+
+  if (atts.length === 0 && !businessCards.length) {
+    var empty = document.createElement("div");
+    empty.style.cssText = "font-family:var(--font-body);font-size:12px;color:var(--color-text-disabled);padding:8px 0";
+    empty.textContent = "No attachments yet";
+    panel.insertBefore(empty, addFile);
+  }
+}
+
+// ── Helper: Match a legacy person record to a Contact from contactPeople ────
+
+function _matchPersonToContact(person, vendorRecord) {
+  if (!person) return null;
+  var personFullName = ((person.firstName || "") + " " + (person.lastName || "")).trim().toLowerCase();
+  var personEmail = (person.email || "").toLowerCase();
+  var vendorId = vendorRecord ? vendorRecord.id : null;
+
+  // Try matching by name and vendor
+  var match = null;
+  contactPeople.forEach(function(cp) {
+    if (match) return;
+    var cpNameEn = (cp.nameEn || "").toLowerCase();
+    var cpEmail = (cp.email || "").toLowerCase();
+    var cpVendor = cp.vendorId || null;
+    // Match by email first (most reliable)
+    if (personEmail && cpEmail && personEmail === cpEmail) { match = cp; return; }
+    // Match by name + vendor
+    if (personFullName && cpNameEn === personFullName && cpVendor === vendorId) { match = cp; return; }
+    // Match by full name only
+    if (personFullName && cpNameEn === personFullName) { match = cp; return; }
+  });
+  return match;
 }
 
 function renderCrmTeamTab(c, panel, contactId) {
