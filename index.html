@@ -9413,7 +9413,7 @@ function closeCrmModal() {
 }
 
 // Reusable click-tooltip: returns { trigger, tooltip } elements.
-// Usage: var tt = _ivhTooltip("\uf05a", "Tooltip text here", opts);
+// Usage: var tt = _ivhTooltip("\uf129", "Tooltip text here", opts);
 //        parent.appendChild(tt);
 // opts.align: "center" (default), "left", "right"
 function _ivhTooltip(iconUnicode, text, opts) {
@@ -10235,7 +10235,7 @@ function _renderAnalyticsSection(panel, c, contactId, matchedOrders, totalSpent,
   var titleText = document.createElement("span");
   titleText.textContent = "Analytics";
   titleWrap.appendChild(titleText);
-  titleWrap.appendChild(_ivhTooltip("\uf05a", "Revenue and stock metrics for this vendor. Use the dropdown to change the time period.", { align: "left" }));
+  titleWrap.appendChild(_ivhTooltip("\uf129", "Revenue and stock metrics for this vendor. Use the dropdown to change the time period.", { align: "left" }));
   analyticsHeader.appendChild(titleWrap);
   // Dropdown with period menu
   var periods = [
