@@ -14565,6 +14565,27 @@ function _matchPersonToContact(person, vendorRecord) {
     // Match by full name only
     if (personFullName && cpNameEn === personFullName) { match = cp; return; }
   });
+
+  // Auto-migrate: if no match found, create a Contact object from the person data
+  if (!match && person) {
+    var fullEn = ((person.firstNameEn || person.firstName || "") + " " + (person.lastNameEn || person.lastName || "")).trim();
+    var fullJa = ((person.firstName || "") + " " + (person.lastName || "")).trim();
+    // Detect if the "primary" name is Japanese
+    var hasJa = /[\u3040-\u309f\u30a0-\u30ff\u4e00-\u9fff]/.test(fullJa);
+    var newContact = createContact({
+      nameJa: hasJa ? fullJa : null,
+      nameEn: fullEn || fullJa || "Unknown",
+      title: person.role || "",
+      email: person.email || "",
+      phone: person.phone || "",
+      vendorId: vendorId,
+      vendorRole: person.isPrimary ? "PRIMARY" : "SECONDARY",
+      isPrimary: !!person.isPrimary,
+      avatarImageUrl: person.profileImageUrl || ""
+    });
+    if (newContact) match = newContact;
+  }
+
   return match;
 }
 
