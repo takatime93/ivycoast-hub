@@ -1182,6 +1182,20 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
   border-bottom: 1px solid #ebebeb;
 }
 .crm-modal-section:last-of-type { border-bottom: none; }
+/* Vendor Type Selector */
+.crm-type-selector {
+  display: flex; gap: 8px; margin-top: 8px;
+}
+.crm-type-option {
+  flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px;
+  padding: 14px 8px; border: 2px solid #e3e3e3; border-radius: 8px;
+  background: #fff; cursor: pointer; transition: all 0.15s; text-align: center;
+}
+.crm-type-option:hover { border-color: #0e413b; background: #f8faf9; }
+.crm-type-option.active { border-color: #0e413b; background: #e8f0ee; }
+.crm-type-icon { font-size: 18px; color: #0e413b; }
+.crm-type-label { font-size: 12px; font-weight: 700; color: #181818; }
+.crm-type-desc { font-size: 10px; color: #606060; line-height: 1.3; }
 .crm-section-title {
   font-size: 11px;
   font-weight: 700;
@@ -2380,7 +2394,15 @@ h2.crm-detail-name {
   display: inline-flex; align-items: center; padding: 3px 8px;
   border-radius: 3px; font-size: 10px; font-weight: 600;
   text-transform: uppercase; letter-spacing: 1px; white-space: nowrap;
-  color: #3b82f6; border: 1px solid #3b82f6; background: transparent;
+}
+.crm-detail-type-badge-v2.type-vendor {
+  background: rgba(60,177,255,0.3); border: 1px solid #0970b4; color: #054169;
+}
+.crm-detail-type-badge-v2.type-connector {
+  background: rgba(141,255,95,0.3); border: 1px solid #0c5b20; color: #0c5b20;
+}
+.crm-detail-type-badge-v2.type-via-connector {
+  background: rgba(255,196,60,0.3); border: 1px solid #5c4307; color: #75550d;
 }
 .crm-detail-stage-split {
   display: inline-flex; align-items: stretch; border-radius: 3px; overflow: hidden;
@@ -2642,6 +2664,23 @@ h2.crm-detail-name {
   transition: background 0.15s;
 }
 .crm-detail-create-inv-btn:hover { background: #d2e3fc; }
+
+/* ── CRM Connector Banner ───────────────────────────────────── */
+.crm-connector-banner {
+  display: flex; align-items: center; justify-content: center;
+  gap: 16px; padding: 8px 32px; font-size: 12px; font-weight: 600; color: #000;
+}
+.crm-connector-banner.banner-connector { background: #ffedc4; }
+.crm-connector-banner.banner-via-connector { background: rgba(141,255,95,0.1); }
+.crm-connector-banner-item {
+  display: inline-flex; align-items: center; gap: 4px;
+}
+.crm-connector-banner-item .crm-icon { font-family: 'FA6 Pro'; font-weight: 400; font-size: 12px; color: #0e413b; }
+.crm-connector-banner-link {
+  font-weight: 600; color: #000; text-decoration: none; cursor: pointer;
+}
+.crm-connector-banner-link:hover { text-decoration: underline; }
+.crm-connector-banner-label { font-weight: 400; }
 
 /* ── CRM Detail Tabs ────────────────────────────────────────── */
 .crm-detail-tabs {
@@ -2993,6 +3032,51 @@ h2.crm-detail-name {
   gap: 8px;
   padding: 16px 0;
 }
+/* ── Money Flow Bar (Via Connector) ─────────────────────────── */
+.crm-money-flow { padding: 0 32px 16px; }
+.crm-money-flow-bar {
+  height: 6px; border-radius: 30px; overflow: clip; display: flex; width: 100%;
+}
+.crm-money-flow-bar > span { display: block; height: 100%; }
+.crm-money-flow-legend {
+  display: flex; align-items: center; gap: 24px; margin-top: 8px; flex-wrap: wrap;
+}
+.crm-money-flow-item {
+  display: flex; align-items: center; gap: 4px; font-size: 10px; white-space: nowrap;
+}
+.crm-money-flow-dot {
+  width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0;
+}
+.crm-money-flow-pct { font-weight: 700; }
+.crm-money-flow-name { font-weight: 700; color: #1e1e1e; }
+.crm-money-flow-role { font-weight: 400; color: #424242; }
+
+/* ── Connector Invoices Section ─────────────────────────────── */
+.crm-conn-invoices { padding: 0 32px 16px; }
+.crm-conn-invoices-header {
+  display: flex; align-items: center; gap: 6px; margin-bottom: 8px;
+}
+.crm-conn-invoices-header .sec-label { font-size: 11px; font-weight: 600; color: #424242; }
+.crm-conn-invoices-header .sec-count { font-size: 11px; font-weight: 300; color: #424242; }
+.crm-conn-inv-row {
+  display: flex; align-items: center; gap: 8px;
+  background: rgba(239,249,248,0.5); border-radius: 8px;
+  padding: 8px 16px 8px 8px; margin-bottom: 4px;
+}
+.crm-conn-inv-left { display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0; }
+.crm-conn-inv-shop { font-size: 13px; font-weight: 500; letter-spacing: 0.13px; color: #000; white-space: nowrap; }
+.crm-conn-inv-date {
+  font-size: 11px; background: #fff; border-radius: 4px; padding: 2px 6px;
+  color: #424242; white-space: nowrap;
+}
+.crm-conn-inv-amount { font-size: 14px; font-weight: 600; color: #000; white-space: nowrap; }
+.crm-conn-inv-view {
+  font-size: 11px; font-weight: 600; color: #0e413b;
+  border: 1px solid #0e413b; border-radius: 6px; padding: 4px 10px;
+  background: transparent; cursor: pointer; white-space: nowrap;
+}
+.crm-conn-inv-view:hover { background: #e8f0ee; }
+
 .crm-analytics-header {
   display: flex;
   align-items: center;
@@ -3573,9 +3657,7 @@ h2.crm-detail-name {
   font-size: 14px;
   color: #000;
   line-height: 20px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  min-width: 0;
 }
 .crm-ticket-title.done {
   text-decoration: line-through;
@@ -4194,6 +4276,7 @@ h2.crm-detail-name {
   .crm-detail-biz-row { grid-template-columns: 1fr; }
   .crm-detail-fields { grid-template-columns: 1fr; }
   .crm-detail-tabs { padding: 0 16px; }
+  .crm-connector-banner { padding: 8px 16px; gap: 10px; flex-wrap: wrap; font-size: 11px; }
   .crm-order-summary-stats { grid-template-columns: 1fr; }
   .crm-stock-summary { grid-template-columns: 1fr; }
   .crm-stock-form .form-row { grid-template-columns: 1fr; }
@@ -5369,18 +5452,34 @@ h2.crm-detail-name {
       </div>
     </div>
 
+    <!-- Vendor Type Selector (prominent, first decision) -->
+    <div class="crm-modal-section" id="crm-type-section">
+      <div class="crm-section-title">Vendor Type</div>
+      <div class="crm-type-selector" id="crm-type-selector">
+        <button type="button" class="crm-type-option active" data-type="Vendor">
+          <span class="crm-type-icon" style="font-family:'FA6 Pro';font-weight:400">&#xf541;</span>
+          <span class="crm-type-label">Direct Partner</span>
+          <span class="crm-type-desc">We sell to them directly</span>
+        </button>
+        <button type="button" class="crm-type-option" data-type="Connector">
+          <span class="crm-type-icon" style="font-family:'FA6 Pro';font-weight:400">&#xf0c1;</span>
+          <span class="crm-type-label">B2B2B Connector</span>
+          <span class="crm-type-desc">Connects us to shops, takes a fee</span>
+        </button>
+        <button type="button" class="crm-type-option" data-type="Partner">
+          <span class="crm-type-icon" style="font-family:'FA6 Pro';font-weight:400">&#xf1ad;</span>
+          <span class="crm-type-label">Via Connector</span>
+          <span class="crm-type-desc">Shop connected through a connector</span>
+        </button>
+      </div>
+      <input type="hidden" id="crm-modal-type" value="Vendor">
+      <input type="hidden" id="crm-modal-relation" value="DIRECT">
+    </div>
+
     <!-- Business Details Section -->
     <div class="crm-modal-section">
       <div class="crm-section-title">Business Details</div>
       <div class="crm-field-row">
-        <div class="crm-field">
-          <label for="crm-modal-type">Type</label>
-          <select id="crm-modal-type">
-            <option value="Vendor">Vendor</option>
-            <option value="Business">Business</option>
-            <option value="Customer">Customer</option>
-          </select>
-        </div>
         <div class="crm-field">
           <label for="crm-modal-stage">Stage</label>
           <select id="crm-modal-stage">
@@ -5392,16 +5491,17 @@ h2.crm-detail-name {
           </select>
         </div>
         <div class="crm-field">
-          <label for="crm-modal-relation">Vendor Relation</label>
-          <select id="crm-modal-relation">
-            <option value="DIRECT">Direct Partner</option>
-            <option value="MANAGED_VENUE">Via Connector</option>
-            <option value="CONNECTOR">B2B2B Connector</option>
-          </select>
-        </div>
-        <div class="crm-field">
           <label for="crm-modal-products">Shop Type</label>
           <input type="text" id="crm-modal-products" placeholder="e.g. Lifestyle shop, Cosmetics">
+        </div>
+      </div>
+      <!-- Connector-only: which connector introduced this shop -->
+      <div class="crm-field-row" id="crm-connector-fields" style="display:none">
+        <div class="crm-field">
+          <label for="crm-modal-connector-id">Connected By (Connector)</label>
+          <select id="crm-modal-connector-id">
+            <option value="">Select a connector...</option>
+          </select>
         </div>
       </div>
     </div>
@@ -5428,10 +5528,11 @@ h2.crm-detail-name {
     <input type="hidden" id="crm-modal-email">
     <input type="hidden" id="crm-modal-phone">
 
-    <!-- Pricing -->
-    <div class="crm-modal-section">
+    <!-- Pricing (adapts per vendor type) -->
+    <div class="crm-modal-section" id="crm-pricing-section">
       <div class="crm-section-title">Pricing</div>
-      <div class="crm-field-row">
+      <!-- Direct Partner / Via Connector pricing -->
+      <div class="crm-field-row" id="crm-pricing-direct">
         <div class="crm-field">
           <label for="crm-modal-wholesale">Wholesale %</label>
           <input type="number" id="crm-modal-wholesale" min="0" max="100" placeholder="e.g. 50">
@@ -5439,6 +5540,13 @@ h2.crm-detail-name {
         <div class="crm-field">
           <label for="crm-modal-consignment">Consignment %</label>
           <input type="number" id="crm-modal-consignment" min="0" max="100" placeholder="e.g. 70">
+        </div>
+      </div>
+      <!-- Connector pricing -->
+      <div class="crm-field-row" id="crm-pricing-connector" style="display:none">
+        <div class="crm-field">
+          <label for="crm-modal-connector-fee">Connector Fee %</label>
+          <input type="number" id="crm-modal-connector-fee" min="0" max="100" placeholder="e.g. 10">
         </div>
       </div>
     </div>
@@ -6465,8 +6573,7 @@ function fetchAllData() {
       if (data.partnerStock) { partnerStock = data.partnerStock; }
       if (data.contactDocuments) { contactDocuments = data.contactDocuments; }
       if (data.activities) { activityLog = data.activities; updateNotifBell(); updateTabDots(); }
-      // DEV TEST DATA — inject BEFORE re-renders — remove before merge
-      if (typeof _injectTestData === "function") _injectTestData();
+      // Test data injector removed — was DEV only
       // Re-render all views
       renderBoard(); renderHomeActiveTasks(); renderHomeKeyStats(); renderHomeRecentlyUpdated();
       renderHomeCrmStats(); renderHomeShopifyStats();
@@ -8198,8 +8305,8 @@ function fetchCrmContacts(force) {
 
 function updateCrmSubtabBadges() {
   var all = getFilteredCrmContacts();
-  var vendors = all.filter(function(c) { return c.type === "Vendor" || c.type === "Partner"; });
-  var contacts = all.filter(function(c) { return c.type !== "Vendor" && c.type !== "Partner"; });
+  var vendors = all.filter(function(c) { return c.type === "Vendor" || c.type === "Partner" || c.type === "Connector"; });
+  var contacts = all.filter(function(c) { return c.type !== "Vendor" && c.type !== "Partner" && c.type !== "Connector"; });
   var badges = { "crm-vendors": vendors.length, "crm-contacts": contacts.length };
   document.querySelectorAll(".crm-subtab").forEach(function(t) {
     var existing = t.querySelector(".crm-subtab-badge");
@@ -8474,7 +8581,7 @@ function renderCrmVendors() {
   var prevTable = vendorContainer.querySelector(".crm-vendor-table-wrap");
   if (prevTable) prevTable.remove();
   var contacts = getFilteredCrmContacts().filter(function(c) {
-    return c.type === "Vendor" || c.type === "Partner";
+    return c.type === "Vendor" || c.type === "Partner" || c.type === "Connector";
   });
   // Render view bar (count + toggle)
   _renderCrmVendorViewBar(vendorContainer, contacts);
@@ -8938,6 +9045,47 @@ function closeCrmAddDropdown() {
 }
 
 // CRM Modal
+// --- Vendor Type Selector Logic ---
+function _setCrmVendorType(type) {
+  document.getElementById("crm-modal-type").value = type;
+  // Map type to relation
+  var relationMap = { "Vendor": "DIRECT", "Connector": "CONNECTOR", "Partner": "MANAGED_VENUE" };
+  document.getElementById("crm-modal-relation").value = relationMap[type] || "DIRECT";
+  // Update selector buttons
+  document.querySelectorAll(".crm-type-option").forEach(function(btn) {
+    btn.classList.toggle("active", btn.getAttribute("data-type") === type);
+  });
+  // Toggle connector-specific fields
+  var connFields = document.getElementById("crm-connector-fields");
+  if (connFields) connFields.style.display = type === "Partner" ? "" : "none";
+  // Toggle pricing sections
+  var pricingDirect = document.getElementById("crm-pricing-direct");
+  var pricingConnector = document.getElementById("crm-pricing-connector");
+  if (pricingDirect) pricingDirect.style.display = type === "Connector" ? "none" : "";
+  if (pricingConnector) pricingConnector.style.display = type === "Connector" ? "" : "none";
+  // Populate connector dropdown for Via Connector type
+  if (type === "Partner") {
+    var sel = document.getElementById("crm-modal-connector-id");
+    var currentVal = sel.value;
+    sel.textContent = "";
+    var defOpt = document.createElement("option");
+    defOpt.value = "";
+    defOpt.textContent = "Select a connector...";
+    sel.appendChild(defOpt);
+    crmContacts.filter(function(c) { return c.type === "Connector"; }).forEach(function(c) {
+      var opt = document.createElement("option");
+      opt.value = c.id;
+      opt.textContent = c.company || c.name || c.id;
+      sel.appendChild(opt);
+    });
+    if (currentVal) sel.value = currentVal;
+  }
+}
+// Attach click handlers to type selector buttons
+document.querySelectorAll(".crm-type-option").forEach(function(btn) {
+  btn.addEventListener("click", function() { _setCrmVendorType(btn.getAttribute("data-type")); });
+});
+
 function openCrmCreateModal(presetType) {
   document.getElementById("crm-detail-view").style.display = "none";
   document.getElementById("crm-edit-header").style.display = "";
@@ -8955,8 +9103,7 @@ function openCrmCreateModal(presetType) {
   document.getElementById("crm-modal-id").value = "";
   document.getElementById("crm-modal-name").value = "";
   document.getElementById("crm-modal-name-en").value = "";
-  document.getElementById("crm-modal-type").value = presetType || "Vendor";
-  document.getElementById("crm-modal-relation").value = "DIRECT";
+  _setCrmVendorType(presetType || "Vendor");
   document.getElementById("crm-modal-company").value = "";
   document.getElementById("crm-modal-role").value = "";
   document.getElementById("crm-modal-email").value = "";
@@ -8973,6 +9120,8 @@ function openCrmCreateModal(presetType) {
   document.getElementById("crm-modal-delete-btn").style.display = "none";
   document.getElementById("crm-modal-wholesale").value = "";
   document.getElementById("crm-modal-consignment").value = "";
+  document.getElementById("crm-modal-connector-fee").value = "";
+  document.getElementById("crm-modal-connector-id").value = "";
   renderCrmChecklist(null);
   document.getElementById("crm-modal-invoices-section").style.display = "none";
   updateCrmAvatar("");
@@ -9003,8 +9152,7 @@ function openCrmEditModal(contactId) {
   if (!_editCompany && _editName) { _editCompany = _editName; _editName = ""; }
   document.getElementById("crm-modal-name").value = _editName;
   document.getElementById("crm-modal-name-en").value = c.nameEn || "";
-  document.getElementById("crm-modal-type").value = c.type || "Vendor";
-  document.getElementById("crm-modal-relation").value = c.vendorRelation || "DIRECT";
+  _setCrmVendorType(c.type || "Vendor");
   document.getElementById("crm-modal-company").value = _editCompany;
   document.getElementById("crm-modal-role").value = c.role || "";
   document.getElementById("crm-modal-email").value = c.email || "";
@@ -9021,6 +9169,8 @@ function openCrmEditModal(contactId) {
   document.getElementById("crm-modal-delete-btn").style.display = "inline-block";
   document.getElementById("crm-modal-wholesale").value = c.wholesalePercent || "";
   document.getElementById("crm-modal-consignment").value = c.consignmentPercent || "";
+  document.getElementById("crm-modal-connector-fee").value = c.connectorFeePercent || "";
+  if (c.connectorId) setTimeout(function() { document.getElementById("crm-modal-connector-id").value = c.connectorId; }, 0);
   var checklist = null;
   try { checklist = JSON.parse(c.checklist); } catch(e) { checklist = null; }
   renderCrmChecklist(checklist);
@@ -9115,6 +9265,8 @@ function openCrmDetailView(contactId) {
   if (oldInfoBar) oldInfoBar.remove();
   var oldPipeline = detailView.querySelector(".crm-pipeline-wrap");
   if (oldPipeline) oldPipeline.remove();
+  var oldBanner = detailView.querySelector(".crm-connector-banner");
+  if (oldBanner) oldBanner.remove();
 
   // --- HEADER TOP ROW (avatar + info + action buttons) ---
   var headerTop = document.createElement("div");
@@ -9160,8 +9312,14 @@ function openCrmDetailView(contactId) {
   badgesRow.className = "crm-detail-badges-row";
   if (c.type) {
     var typeBadge = document.createElement("span");
-    typeBadge.className = "crm-detail-type-badge-v2";
-    var typeLabel = c.type === "Vendor" ? "DIRECT PARTNER" : c.type.toUpperCase();
+    var isViaConnector = c.type === "Partner" && c.connectorId;
+    var typeBadgeVariant = isViaConnector ? "type-via-connector"
+      : c.type === "Connector" ? "type-connector"
+      : "type-vendor";
+    typeBadge.className = "crm-detail-type-badge-v2 " + typeBadgeVariant;
+    var typeLabel = isViaConnector ? "VIA CONNECTOR"
+      : c.type === "Connector" ? "B2B2B CONNECTOR"
+      : "DIRECT PARTNER";
     typeBadge.textContent = typeLabel;
     badgesRow.appendChild(typeBadge);
   }
@@ -9472,6 +9630,62 @@ function openCrmDetailView(contactId) {
     detailView.insertBefore(pipelineWrap, tabsBar);
   }
 
+  // --- CONNECTOR BANNER BAR ---
+  var isViaConnector = c.type === "Partner" && c.connectorId;
+  var isConnector = c.type === "Connector";
+  if (isConnector) {
+    var connBanner = document.createElement("div");
+    connBanner.className = "crm-connector-banner banner-connector";
+    var connectedShops = crmContacts.filter(function(ct) { return ct.connectorId === contactId; });
+    connectedShops.forEach(function(shop) {
+      var item = document.createElement("span");
+      item.className = "crm-connector-banner-item";
+      var icon = document.createElement("span");
+      icon.className = "crm-icon";
+      icon.textContent = "\uf0c1";
+      item.appendChild(icon);
+      var link = document.createElement("a");
+      link.className = "crm-connector-banner-link";
+      link.textContent = shop.company || shop.name || "Unnamed";
+      link.href = "javascript:void(0)";
+      link.onclick = (function(shopId) { return function(e) { e.preventDefault(); openCrmDetailView(shopId); }; })(shop.id);
+      item.appendChild(link);
+      connBanner.appendChild(item);
+    });
+    if (connectedShops.length === 0) {
+      var emptyLabel = document.createElement("span");
+      emptyLabel.className = "crm-connector-banner-label";
+      emptyLabel.textContent = "No shops connected yet";
+      connBanner.appendChild(emptyLabel);
+    }
+    detailView.insertBefore(connBanner, tabsBar);
+  } else if (isViaConnector) {
+    var connBanner = document.createElement("div");
+    connBanner.className = "crm-connector-banner banner-via-connector";
+    var connectorContact = crmContacts.find(function(ct) { return ct.id === c.connectorId; });
+    var connectorName = connectorContact ? (connectorContact.company || connectorContact.name || "Unknown") : "Unknown";
+    var item = document.createElement("span");
+    item.className = "crm-connector-banner-item";
+    var icon = document.createElement("span");
+    icon.className = "crm-icon";
+    icon.textContent = "\uf0c1";
+    item.appendChild(icon);
+    var label = document.createElement("span");
+    label.className = "crm-connector-banner-label";
+    label.textContent = "Connected by ";
+    item.appendChild(label);
+    var link = document.createElement("a");
+    link.className = "crm-connector-banner-link";
+    link.textContent = connectorName;
+    link.href = "javascript:void(0)";
+    if (connectorContact) {
+      link.onclick = (function(cId) { return function(e) { e.preventDefault(); openCrmDetailView(cId); }; })(connectorContact.id);
+    }
+    item.appendChild(link);
+    connBanner.appendChild(item);
+    detailView.insertBefore(connBanner, tabsBar);
+  }
+
   // --- TAB BAR ---
   // Compute counts for tab badges
   var _emailLo = (c.email || "").toLowerCase();
@@ -9672,6 +9886,30 @@ function renderCrmOverviewTab(c, panel, contactId, tabsBar) {
   var activeStock = partnerStock.filter(function(s) { return s.contactId === contactId && (s.status || "").toLowerCase() === "active"; });
   var lastOrderDate = matchedOrders.length && matchedOrders[0].createdAt ? formatDate(matchedOrders[0].createdAt) : "\u2014";
 
+  // --- Connector / Via-Connector data ---
+  var _isConnectorType = c.type === "Connector";
+  var _isViaConnector = c.type === "Partner" && c.connectorId;
+  var connectedShops = _isConnectorType ? crmContacts.filter(function(ct) { return ct.connectorId === contactId; }) : [];
+  var connectorFeePct = Number(c.connectorFeePercent || 0);
+  var connectorAllShopOrders = [];
+  var _shopShareMap = {}; // orderId → shop share pct
+  if (_isConnectorType) {
+    connectedShops.forEach(function(shop) {
+      var sEmail = (shop.email || "").toLowerCase();
+      var sName = (shop.name || "").toLowerCase();
+      var sPct = Number(shop.consignmentPercent || shop.wholesalePercent || 0);
+      shopifyOrders.forEach(function(o) {
+        if (_shopShareMap[o.id] !== undefined) return;
+        var match = (sEmail && (o.email || "").toLowerCase() === sEmail) || (sName && (o.customerName || "").toLowerCase() === sName);
+        if (match) { connectorAllShopOrders.push(o); _shopShareMap[o.id] = sPct; }
+      });
+    });
+    connectorAllShopOrders.sort(function(a, b) { return (b.createdAt || "").localeCompare(a.createdAt || ""); });
+  }
+  var connectorRecord = _isViaConnector ? crmContacts.find(function(ct) { return ct.id === c.connectorId; }) : null;
+  var viaConnectorFeePct = connectorRecord ? Number(connectorRecord.connectorFeePercent || 0) : 0;
+  var shopSharePct = Number(c.consignmentPercent || c.wholesalePercent || 0);
+
   // --- ANALYTICS SECTION ---
   var analyticsSection = document.createElement("div");
   analyticsSection.className = "crm-analytics-section";
@@ -9827,6 +10065,226 @@ function renderCrmOverviewTab(c, panel, contactId, tabsBar) {
     var periodEarned = 0;
     filtered.forEach(function(o) { periodEarned += Number(o.totalPrice || 0); });
     var periodLabel = days === 1 ? "Earned today" : days === 30 ? "Earned this month" : days === 90 ? "Earned (90 days)" : days === 180 ? "Earned (6 months)" : days === 365 ? "Earned this year" : "Earned all time";
+    var _friendlyPeriod = days === 1 ? "today" : days === 30 ? "month" : days === 90 ? "90 days" : days === 180 ? "6 months" : days === 365 ? "year" : "all time";
+
+    // === B2B2B CONNECTOR CARDS ===
+    if (_isConnectorType) {
+      var cFiltered = cutoff ? connectorAllShopOrders.filter(function(o) { return o.createdAt && new Date(o.createdAt) >= cutoff; }) : connectorAllShopOrders;
+      var cTotalSales = 0;
+      cFiltered.forEach(function(o) { cTotalSales += Number(o.totalPrice || 0); });
+      var cFeeAmount = Math.round(cTotalSales * connectorFeePct / 100);
+      var cShopShares = 0;
+      cFiltered.forEach(function(o) { cShopShares += Number(o.totalPrice || 0) * (_shopShareMap[o.id] || 0) / 100; });
+      cShopShares = Math.round(cShopShares);
+      var cWeEarn = Math.max(0, cTotalSales - cFeeAmount - cShopShares);
+
+      // Card 1: Sales across all shops
+      var cc1 = document.createElement("div"); cc1.className = "crm-order-stat-card";
+      var cc1Top = document.createElement("div"); cc1Top.style.cssText = "display:flex;flex-direction:column;gap:4px";
+      var cc1DefLbl = "Sales across all shops";
+      var cc1Lbl = document.createElement("div"); cc1Lbl.className = "stat-lbl"; cc1Lbl.textContent = cc1DefLbl; cc1Top.appendChild(cc1Lbl);
+      var cc1DefVal = "\u00A5" + cTotalSales.toLocaleString();
+      var cc1Val = document.createElement("div"); cc1Val.className = "stat-val"; cc1Val.textContent = cc1DefVal; cc1Top.appendChild(cc1Val);
+      var cc1Sub = document.createElement("div"); cc1Sub.className = "stat-sub"; cc1Sub.textContent = "across " + connectedShops.length + " shop" + (connectedShops.length !== 1 ? "s" : ""); cc1Top.appendChild(cc1Sub);
+      cc1.appendChild(cc1Top);
+      if (connectorAllShopOrders.length) {
+        cc1.appendChild(_buildBarChart(connectorAllShopOrders, periodKey || "monthly",
+          function(label, amount) { cc1Lbl.textContent = label; cc1Val.textContent = "\u00A5" + amount.toLocaleString(); },
+          function() { cc1Lbl.textContent = cc1DefLbl; cc1Val.textContent = cc1DefVal; }
+        ));
+      }
+      qsGrid.appendChild(cc1);
+
+      // Card 2: Their total fee
+      var cc2 = document.createElement("div"); cc2.className = "crm-order-stat-card";
+      var cc2Top = document.createElement("div"); cc2Top.style.cssText = "display:flex;flex-direction:column;gap:4px";
+      var cc2DefLbl = "Their total fee";
+      var cc2Lbl = document.createElement("div"); cc2Lbl.className = "stat-lbl"; cc2Lbl.textContent = cc2DefLbl; cc2Top.appendChild(cc2Lbl);
+      var cc2DefVal = "\u00A5" + cFeeAmount.toLocaleString();
+      var cc2Val = document.createElement("div"); cc2Val.className = "stat-val"; cc2Val.style.color = "#d9ab13"; cc2Val.textContent = cc2DefVal; cc2Top.appendChild(cc2Val);
+      var cc2Sub = document.createElement("div"); cc2Sub.className = "stat-sub"; cc2Sub.textContent = connectorFeePct + "% of all shop sales (" + _friendlyPeriod + ")"; cc2Top.appendChild(cc2Sub);
+      cc2.appendChild(cc2Top);
+      if (connectorAllShopOrders.length) {
+        var feeOrders = connectorAllShopOrders.map(function(o) { return { createdAt: o.createdAt, totalPrice: Number(o.totalPrice || 0) * connectorFeePct / 100 }; });
+        cc2.appendChild(_buildBarChart(feeOrders, periodKey || "monthly",
+          function(label, amount) { cc2Lbl.textContent = label; cc2Val.textContent = "\u00A5" + Math.round(amount).toLocaleString(); },
+          function() { cc2Lbl.textContent = cc2DefLbl; cc2Val.textContent = cc2DefVal; }
+        ));
+      }
+      qsGrid.appendChild(cc2);
+
+      // Card 3: We earn
+      var cc3 = document.createElement("div"); cc3.className = "crm-order-stat-card";
+      var cc3Top = document.createElement("div"); cc3Top.style.cssText = "display:flex;flex-direction:column;gap:4px";
+      var cc3DefLbl = "We earn";
+      var cc3Lbl = document.createElement("div"); cc3Lbl.className = "stat-lbl"; cc3Lbl.textContent = cc3DefLbl; cc3Top.appendChild(cc3Lbl);
+      var cc3DefVal = "\u00A5" + cWeEarn.toLocaleString();
+      var cc3Val = document.createElement("div"); cc3Val.className = "stat-val" + (cWeEarn > 0 ? " green" : ""); cc3Val.textContent = cc3DefVal; cc3Top.appendChild(cc3Val);
+      var cc3Sub = document.createElement("div"); cc3Sub.className = "stat-sub"; cc3Sub.textContent = "after shop shares + " + connectorFeePct + "% fee"; cc3Top.appendChild(cc3Sub);
+      cc3.appendChild(cc3Top);
+      if (connectorAllShopOrders.length) {
+        var earnOrders = connectorAllShopOrders.map(function(o) {
+          var price = Number(o.totalPrice || 0);
+          var sPct = _shopShareMap[o.id] || 0;
+          return { createdAt: o.createdAt, totalPrice: price * (1 - sPct / 100 - connectorFeePct / 100) };
+        });
+        cc3.appendChild(_buildBarChart(earnOrders, periodKey || "monthly",
+          function(label, amount) { cc3Lbl.textContent = label; cc3Val.textContent = "\u00A5" + Math.round(amount).toLocaleString(); },
+          function() { cc3Lbl.textContent = cc3DefLbl; cc3Val.textContent = cc3DefVal; }
+        ));
+      }
+      qsGrid.appendChild(cc3);
+
+      // Card 4: Shops connected (count + mini list)
+      var cc4 = document.createElement("div"); cc4.className = "crm-order-stat-card";
+      var cc4Top = document.createElement("div"); cc4Top.style.cssText = "display:flex;flex-direction:column;gap:4px";
+      var cc4Lbl = document.createElement("div"); cc4Lbl.className = "stat-lbl"; cc4Lbl.textContent = "Shops connected"; cc4Top.appendChild(cc4Lbl);
+      var cc4Val = document.createElement("div"); cc4Val.className = "stat-val"; cc4Val.textContent = String(connectedShops.length); cc4Top.appendChild(cc4Val);
+      if (!connectedShops.length) {
+        var cc4Empty = document.createElement("div"); cc4Empty.className = "stat-sub"; cc4Empty.textContent = "No shops yet"; cc4Top.appendChild(cc4Empty);
+      }
+      cc4.appendChild(cc4Top);
+      if (connectedShops.length) {
+        var shopList = document.createElement("div"); shopList.className = "stat-product-list";
+        connectedShops.slice(0, 4).forEach(function(shop) {
+          var row = document.createElement("div"); row.className = "stat-product-row"; row.style.cssText = "cursor:pointer;justify-content:flex-start;gap:6px";
+          var avatar = document.createElement("span");
+          avatar.style.cssText = "width:12px;height:12px;border-radius:50%;background:#0e413b;color:#fff;font-size:7px;font-weight:600;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0";
+          avatar.textContent = (shop.company || shop.name || "?").charAt(0).toUpperCase();
+          row.appendChild(avatar);
+          var nm = document.createElement("span"); nm.style.cssText = "font-size:10px;font-weight:500;color:#000";
+          var sName = shop.company || shop.name || "Unnamed";
+          nm.textContent = sName.length > 20 ? sName.substring(0, 18) + "\u2026" : sName;
+          row.appendChild(nm);
+          row.onclick = (function(id) { return function() { openCrmDetailView(id); }; })(shop.id);
+          shopList.appendChild(row);
+        });
+        if (connectedShops.length > 4) {
+          var moreRow = document.createElement("div"); moreRow.className = "stat-product-row";
+          var moreText = document.createElement("span"); moreText.style.cssText = "font-size:10px;color:#606060";
+          moreText.textContent = "+" + (connectedShops.length - 4) + " more";
+          moreRow.appendChild(moreText);
+          shopList.appendChild(moreRow);
+        }
+        cc4.appendChild(shopList);
+      }
+      qsGrid.appendChild(cc4);
+      return;
+    }
+
+    // === VIA CONNECTOR CARDS ===
+    if (_isViaConnector) {
+      // Card 1: Shop sales this month
+      var vc1 = document.createElement("div"); vc1.className = "crm-order-stat-card";
+      var vc1Top = document.createElement("div"); vc1Top.style.cssText = "display:flex;flex-direction:column;gap:4px";
+      var vc1DefLbl = days === 1 ? "Shop sales today" : days === 30 ? "Shop sales this month" : days === 0 ? "Shop sales all time" : "Shop sales (" + _friendlyPeriod + ")";
+      var vc1Lbl = document.createElement("div"); vc1Lbl.className = "stat-lbl"; vc1Lbl.textContent = vc1DefLbl; vc1Top.appendChild(vc1Lbl);
+      var vc1DefVal = "\u00A5" + periodEarned.toLocaleString();
+      var vc1Val = document.createElement("div"); vc1Val.className = "stat-val"; vc1Val.textContent = vc1DefVal; vc1Top.appendChild(vc1Val);
+      if (!periodEarned) { var vc1Empty = document.createElement("div"); vc1Empty.className = "stat-sub"; vc1Empty.textContent = "No sales recorded yet"; vc1Top.appendChild(vc1Empty); }
+      // Trend vs previous period
+      if (periodEarned && days > 0) {
+        var vcPrevCutoff = new Date(now.getTime() - days * 2 * 86400000);
+        var vcPrevEarned = 0;
+        matchedOrders.forEach(function(o) { var d = o.createdAt ? new Date(o.createdAt) : null; if (d && d >= vcPrevCutoff && d < cutoff) vcPrevEarned += Number(o.totalPrice || 0); });
+        if (vcPrevEarned > 0) {
+          var vcPct = Math.round(((periodEarned - vcPrevEarned) / vcPrevEarned) * 100);
+          var vcTrend = document.createElement("div"); vcTrend.className = "stat-trend";
+          var vcArrow = document.createElement("span"); vcArrow.style.cssText = "font-family:'FA6 Pro';font-weight:400;font-size:10px";
+          vcArrow.textContent = vcPct >= 0 ? "\uf062" : "\uf063";
+          if (vcPct < 0) { vcTrend.style.color = "#df0a0a"; vcArrow.style.color = "#df0a0a"; }
+          vcTrend.appendChild(vcArrow);
+          var vcPctText = document.createElement("span"); vcPctText.textContent = Math.abs(vcPct) + "% vs last period"; vcTrend.appendChild(vcPctText);
+          vc1Top.appendChild(vcTrend);
+        }
+      }
+      vc1.appendChild(vc1Top);
+      if (matchedOrders.length) {
+        vc1.appendChild(_buildBarChart(matchedOrders, periodKey || "monthly",
+          function(label, amount) { vc1Lbl.textContent = label; vc1Val.textContent = "\u00A5" + amount.toLocaleString(); },
+          function() { vc1Lbl.textContent = vc1DefLbl; vc1Val.textContent = vc1DefVal; }
+        ));
+      }
+      qsGrid.appendChild(vc1);
+
+      // Card 2: Connector's cut
+      var vcFeeAmount = Math.round(periodEarned * viaConnectorFeePct / 100);
+      var vc2 = document.createElement("div"); vc2.className = "crm-order-stat-card";
+      var vc2Top = document.createElement("div"); vc2Top.style.cssText = "display:flex;flex-direction:column;gap:4px";
+      var vc2DefLbl = "Connector\u2019s cut";
+      var vc2Lbl = document.createElement("div"); vc2Lbl.className = "stat-lbl"; vc2Lbl.textContent = vc2DefLbl; vc2Top.appendChild(vc2Lbl);
+      var vc2DefVal = "\u00A5" + vcFeeAmount.toLocaleString();
+      var vc2Val = document.createElement("div"); vc2Val.className = "stat-val"; vc2Val.style.color = "#d9ab13"; vc2Val.textContent = vc2DefVal; vc2Top.appendChild(vc2Val);
+      var vc2Sub = document.createElement("div"); vc2Sub.className = "stat-sub"; vc2Sub.textContent = viaConnectorFeePct + "% of sales"; vc2Top.appendChild(vc2Sub);
+      vc2.appendChild(vc2Top);
+      if (matchedOrders.length) {
+        var vcFeeOrders = matchedOrders.map(function(o) { return { createdAt: o.createdAt, totalPrice: Number(o.totalPrice || 0) * viaConnectorFeePct / 100 }; });
+        vc2.appendChild(_buildBarChart(vcFeeOrders, periodKey || "monthly",
+          function(label, amount) { vc2Lbl.textContent = label; vc2Val.textContent = "\u00A5" + Math.round(amount).toLocaleString(); },
+          function() { vc2Lbl.textContent = vc2DefLbl; vc2Val.textContent = vc2DefVal; }
+        ));
+      }
+      qsGrid.appendChild(vc2);
+
+      // Card 3: We earn
+      var vcShopCut = Math.round(periodEarned * shopSharePct / 100);
+      var vcWeEarn = Math.max(0, periodEarned - vcShopCut - vcFeeAmount);
+      var vc3 = document.createElement("div"); vc3.className = "crm-order-stat-card";
+      var vc3Top = document.createElement("div"); vc3Top.style.cssText = "display:flex;flex-direction:column;gap:4px";
+      var vc3DefLbl = "We earn";
+      var vc3Lbl = document.createElement("div"); vc3Lbl.className = "stat-lbl"; vc3Lbl.textContent = vc3DefLbl; vc3Top.appendChild(vc3Lbl);
+      var vc3DefVal = "\u00A5" + vcWeEarn.toLocaleString();
+      var vc3Val = document.createElement("div"); vc3Val.className = "stat-val" + (vcWeEarn > 0 ? " green" : ""); vc3Val.textContent = vc3DefVal; vc3Top.appendChild(vc3Val);
+      var vc3Sub = document.createElement("div"); vc3Sub.className = "stat-sub"; vc3Sub.textContent = "after " + shopSharePct + "% shop + " + viaConnectorFeePct + "% fee"; vc3Top.appendChild(vc3Sub);
+      vc3.appendChild(vc3Top);
+      if (matchedOrders.length) {
+        var vcEarnOrders = matchedOrders.map(function(o) {
+          var price = Number(o.totalPrice || 0);
+          return { createdAt: o.createdAt, totalPrice: price * (1 - shopSharePct / 100 - viaConnectorFeePct / 100) };
+        });
+        vc3.appendChild(_buildBarChart(vcEarnOrders, periodKey || "monthly",
+          function(label, amount) { vc3Lbl.textContent = label; vc3Val.textContent = "\u00A5" + Math.round(amount).toLocaleString(); },
+          function() { vc3Lbl.textContent = vc3DefLbl; vc3Val.textContent = vc3DefVal; }
+        ));
+      }
+      qsGrid.appendChild(vc3);
+
+      // Card 4: Product on display (same as Direct Partner card 3)
+      var vc4 = document.createElement("div"); vc4.className = "crm-order-stat-card";
+      var vc4Top = document.createElement("div"); vc4Top.style.cssText = "display:flex;flex-direction:column;gap:4px";
+      var vc4Lbl = document.createElement("div"); vc4Lbl.className = "stat-lbl"; vc4Lbl.textContent = "Product on display"; vc4Top.appendChild(vc4Lbl);
+      var vc4Val = document.createElement("div"); vc4Val.className = "stat-val" + (activeStock.length ? " stat-val-link" : ""); vc4Val.textContent = String(activeStock.length);
+      if (activeStock.length) { vc4Val.onclick = function() { var st = tabsBar.querySelectorAll(".crm-detail-tab")[3]; if (st) st.click(); }; }
+      vc4Top.appendChild(vc4Val);
+      var vcLowStock = activeStock.filter(function(s) { return Number(s.quantity || 0) <= 10; });
+      if (vcLowStock.length) { var vc4Warn = document.createElement("div"); vc4Warn.className = "stat-sub"; vc4Warn.textContent = vcLowStock.length + " running low"; vc4Top.appendChild(vc4Warn); }
+      else if (!activeStock.length) { var vc4Empty = document.createElement("div"); vc4Empty.className = "stat-sub"; vc4Empty.textContent = "No order placed yet"; vc4Top.appendChild(vc4Empty); }
+      vc4.appendChild(vc4Top);
+      if (activeStock.length) {
+        var vc4List = document.createElement("div"); vc4List.className = "stat-product-list";
+        var vc4Items = vcLowStock.length ? vcLowStock.slice(0, 3) : activeStock.slice(0, 3);
+        vc4Items.forEach(function(s) {
+          var row = document.createElement("div"); row.className = "stat-product-row"; row.style.cursor = "pointer";
+          var nameWrap = document.createElement("div"); nameWrap.className = "stat-product-name";
+          var sku = (s.sku || "").toUpperCase();
+          var iconCode = sku.indexOf("SOP") === 0 ? "\ue06e" : sku.indexOf("CND") === 0 ? "\uf6bc" : "\uf4b8";
+          var isLow = Number(s.quantity || 0) <= 10;
+          var icon = document.createElement("span"); icon.style.cssText = "font-family:'FA6 Pro';font-weight:400;font-size:10px;color:" + (isLow ? "#df0a0a" : "#3e3e3e"); icon.textContent = iconCode;
+          nameWrap.appendChild(icon);
+          var nm = document.createElement("span"); var pName = s.productName || "Unknown"; nm.textContent = pName.length > 18 ? pName.substring(0, 16) + "\u2026" : pName;
+          nameWrap.appendChild(nm);
+          row.appendChild(nameWrap);
+          if (isLow) { var warn = document.createElement("span"); warn.className = "stat-product-warn"; warn.style.cssText = "font-family:'FA6 Pro';font-weight:400;font-size:10px"; warn.textContent = "\uf071"; row.appendChild(warn); }
+          row.onclick = (function(stockId) { return function() { var stockTab = tabsBar.querySelectorAll(".crm-detail-tab")[3]; if (stockTab) stockTab.click(); setTimeout(function() { var tr = document.querySelector("tr[data-stock-id='" + stockId + "']"); if (tr) { tr.scrollIntoView({ behavior: "smooth", block: "center" }); tr.classList.add("crm-stock-highlight", "crm-stock-flash"); setTimeout(function() { tr.classList.remove("crm-stock-highlight", "crm-stock-flash"); }, 3000); } }, 100); }; })(s.id);
+          vc4List.appendChild(row);
+        });
+        vc4.appendChild(vc4List);
+      }
+      qsGrid.appendChild(vc4);
+      return;
+    }
+
+    // === DIRECT PARTNER CARDS (existing) ===
     var defaultLabel = periodLabel;
     var defaultVal = "\u00A5" + periodEarned.toLocaleString();
 
@@ -10038,6 +10496,122 @@ function renderCrmOverviewTab(c, panel, contactId, tabsBar) {
   updateStatCards(30, "monthly"); // default to monthly
   panel.appendChild(analyticsSection);
 
+  // === "WHERE THE MONEY GOES" BAR (Via Connector only) ===
+  if (_isViaConnector) {
+    var _vcConnRecord = crmContacts.find(function(ct) { return ct.id === c.connectorId; }) || {};
+    var _vcFeePct = Number(_vcConnRecord.connectorFeePercent || 0);
+    var _vcShopPct = Number(c.consignmentPercent || c.wholesalePercent || 0);
+    var _vcRawIvy = Math.max(0, 100 - _vcShopPct - _vcFeePct);
+    var _vcTotal = _vcRawIvy + _vcShopPct + _vcFeePct || 100;
+    var _vcIvyPct = Math.round(_vcRawIvy / _vcTotal * 100);
+    var _vcShopPctN = Math.round(_vcShopPct / _vcTotal * 100);
+    var _vcFeePctN = Math.round(_vcFeePct / _vcTotal * 100);
+    var _vcShopName = c.company || c.name || "Shop";
+    var _vcConnName = _vcConnRecord.company || _vcConnRecord.name || "Connector";
+
+    var flowWrap = document.createElement("div");
+    flowWrap.className = "crm-money-flow";
+
+    var bar = document.createElement("div");
+    bar.className = "crm-money-flow-bar";
+    var seg1 = document.createElement("span");
+    seg1.style.cssText = "background:#00a52c;width:" + _vcIvyPct + "%";
+    bar.appendChild(seg1);
+    var seg2 = document.createElement("span");
+    seg2.style.cssText = "background:#2a4030;width:" + _vcShopPctN + "%";
+    bar.appendChild(seg2);
+    var seg3 = document.createElement("span");
+    seg3.style.cssText = "background:#d9ab13;width:" + _vcFeePctN + "%";
+    bar.appendChild(seg3);
+    flowWrap.appendChild(bar);
+
+    var legend = document.createElement("div");
+    legend.className = "crm-money-flow-legend";
+    var items = [
+      { color: "#00a52c", pct: _vcRawIvy, name: "Ivycoast", role: "Brand" },
+      { color: "#2a4030", pct: _vcShopPct, name: _vcShopName, role: "Seller" },
+      { color: "#d9ab13", pct: _vcFeePct, name: _vcConnName, role: "Connector" }
+    ];
+    items.forEach(function(it) {
+      var item = document.createElement("span");
+      item.className = "crm-money-flow-item";
+      var dot = document.createElement("span");
+      dot.className = "crm-money-flow-dot";
+      dot.style.background = it.color;
+      item.appendChild(dot);
+      var pct = document.createElement("span");
+      pct.className = "crm-money-flow-pct";
+      pct.style.color = it.color;
+      pct.textContent = it.pct + "%";
+      item.appendChild(pct);
+      var nm = document.createElement("span");
+      nm.className = "crm-money-flow-name";
+      nm.textContent = it.name;
+      item.appendChild(nm);
+      var role = document.createElement("span");
+      role.className = "crm-money-flow-role";
+      role.textContent = it.role;
+      item.appendChild(role);
+      legend.appendChild(item);
+    });
+    flowWrap.appendChild(legend);
+    panel.appendChild(flowWrap);
+  }
+
+  // === INVOICES SECTION (B2B2B Connector only) ===
+  if (_isConnectorType && connectedShops.length) {
+    var shopIds = {};
+    connectedShops.forEach(function(s) { shopIds[s.id] = s.company || s.name || "Shop"; });
+    var connInvoices = invoices.filter(function(inv) { return shopIds[inv.contactId]; });
+    connInvoices.sort(function(a, b) { return (b.invoiceDate || "").localeCompare(a.invoiceDate || ""); });
+    var invSection = document.createElement("div");
+    invSection.className = "crm-conn-invoices";
+    var invHdr = document.createElement("div");
+    invHdr.className = "crm-conn-invoices-header";
+    var invLabel = document.createElement("span");
+    invLabel.className = "sec-label";
+    invLabel.textContent = "Invoices";
+    invHdr.appendChild(invLabel);
+    var invCount = document.createElement("span");
+    invCount.className = "sec-count";
+    invCount.textContent = "(" + connInvoices.length + ")";
+    invHdr.appendChild(invCount);
+    invSection.appendChild(invHdr);
+    if (connInvoices.length) {
+      connInvoices.forEach(function(inv) {
+        var row = document.createElement("div");
+        row.className = "crm-conn-inv-row";
+        var left = document.createElement("div");
+        left.className = "crm-conn-inv-left";
+        var shop = document.createElement("span");
+        shop.className = "crm-conn-inv-shop";
+        shop.textContent = shopIds[inv.contactId] || inv.contactName || "Shop";
+        left.appendChild(shop);
+        var date = document.createElement("span");
+        date.className = "crm-conn-inv-date";
+        date.textContent = inv.invoiceDate ? formatDate(inv.invoiceDate) : "";
+        left.appendChild(date);
+        row.appendChild(left);
+        var amount = document.createElement("span");
+        amount.className = "crm-conn-inv-amount";
+        amount.textContent = "\u00A5" + Number(inv.total || 0).toLocaleString();
+        row.appendChild(amount);
+        var viewBtn = document.createElement("button");
+        viewBtn.className = "crm-conn-inv-view";
+        viewBtn.textContent = "View Invoice \u203A";
+        viewBtn.onclick = (function(invId) { return function(e) { e.stopPropagation(); openInvoiceEditModal(invId); }; })(inv.id);
+        row.appendChild(viewBtn);
+        invSection.appendChild(row);
+      });
+    } else {
+      var invEmpty = document.createElement("div");
+      invEmpty.style.cssText = "font-size:12px;color:#80868b;padding:8px 0";
+      invEmpty.textContent = "No invoices across connected shops yet";
+      invSection.appendChild(invEmpty);
+    }
+    panel.appendChild(invSection);
+  }
+
   // === TWO-COLUMN LAYOUT ===
   var columnsWrap = document.createElement("div");
   columnsWrap.className = "crm-overview-columns";
@@ -10070,13 +10644,37 @@ function renderCrmOverviewTab(c, panel, contactId, tabsBar) {
   rulesCog.onclick = function() { switchToCrmEditMode(contactId); };
   rulesHdr.appendChild(rulesCog);
   rulesSection.appendChild(rulesHdr);
-  if (pricingType) {
+  var _isConnType = c.type === "Connector";
+  var _isViaConnType = c.type === "Partner" && c.connectorId;
+  var _connRecord = _isViaConnType ? crmContacts.find(function(ct) { return ct.id === c.connectorId; }) : null;
+  var _hasRules = pricingType || _isConnType || _isViaConnType;
+  if (_hasRules) {
     var rulesTable = document.createElement("div");
     rulesTable.style.cssText = "border:1px solid #e3e3e3;border-radius:8px;padding:8px 16px";
-    var rulesData = [
-      ["How we work", pricingType],
-      ["Their share", pricingPct + "%"]
-    ];
+    var rulesData = [];
+    if (_isConnType) {
+      rulesData = [
+        ["Their Role", "Connector"],
+        ["Connector fee", (c.connectorFeePercent || 0) + "% of sales"],
+        ["We invoice", "Monthly"],
+        ["They pay within", "30 days"]
+      ];
+    } else if (_isViaConnType) {
+      var _shopName = c.company || c.name || "Shop";
+      var _connName = _connRecord ? (_connRecord.company || _connRecord.name || "Connector") : "Connector";
+      rulesData = [
+        ["How we work", pricingType || "Consignment"],
+        [_shopName + " (Seller)", (pricingPct || 0) + "% of sales"],
+        [_connName + " (Connector)", (_connRecord ? (_connRecord.connectorFeePercent || 0) : 0) + "% of sales"],
+        ["We invoice", "Monthly"],
+        ["They pay within", "30 days"]
+      ];
+    } else {
+      rulesData = [
+        ["How we work", pricingType],
+        ["Their share", pricingPct + "%"]
+      ];
+    }
     rulesData.forEach(function(r, i) {
       var row = document.createElement("div");
       row.style.cssText = "display:flex;align-items:center;justify-content:space-between;padding:6px 0;font-size:12px;color:#000" + (i < rulesData.length - 1 ? ";border-bottom:1px solid #e3e3e3" : "");
@@ -10087,6 +10685,11 @@ function renderCrmOverviewTab(c, panel, contactId, tabsBar) {
       var val = document.createElement("span");
       val.style.cssText = "font-weight:600;text-align:right";
       val.textContent = r[1];
+      // Make connector name clickable in Via Connector rules
+      if (_isViaConnType && i === 2 && _connRecord) {
+        val.style.cssText += ";color:#157be1;cursor:pointer;text-decoration:underline";
+        val.onclick = (function(cId) { return function() { openCrmDetailView(cId); }; })(_connRecord.id);
+      }
       row.appendChild(val);
       rulesTable.appendChild(row);
     });
@@ -10106,7 +10709,7 @@ function renderCrmOverviewTab(c, panel, contactId, tabsBar) {
   }
   leftCol.appendChild(rulesSection);
 
-  // --- LEFT: Products in Stock ---
+  // --- LEFT: Products in Stock / Shops Connected ---
   var stockSection = document.createElement("div");
   stockSection.className = "crm-overview-col-section";
   var stockHdr = document.createElement("div");
@@ -10115,23 +10718,159 @@ function renderCrmOverviewTab(c, panel, contactId, tabsBar) {
   stockTitle.className = "crm-overview-col-title";
   var stockLabel = document.createElement("span");
   stockLabel.className = "sec-label";
-  stockLabel.textContent = "Products in Stock";
-  stockTitle.appendChild(stockLabel);
-  var totalStockQty = 0;
-  activeStock.forEach(function(s) { totalStockQty += Number(s.quantity || 0); });
-  if (activeStock.length) {
-    var stockCount = document.createElement("span");
-    stockCount.className = "sec-count";
-    stockCount.textContent = "(" + activeStock.length + " products \u00B7 " + totalStockQty + " units)";
-    stockTitle.appendChild(stockCount);
-  }
-  stockHdr.appendChild(stockTitle);
-  var stockCog = document.createElement("button");
-  stockCog.className = "crm-overview-col-action";
-  stockCog.appendChild(_crmFa6Icon("\uf013", 12, 300));
-  stockCog.onclick = function() { var st = tabsBar.querySelectorAll(".crm-detail-tab")[3]; if (st) st.click(); };
-  stockHdr.appendChild(stockCog);
-  stockSection.appendChild(stockHdr);
+
+  if (_isConnType) {
+    // === SHOPS CONNECTED (Connector only) ===
+    stockLabel.textContent = "Shops they\u2019ve connected us to";
+    stockTitle.appendChild(stockLabel);
+    if (connectedShops.length) {
+      var shopsCount = document.createElement("span");
+      shopsCount.className = "sec-count";
+      shopsCount.textContent = "(" + connectedShops.length + ")";
+      stockTitle.appendChild(shopsCount);
+    }
+    stockHdr.appendChild(stockTitle);
+    var shopsCog = document.createElement("button");
+    shopsCog.className = "crm-overview-col-action";
+    shopsCog.appendChild(_crmFa6Icon("\uf013", 12, 300));
+    shopsCog.onclick = function() { switchToCrmEditMode(contactId); };
+    stockHdr.appendChild(shopsCog);
+    stockSection.appendChild(stockHdr);
+    if (connectedShops.length) {
+      var shopCards = document.createElement("div");
+      shopCards.style.cssText = "display:flex;flex-direction:column;gap:8px";
+      connectedShops.forEach(function(shop) {
+        var card = document.createElement("div");
+        card.style.cssText = "display:flex;align-items:flex-start;gap:12px;border:1px solid #e3e3e3;border-radius:8px;padding:12px 16px;background:#fff;cursor:pointer;transition:background 0.1s";
+        card.onmouseenter = function() { card.style.background = "#f8f9fa"; };
+        card.onmouseleave = function() { card.style.background = "#fff"; };
+        card.onclick = (function(id) { return function() { openCrmDetailView(id); }; })(shop.id);
+        // Avatar
+        var av = document.createElement("div");
+        av.style.cssText = "width:40px;height:40px;border-radius:50%;background:#e8e8e8;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;color:#497871;flex-shrink:0";
+        if (shop.profileImageUrl) {
+          var avImg = document.createElement("img");
+          avImg.src = shop.profileImageUrl;
+          avImg.style.cssText = "width:100%;height:100%;object-fit:cover;border-radius:50%";
+          av.appendChild(avImg);
+        } else {
+          av.textContent = (shop.company || shop.name || "?").substring(0, 2).toUpperCase();
+        }
+        card.appendChild(av);
+        // Info (left)
+        var info = document.createElement("div");
+        info.style.cssText = "flex:1;min-width:0;display:flex;flex-direction:column;gap:2px";
+        var nm = document.createElement("div");
+        nm.style.cssText = "font-size:13px;font-weight:700;color:#000";
+        nm.textContent = shop.company || shop.name || "Unnamed";
+        info.appendChild(nm);
+        if (shop.location) {
+          var addr = document.createElement("div");
+          addr.style.cssText = "font-size:11px;color:#606060";
+          addr.textContent = shop.location;
+          info.appendChild(addr);
+        }
+        // Stock counts with icons
+        var shopStock = partnerStock.filter(function(s) { return s.contactId === shop.id && (s.status || "").toLowerCase() === "active"; });
+        if (shopStock.length) {
+          var stockRow = document.createElement("div");
+          stockRow.style.cssText = "display:flex;gap:8px;margin-top:2px";
+          var soapCount = 0, candleCount = 0;
+          shopStock.forEach(function(s) {
+            var sku = (s.sku || "").toUpperCase();
+            if (sku.indexOf("SOP") === 0) soapCount += Number(s.quantity || 0);
+            else if (sku.indexOf("CND") === 0) candleCount += Number(s.quantity || 0);
+          });
+          if (soapCount) {
+            var soapChip = document.createElement("span");
+            soapChip.style.cssText = "display:flex;align-items:center;gap:2px;font-size:10px;color:#3e3e3e";
+            var soapIcon = document.createElement("span");
+            soapIcon.style.cssText = "font-family:'FA6 Pro';font-weight:400;font-size:10px";
+            soapIcon.textContent = "\ue06e";
+            soapChip.appendChild(soapIcon);
+            soapChip.appendChild(document.createTextNode(soapCount));
+            stockRow.appendChild(soapChip);
+          }
+          if (candleCount) {
+            var candleChip = document.createElement("span");
+            candleChip.style.cssText = "display:flex;align-items:center;gap:2px;font-size:10px;color:#3e3e3e";
+            var candleIcon = document.createElement("span");
+            candleIcon.style.cssText = "font-family:'FA6 Pro';font-weight:400;font-size:10px";
+            candleIcon.textContent = "\uf6bc";
+            candleChip.appendChild(candleIcon);
+            candleChip.appendChild(document.createTextNode(candleCount));
+            stockRow.appendChild(candleChip);
+          }
+          info.appendChild(stockRow);
+        }
+        card.appendChild(info);
+        // Sales stats (right)
+        var shopEmail = (shop.email || "").toLowerCase();
+        var shopNameLo = (shop.name || "").toLowerCase();
+        var shopOrders = shopifyOrders.filter(function(o) {
+          if (shopEmail && (o.email || "").toLowerCase() === shopEmail) return true;
+          if (shopNameLo && (o.customerName || "").toLowerCase() === shopNameLo) return true;
+          return false;
+        });
+        var now30 = new Date(Date.now() - 30 * 86400000);
+        var monthSales = 0, totalSales = 0;
+        shopOrders.forEach(function(o) {
+          var amt = Number(o.totalPrice || 0);
+          totalSales += amt;
+          if (o.createdAt && new Date(o.createdAt) >= now30) monthSales += amt;
+        });
+        var stats = document.createElement("div");
+        stats.style.cssText = "display:flex;flex-direction:column;gap:6px;text-align:right;flex-shrink:0";
+        var s1 = document.createElement("div");
+        var s1Val = document.createElement("div");
+        s1Val.style.cssText = "font-size:14px;font-weight:700;color:#000";
+        s1Val.textContent = "\u00A5" + monthSales.toLocaleString();
+        s1.appendChild(s1Val);
+        var s1Lbl = document.createElement("div");
+        s1Lbl.style.cssText = "font-size:10px;color:#606060";
+        s1Lbl.textContent = "Sales this month";
+        s1.appendChild(s1Lbl);
+        stats.appendChild(s1);
+        var s2 = document.createElement("div");
+        var s2Val = document.createElement("div");
+        s2Val.style.cssText = "font-size:14px;font-weight:700;color:#000";
+        s2Val.textContent = "\u00A5" + totalSales.toLocaleString();
+        s2.appendChild(s2Val);
+        var s2Lbl = document.createElement("div");
+        s2Lbl.style.cssText = "font-size:10px;color:#606060";
+        s2Lbl.textContent = "Total sales";
+        s2.appendChild(s2Lbl);
+        stats.appendChild(s2);
+        card.appendChild(stats);
+        shopCards.appendChild(card);
+      });
+      stockSection.appendChild(shopCards);
+    } else {
+      var shopsEmpty = document.createElement("div");
+      shopsEmpty.className = "crm-overview-empty";
+      shopsEmpty.textContent = "No shops connected yet";
+      stockSection.appendChild(shopsEmpty);
+    }
+    leftCol.appendChild(stockSection);
+  } else {
+    // === PRODUCTS IN STOCK (Direct / Via Connector) ===
+    stockLabel.textContent = "Products in Stock";
+    stockTitle.appendChild(stockLabel);
+    var totalStockQty = 0;
+    activeStock.forEach(function(s) { totalStockQty += Number(s.quantity || 0); });
+    if (activeStock.length) {
+      var stockCount = document.createElement("span");
+      stockCount.className = "sec-count";
+      stockCount.textContent = "(" + activeStock.length + " products \u00B7 " + totalStockQty + " units)";
+      stockTitle.appendChild(stockCount);
+    }
+    stockHdr.appendChild(stockTitle);
+    var stockCog = document.createElement("button");
+    stockCog.className = "crm-overview-col-action";
+    stockCog.appendChild(_crmFa6Icon("\uf013", 12, 300));
+    stockCog.onclick = function() { var st = tabsBar.querySelectorAll(".crm-detail-tab")[3]; if (st) st.click(); };
+    stockHdr.appendChild(stockCog);
+    stockSection.appendChild(stockHdr);
   if (activeStock.length) {
     var stockList = document.createElement("div");
     stockList.style.cssText = "display:flex;flex-direction:column;gap:2px";
@@ -10189,6 +10928,7 @@ function renderCrmOverviewTab(c, panel, contactId, tabsBar) {
     stockSection.appendChild(stockEmpty);
   }
   leftCol.appendChild(stockSection);
+  } // end else (Products in Stock)
 
   // --- LEFT: Notes ---
   var notesSection = document.createElement("div");
@@ -12331,8 +13071,7 @@ function switchToCrmEditMode(contactId) {
   if (!_editCompany && _editName) { _editCompany = _editName; _editName = ""; }
   document.getElementById("crm-modal-name").value = _editName;
   document.getElementById("crm-modal-name-en").value = c.nameEn || "";
-  document.getElementById("crm-modal-type").value = c.type || "Vendor";
-  document.getElementById("crm-modal-relation").value = c.vendorRelation || "DIRECT";
+  _setCrmVendorType(c.type || "Vendor");
   document.getElementById("crm-modal-company").value = _editCompany;
   document.getElementById("crm-modal-role").value = c.role || "";
   document.getElementById("crm-modal-email").value = c.email || "";
@@ -12349,6 +13088,8 @@ function switchToCrmEditMode(contactId) {
   document.getElementById("crm-modal-delete-btn").style.display = "inline-block";
   document.getElementById("crm-modal-wholesale").value = c.wholesalePercent || "";
   document.getElementById("crm-modal-consignment").value = c.consignmentPercent || "";
+  document.getElementById("crm-modal-connector-fee").value = c.connectorFeePercent || "";
+  if (c.connectorId) setTimeout(function() { document.getElementById("crm-modal-connector-id").value = c.connectorId; }, 0);
   var checklist = null;
   try { checklist = JSON.parse(c.checklist); } catch(e) { checklist = null; }
   renderCrmChecklist(checklist);
@@ -12377,6 +13118,8 @@ function saveCrmContact() {
     lastContactDate: document.getElementById("crm-modal-lastcontact").value,
     wholesalePercent: document.getElementById("crm-modal-wholesale").value || "",
     consignmentPercent: document.getElementById("crm-modal-consignment").value || "",
+    connectorFeePercent: document.getElementById("crm-modal-connector-fee").value || "",
+    connectorId: document.getElementById("crm-modal-connector-id").value || "",
     checklist: JSON.stringify(getCrmChecklistData()),
     website: document.getElementById("crm-modal-website").value.trim(),
     instagram: document.getElementById("crm-modal-instagram").value.trim(),
@@ -17103,43 +17846,6 @@ auth.onAuthStateChanged(function(user) {
     showLogin();
   }
 });
-// DEV BYPASS — remove before merging to GitHub
-if (location.hostname === "localhost" || location.hostname === "127.0.0.1") {
-  showApp({email: "taka@ivycoast.co", displayName: "Taka (dev)"});
-  // Test data injector for Yoko Imoto — remove before merge
-  window._injectTestData = function() {
-    var yoko = crmContacts.find(function(c) { return (c.name || "").toLowerCase().indexOf("yoko") >= 0 || (c.company || "").toLowerCase().indexOf("yoko") >= 0; });
-    if (!yoko) return;
-    var yokoId = yoko.id;
-    var yokoEmail = (yoko.email || "").toLowerCase();
-    var yokoName = yoko.name || yoko.company || "Yoko Imoto";
-    // Inject orders if none matched
-    var existing = shopifyOrders.filter(function(o) { return yokoEmail && (o.email || "").toLowerCase() === yokoEmail; });
-    if (existing.length === 0) {
-      [
-        { id: "to1", orderNumber: "1001", email: yoko.email, customerName: yokoName, totalPrice: "142800", currency: "JPY", financialStatus: "paid", createdAt: "2026-03-08T10:00:00Z", lineItems: "12" },
-        { id: "to2", orderNumber: "1002", email: yoko.email, customerName: yokoName, totalPrice: "89500", currency: "JPY", financialStatus: "paid", createdAt: "2026-02-24T10:00:00Z", lineItems: "8" },
-        { id: "to3", orderNumber: "1003", email: yoko.email, customerName: yokoName, totalPrice: "210000", currency: "JPY", financialStatus: "paid", createdAt: "2026-01-15T10:00:00Z", lineItems: "15" },
-        { id: "to4", orderNumber: "1004", email: yoko.email, customerName: yokoName, totalPrice: "67200", currency: "JPY", financialStatus: "paid", createdAt: "2025-12-01T10:00:00Z", lineItems: "6" }
-      ].forEach(function(o) { shopifyOrders.push(o); });
-    }
-    // Inject stock if none exists
-    var existingStock = partnerStock.filter(function(s) { return s.contactId === yokoId; });
-    if (existingStock.length === 0) {
-      [
-        { id: "ts1", contactId: yokoId, contactName: yokoName, productName: "Tasmanian Citrus", sku: "CND-TC", quantity: "4", unitPrice: "42800", pricingType: "consignment", status: "active" },
-        { id: "ts2", contactId: yokoId, contactName: yokoName, productName: "Golden Bushland", sku: "CND-GB", quantity: "4", unitPrice: "42800", pricingType: "consignment", status: "active" },
-        { id: "ts3", contactId: yokoId, contactName: yokoName, productName: "Byron Bay", sku: "SOP-BB", quantity: "4", unitPrice: "42800", pricingType: "consignment", status: "active" },
-        { id: "ts4", contactId: yokoId, contactName: yokoName, productName: "Sunlight", sku: "SOP-SL", quantity: "12", unitPrice: "42800", pricingType: "consignment", status: "active" },
-        { id: "ts5", contactId: yokoId, contactName: yokoName, productName: "Moonlight", sku: "SOP-ML", quantity: "8", unitPrice: "42800", pricingType: "consignment", status: "active" },
-        { id: "ts6", contactId: yokoId, contactName: yokoName, productName: "Tsubaki", sku: "SOP-TS", quantity: "3", unitPrice: "42800", pricingType: "consignment", status: "active" },
-        { id: "ts7", contactId: yokoId, contactName: yokoName, productName: "Paradise", sku: "SOP-PR", quantity: "15", unitPrice: "42800", pricingType: "consignment", status: "active" },
-        { id: "ts8", contactId: yokoId, contactName: yokoName, productName: "Lemon Fields Forever", sku: "CND-LF", quantity: "6", unitPrice: "42800", pricingType: "consignment", status: "active" }
-      ].forEach(function(s) { partnerStock.push(s); });
-    }
-  };
-}
-
 function signIn() {
   var provider = new firebase.auth.GoogleAuthProvider();
   provider.setCustomParameters({ hd: "ivycoast.co" });
