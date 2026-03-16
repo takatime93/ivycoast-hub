@@ -9947,8 +9947,9 @@ function openCrmDetailView(contactId) {
       _isCollapsed = true;
       _directionDelta = 0;
     }
-    // Expand after sustained scroll up
-    if (_isCollapsed && _directionDelta < -_expandAt) {
+    // Expand after sustained scroll up — but not from bottom bounce
+    var atBottom = (body.scrollHeight - body.scrollTop - body.clientHeight) < 30;
+    if (_isCollapsed && _directionDelta < -_expandAt && !atBottom) {
       detailView.classList.remove("header-collapsed");
       _isCollapsed = false;
       _directionDelta = 0;
