@@ -486,12 +486,13 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
   cursor: pointer;
 }
 
-.doc-table {
+/* ── Shared table base ── */
+.ivh-table {
   width: 100%;
   border-collapse: collapse;
   font-size: var(--text-md);
 }
-.doc-table th {
+.ivh-table th {
   text-align: left;
   padding: 10px 12px;
   border-bottom: 2px solid #e0e0e0;
@@ -500,17 +501,21 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
   font-size: var(--text-tab);
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  cursor: pointer;
-  user-select: none;
   white-space: nowrap;
 }
-.doc-table th:hover { color: var(--color-primary); }
-.doc-table td {
+.ivh-table td {
   padding: 10px 12px;
   border-bottom: 1px solid var(--color-border-separator);
   vertical-align: middle;
 }
-.doc-table tr:hover td { background: var(--color-surface-secondary); }
+.ivh-table tr:hover td { background: var(--color-surface-secondary); }
+
+/* doc-table overrides (sortable headers) */
+.doc-table th {
+  cursor: pointer;
+  user-select: none;
+}
+.doc-table th:hover { color: var(--color-primary); }
 .no-results { text-align: center; padding: 40px; color: var(--color-text-secondary); }
 
 /* Board */
@@ -1140,30 +1145,8 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
   line-height: var(--leading-tight);
   white-space: nowrap;
 }
-/* CRM Contacts Table */
-.crm-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: var(--text-md);
-}
-.crm-table th {
-  text-align: left;
-  padding: 10px 12px;
-  border-bottom: 2px solid #e0e0e0;
-  font-weight: 500;
-  color: var(--color-text-secondary);
-  font-size: var(--text-tab);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  white-space: nowrap;
-}
-.crm-table td {
-  padding: 10px 12px;
-  border-bottom: 1px solid var(--color-border-separator);
-  vertical-align: middle;
-}
+/* CRM Contacts Table — inherits .ivh-table */
 .crm-table tr { cursor: pointer; }
-.crm-table tr:hover td { background: var(--color-surface-secondary); }
 
 /* CRM View Toggle */
 .crm-view-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
@@ -1699,29 +1682,7 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
   border-bottom: 1px solid var(--color-border-separator);
 }
 
-/* Products & Orders tables */
-.products-table, .orders-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: var(--text-md);
-}
-.products-table th, .orders-table th {
-  text-align: left;
-  padding: 10px 12px;
-  border-bottom: 2px solid #e0e0e0;
-  font-weight: 500;
-  color: var(--color-text-secondary);
-  font-size: var(--text-tab);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  white-space: nowrap;
-}
-.products-table td, .orders-table td {
-  padding: 10px 12px;
-  border-bottom: 1px solid var(--color-border-separator);
-  vertical-align: middle;
-}
-.products-table tr:hover td, .orders-table tr:hover td { background: var(--color-surface-secondary); }
+/* Products & Orders tables — inherit .ivh-table */
 .orders-table tr { cursor: pointer; }
 
 /* Customer drawer */
@@ -1895,30 +1856,8 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
 /* Tools Tab */
 .section-subtitle { font-size: var(--text-md); color: var(--color-text-secondary); margin-top: 4px; }
 
-/* Invoice Table */
-.invoices-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: var(--text-md);
-}
-.invoices-table th {
-  text-align: left;
-  padding: 10px 12px;
-  border-bottom: 2px solid #e0e0e0;
-  font-weight: 500;
-  color: var(--color-text-secondary);
-  font-size: var(--text-tab);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  white-space: nowrap;
-}
-.invoices-table td {
-  padding: 10px 12px;
-  border-bottom: 1px solid var(--color-border-separator);
-  vertical-align: middle;
-}
+/* Invoice Table — inherits .ivh-table */
 .invoices-table tr { cursor: pointer; }
-.invoices-table tr:hover td { background: var(--color-surface-secondary); }
 .inv-badge {
   display: inline-block;
   padding: 2px 8px;
@@ -2878,7 +2817,7 @@ h2.crm-detail-name {
   font-size: var(--text-sm);
   font-weight: 500;
   border-radius: 4px;
-  background: #ff1818;
+  background: var(--color-error-bright);
   color: #fff;
   line-height: 16px;
   letter-spacing: 0.24px;
@@ -3951,7 +3890,7 @@ h2.crm-detail-name {
 .crm-activity-icon.act-stock { color: #f5a244; }
 .crm-activity-icon.act-created { color: #58bfb3; background: none; }
 .crm-activity-icon.act-updated { color: #5864bf; background: none; }
-.crm-activity-icon.act-deleted { color: #df0a0a; background: none; }
+.crm-activity-icon.act-deleted { color: var(--color-error-text); background: none; }
 .crm-activity-icon.act-uploaded { color: #f5a244; background: none; }
 .crm-activity-content { flex: 1; min-width: 0; }
 .crm-activity-action {
@@ -4092,7 +4031,7 @@ h2.crm-detail-name {
   color: #3e3e3e;
   overflow: hidden;
 }
-.crm-order-stat-card .stat-product-warn { color: #df0a0a; }
+.crm-order-stat-card .stat-product-warn { color: var(--color-error-text); }
 .crm-order-stat-card .stat-restock {
   display: flex;
   flex-direction: column;
@@ -4179,28 +4118,19 @@ h2.crm-detail-name {
   gap: 10px;
   margin-bottom: 14px;
 }
-.crm-stock-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-family: var(--font-text);
-  font-size: var(--text-md);
-}
+/* crm-stock-table — inherits .ivh-table, overrides for compact density */
+.crm-stock-table { font-family: var(--font-text); }
 .crm-stock-table th {
-  text-align: left;
   font-size: var(--text-sm);
   font-weight: 600;
   color: var(--color-text-tertiary);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
   padding: 8px 6px;
   border-bottom: 1px solid var(--color-border-light);
 }
 .crm-stock-table td {
   padding: 8px 6px;
-  border-bottom: 1px solid var(--color-border-separator);
   color: var(--color-text-heading);
 }
-.crm-stock-table tr:hover td { background: var(--color-surface-secondary); }
 .crm-stock-table tr.crm-stock-highlight td { background: #e8f5e9; transition: background 0.3s; }
 @keyframes crm-stock-flash { 0%,100% { background: transparent; } 50% { background: #e8f5e9; } }
 .crm-stock-table tr.crm-stock-flash td { animation: crm-stock-flash 0.6s ease 2; }
@@ -4393,8 +4323,8 @@ h2.crm-detail-name {
   .search-bar { flex-direction: column; }
   .search-input { min-width: 0; width: 100%; }
   .filter-select { width: 100%; }
-  .doc-table { font-size: var(--text-md); }
-  .doc-table th, .doc-table td { padding: 8px 6px; }
+  .ivh-table { font-size: var(--text-md); }
+  .ivh-table th, .ivh-table td { padding: 8px 6px; }
   .file-date { display: none; }
   .kanban {
     grid-template-columns: repeat(4, 80vw);
@@ -4420,8 +4350,6 @@ h2.crm-detail-name {
     -webkit-overflow-scrolling: touch;
   }
   .crm-kanban .kanban-col { scroll-snap-align: start; }
-  .crm-table { font-size: var(--text-md); }
-  .crm-table th, .crm-table td { padding: 8px 6px; }
   .board-modal.crm-modal { width: 100vw; max-width: 100vw; }
   .crm-modal-header { padding: 16px 20px 14px; }
   .crm-modal-section { padding: 14px 20px; }
@@ -4456,10 +4384,6 @@ h2.crm-detail-name {
   .crm-people-add-row { flex-direction: column; }
   .crm-team-grid { grid-template-columns: 1fr; }
   .crm-team-cards-grid { grid-template-columns: 1fr; }
-  .products-table { font-size: var(--text-md); }
-  .products-table th, .products-table td { padding: 8px 6px; }
-  .orders-table { font-size: var(--text-md); }
-  .orders-table th, .orders-table td { padding: 8px 6px; }
   .order-detail-grid { grid-template-columns: 1fr; }
   .board-modal.inv-modal { width: 100%; max-width: 100vw; border-radius: 0; max-height: 100vh; }
   .board-modal.inv-modal.inv-split-mode { flex-direction: column; width: 100%; }
@@ -4468,8 +4392,6 @@ h2.crm-detail-name {
   .inv-split-preview-inner { transform: scale(0.35); }
   .inv-field-row { grid-template-columns: 1fr; }
   .inv-field-row.three-col { grid-template-columns: 1fr; }
-  .invoices-table { font-size: var(--text-md); }
-  .invoices-table th, .invoices-table td { padding: 8px 6px; }
   .inv-address-grid { grid-template-columns: 1fr; }
   .inv-preview-container { width: 100%; max-width: 100vw; border-radius: 0; }
   .inv-preview-page { padding: 24px; aspect-ratio: auto; }
@@ -4523,7 +4445,7 @@ h2.crm-detail-name {
 #sign-in-btn:hover { background: var(--color-primary-hover); }
 #auth-error {
   margin-top: 20px;
-  color: #d93025;
+  color: var(--color-error-text);
   font-size: var(--text-md);
   min-height: 20px;
 }
@@ -4549,7 +4471,7 @@ h2.crm-detail-name {
 .notif-bell span { font-size: 20px; color: currentColor; transition: color 0.15s; }
 .notif-bell.has-alert { color: var(--color-text-heading); }
 .notif-bell.has-alert span { color: var(--color-text-heading); }
-.notif-dot { position: absolute; width: 8px; height: 8px; background: #ff1818; border-radius: 50%; top: -3px; right: -3px; }
+.notif-dot { position: absolute; width: 8px; height: 8px; background: var(--color-error-bright); border-radius: 50%; top: -3px; right: -3px; }
 .notif-dot.active { display: block; }
 .notif-dropdown {
   display: none;
@@ -4621,7 +4543,7 @@ h2.crm-detail-name {
 
 /* Tab Dots */
 .tab { position: relative; }
-.tab-dot { display: none; min-width: 20px; height: 18px; padding: 0 4px; background: #ff1818; border-radius: 4px; font-size: var(--text-sm); line-height: 18px; color: #fff; text-align: center; font-weight: 500; }
+.tab-dot { display: none; min-width: 20px; height: 18px; padding: 0 4px; background: var(--color-error-bright); border-radius: 4px; font-size: var(--text-sm); line-height: 18px; color: #fff; text-align: center; font-weight: 500; }
 .tab-dot.active { display: inline-flex; align-items: center; justify-content: center; }
 
 /* Presence Indicators */
@@ -4825,7 +4747,7 @@ h2.crm-detail-name {
   border-radius: 9px;
   font-size: var(--text-sm);
   font-weight: 500;
-  background: #d93025;
+  background: var(--color-error-text);
   color: #fff;
   margin-left: 6px;
   vertical-align: middle;
@@ -5074,7 +4996,7 @@ h2.crm-detail-name {
         <option value="Sheet">Sheet</option>
       </select>
     </div>
-    <table class="doc-table">
+    <table class="ivh-table doc-table">
       <thead>
         <tr>
           <th data-sort="name">Name <span class="sort-arrow"></span></th>
@@ -5274,7 +5196,7 @@ h2.crm-detail-name {
           <button onclick="fetchDocuments(true)">Refresh</button>
         </div>
       </div>
-      <table class="invoices-table">
+      <table class="ivh-table invoices-table">
         <thead>
           <tr>
             <th>Order #</th>
@@ -5310,7 +5232,7 @@ h2.crm-detail-name {
       </div>
     </div>
 
-    <table class="crm-table">
+    <table class="ivh-table crm-table">
       <thead>
         <tr>
           <th>Name</th>
@@ -5353,7 +5275,7 @@ h2.crm-detail-name {
       </div>
     </div>
 
-    <table class="products-table">
+    <table class="ivh-table products-table">
       <thead>
         <tr>
           <th></th>
@@ -5411,7 +5333,7 @@ h2.crm-detail-name {
       </div>
     </div>
 
-    <table class="orders-table">
+    <table class="ivh-table orders-table">
       <thead>
         <tr>
           <th>Order #</th>
@@ -8524,7 +8446,7 @@ function renderCrmContacts() {
   if (contacts.length === 0) { empty.style.display = "block"; return; }
   empty.style.display = "none";
   var table = document.createElement("table");
-  table.className = "crm-table";
+  table.className = "ivh-table crm-table";
   var thead = document.createElement("thead");
   var headerRow = document.createElement("tr");
   ["Contact Name", "Company", "Role", "Email", "Phone", "Stage", "Last Contact"].forEach(function(h) {
@@ -8640,7 +8562,7 @@ function _renderCrmVendorTable(container, contacts) {
   var wrap = document.createElement("div");
   wrap.className = "crm-vendor-table-wrap";
   var table = document.createElement("table");
-  table.className = "crm-table";
+  table.className = "ivh-table crm-table";
   var thead = document.createElement("thead");
   var headerRow = document.createElement("tr");
   ["Name", "Company", "Website", "Email", "Phone", "Stage", "Shop Type"].forEach(function(h) {
@@ -12777,7 +12699,7 @@ function renderCrmStockTab(c, panel, contactId) {
       return;
     }
     var table = document.createElement("table");
-    table.className = "crm-stock-table";
+    table.className = "ivh-table crm-stock-table";
     var thead = document.createElement("thead");
     var headRow = document.createElement("tr");
     ["Product", "Qty", "Price", "Type", "Status", "Delivered", ""].forEach(function(h) {
