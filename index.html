@@ -2506,7 +2506,7 @@ h2.crm-detail-name {
   padding: 3px 8px;
   border-radius: 3px;
   font-family: var(--font-display);
-  font-size: var(--text-xs);
+  font-size: var(--text-sm);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 1px;
@@ -2523,7 +2523,7 @@ h2.crm-detail-name {
 .crm-detail-badges-row { display: flex; align-items: center; gap: 4px; margin-top: 6px; flex-wrap: wrap; }
 .crm-detail-type-badge-v2 {
   display: inline-flex; align-items: center; padding: 3px 8px;
-  border-radius: 3px; font-family: var(--font-display); font-size: var(--text-xs); font-weight: 600;
+  border-radius: 3px; font-family: var(--font-display); font-size: var(--text-sm); font-weight: 600;
   text-transform: uppercase; letter-spacing: 1px; white-space: nowrap;
 }
 .crm-detail-type-badge-v2.type-vendor {
@@ -2537,7 +2537,7 @@ h2.crm-detail-name {
 }
 .crm-detail-stage-split {
   display: inline-flex; align-items: stretch; border-radius: 3px; overflow: hidden;
-  font-family: var(--font-display); font-size: var(--text-xs); font-weight: 600; text-transform: uppercase; letter-spacing: 1px; white-space: nowrap;
+  font-family: var(--font-display); font-size: var(--text-sm); font-weight: 600; text-transform: uppercase; letter-spacing: 1px; white-space: nowrap;
 }
 .crm-detail-stage-split-left {
   padding: 3px 8px; background: var(--color-primary); color: #fff;
@@ -2551,10 +2551,10 @@ h2.crm-detail-name {
   display: flex; align-items: center; gap: 4px; font-size: var(--text-sm); color: var(--color-text-muted);
 }
 .crm-detail-contact-row .crm-icon { width: 16px; height: 16px; color: var(--color-primary); font-size: 12px; }
-.crm-detail-contact-row a { color: #157be1; text-decoration: none; font-size: var(--text-tab); font-weight: 500; }
+.crm-detail-contact-row a { color: #157be1; text-decoration: none; font-size: var(--text-sm); font-weight: 400; line-height: var(--leading-tight); }
 .crm-detail-contact-row a:hover { text-decoration: underline; }
 .crm-detail-social-row { display: flex; align-items: center; gap: 16px; }
-.crm-detail-social-row a { display: flex; align-items: center; gap: 4px; color: #157be1; text-decoration: none; font-size: var(--text-tab); font-weight: 500; }
+.crm-detail-social-row a { display: flex; align-items: center; gap: 4px; color: #157be1; text-decoration: none; font-size: var(--text-sm); font-weight: 400; line-height: var(--leading-tight); }
 .crm-detail-social-row a .crm-icon { width: 16px; height: 16px; color: var(--color-primary); font-size: 12px; }
 .crm-detail-social-row a:hover { text-decoration: underline; }
 /* Info bar (website | address) */
@@ -2967,8 +2967,11 @@ h2.crm-detail-name {
   font-weight: 400;
 }
 .crm-pipeline-label.active {
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+  font-weight: 600;
   color: #00433b;
-  font-weight: 700;
+  letter-spacing: 0;
 }
 .crm-pipeline-cog {
   width: 32px;
@@ -3990,17 +3993,17 @@ h2.crm-detail-name {
   border: 1px solid var(--color-border-subtle);
   border-radius: 8px;
   box-shadow: 0 4px 14px rgba(0,0,0,0.03);
-  padding: 12px 18px;
+  padding: 16px 18px;
   overflow: clip;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
 }
 .crm-order-stat-card .stat-lbl {
   font-family: var(--font-display);
-  font-size: var(--text-xs);
+  font-size: var(--text-sm);
   font-weight: 600;
-  color: var(--color-text-muted);
+  color: #062420;
   line-height: normal;
 }
 .crm-order-stat-card .stat-val {
