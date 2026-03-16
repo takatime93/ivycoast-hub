@@ -19,6 +19,7 @@
 // 8. Receipts headers:  id | receiptNumber | invoiceId | invoiceNumber | contactName | contactCompany | contactEmail | contactAddress | receiptDate | items | subtotal | discount | shipping | taxType | tax | total | pricingType | pricingPercent | pricingParties | workspace | notes | orderId | orderNumber | createdAt | updatedAt
 // 9. PartnerStock headers: id | contactId | contactName | productName | sku | quantity | unitPrice | pricingType | status | dateDelivered | dateSold | dateReturned | notes | createdAt | updatedAt
 // 10. ContactDocuments headers: id | contactId | contactName | docType | docName | sentDate | receivedDate | fileUrl | notes | createdAt | updatedAt
+// 11. People headers: id | nameJa | nameEn | initials | title | avatarImageUrl | email | phone | lineId | instagramHandle | preferredContact | vendorId | vendorRole | isPrimary | languages | communicationPrefs | background | howWeMet | lastContactedAt | lastContactedType | firstMetAt | createdAt | updatedAt
 // 11. Open Extensions → Apps Script, paste this code, deploy as web app
 // 7. Set "Execute as: Me" and "Who has access: Anyone"
 // 8. Copy the deployed URL into the dashboard (Board tab config)
@@ -131,7 +132,7 @@ function deleteRow(sheetName, id) {
 var SHEET_TO_ITEM_TYPE = {
   Tasks: "task", Contacts: "contact", Products: "product",
   Orders: "order", Customers: "customer", Invoices: "invoice", Receipts: "receipt",
-  PartnerStock: "stock", ContactDocuments: "document"
+  PartnerStock: "stock", ContactDocuments: "document", People: "person"
 };
 
 function ensureSheet(name, headers) {
@@ -150,6 +151,7 @@ function ensureActivityAndPresenceSheets() {
   _sheetsEnsured = true;
   ensureSheet("ActivityLog", ["id","action","itemType","itemId","itemName","detail","userId","userName","timestamp"]);
   ensureSheet("Presence", ["email","lastActive","currentTab","photoUrl"]);
+  ensureSheet("People", ["id","nameJa","nameEn","initials","title","avatarImageUrl","email","phone","lineId","instagramHandle","preferredContact","vendorId","vendorRole","isPrimary","languages","communicationPrefs","background","howWeMet","lastContactedAt","lastContactedType","firstMetAt","createdAt","updatedAt"]);
 }
 
 function logActivity(action, itemType, itemId, itemName, detail, userId, userName) {
@@ -186,6 +188,7 @@ function doGet(e) {
       receipts: getAllRows("Receipts"),
       partnerStock: getAllRows("PartnerStock"),
       contactDocuments: getAllRows("ContactDocuments"),
+      people: getAllRows("People"),
       activities: actAll.slice(-100).reverse()
     });
     try { cache.put("batchList", payload, 60); } catch(ex) { /* payload too large for cache */ }
@@ -198,7 +201,7 @@ function doGet(e) {
       var last100 = all.slice(-100).reverse();
       return jsonResponse({ activities: last100 });
     }
-    var keyMap = { "Contacts": "contacts", "Products": "products", "Orders": "orders", "Customers": "customers", "Invoices": "invoices", "Receipts": "receipts", "PartnerStock": "partnerStock", "ContactDocuments": "contactDocuments" };
+    var keyMap = { "Contacts": "contacts", "Products": "products", "Orders": "orders", "Customers": "customers", "Invoices": "invoices", "Receipts": "receipts", "PartnerStock": "partnerStock", "ContactDocuments": "contactDocuments", "People": "people" };
     var key = keyMap[sheetName] || "tasks";
     var result = {};
     result[key] = getAllRows(sheetName);
@@ -222,7 +225,7 @@ function doPost(e) {
 
   var action = body.action;
   var sheetName = body.sheet || "Tasks";
-  var itemKeyMap = { "Contacts": "contact", "Products": "product", "Orders": "order", "Customers": "customer", "Invoices": "invoice", "Receipts": "receipt", "PartnerStock": "stock", "ContactDocuments": "document" };
+  var itemKeyMap = { "Contacts": "contact", "Products": "product", "Orders": "order", "Customers": "customer", "Invoices": "invoice", "Receipts": "receipt", "PartnerStock": "stock", "ContactDocuments": "document", "People": "person" };
   var itemKey = itemKeyMap[sheetName] || "task";
   var item = body[itemKey] || body.task || body.contact || body.invoice || body.receipt || {};
   var userId = body.userId || "";

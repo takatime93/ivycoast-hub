@@ -6837,6 +6837,28 @@ function fetchAllData() {
       if (data.receipts) { receipts = data.receipts; lastFetched.receipts = now; }
       if (data.partnerStock) { partnerStock = data.partnerStock; }
       if (data.contactDocuments) { contactDocuments = data.contactDocuments; }
+      if (data.people) {
+        // Merge server People data — parse arrays stored as comma-separated strings
+        data.people.forEach(function(p) {
+          if (typeof p.languages === "string" && p.languages) p.languages = p.languages.split(",").map(function(s) { return s.trim(); });
+          else if (!p.languages) p.languages = [];
+          if (typeof p.communicationPrefs === "string" && p.communicationPrefs) p.communicationPrefs = p.communicationPrefs.split(",").map(function(s) { return s.trim(); });
+          else if (!p.communicationPrefs) p.communicationPrefs = [];
+          if (p.isPrimary === "true" || p.isPrimary === true) p.isPrimary = true; else p.isPrimary = false;
+        });
+        // Merge: server data takes precedence for existing IDs, append new ones
+        var existingIds = {};
+        contactPeople.forEach(function(cp) { existingIds[cp.id] = true; });
+        data.people.forEach(function(sp) {
+          if (existingIds[sp.id]) {
+            // Update existing record from server
+            var idx = contactPeople.findIndex(function(cp) { return cp.id === sp.id; });
+            if (idx >= 0) contactPeople[idx] = sp;
+          } else {
+            contactPeople.push(sp);
+          }
+        });
+      }
       if (data.activities) { activityLog = data.activities; updateNotifBell(); updateTabDots(); }
       // Demo mode: ?demo=true injects test vendors — remove after partner review
       if (new URLSearchParams(location.search).get("demo") === "true" && typeof _injectDemoVendors === "function") _injectDemoVendors();
@@ -8519,6 +8541,16 @@ function contactDocApiPost(body) {
     body: JSON.stringify(body)
   }).then(function(r) { return r.json(); }).then(function(data) { setTimeout(fetchActivityLog, 500); return data; });
 }
+function peopleApiPost(body) {
+  body.sheet = "People";
+  body.userId = getCurrentUserEmail();
+  body.userName = getCurrentUserName();
+  return fetch(SCRIPT_URL, {
+    method: "POST",
+    headers: { "Content-Type": "text/plain" },
+    body: JSON.stringify(body)
+  }).then(function(r) { return r.json(); }).then(function(data) { setTimeout(fetchActivityLog, 500); return data; });
+}
 
 function fetchCrmContacts(force) {
   if (!SCRIPT_URL) return;
@@ -9653,6 +9685,11 @@ function createContact(data) {
     });
   }
   saveDataCache();
+  // Persist to backend
+  var personData = Object.assign({}, contact);
+  if (Array.isArray(personData.languages)) personData.languages = personData.languages.join(", ");
+  if (Array.isArray(personData.communicationPrefs)) personData.communicationPrefs = personData.communicationPrefs.join(", ");
+  peopleApiPost({ action: "create", person: personData }).catch(function() {});
   return contact;
 }
 
@@ -9750,6 +9787,13 @@ function updateContact(id, data) {
   }
   contact.updatedAt = now;
   saveDataCache();
+  // Persist to backend
+  var personUpdate = { id: contact.id };
+  for (var k in data) { personUpdate[k] = data[k]; }
+  if (Array.isArray(personUpdate.languages)) personUpdate.languages = personUpdate.languages.join(", ");
+  if (Array.isArray(personUpdate.communicationPrefs)) personUpdate.communicationPrefs = personUpdate.communicationPrefs.join(", ");
+  personUpdate.updatedAt = now;
+  peopleApiPost({ action: "update", person: personUpdate }).catch(function() {});
   return contact;
 }
 
@@ -9782,6 +9826,8 @@ function deleteContactPermanently(id) {
   // Remove the contact itself
   contactPeople = contactPeople.filter(function(p) { return p.id !== id; });
   saveDataCache();
+  // Delete from backend
+  peopleApiPost({ action: "delete", id: id, itemName: contact.nameEn || contact.nameJa || "" }).catch(function() {});
   return true;
 }
 
