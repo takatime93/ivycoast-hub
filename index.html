@@ -93,6 +93,9 @@
   --color-stage-inactive-bg: #f2f2f2;
   --color-stage-inactive-text: #353535;
 
+  /* ── Section Labels ── */
+  --color-section-label: #062420;
+
   /* ── Typography ── */
   --font-display: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-text: 'SF Pro Text', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -3636,9 +3639,9 @@ h2.crm-detail-name {
 .contact-last-contact-dot { width: 7px; height: 7px; border-radius: 50%; background: #00a52c; flex-shrink: 0; }
 .contact-log-btn { font-family: var(--font-mono); font-size: 10px; color: var(--color-primary); letter-spacing: -0.3px; background: none; border: 1px solid var(--color-border); border-radius: 6px; padding: 4px 10px; cursor: pointer; }
 .contact-log-btn:hover { background: var(--color-surface-secondary); }
-.contact-stat-cards { display: flex; gap: 8px; padding: 0 32px 16px; }
+.contact-stat-cards { display: flex; gap: 8px; padding: 0 0 16px; }
 .contact-stat-card { flex: 1; border: 1px solid var(--color-border-subtle); border-radius: 8px; padding: 12px 16px; }
-.contact-stat-card-label { font-family: var(--font-display); font-size: 12px; font-weight: 600; color: #062420; }
+.contact-stat-card-label { font-family: var(--font-display); font-size: 12px; font-weight: 600; color: var(--color-section-label); line-height: normal; }
 .contact-stat-card-value { font-family: var(--font-display); font-size: 24px; font-weight: 600; color: var(--color-text-heading); line-height: 30px; }
 .contact-stat-card-sub { font-family: var(--font-mono); font-size: 10px; color: var(--color-text-tertiary); letter-spacing: -0.3px; }
 .contact-vendor-ref { border: 1px solid var(--color-border-subtle); border-radius: 8px; padding: 14px 16px; margin-top: 12px; }
@@ -3653,7 +3656,7 @@ h2.crm-detail-name {
 /* ── Contact Edit Form (Phase 4) ──────────────────────────── */
 .contact-edit-form { padding: 16px 32px; display: flex; flex-direction: column; gap: 16px; }
 .contact-edit-section { display: flex; flex-direction: column; gap: 8px; }
-.contact-edit-section-title { font-family: var(--font-display); font-size: 12px; font-weight: 600; color: #062420; margin-bottom: 4px; }
+.contact-edit-section-title { font-family: var(--font-display); font-size: 12px; font-weight: 600; color: var(--color-section-label); margin-bottom: 4px; }
 .contact-edit-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .contact-edit-field { display: flex; flex-direction: column; gap: 4px; }
 .contact-edit-field.full { grid-column: span 2; }
@@ -9818,7 +9821,7 @@ function createContactInteraction(contactId, data) {
     MEETING: "INTERACTION_MEETING",
     EVENT: "INTERACTION_EVENT",
     MESSAGE: "INTERACTION_MESSAGE",
-    OTHER: "INTERACTION_EMAIL"
+    OTHER: "INTERACTION_OTHER"
   };
   var eventTitle = {
     EMAIL: "Email sent",
@@ -13073,6 +13076,13 @@ function renderContactOverviewEmbedded(contact, derived, vendorRecord, panel, bo
     { key: "Background", value: contact.background, type: "text" },
     { key: "How we met", value: contact.howWeMet, type: "text" }
   ];
+  if (contact.instagramHandle) {
+    contextRows.push({ key: "Instagram", value: contact.instagramHandle, type: "text" });
+  }
+  if (contact.firstMetAt) {
+    var fmDate = new Date(contact.firstMetAt + "T00:00:00");
+    contextRows.splice(3, 0, { key: "First met", value: fmDate.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }), type: "text" });
+  }
   contextRows.forEach(function(r) {
     var row = document.createElement("div");
     row.className = "contact-context-row";
@@ -13268,7 +13278,6 @@ function renderContactNotesTab(contact, panel, bodyEl, contactId, tabsBar, vendo
       body: body,
       context: contextSelect.value
     });
-    saveDataCache();
     renderContactProfileEmbedded(contact, vendorRecord, bodyEl, contactId, tabsBar);
   };
   actions.appendChild(saveBtn);
@@ -13324,7 +13333,7 @@ function renderContactActivityTab(contact, panel) {
     INTERACTION_MESSAGE: "#3cb1ff",
     INTERACTION_MEETING: "#00a52c",
     INTERACTION_EVENT: "#00a52c",
-    INTERACTION_CALL: "#3cb1ff",
+    INTERACTION_OTHER: "#dadce0",
     SHOP_INTRODUCED: "#00a52c",
     SHOP_WENT_LIVE: "#00a52c",
     TASK_COMPLETED: "#0e413b",
@@ -13461,6 +13470,19 @@ function renderContactAttachmentsTab(contact, panel) {
   addFile.className = "contact-attach-add";
   addFile.textContent = "+ Add file";
   addFile.style.marginTop = "12px";
+  addFile.style.cursor = "pointer";
+  var fileInput = document.createElement("input");
+  fileInput.type = "file";
+  fileInput.accept = "image/*,application/pdf";
+  fileInput.style.display = "none";
+  fileInput.onchange = function() {
+    if (fileInput.files && fileInput.files.length > 0) {
+      alert("File upload not yet connected to backend");
+      fileInput.value = "";
+    }
+  };
+  addFile.appendChild(fileInput);
+  addFile.onclick = function() { fileInput.click(); };
   panel.appendChild(addFile);
 
   if (atts.length === 0 && !businessCards.length) {
@@ -13617,6 +13639,24 @@ function renderContactEditForm(contact, container, options) {
   prefField.appendChild(prefInput);
   infoRow2.appendChild(prefField);
   infoSec.appendChild(infoRow2);
+
+  // Instagram handle
+  var infoRow3 = document.createElement("div");
+  infoRow3.className = "contact-edit-row";
+  var igField = document.createElement("div");
+  igField.className = "contact-edit-field";
+  var igLabel = document.createElement("label");
+  igLabel.className = "contact-edit-label";
+  igLabel.textContent = "Instagram";
+  igField.appendChild(igLabel);
+  var igInput = document.createElement("input");
+  igInput.className = "contact-edit-input";
+  igInput.type = "text";
+  igInput.placeholder = "@handle";
+  if (contact && contact.instagramHandle) igInput.value = contact.instagramHandle;
+  igField.appendChild(igInput);
+  infoRow3.appendChild(igField);
+  infoSec.appendChild(infoRow3);
   form.appendChild(infoSec);
 
   // ─── Section 3: Vendor Connection ───
@@ -13741,6 +13781,23 @@ function renderContactEditForm(contact, container, options) {
   ctxRow1.appendChild(commField);
   ctxSec.appendChild(ctxRow1);
 
+  // First met date
+  var fmRow = document.createElement("div");
+  fmRow.className = "contact-edit-row";
+  var fmField = document.createElement("div");
+  fmField.className = "contact-edit-field";
+  var fmLabel = document.createElement("label");
+  fmLabel.className = "contact-edit-label";
+  fmLabel.textContent = "First met";
+  fmField.appendChild(fmLabel);
+  var fmInput = document.createElement("input");
+  fmInput.className = "contact-edit-input";
+  fmInput.type = "date";
+  if (contact && contact.firstMetAt) fmInput.value = contact.firstMetAt;
+  fmField.appendChild(fmInput);
+  fmRow.appendChild(fmField);
+  ctxSec.appendChild(fmRow);
+
   // Background (full width textarea)
   var bgRow = document.createElement("div");
   bgRow.className = "contact-edit-row";
@@ -13802,10 +13859,12 @@ function renderContactEditForm(contact, container, options) {
     var phoneVal = phoneInput.value.trim() || null;
     var lineVal = lineInput.value.trim() || null;
     var prefVal = prefInput.value.trim() || null;
+    var igVal = igInput.value.trim() || null;
     var vendorIdVal = vendorSelect.value || null;
     var vendorRoleVal = roleSelect.value || null;
     var langVal = langInput.value.trim();
     var commVal = commInput.value.trim();
+    var fmVal = fmInput.value.trim() || null;
     var bgVal = bgInput.value.trim() || null;
     var metVal = metInput.value.trim() || null;
 
@@ -13849,11 +13908,13 @@ function renderContactEditForm(contact, container, options) {
       phone: phoneVal,
       lineId: lineVal,
       preferredContact: prefVal,
+      instagramHandle: igVal,
       vendorId: vendorIdVal,
       vendorRole: vendorRoleVal,
       isPrimary: isPrimary,
       languages: languagesArr,
       communicationPrefs: commPrefsArr,
+      firstMetAt: fmVal,
       background: bgVal,
       howWeMet: metVal
     };
@@ -13970,7 +14031,8 @@ function renderContactProfileStandalone(contact, detailView, headerEl, bodyEl, t
     moreMenu.style.cssText = "position:absolute;top:100%;right:0;margin-top:4px;background:#fff;border:1px solid var(--color-border);border-radius:8px;box-shadow:var(--shadow-lg);z-index:100;min-width:140px;padding:4px 0";
     var menuItems = [
       { label: "Edit contact", icon: "\uf303", action: function() {
-          renderContactEditForm(contact, detailView, {
+          var editBody = document.getElementById("crm-detail-body");
+          renderContactEditForm(contact, editBody, {
             isNew: false,
             onSave: function(saved) { openContactProfileStandalone(saved.id); },
             onCancel: function() { openContactProfileStandalone(contact.id); }
@@ -14168,17 +14230,8 @@ function renderContactProfileStandalone(contact, detailView, headerEl, bodyEl, t
     if (!normalizedType) { alert("Invalid type. Use: Email, Call, Meeting, Event, or Message."); return; }
     var summaryInput = prompt("Summary (optional):");
     createContactInteraction(contact.id, { type: normalizedType, summary: summaryInput || null });
-    saveDataCache();
-    // Re-render
-    var freshContact = contactPeople.find(function(p) { return p.id === contact.id; });
-    if (freshContact) {
-      headerEl.textContent = "";
-      bodyEl.textContent = "";
-      tabsBarEl.textContent = "";
-      var oldIB = detailView.querySelector(".crm-detail-info-bar");
-      if (oldIB) oldIB.remove();
-      renderContactProfileStandalone(freshContact, detailView, headerEl, bodyEl, tabsBarEl);
-    }
+    // Re-render via openContactProfileStandalone for full cleanup
+    openContactProfileStandalone(contact.id);
   };
   lastBar.appendChild(logBtn);
   headerWrap.appendChild(lastBar);
@@ -14232,14 +14285,7 @@ function renderContactProfileStandalone(contact, detailView, headerEl, bodyEl, t
       var bodyText = notesTextarea ? notesTextarea.value.trim() : "";
       if (!bodyText) return;
       createContactNote(contact.id, { body: bodyText, context: notesSelect ? notesSelect.value : "GENERAL" });
-      saveDataCache();
-      var freshContact = contactPeople.find(function(p) { return p.id === contact.id; });
-      if (freshContact) {
-        headerEl.textContent = "";
-        bodyEl.textContent = "";
-        tabsBarEl.textContent = "";
-        renderContactProfileStandalone(freshContact, detailView, headerEl, bodyEl, tabsBarEl);
-      }
+      openContactProfileStandalone(contact.id);
     };
   }
 
@@ -14326,6 +14372,13 @@ function _renderContactStandaloneOverview(contact, derived, vendor, panel, detai
     { key: "Background", value: contact.background, type: "text" },
     { key: "How we met", value: contact.howWeMet, type: "text" }
   ];
+  if (contact.instagramHandle) {
+    contextRows.push({ key: "Instagram", value: contact.instagramHandle, type: "text" });
+  }
+  if (contact.firstMetAt) {
+    var fmDateStandalone = new Date(contact.firstMetAt + "T00:00:00");
+    contextRows.splice(3, 0, { key: "First met", value: fmDateStandalone.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }), type: "text" });
+  }
   contextRows.forEach(function(r) {
     var row = document.createElement("div");
     row.className = "contact-context-row";
@@ -14392,13 +14445,7 @@ function _renderContactStandaloneOverview(contact, derived, vendor, panel, detai
     };
     boardTasks.push(newTask);
     saveDataCache();
-    var freshContact = contactPeople.find(function(p) { return p.id === contact.id; });
-    if (freshContact) {
-      headerEl.textContent = "";
-      bodyEl.textContent = "";
-      tabsBarEl.textContent = "";
-      renderContactProfileStandalone(freshContact, detailView, headerEl, bodyEl, tabsBarEl);
-    }
+    openContactProfileStandalone(contact.id);
   };
   todoHeader.appendChild(todoAdd);
   leftCol.appendChild(todoHeader);
@@ -14433,13 +14480,7 @@ function _renderContactStandaloneOverview(contact, derived, vendor, panel, detai
           });
         }
         saveDataCache();
-        var freshContact = contactPeople.find(function(p) { return p.id === contact.id; });
-        if (freshContact) {
-          headerEl.textContent = "";
-          bodyEl.textContent = "";
-          tabsBarEl.textContent = "";
-          renderContactProfileStandalone(freshContact, detailView, headerEl, bodyEl, tabsBarEl);
-        }
+        openContactProfileStandalone(contact.id);
       };
       row.appendChild(cb);
       var txt = document.createElement("span");
@@ -14503,11 +14544,7 @@ function _renderContactStandaloneOverview(contact, derived, vendor, panel, detai
       peerRow.appendChild(peerInfo);
       peerRow.onclick = function() {
         // Open this peer's standalone profile
-        headerEl.textContent = "";
-        bodyEl.textContent = "";
-        tabsBarEl.textContent = "";
-        renderContactProfileStandalone(peer, detailView, headerEl, bodyEl, tabsBarEl);
-        localStorage.setItem("ivyhub_crmOpenContactProfile", peer.id);
+        openContactProfileStandalone(peer.id);
       };
       rightCol.appendChild(peerRow);
     });
@@ -14549,6 +14586,7 @@ function _matchPersonToContact(person, vendorRecord) {
   if (!person) return null;
   var personFullName = ((person.firstName || "") + " " + (person.lastName || "")).trim().toLowerCase();
   var personEmail = (person.email || "").toLowerCase();
+  var fullEn = ((person.firstNameEn || "") + " " + (person.lastNameEn || "")).trim().toLowerCase();
   var vendorId = vendorRecord ? vendorRecord.id : null;
 
   // Try matching by name and vendor
@@ -14564,6 +14602,10 @@ function _matchPersonToContact(person, vendorRecord) {
     if (personFullName && cpNameEn === personFullName && cpVendor === vendorId) { match = cp; return; }
     // Match by full name only
     if (personFullName && cpNameEn === personFullName) { match = cp; return; }
+    // Match by English name (firstNameEn/lastNameEn) + vendor
+    if (fullEn && cpNameEn === fullEn && cpVendor === vendorId) { match = cp; return; }
+    // Match by English name only
+    if (fullEn && cpNameEn === fullEn) { match = cp; return; }
   });
 
   // Auto-migrate: if no match found, create a Contact object from the person data
