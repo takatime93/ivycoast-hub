@@ -6731,7 +6731,8 @@ function fetchAllData() {
       if (data.partnerStock) { partnerStock = data.partnerStock; }
       if (data.contactDocuments) { contactDocuments = data.contactDocuments; }
       if (data.activities) { activityLog = data.activities; updateNotifBell(); updateTabDots(); }
-      // Test data injector removed — was DEV only
+      // Demo mode: ?demo=true injects test vendors — remove after partner review
+      if (new URLSearchParams(location.search).get("demo") === "true" && typeof _injectDemoVendors === "function") _injectDemoVendors();
       // Re-render all views
       renderBoard(); renderHomeActiveTasks(); renderHomeKeyStats(); renderHomeRecentlyUpdated();
       renderHomeCrmStats(); renderHomeShopifyStats();
@@ -18004,6 +18005,213 @@ auth.onAuthStateChanged(function(user) {
     showLogin();
   }
 });
+
+// ══════════════════════════════════════════════════════════════
+// DEMO VENDORS — 3 types with rich data — remove after review
+// Activated by ?demo=true in URL
+// ══════════════════════════════════════════════════════════════
+window._injectDemoVendors = function() {
+  if (crmContacts.find(function(c) { return c.id === "demo-direct-1"; })) return;
+
+  // ━━━ 1. DIRECT PARTNER — Kamakura Goods ━━━
+  crmContacts.push({
+    id: "demo-direct-1", name: "Kamakura Goods", company: "Kamakura Goods",
+    nameEn: "Kamakura Goods Co., Ltd.", email: "contact@kamakuragoods.jp",
+    type: "Vendor", vendorRelation: "Direct Partner", stage: "active_partner",
+    connectedDate: "2025-09-15", lastContactDate: "2026-03-14",
+    location: "Kamakura, Kanagawa", website: "https://kamakuragoods.jp",
+    instagram: "@kamakuragoods", socialMedia: "https://facebook.com/kamakuragoods",
+    shopType: "Lifestyle shop, Gifts", consignmentPercent: 30, wholesalePercent: "",
+    people: JSON.stringify([
+      { id: "p1", firstName: "Kenji", lastName: "Yamamoto", firstNameEn: "Kenji", lastNameEn: "Yamamoto", role: "Owner / Buyer", email: "kenji@kamakuragoods.jp", phone: "0467-22-1234" },
+      { id: "p2", firstName: "Mika", lastName: "Tanaka", firstNameEn: "Mika", lastNameEn: "Tanaka", role: "Floor Manager", email: "mika@kamakuragoods.jp" }
+    ]),
+    notes: JSON.stringify([
+      { id: "dn1", text: "Strong foot traffic on weekends — they move a lot of gift sets. Kenji suggested we create a Kamakura-exclusive bundle for the summer season. He's very enthusiastic about the Australian botanical theme.", author: "Taka", authorEmail: "taka@ivycoast.co", date: "2026-03-14T09:30:00Z" },
+      { id: "dn2", text: "Visited the shop with Yoko. Beautiful corner display near the entrance with all our products grouped together. They want to expand to candles — sending Tasmanian Citrus and Golden Bushland samples next week.", author: "Yoko", authorEmail: "yoko@ivycoast.co", date: "2026-02-28T14:30:00Z" },
+      { id: "dn3", text: "Initial delivery went smoothly via Sagawa. Kenji prefers Thursday deliveries to prep for weekend traffic. Byron Bay and Sunlight are already their top sellers after just 2 weeks.", author: "Taka", authorEmail: "taka@ivycoast.co", date: "2025-10-02T09:00:00Z" }
+    ]),
+    tickets: JSON.stringify([
+      { id: "dt1", title: "Send candle samples to Kenji (Tasmanian Citrus + Golden Bushland)", status: "open", dueDate: "2026-03-20" },
+      { id: "dt2", title: "Design Kamakura-exclusive summer gift bundle packaging", status: "open", dueDate: "2026-04-01" },
+      { id: "dt3", title: "Schedule Thursday delivery for March restock (8x Byron Bay, 6x Sunlight)", status: "open", dueDate: "2026-03-21" },
+      { id: "dt4", title: "Draft consignment agreement renewal for FY2026", status: "open", dueDate: "2026-03-31" },
+      { id: "dt5", title: "Finalize initial consignment agreement (30%)", status: "done", dueDate: "2025-09-20" }
+    ])
+  });
+  shopifyOrders.push(
+    { id: "do1", orderNumber: "4001", email: "contact@kamakuragoods.jp", customerName: "Kamakura Goods", totalPrice: "171200", currency: "JPY", financialStatus: "paid", createdAt: "2026-03-08T10:00:00Z", lineItems: "8" },
+    { id: "do2", orderNumber: "4002", email: "contact@kamakuragoods.jp", customerName: "Kamakura Goods", totalPrice: "128400", currency: "JPY", financialStatus: "paid", createdAt: "2026-02-12T10:00:00Z", lineItems: "6" },
+    { id: "do3", orderNumber: "4003", email: "contact@kamakuragoods.jp", customerName: "Kamakura Goods", totalPrice: "85600", currency: "JPY", financialStatus: "paid", createdAt: "2026-01-18T10:00:00Z", lineItems: "4" },
+    { id: "do4", orderNumber: "4004", email: "contact@kamakuragoods.jp", customerName: "Kamakura Goods", totalPrice: "214000", currency: "JPY", financialStatus: "paid", createdAt: "2025-12-20T10:00:00Z", lineItems: "10" },
+    { id: "do5", orderNumber: "4005", email: "contact@kamakuragoods.jp", customerName: "Kamakura Goods", totalPrice: "42800", currency: "JPY", financialStatus: "paid", createdAt: "2025-10-01T10:00:00Z", lineItems: "2" },
+    { id: "do6", orderNumber: "4006", email: "contact@kamakuragoods.jp", customerName: "Kamakura Goods", totalPrice: "192600", currency: "JPY", financialStatus: "paid", createdAt: "2025-11-15T10:00:00Z", lineItems: "9" }
+  );
+  partnerStock.push(
+    { id: "ds1", contactId: "demo-direct-1", contactName: "Kamakura Goods", productName: "Byron Bay", sku: "SOP-BB", quantity: "8", unitPrice: "42800", pricingType: "consignment", status: "active" },
+    { id: "ds2", contactId: "demo-direct-1", contactName: "Kamakura Goods", productName: "Sunlight", sku: "SOP-SL", quantity: "3", unitPrice: "42800", pricingType: "consignment", status: "active" },
+    { id: "ds3", contactId: "demo-direct-1", contactName: "Kamakura Goods", productName: "Paradise", sku: "SOP-PR", quantity: "12", unitPrice: "42800", pricingType: "consignment", status: "active" },
+    { id: "ds4", contactId: "demo-direct-1", contactName: "Kamakura Goods", productName: "Tsubaki", sku: "SOP-TS", quantity: "5", unitPrice: "42800", pricingType: "consignment", status: "active" },
+    { id: "ds5", contactId: "demo-direct-1", contactName: "Kamakura Goods", productName: "Moonlight", sku: "SOP-ML", quantity: "2", unitPrice: "42800", pricingType: "consignment", status: "active" },
+    { id: "ds6", contactId: "demo-direct-1", contactName: "Kamakura Goods", productName: "Lemon Fields Forever", sku: "CND-LF", quantity: "6", unitPrice: "42800", pricingType: "consignment", status: "active" },
+    { id: "ds7", contactId: "demo-direct-1", contactName: "Kamakura Goods", productName: "Tasmanian Citrus", sku: "CND-TC", quantity: "4", unitPrice: "42800", pricingType: "consignment", status: "active" },
+    { id: "ds8", contactId: "demo-direct-1", contactName: "Kamakura Goods", productName: "Golden Bushland", sku: "CND-GB", quantity: "9", unitPrice: "42800", pricingType: "consignment", status: "active" }
+  );
+  [
+    { id: "da1", userId: "taka@ivycoast.co", userName: "Taka", action: "received order", itemType: "order", itemId: "demo-direct-1", itemName: "Kamakura Goods", detail: "Order #4001 — \u00A5171,200 (8 items)", timestamp: "2026-03-08T10:00:00Z" },
+    { id: "da2", userId: "taka@ivycoast.co", userName: "Taka", action: "received payment", itemType: "order", itemId: "demo-direct-1", itemName: "Kamakura Goods", detail: "Payment for order #4002 — \u00A5128,400", timestamp: "2026-02-18T14:00:00Z" },
+    { id: "da3", userId: "yoko@ivycoast.co", userName: "Yoko", action: "updated stock", itemType: "stock", itemId: "demo-direct-1", itemName: "Kamakura Goods", detail: "Delivered 8x Byron Bay, 6x Sunlight, 5x Tsubaki", timestamp: "2026-03-09T09:00:00Z" },
+    { id: "da4", userId: "taka@ivycoast.co", userName: "Taka", action: "low stock alert", itemType: "stock", itemId: "demo-direct-1", itemName: "Kamakura Goods", detail: "Moonlight (SOP-ML) running low \u2014 2 left", timestamp: "2026-03-14T08:00:00Z" },
+    { id: "da5", userId: "taka@ivycoast.co", userName: "Taka", action: "sent invoice", itemType: "invoice", itemId: "demo-direct-1", itemName: "Kamakura Goods", detail: "Invoice #INV-4001 sent \u2014 \u00A5171,200", timestamp: "2026-03-08T11:00:00Z" },
+    { id: "da6", userId: "yoko@ivycoast.co", userName: "Yoko", action: "added contact", itemType: "contact", itemId: "demo-direct-1", itemName: "Kamakura Goods", detail: "Added Mika Tanaka as Floor Manager", timestamp: "2026-01-10T14:00:00Z" }
+  ].forEach(function(a) { activityLog.push(a); });
+
+  // ━━━ 2. B2B2B CONNECTOR — Edgeof Creative ━━━
+  crmContacts.push({
+    id: "demo-connector-1", name: "Edgeof Creative", company: "Edgeof Creative",
+    nameEn: "Edgeof Creative Inc.", email: "partners@edgeof.co.jp",
+    type: "Connector", vendorRelation: "Connector", stage: "active_partner",
+    connectedDate: "2025-11-01", lastContactDate: "2026-03-15",
+    connectorFeePercent: 10,
+    location: "Shibuya, Tokyo", website: "https://edgeof.co.jp",
+    instagram: "@edgeofcreative", socialMedia: "https://facebook.com/edgeofcreative",
+    shopType: "Creative Agency / Brand Distributor",
+    people: JSON.stringify([
+      { id: "p3", firstName: "Ryo", lastName: "Ishikawa", firstNameEn: "Ryo", lastNameEn: "Ishikawa", role: "Managing Director", email: "ryo@edgeof.co.jp", phone: "03-6427-8900" },
+      { id: "p4", firstName: "Aya", lastName: "Suzuki", firstNameEn: "Aya", lastNameEn: "Suzuki", role: "Partnerships Lead", email: "aya@edgeof.co.jp" }
+    ]),
+    notes: JSON.stringify([
+      { id: "en1", text: "Edgeof has connected us to 2 shops so far \u2014 Northshore Cafe in Shonan and Daikanyama Select in Tokyo. Both performing well. Ryo mentioned a third prospect in Omotesando that specializes in Australian imports. Following up next week.", author: "Taka", authorEmail: "taka@ivycoast.co", date: "2026-03-15T09:30:00Z" },
+      { id: "en2", text: "Finalized connector fee at 10% across all shops. Monthly invoicing, net-30 terms. Aya is our main point of contact for day-to-day logistics. She\u2019s very responsive and organized.", author: "Yoko", authorEmail: "yoko@ivycoast.co", date: "2026-03-01T14:00:00Z" },
+      { id: "en3", text: "Northshore Cafe reorder came in faster than expected \u2014 sold out of Byron Bay soap in under 2 weeks. Ryo says coastal shops move our products faster than city stores. Consider increasing initial stock for beach-area placements.", author: "Taka", authorEmail: "taka@ivycoast.co", date: "2026-02-20T11:15:00Z" },
+      { id: "en4", text: "Daikanyama Select wants exclusive holiday packaging for year-end gifting. Premium clientele \u2014 products sit alongside Aesop and Byredo. Great brand positioning opportunity.", author: "Yoko", authorEmail: "yoko@ivycoast.co", date: "2026-01-20T16:00:00Z" }
+    ]),
+    tickets: JSON.stringify([
+      { id: "et1", title: "Send updated connector agreement with 10% fee terms to Aya", status: "open", dueDate: "2026-03-20" },
+      { id: "et2", title: "Follow up with Ryo on Omotesando shop introduction", status: "open", dueDate: "2026-03-22" },
+      { id: "et3", title: "Review Q1 sales report across all connected shops", status: "open", dueDate: "2026-03-31" },
+      { id: "et4", title: "Plan joint marketing campaign with Edgeof for summer", status: "open", dueDate: "2026-04-15" },
+      { id: "et5", title: "Confirm Daikanyama Select restock quantities with Aya", status: "done", dueDate: "2026-03-05" },
+      { id: "et6", title: "Set up monthly invoicing schedule for connector fees", status: "done", dueDate: "2026-03-01" }
+    ])
+  });
+  [
+    { id: "ea1", userId: "taka@ivycoast.co", userName: "Taka", action: "received order", itemType: "order", itemId: "demo-connector-1", itemName: "Edgeof Creative", detail: "Northshore Cafe placed order #2001 \u2014 \u00A585,000", timestamp: "2026-03-10T10:00:00Z" },
+    { id: "ea2", userId: "taka@ivycoast.co", userName: "Taka", action: "received payment", itemType: "order", itemId: "demo-connector-1", itemName: "Edgeof Creative", detail: "Daikanyama Select paid invoice #INV-3001 \u2014 \u00A5198,000", timestamp: "2026-03-13T15:30:00Z" },
+    { id: "ea3", userId: "yoko@ivycoast.co", userName: "Yoko", action: "updated stock", itemType: "stock", itemId: "demo-connector-1", itemName: "Edgeof Creative", detail: "Restocked Byron Bay (SOP-BB) at Northshore Cafe \u2014 12 units", timestamp: "2026-03-08T09:00:00Z" },
+    { id: "ea4", userId: "taka@ivycoast.co", userName: "Taka", action: "sent invoice", itemType: "invoice", itemId: "demo-connector-1", itemName: "Edgeof Creative", detail: "Invoice #INV-3001 sent to Daikanyama Select \u2014 \u00A5198,000", timestamp: "2026-03-06T11:00:00Z" },
+    { id: "ea5", userId: "yoko@ivycoast.co", userName: "Yoko", action: "added contact", itemType: "contact", itemId: "demo-connector-1", itemName: "Edgeof Creative", detail: "Connected Daikanyama Select as new partner shop", timestamp: "2026-01-15T14:00:00Z" },
+    { id: "ea6", userId: "yoko@ivycoast.co", userName: "Yoko", action: "added contact", itemType: "contact", itemId: "demo-connector-1", itemName: "Edgeof Creative", detail: "Connected Northshore Cafe as new partner shop", timestamp: "2025-12-01T10:00:00Z" },
+    { id: "ea7", userId: "taka@ivycoast.co", userName: "Taka", action: "low stock alert", itemType: "stock", itemId: "demo-connector-1", itemName: "Edgeof Creative", detail: "Sunlight (SOP-SL) at Northshore Cafe \u2014 only 2 left", timestamp: "2026-03-14T08:00:00Z" }
+  ].forEach(function(a) { activityLog.push(a); });
+
+  // ━━━ 3a. VIA CONNECTOR — Northshore Cafe (connected by Edgeof) ━━━
+  crmContacts.push({
+    id: "demo-via-1", name: "Northshore Cafe", company: "Northshore Cafe",
+    nameEn: "Northshore Cafe LLC", email: "hello@northshorecafe.jp",
+    type: "Partner", connectorId: "demo-connector-1",
+    vendorRelation: "Direct Partner", stage: "active_partner",
+    connectedDate: "2025-12-01", lastContactDate: "2026-03-12",
+    consignmentPercent: 30, location: "Shonan, Kanagawa",
+    website: "https://northshorecafe.jp", instagram: "@northshorecafe",
+    socialMedia: "https://facebook.com/northshorecafe",
+    shopType: "Cafe & Lifestyle",
+    people: JSON.stringify([
+      { id: "p5", firstName: "Takeshi", lastName: "Ono", firstNameEn: "Takeshi", lastNameEn: "Ono", role: "Owner", email: "takeshi@northshorecafe.jp", phone: "0466-55-1234" },
+      { id: "p6", firstName: "Yui", lastName: "Matsuda", firstNameEn: "Yui", lastNameEn: "Matsuda", role: "Shop Manager", email: "yui@northshorecafe.jp" }
+    ]),
+    notes: JSON.stringify([
+      { id: "nn1", text: "Great location right on the coast \u2014 heavy weekend foot traffic from surfers and tourists. Byron Bay soap is their top seller by far. Takeshi says customers love the beach-themed branding. He wants to create a \u201CShonan Set\u201D gift box.", author: "Taka", authorEmail: "taka@ivycoast.co", date: "2026-03-12T10:00:00Z" },
+      { id: "nn2", text: "Yui asked about seasonal scents for summer. They want something fresh and citrusy for the surf crowd. Suggested Lemon Fields Forever candle as a trial \u2014 she\u2019s ordering 6 units to test.", author: "Yoko", authorEmail: "yoko@ivycoast.co", date: "2026-02-20T16:00:00Z" },
+      { id: "nn3", text: "Photographed the in-store display for our social media. Looks fantastic \u2014 natural wood shelving with our products front and center. Takeshi gave permission to tag them.", author: "Taka", authorEmail: "taka@ivycoast.co", date: "2026-01-15T11:00:00Z" }
+    ]),
+    tickets: JSON.stringify([
+      { id: "nt1", title: "Send 6x Lemon Fields Forever candle samples to Yui", status: "open", dueDate: "2026-03-20" },
+      { id: "nt2", title: "Restock Sunlight soap urgently (only 2 left)", status: "open", dueDate: "2026-03-18" },
+      { id: "nt3", title: "Post Northshore Cafe display photos to Instagram", status: "open", dueDate: "2026-03-22" },
+      { id: "nt4", title: "Design Shonan Set gift box concept with Takeshi", status: "open", dueDate: "2026-04-01" }
+    ])
+  });
+  shopifyOrders.push(
+    { id: "no1", orderNumber: "2001", email: "hello@northshorecafe.jp", customerName: "Northshore Cafe", totalPrice: "85000", currency: "JPY", financialStatus: "paid", createdAt: "2026-03-10T10:00:00Z", lineItems: "6" },
+    { id: "no2", orderNumber: "2002", email: "hello@northshorecafe.jp", customerName: "Northshore Cafe", totalPrice: "120000", currency: "JPY", financialStatus: "paid", createdAt: "2026-02-18T10:00:00Z", lineItems: "10" },
+    { id: "no3", orderNumber: "2003", email: "hello@northshorecafe.jp", customerName: "Northshore Cafe", totalPrice: "45000", currency: "JPY", financialStatus: "paid", createdAt: "2026-01-05T10:00:00Z", lineItems: "4" },
+    { id: "no4", orderNumber: "2004", email: "hello@northshorecafe.jp", customerName: "Northshore Cafe", totalPrice: "64200", currency: "JPY", financialStatus: "paid", createdAt: "2025-12-15T10:00:00Z", lineItems: "3" }
+  );
+  partnerStock.push(
+    { id: "ns1", contactId: "demo-via-1", contactName: "Northshore Cafe", productName: "Byron Bay", sku: "SOP-BB", quantity: "12", unitPrice: "42800", pricingType: "consignment", status: "active" },
+    { id: "ns2", contactId: "demo-via-1", contactName: "Northshore Cafe", productName: "Sunlight", sku: "SOP-SL", quantity: "2", unitPrice: "42800", pricingType: "consignment", status: "active" },
+    { id: "ns3", contactId: "demo-via-1", contactName: "Northshore Cafe", productName: "Paradise", sku: "SOP-PR", quantity: "10", unitPrice: "42800", pricingType: "consignment", status: "active" },
+    { id: "ns4", contactId: "demo-via-1", contactName: "Northshore Cafe", productName: "Moonlight", sku: "SOP-ML", quantity: "8", unitPrice: "42800", pricingType: "consignment", status: "active" }
+  );
+  [
+    { id: "na1", userId: "taka@ivycoast.co", userName: "Taka", action: "received order", itemType: "order", itemId: "demo-via-1", itemName: "Northshore Cafe", detail: "Order #2001 \u2014 \u00A585,000 (6 items)", timestamp: "2026-03-10T10:00:00Z" },
+    { id: "na2", userId: "taka@ivycoast.co", userName: "Taka", action: "received payment", itemType: "order", itemId: "demo-via-1", itemName: "Northshore Cafe", detail: "Payment for order #2002 \u2014 \u00A5120,000", timestamp: "2026-02-22T14:00:00Z" },
+    { id: "na3", userId: "yoko@ivycoast.co", userName: "Yoko", action: "updated stock", itemType: "stock", itemId: "demo-via-1", itemName: "Northshore Cafe", detail: "Delivered 12x Byron Bay, 6x Sunlight, 4x Moonlight", timestamp: "2026-03-06T09:00:00Z" },
+    { id: "na4", userId: "taka@ivycoast.co", userName: "Taka", action: "low stock alert", itemType: "stock", itemId: "demo-via-1", itemName: "Northshore Cafe", detail: "Sunlight (SOP-SL) running low \u2014 2 left", timestamp: "2026-03-14T08:00:00Z" }
+  ].forEach(function(a) { activityLog.push(a); });
+
+  // ━━━ 3b. VIA CONNECTOR — Daikanyama Select (connected by Edgeof) ━━━
+  crmContacts.push({
+    id: "demo-via-2", name: "Daikanyama Select", company: "Daikanyama Select",
+    nameEn: "Daikanyama Select Co.", email: "info@daikanyama-select.jp",
+    type: "Partner", connectorId: "demo-connector-1",
+    vendorRelation: "Direct Partner", stage: "active_partner",
+    connectedDate: "2026-01-15", lastContactDate: "2026-03-13",
+    consignmentPercent: 25, location: "Daikanyama, Tokyo",
+    website: "https://daikanyama-select.jp", instagram: "@daikanyamaselect",
+    socialMedia: "https://facebook.com/daikanyamaselect",
+    shopType: "Lifestyle shop, Premium Cosmetics",
+    people: JSON.stringify([
+      { id: "p7", firstName: "Haruka", lastName: "Nakamura", firstNameEn: "Haruka", lastNameEn: "Nakamura", role: "Store Director", email: "haruka@daikanyama-select.jp", phone: "03-3461-7890" },
+      { id: "p8", firstName: "Sho", lastName: "Fujita", firstNameEn: "Sho", lastNameEn: "Fujita", role: "Buyer / Merchandiser", email: "sho@daikanyama-select.jp" }
+    ]),
+    notes: JSON.stringify([
+      { id: "dsn1", text: "Premium clientele \u2014 Tasmanian Citrus candle is their #1 seller. Products displayed alongside Aesop, Byredo, and Le Labo. Haruka wants exclusive holiday packaging for the year-end gifting season. This could be a significant volume opportunity.", author: "Taka", authorEmail: "taka@ivycoast.co", date: "2026-03-13T11:00:00Z" },
+      { id: "dsn2", text: "Store layout is compact but beautifully curated. Sho handles all buying decisions. He responds best to product samples \u2014 always wants to smell/touch before committing. Bring samples to every meeting.", author: "Yoko", authorEmail: "yoko@ivycoast.co", date: "2026-02-01T15:00:00Z" },
+      { id: "dsn3", text: "Discussed co-branded Instagram campaign. Haruka has 12K followers on the store account. She\u2019s open to a joint giveaway featuring our candle + their tote bag. Great cross-promotion opportunity.", author: "Taka", authorEmail: "taka@ivycoast.co", date: "2026-02-15T10:00:00Z" }
+    ]),
+    tickets: JSON.stringify([
+      { id: "dst1", title: "Draft holiday packaging proposal for Haruka (year-end gifting)", status: "open", dueDate: "2026-04-01" },
+      { id: "dst2", title: "Restock Lemon Fields Forever candle (only 3 left)", status: "open", dueDate: "2026-03-18" },
+      { id: "dst3", title: "Coordinate co-branded Instagram giveaway with Haruka", status: "open", dueDate: "2026-03-25" },
+      { id: "dst4", title: "Send new Tsubaki soap samples to Sho for review", status: "open", dueDate: "2026-03-22" },
+      { id: "dst5", title: "Set up automated restock alerts for low-quantity items", status: "done", dueDate: "2026-02-28" }
+    ])
+  });
+  shopifyOrders.push(
+    { id: "dso1", orderNumber: "3001", email: "info@daikanyama-select.jp", customerName: "Daikanyama Select", totalPrice: "198000", currency: "JPY", financialStatus: "paid", createdAt: "2026-03-12T10:00:00Z", lineItems: "14" },
+    { id: "dso2", orderNumber: "3002", email: "info@daikanyama-select.jp", customerName: "Daikanyama Select", totalPrice: "76000", currency: "JPY", financialStatus: "paid", createdAt: "2026-02-05T10:00:00Z", lineItems: "5" },
+    { id: "dso3", orderNumber: "3003", email: "info@daikanyama-select.jp", customerName: "Daikanyama Select", totalPrice: "128400", currency: "JPY", financialStatus: "paid", createdAt: "2025-12-22T10:00:00Z", lineItems: "6" },
+    { id: "dso4", orderNumber: "3004", email: "info@daikanyama-select.jp", customerName: "Daikanyama Select", totalPrice: "256000", currency: "JPY", financialStatus: "paid", createdAt: "2026-01-28T10:00:00Z", lineItems: "12" }
+  );
+  partnerStock.push(
+    { id: "dss1", contactId: "demo-via-2", contactName: "Daikanyama Select", productName: "Tasmanian Citrus", sku: "CND-TC", quantity: "8", unitPrice: "42800", pricingType: "consignment", status: "active" },
+    { id: "dss2", contactId: "demo-via-2", contactName: "Daikanyama Select", productName: "Moonlight", sku: "SOP-ML", quantity: "10", unitPrice: "42800", pricingType: "consignment", status: "active" },
+    { id: "dss3", contactId: "demo-via-2", contactName: "Daikanyama Select", productName: "Lemon Fields Forever", sku: "CND-LF", quantity: "3", unitPrice: "42800", pricingType: "consignment", status: "active" },
+    { id: "dss4", contactId: "demo-via-2", contactName: "Daikanyama Select", productName: "Golden Bushland", sku: "CND-GB", quantity: "7", unitPrice: "42800", pricingType: "consignment", status: "active" },
+    { id: "dss5", contactId: "demo-via-2", contactName: "Daikanyama Select", productName: "Byron Bay", sku: "SOP-BB", quantity: "5", unitPrice: "42800", pricingType: "consignment", status: "active" },
+    { id: "dss6", contactId: "demo-via-2", contactName: "Daikanyama Select", productName: "Sunlight", sku: "SOP-SL", quantity: "6", unitPrice: "42800", pricingType: "consignment", status: "active" }
+  );
+  [
+    { id: "dsa1", userId: "taka@ivycoast.co", userName: "Taka", action: "received order", itemType: "order", itemId: "demo-via-2", itemName: "Daikanyama Select", detail: "Order #3001 \u2014 \u00A5198,000 (14 items)", timestamp: "2026-03-12T10:00:00Z" },
+    { id: "dsa2", userId: "taka@ivycoast.co", userName: "Taka", action: "received payment", itemType: "order", itemId: "demo-via-2", itemName: "Daikanyama Select", detail: "Payment for order #3004 \u2014 \u00A5256,000", timestamp: "2026-02-10T14:00:00Z" },
+    { id: "dsa3", userId: "taka@ivycoast.co", userName: "Taka", action: "sent invoice", itemType: "invoice", itemId: "demo-via-2", itemName: "Daikanyama Select", detail: "Invoice #INV-3001 sent \u2014 \u00A5198,000", timestamp: "2026-03-12T11:00:00Z" },
+    { id: "dsa4", userId: "taka@ivycoast.co", userName: "Taka", action: "low stock alert", itemType: "stock", itemId: "demo-via-2", itemName: "Daikanyama Select", detail: "Lemon Fields Forever (CND-LF) running low \u2014 3 left", timestamp: "2026-03-15T08:00:00Z" },
+    { id: "dsa5", userId: "yoko@ivycoast.co", userName: "Yoko", action: "uploaded document", itemType: "file", itemId: "demo-via-2", itemName: "Daikanyama Select", detail: "Uploaded brand book and product catalog for Sho", timestamp: "2026-01-20T10:00:00Z" }
+  ].forEach(function(a) { activityLog.push(a); });
+
+  // ━━━ Demo invoices for connected shops ━━━
+  invoices.push(
+    { id: "di1", invoiceNumber: "INV-2001", contactId: "demo-via-1", contactName: "Northshore Cafe", invoiceDate: "2026-03-10", total: 85000, status: "paid" },
+    { id: "di2", invoiceNumber: "INV-2002", contactId: "demo-via-1", contactName: "Northshore Cafe", invoiceDate: "2026-02-18", total: 120000, status: "paid" },
+    { id: "di3", invoiceNumber: "INV-2003", contactId: "demo-via-1", contactName: "Northshore Cafe", invoiceDate: "2026-01-05", total: 45000, status: "paid" },
+    { id: "di4", invoiceNumber: "INV-3001", contactId: "demo-via-2", contactName: "Daikanyama Select", invoiceDate: "2026-03-12", total: 198000, status: "sent" },
+    { id: "di5", invoiceNumber: "INV-3002", contactId: "demo-via-2", contactName: "Daikanyama Select", invoiceDate: "2026-02-05", total: 76000, status: "paid" },
+    { id: "di6", invoiceNumber: "INV-3003", contactId: "demo-via-2", contactName: "Daikanyama Select", invoiceDate: "2026-01-28", total: 256000, status: "paid" }
+  );
+};
+
 function signIn() {
   var provider = new firebase.auth.GoogleAuthProvider();
   provider.setCustomParameters({ hd: "ivycoast.co" });
