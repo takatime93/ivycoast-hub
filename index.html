@@ -1222,6 +1222,7 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
 }
 #crm-modal-overlay.open { display: block; }
 #crm-modal-overlay.open .crm-modal { transform: translateX(0); }
+body.crm-panel-open { overflow: hidden; }
 .crm-modal-body {
   flex: 1;
   overflow-y: auto;
@@ -9250,6 +9251,7 @@ function openCrmCreateModal(presetType) {
   document.getElementById("crm-modal-invoices-section").style.display = "none";
   updateCrmAvatar("");
   document.getElementById("crm-modal-overlay").classList.add("open");
+  document.body.classList.add("crm-panel-open");
   setTimeout(function() { document.getElementById("crm-modal-company").focus(); }, 50);
 }
 
@@ -9304,6 +9306,7 @@ function openCrmEditModal(contactId) {
   updateCrmAvatar(c.company || c.name, crmExistingAvatarUrl || undefined);
 
   document.getElementById("crm-modal-overlay").classList.add("open");
+  document.body.classList.add("crm-panel-open");
   setTimeout(function() { document.getElementById("crm-modal-company").focus(); }, 50);
 }
 
@@ -9323,6 +9326,7 @@ function closeCrmModal() {
   localStorage.removeItem("ivyhub_crmOpenContact");
   if (_crmMoreMenuCleanup) { document.removeEventListener("click", _crmMoreMenuCleanup); _crmMoreMenuCleanup = null; }
   document.getElementById("crm-modal-overlay").classList.remove("open");
+  document.body.classList.remove("crm-panel-open");
   document.getElementById("crm-detail-view").style.display = "none";
   document.getElementById("crm-saving-overlay").style.display = "none";
   document.getElementById("crm-edit-header").style.display = "";
@@ -9962,6 +9966,7 @@ function openCrmDetailView(contactId) {
 
   detailView.style.display = "flex";
   document.getElementById("crm-modal-overlay").classList.add("open");
+  document.body.classList.add("crm-panel-open");
 }
 
 // ── Shared helpers ─────────────────────────────────────────────────────────
