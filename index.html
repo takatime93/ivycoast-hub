@@ -3650,6 +3650,24 @@ h2.crm-detail-name {
 .contact-standalone-info-strip { display: grid; grid-template-columns: repeat(4, 1fr); border-top: 1px solid var(--color-border-subtle); border-bottom: 1px solid var(--color-border-subtle); }
 .contact-standalone-two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px; }
 
+/* ── Contact Edit Form (Phase 4) ──────────────────────────── */
+.contact-edit-form { padding: 16px 32px; display: flex; flex-direction: column; gap: 16px; }
+.contact-edit-section { display: flex; flex-direction: column; gap: 8px; }
+.contact-edit-section-title { font-family: var(--font-display); font-size: 12px; font-weight: 600; color: #062420; margin-bottom: 4px; }
+.contact-edit-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.contact-edit-field { display: flex; flex-direction: column; gap: 4px; }
+.contact-edit-field.full { grid-column: span 2; }
+.contact-edit-label { font-family: var(--font-body); font-size: 12px; font-weight: 400; color: #80868b; }
+.contact-edit-input { background: #f8f9fa; border: 1px solid #dadce0; border-radius: 6px; padding: 8px 10px; font-family: var(--font-text); font-size: 14px; color: #181818; outline: none; }
+.contact-edit-input:focus { border-color: #0e413b; box-shadow: 0 0 0 2px rgba(14,65,59,0.2); }
+.contact-edit-input::placeholder { color: #9aa0a6; }
+textarea.contact-edit-input { resize: vertical; min-height: 48px; }
+select.contact-edit-input { appearance: auto; cursor: pointer; }
+.contact-edit-save-bar { display: flex; justify-content: flex-end; gap: 8px; border-top: 1px solid #f0f0f0; padding-top: 14px; margin-top: 16px; }
+.contact-edit-save-btn { background: #0e413b; color: #fff; font-family: var(--font-text); font-size: 12px; border-radius: 6px; padding: 7px 18px; border: none; cursor: pointer; }
+.contact-edit-save-btn:hover { background: #1a5c50; }
+.contact-edit-cancel-btn { border: 1px solid #dadce0; background: transparent; color: #5f6368; font-family: var(--font-text); font-size: 12px; border-radius: 6px; padding: 7px 18px; cursor: pointer; }
+
 /* ── Notes timeline ────────────────────────────────────────── */
 .crm-notes-container {
   display: flex;
@@ -11887,13 +11905,12 @@ function renderCrmOverviewTab(c, panel, contactId, tabsBar) {
   addContactText.textContent = "Add Contact";
   addContactBtn.appendChild(addContactText);
   addContactBtn.onclick = function() {
-    if (tabsBar) tabsBar.querySelectorAll(".crm-detail-tab")[1].click();
-    setTimeout(function() {
-      var addRow = document.querySelector(".crm-people-add-row");
-      if (addRow && !addRow.classList.contains("open")) addRow.classList.add("open");
-      var fnInput = addRow && addRow.querySelector("input");
-      if (fnInput) fnInput.focus();
-    }, 100);
+    renderContactEditForm(null, panel, {
+      isNew: true,
+      prefilledVendorId: contactId,
+      onSave: function(saved) { openCrmDetailView(contactId); },
+      onCancel: function() { openCrmDetailView(contactId); }
+    });
   };
   contactsHdr.appendChild(addContactBtn);
   contactsSection.appendChild(contactsHdr);
@@ -11961,13 +11978,12 @@ function renderCrmOverviewTab(c, panel, contactId, tabsBar) {
     addNewText.textContent = "Add new Contact";
     addNewBtn.appendChild(addNewText);
     addNewBtn.onclick = function() {
-      if (tabsBar) tabsBar.querySelectorAll(".crm-detail-tab")[1].click();
-      setTimeout(function() {
-        var addRow = document.querySelector(".crm-people-add-row");
-        if (addRow && !addRow.classList.contains("open")) addRow.classList.add("open");
-        var fnInput = addRow && addRow.querySelector("input");
-        if (fnInput) fnInput.focus();
-      }, 100);
+      renderContactEditForm(null, panel, {
+        isNew: true,
+        prefilledVendorId: contactId,
+        onSave: function(saved) { openCrmDetailView(contactId); },
+        onCancel: function() { openCrmDetailView(contactId); }
+      });
     };
     contactsEmpty.appendChild(addNewBtn);
     contactsSection.appendChild(contactsEmpty);
@@ -12890,6 +12906,13 @@ function renderContactProfileEmbedded(contact, vendorRecord, bodyEl, contactId, 
   editBtn.className = "contact-profile-edit-btn";
   editBtn.appendChild(_crmFa6Icon("\uf303", 14, 300));
   editBtn.style.marginLeft = "auto";
+  editBtn.onclick = function() {
+    renderContactEditForm(contact, bodyEl, {
+      isNew: false,
+      onSave: function(saved) { renderContactProfileEmbedded(saved, vendorRecord, bodyEl, contactId, tabsBar); },
+      onCancel: function() { renderContactProfileEmbedded(contact, vendorRecord, bodyEl, contactId, tabsBar); }
+    });
+  };
   backBar.appendChild(editBtn);
   wrap.appendChild(backBar);
 
@@ -13448,6 +13471,410 @@ function renderContactAttachmentsTab(contact, panel) {
   }
 }
 
+// ── Contact Edit Form (Phase 4) ──────────────────────────────────────────────
+
+function renderContactEditForm(contact, container, options) {
+  options = options || {};
+  var isNew = !!options.isNew;
+  var prefilledVendorId = options.prefilledVendorId || null;
+  var onSave = options.onSave || function() {};
+  var onCancel = options.onCancel || function() {};
+
+  container.textContent = "";
+
+  var form = document.createElement("div");
+  form.className = "contact-edit-form";
+
+  // ─── Section 1: Name ───
+  var nameSec = document.createElement("div");
+  nameSec.className = "contact-edit-section";
+  var nameTitle = document.createElement("div");
+  nameTitle.className = "contact-edit-section-title";
+  nameTitle.textContent = "Name";
+  nameSec.appendChild(nameTitle);
+
+  // Japanese name (full width)
+  var nameJaField = document.createElement("div");
+  nameJaField.className = "contact-edit-field full";
+  var nameJaLabel = document.createElement("label");
+  nameJaLabel.className = "contact-edit-label";
+  nameJaLabel.textContent = "Japanese name";
+  nameJaField.appendChild(nameJaLabel);
+  var nameJaInput = document.createElement("input");
+  nameJaInput.className = "contact-edit-input";
+  nameJaInput.type = "text";
+  nameJaInput.placeholder = "Japanese name (optional)";
+  if (contact && contact.nameJa) nameJaInput.value = contact.nameJa;
+  nameJaField.appendChild(nameJaInput);
+  // Wrap in a grid row for full width
+  var nameJaRow = document.createElement("div");
+  nameJaRow.className = "contact-edit-row";
+  nameJaRow.appendChild(nameJaField);
+  nameSec.appendChild(nameJaRow);
+
+  // English name + Title (two-column)
+  var nameEnRow = document.createElement("div");
+  nameEnRow.className = "contact-edit-row";
+  var nameEnField = document.createElement("div");
+  nameEnField.className = "contact-edit-field";
+  var nameEnLabel = document.createElement("label");
+  nameEnLabel.className = "contact-edit-label";
+  nameEnLabel.textContent = "English name";
+  nameEnField.appendChild(nameEnLabel);
+  var nameEnInput = document.createElement("input");
+  nameEnInput.className = "contact-edit-input";
+  nameEnInput.type = "text";
+  nameEnInput.placeholder = "English name *";
+  nameEnInput.required = true;
+  if (contact && contact.nameEn) nameEnInput.value = contact.nameEn;
+  nameEnField.appendChild(nameEnInput);
+  nameEnRow.appendChild(nameEnField);
+
+  var titleField = document.createElement("div");
+  titleField.className = "contact-edit-field";
+  var titleLabel = document.createElement("label");
+  titleLabel.className = "contact-edit-label";
+  titleLabel.textContent = "Title";
+  titleField.appendChild(titleLabel);
+  var titleInput = document.createElement("input");
+  titleInput.className = "contact-edit-input";
+  titleInput.type = "text";
+  titleInput.placeholder = "Job title";
+  if (contact && contact.title) titleInput.value = contact.title;
+  titleField.appendChild(titleInput);
+  nameEnRow.appendChild(titleField);
+  nameSec.appendChild(nameEnRow);
+  form.appendChild(nameSec);
+
+  // ─── Section 2: Contact Info ───
+  var infoSec = document.createElement("div");
+  infoSec.className = "contact-edit-section";
+  var infoTitle = document.createElement("div");
+  infoTitle.className = "contact-edit-section-title";
+  infoTitle.textContent = "Contact Info";
+  infoSec.appendChild(infoTitle);
+
+  // Email + Phone
+  var infoRow1 = document.createElement("div");
+  infoRow1.className = "contact-edit-row";
+  var emailField = document.createElement("div");
+  emailField.className = "contact-edit-field";
+  var emailLabel = document.createElement("label");
+  emailLabel.className = "contact-edit-label";
+  emailLabel.textContent = "Email";
+  emailField.appendChild(emailLabel);
+  var emailInput = document.createElement("input");
+  emailInput.className = "contact-edit-input";
+  emailInput.type = "email";
+  emailInput.placeholder = "Email";
+  if (contact && contact.email) emailInput.value = contact.email;
+  emailField.appendChild(emailInput);
+  infoRow1.appendChild(emailField);
+
+  var phoneField = document.createElement("div");
+  phoneField.className = "contact-edit-field";
+  var phoneLabel = document.createElement("label");
+  phoneLabel.className = "contact-edit-label";
+  phoneLabel.textContent = "Phone";
+  phoneField.appendChild(phoneLabel);
+  var phoneInput = document.createElement("input");
+  phoneInput.className = "contact-edit-input";
+  phoneInput.type = "tel";
+  phoneInput.placeholder = "Phone";
+  if (contact && contact.phone) phoneInput.value = contact.phone;
+  phoneField.appendChild(phoneInput);
+  infoRow1.appendChild(phoneField);
+  infoSec.appendChild(infoRow1);
+
+  // LINE ID + Preferred way to reach
+  var infoRow2 = document.createElement("div");
+  infoRow2.className = "contact-edit-row";
+  var lineField = document.createElement("div");
+  lineField.className = "contact-edit-field";
+  var lineLabel = document.createElement("label");
+  lineLabel.className = "contact-edit-label";
+  lineLabel.textContent = "LINE ID";
+  lineField.appendChild(lineLabel);
+  var lineInput = document.createElement("input");
+  lineInput.className = "contact-edit-input";
+  lineInput.type = "text";
+  lineInput.placeholder = "LINE ID";
+  if (contact && contact.lineId) lineInput.value = contact.lineId;
+  lineField.appendChild(lineInput);
+  infoRow2.appendChild(lineField);
+
+  var prefField = document.createElement("div");
+  prefField.className = "contact-edit-field";
+  var prefLabel = document.createElement("label");
+  prefLabel.className = "contact-edit-label";
+  prefLabel.textContent = "Preferred way to reach";
+  prefField.appendChild(prefLabel);
+  var prefInput = document.createElement("input");
+  prefInput.className = "contact-edit-input";
+  prefInput.type = "text";
+  prefInput.placeholder = "e.g. Email first, then LINE";
+  if (contact && contact.preferredContact) prefInput.value = contact.preferredContact;
+  prefField.appendChild(prefInput);
+  infoRow2.appendChild(prefField);
+  infoSec.appendChild(infoRow2);
+  form.appendChild(infoSec);
+
+  // ─── Section 3: Vendor Connection ───
+  var vendorSec = document.createElement("div");
+  vendorSec.className = "contact-edit-section";
+  var vendorTitle = document.createElement("div");
+  vendorTitle.className = "contact-edit-section-title";
+  vendorTitle.textContent = "Vendor";
+  vendorSec.appendChild(vendorTitle);
+
+  var vendorRow = document.createElement("div");
+  vendorRow.className = "contact-edit-row";
+
+  // Linked vendor dropdown
+  var vendorField = document.createElement("div");
+  vendorField.className = "contact-edit-field";
+  var vendorLabel = document.createElement("label");
+  vendorLabel.className = "contact-edit-label";
+  vendorLabel.textContent = "Linked vendor";
+  vendorField.appendChild(vendorLabel);
+  var vendorSelect = document.createElement("select");
+  vendorSelect.className = "contact-edit-input";
+  var noVendorOpt = document.createElement("option");
+  noVendorOpt.value = "";
+  noVendorOpt.textContent = "\u2014 No vendor \u2014";
+  vendorSelect.appendChild(noVendorOpt);
+  var vendors = crmContacts.filter(function(c) { return c.type === "Vendor" || c.type === "Connector" || c.type === "Partner"; });
+  vendors.forEach(function(v) {
+    var opt = document.createElement("option");
+    opt.value = v.id;
+    opt.textContent = v.company || v.name || "Unnamed";
+    vendorSelect.appendChild(opt);
+  });
+  // Pre-fill vendor
+  var currentVendorId = "";
+  if (isNew && prefilledVendorId) {
+    currentVendorId = prefilledVendorId;
+  } else if (contact && contact.vendorId) {
+    currentVendorId = contact.vendorId;
+  }
+  if (currentVendorId) vendorSelect.value = currentVendorId;
+  vendorField.appendChild(vendorSelect);
+  vendorRow.appendChild(vendorField);
+
+  // Role at vendor dropdown
+  var roleField = document.createElement("div");
+  roleField.className = "contact-edit-field";
+  var roleLabel = document.createElement("label");
+  roleLabel.className = "contact-edit-label";
+  roleLabel.textContent = "Role at vendor";
+  roleField.appendChild(roleLabel);
+  var roleSelect = document.createElement("select");
+  roleSelect.className = "contact-edit-input";
+  var roleOptions = [
+    { value: "", label: "Select role..." },
+    { value: "PRIMARY", label: "Primary contact" },
+    { value: "SECONDARY", label: "Secondary contact" },
+    { value: "DECISION_MAKER", label: "Decision maker" },
+    { value: "OPERATIONAL", label: "Operational contact" }
+  ];
+  roleOptions.forEach(function(r) {
+    var opt = document.createElement("option");
+    opt.value = r.value;
+    opt.textContent = r.label;
+    roleSelect.appendChild(opt);
+  });
+  if (contact && contact.vendorRole) roleSelect.value = contact.vendorRole;
+  roleField.appendChild(roleSelect);
+  // Show/hide role based on vendor selection
+  roleField.style.display = vendorSelect.value ? "" : "none";
+  vendorRow.appendChild(roleField);
+
+  vendorSelect.onchange = function() {
+    if (vendorSelect.value) {
+      roleField.style.display = "";
+    } else {
+      roleField.style.display = "none";
+      roleSelect.value = "";
+    }
+  };
+
+  vendorSec.appendChild(vendorRow);
+  form.appendChild(vendorSec);
+
+  // ─── Section 4: Personal Context ───
+  var ctxSec = document.createElement("div");
+  ctxSec.className = "contact-edit-section";
+  var ctxTitle = document.createElement("div");
+  ctxTitle.className = "contact-edit-section-title";
+  ctxTitle.textContent = "Personal Context";
+  ctxSec.appendChild(ctxTitle);
+
+  // Languages + Communication prefs
+  var ctxRow1 = document.createElement("div");
+  ctxRow1.className = "contact-edit-row";
+  var langField = document.createElement("div");
+  langField.className = "contact-edit-field";
+  var langLabel = document.createElement("label");
+  langLabel.className = "contact-edit-label";
+  langLabel.textContent = "Languages";
+  langField.appendChild(langLabel);
+  var langInput = document.createElement("input");
+  langInput.className = "contact-edit-input";
+  langInput.type = "text";
+  langInput.placeholder = "e.g. Japanese, English";
+  if (contact && contact.languages && contact.languages.length) langInput.value = contact.languages.join(", ");
+  langField.appendChild(langInput);
+  ctxRow1.appendChild(langField);
+
+  var commField = document.createElement("div");
+  commField.className = "contact-edit-field";
+  var commLabel = document.createElement("label");
+  commLabel.className = "contact-edit-label";
+  commLabel.textContent = "Communication prefs";
+  commField.appendChild(commLabel);
+  var commInput = document.createElement("input");
+  commInput.className = "contact-edit-input";
+  commInput.type = "text";
+  commInput.placeholder = "e.g. Email first, LINE (fast)";
+  if (contact && contact.communicationPrefs && contact.communicationPrefs.length) commInput.value = contact.communicationPrefs.join(", ");
+  commField.appendChild(commInput);
+  ctxRow1.appendChild(commField);
+  ctxSec.appendChild(ctxRow1);
+
+  // Background (full width textarea)
+  var bgRow = document.createElement("div");
+  bgRow.className = "contact-edit-row";
+  var bgField = document.createElement("div");
+  bgField.className = "contact-edit-field full";
+  var bgLabel = document.createElement("label");
+  bgLabel.className = "contact-edit-label";
+  bgLabel.textContent = "Background";
+  bgField.appendChild(bgLabel);
+  var bgInput = document.createElement("textarea");
+  bgInput.className = "contact-edit-input";
+  bgInput.rows = 2;
+  bgInput.placeholder = "Professional background...";
+  if (contact && contact.background) bgInput.value = contact.background;
+  bgField.appendChild(bgInput);
+  bgRow.appendChild(bgField);
+  ctxSec.appendChild(bgRow);
+
+  // How we met (full width textarea)
+  var metRow = document.createElement("div");
+  metRow.className = "contact-edit-row";
+  var metField = document.createElement("div");
+  metField.className = "contact-edit-field full";
+  var metLabel = document.createElement("label");
+  metLabel.className = "contact-edit-label";
+  metLabel.textContent = "How we met";
+  metField.appendChild(metLabel);
+  var metInput = document.createElement("textarea");
+  metInput.className = "contact-edit-input";
+  metInput.rows = 2;
+  metInput.placeholder = "How and when you first met...";
+  if (contact && contact.howWeMet) metInput.value = contact.howWeMet;
+  metField.appendChild(metInput);
+  metRow.appendChild(metField);
+  ctxSec.appendChild(metRow);
+  form.appendChild(ctxSec);
+
+  // ─── Save / Cancel bar ───
+  var saveBar = document.createElement("div");
+  saveBar.className = "contact-edit-save-bar";
+
+  var cancelBtn = document.createElement("button");
+  cancelBtn.className = "contact-edit-cancel-btn";
+  cancelBtn.type = "button";
+  cancelBtn.textContent = "Cancel";
+  cancelBtn.onclick = function() { onCancel(); };
+  saveBar.appendChild(cancelBtn);
+
+  var saveBtn = document.createElement("button");
+  saveBtn.className = "contact-edit-save-btn";
+  saveBtn.type = "button";
+  saveBtn.textContent = isNew ? "Create Contact" : "Save";
+  saveBtn.onclick = function() {
+    // Read values
+    var nameJaVal = nameJaInput.value.trim() || null;
+    var nameEnVal = nameEnInput.value.trim();
+    var titleVal = titleInput.value.trim() || null;
+    var emailVal = emailInput.value.trim() || null;
+    var phoneVal = phoneInput.value.trim() || null;
+    var lineVal = lineInput.value.trim() || null;
+    var prefVal = prefInput.value.trim() || null;
+    var vendorIdVal = vendorSelect.value || null;
+    var vendorRoleVal = roleSelect.value || null;
+    var langVal = langInput.value.trim();
+    var commVal = commInput.value.trim();
+    var bgVal = bgInput.value.trim() || null;
+    var metVal = metInput.value.trim() || null;
+
+    // Validate nameEn required
+    if (!nameEnVal) {
+      alert("English name is required.");
+      nameEnInput.focus();
+      return;
+    }
+
+    // If vendor set, role required
+    if (vendorIdVal && !vendorRoleVal) {
+      alert("Please select a role for this contact at the vendor.");
+      roleSelect.focus();
+      return;
+    }
+
+    // Parse comma-separated arrays
+    var languagesArr = langVal ? langVal.split(",").map(function(s) { return s.trim(); }).filter(function(s) { return s; }) : [];
+    var commPrefsArr = commVal ? commVal.split(",").map(function(s) { return s.trim(); }).filter(function(s) { return s; }) : [];
+
+    // Determine isPrimary
+    var isPrimary = vendorRoleVal === "PRIMARY";
+
+    // If setting as primary, check for existing primary at that vendor
+    if (isPrimary && vendorIdVal) {
+      var existingPrimary = contactPeople.find(function(p) {
+        return p.vendorId === vendorIdVal && p.isPrimary && (!contact || p.id !== contact.id);
+      });
+      if (existingPrimary) {
+        var confirmMsg = "This will replace " + (existingPrimary.nameJa || existingPrimary.nameEn) + " as primary contact. Continue?";
+        if (!confirm(confirmMsg)) return;
+      }
+    }
+
+    var data = {
+      nameJa: nameJaVal,
+      nameEn: nameEnVal,
+      title: titleVal,
+      email: emailVal,
+      phone: phoneVal,
+      lineId: lineVal,
+      preferredContact: prefVal,
+      vendorId: vendorIdVal,
+      vendorRole: vendorRoleVal,
+      isPrimary: isPrimary,
+      languages: languagesArr,
+      communicationPrefs: commPrefsArr,
+      background: bgVal,
+      howWeMet: metVal
+    };
+
+    var savedContact;
+    if (isNew) {
+      savedContact = createContact(data);
+    } else {
+      savedContact = updateContact(contact.id, data);
+    }
+
+    if (savedContact) {
+      onSave(savedContact);
+    }
+  };
+  saveBar.appendChild(saveBtn);
+  form.appendChild(saveBar);
+
+  container.appendChild(form);
+}
+
 // ── Contact Profile — Standalone View (Phase 3) ─────────────────────────────
 
 function openContactProfileStandalone(contactId) {
@@ -13542,7 +13969,13 @@ function renderContactProfileStandalone(contact, detailView, headerEl, bodyEl, t
     moreMenu = document.createElement("div");
     moreMenu.style.cssText = "position:absolute;top:100%;right:0;margin-top:4px;background:#fff;border:1px solid var(--color-border);border-radius:8px;box-shadow:var(--shadow-lg);z-index:100;min-width:140px;padding:4px 0";
     var menuItems = [
-      { label: "Edit contact", icon: "\uf303", action: function() { /* edit form — future phase */ } },
+      { label: "Edit contact", icon: "\uf303", action: function() {
+          renderContactEditForm(contact, detailView, {
+            isNew: false,
+            onSave: function(saved) { openContactProfileStandalone(saved.id); },
+            onCancel: function() { openContactProfileStandalone(contact.id); }
+          });
+        } },
       { label: "Archive", icon: "\uf187", action: function() { /* archive — future phase */ } },
       { label: "Delete", icon: "\uf2ed", action: function() {
           var deleted = deleteContactPermanently(contact.id);
