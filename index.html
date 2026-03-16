@@ -14619,25 +14619,17 @@ function renderCrmTeamTab(c, panel, contactId) {
   var addNewText = document.createElement("span");
   addNewText.textContent = "Add new";
   addNewBtn.appendChild(addNewText);
-  addNewBtn.onclick = function() { addRow.classList.toggle("open"); if (addRow.classList.contains("open")) fnInput.focus(); };
+  addNewBtn.onclick = function() {
+    var bodyEl = document.getElementById("crm-detail-body");
+    renderContactEditForm(null, bodyEl, {
+      isNew: true,
+      prefilledVendorId: contactId,
+      onSave: function() { openCrmDetailView(contactId); },
+      onCancel: function() { openCrmDetailView(contactId); }
+    });
+  };
   headerRow.appendChild(addNewBtn);
   panel.appendChild(headerRow);
-
-  // Add person row (hidden by default)
-  var addRow = document.createElement("div");
-  addRow.className = "crm-people-add-row";
-  var fnInput = document.createElement("input");
-  fnInput.type = "text";
-  fnInput.placeholder = "First name";
-  addRow.appendChild(fnInput);
-  var lnInput = document.createElement("input");
-  lnInput.type = "text";
-  lnInput.placeholder = "Last name";
-  addRow.appendChild(lnInput);
-  var addBtn = document.createElement("button");
-  addBtn.textContent = "Add";
-  addRow.appendChild(addBtn);
-  panel.appendChild(addRow);
 
   var gridEl = document.createElement("div");
   gridEl.className = "crm-team-grid";
