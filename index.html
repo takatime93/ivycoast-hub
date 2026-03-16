@@ -8868,10 +8868,25 @@ function renderCrmVendors() {
         var contactInfo = document.createElement("span");
         contactInfo.className = "crm-vendor-contact-info";
         if (_showName) {
-          var cName = document.createElement("span");
-          cName.className = "crm-vendor-contact-name";
-          cName.textContent = _fpName;
-          contactInfo.appendChild(cName);
+          var _fpNameEn = _fp ? ((_fp.firstNameEn || "") + " " + (_fp.lastNameEn || "")).trim() : "";
+          var _nameRow = document.createElement("span");
+          _nameRow.className = "crm-vendor-contact-name";
+          _nameRow.style.display = "flex";
+          _nameRow.style.alignItems = "center";
+          _nameRow.style.gap = "6px";
+          var _priName = document.createElement("span");
+          _priName.textContent = _fpName;
+          _nameRow.appendChild(_priName);
+          if (_fpNameEn && _fpNameEn.toLowerCase() !== _fpName.toLowerCase()) {
+            var _dot = document.createElement("span");
+            _dot.textContent = "\u00B7";
+            _dot.style.color = "#424242";
+            _nameRow.appendChild(_dot);
+            var _secName = document.createElement("span");
+            _secName.textContent = _fpNameEn;
+            _nameRow.appendChild(_secName);
+          }
+          contactInfo.appendChild(_nameRow);
         }
         if (_fpEmail) {
           var cEmail = document.createElement("span");
