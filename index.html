@@ -14268,19 +14268,64 @@ function renderContactProfileStandalone(contact, detailView, headerEl, bodyEl, t
   var logBtn = document.createElement("button");
   logBtn.className = "contact-log-btn";
   logBtn.textContent = "+ Log interaction";
-  logBtn.onclick = function() {
-    var typeInput = prompt("Interaction type (Email, Call, Meeting, Event, Message):");
-    if (!typeInput) return;
-    var typeMap = { email: "EMAIL", call: "CALL", meeting: "MEETING", event: "EVENT", message: "MESSAGE" };
-    var normalizedType = typeMap[(typeInput || "").trim().toLowerCase()];
-    if (!normalizedType) { alert("Invalid type. Use: Email, Call, Meeting, Event, or Message."); return; }
-    var summaryInput = prompt("Summary (optional):");
-    createContactInteraction(contact.id, { type: normalizedType, summary: summaryInput || null });
-    // Re-render via openContactProfileStandalone for full cleanup
+  // Inline log interaction form
+  var logForm = document.createElement("div");
+  logForm.style.cssText = "display:none;padding:10px 32px 14px;background:var(--color-surface-secondary);border-bottom:1px solid var(--color-border-subtle);gap:8px;align-items:flex-end";
+  var logTypeWrap = document.createElement("div");
+  logTypeWrap.className = "contact-edit-field";
+  logTypeWrap.style.flex = "0 0 140px";
+  var logTypeLabel = document.createElement("label");
+  logTypeLabel.className = "contact-edit-label";
+  logTypeLabel.textContent = "Type";
+  logTypeWrap.appendChild(logTypeLabel);
+  var logTypeSelect = document.createElement("select");
+  logTypeSelect.className = "contact-edit-input";
+  ["EMAIL", "CALL", "MEETING", "EVENT", "MESSAGE", "OTHER"].forEach(function(t) {
+    var opt = document.createElement("option");
+    opt.value = t;
+    opt.textContent = t.charAt(0) + t.slice(1).toLowerCase();
+    logTypeSelect.appendChild(opt);
+  });
+  logTypeWrap.appendChild(logTypeSelect);
+  logForm.appendChild(logTypeWrap);
+  var logSumWrap = document.createElement("div");
+  logSumWrap.className = "contact-edit-field";
+  logSumWrap.style.flex = "1";
+  var logSumLabel = document.createElement("label");
+  logSumLabel.className = "contact-edit-label";
+  logSumLabel.textContent = "Summary";
+  logSumWrap.appendChild(logSumLabel);
+  var logSumInput = document.createElement("input");
+  logSumInput.className = "contact-edit-input";
+  logSumInput.type = "text";
+  logSumInput.placeholder = "e.g. Follow-up on intro";
+  logSumWrap.appendChild(logSumInput);
+  logForm.appendChild(logSumWrap);
+  var logSaveBtn = document.createElement("button");
+  logSaveBtn.className = "contact-edit-save-btn";
+  logSaveBtn.textContent = "Log";
+  logSaveBtn.style.flexShrink = "0";
+  logSaveBtn.onclick = function() {
+    var type = logTypeSelect.value;
+    var summary = logSumInput.value.trim() || null;
+    createContactInteraction(contact.id, { type: type, summary: summary });
     openContactProfileStandalone(contact.id);
+  };
+  logForm.appendChild(logSaveBtn);
+  var logCancelBtn = document.createElement("button");
+  logCancelBtn.className = "contact-edit-cancel-btn";
+  logCancelBtn.textContent = "Cancel";
+  logCancelBtn.style.flexShrink = "0";
+  logCancelBtn.onclick = function() { logForm.style.display = "none"; };
+  logForm.appendChild(logCancelBtn);
+
+  logBtn.onclick = function() {
+    logForm.style.display = logForm.style.display === "flex" ? "none" : "flex";
+    if (logForm.style.display === "flex") logSumInput.focus();
   };
   lastBar.appendChild(logBtn);
   headerWrap.appendChild(lastBar);
+  headerWrap.appendChild(logForm);
 
   headerEl.appendChild(headerWrap);
 
