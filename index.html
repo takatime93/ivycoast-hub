@@ -2377,6 +2377,22 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
   position: relative;
   z-index: 10;
 }
+/* Collapsible header on scroll */
+.crm-detail-header .crm-detail-contact-rows,
+.crm-detail-view .crm-pipeline-wrap,
+.crm-detail-view .crm-connector-banner {
+  transition: max-height 0.25s ease, opacity 0.2s ease, margin 0.25s ease, padding 0.25s ease;
+  overflow: hidden;
+}
+.crm-detail-view.header-collapsed .crm-detail-contact-rows {
+  max-height: 0; opacity: 0; margin-top: 0;
+}
+.crm-detail-view.header-collapsed .crm-pipeline-wrap {
+  max-height: 0; opacity: 0; padding-top: 0; padding-bottom: 0; overflow: hidden;
+}
+.crm-detail-view.header-collapsed .crm-connector-banner {
+  max-height: 0; opacity: 0; padding-top: 0; padding-bottom: 0;
+}
 .crm-detail-header-top {
   display: flex;
   align-items: flex-start;
@@ -2505,7 +2521,7 @@ h2.crm-detail-name {
   padding: 3px 8px; border: 1px solid var(--color-primary); border-left: none; color: var(--color-primary);
   border-radius: 0 3px 3px 0;
 }
-.crm-detail-contact-rows { margin-top: 12px; display: flex; flex-direction: column; gap: 2px; }
+.crm-detail-contact-rows { margin-top: 12px; display: flex; flex-direction: column; gap: 2px; max-height: 200px; }
 .crm-detail-contact-row {
   display: flex; align-items: center; gap: 4px; font-size: var(--text-sm); color: var(--color-text-muted);
 }
@@ -2759,6 +2775,7 @@ h2.crm-detail-name {
 .crm-connector-banner {
   display: flex; align-items: center; justify-content: center;
   gap: 16px; padding: 8px 32px; font-size: var(--text-tab); font-weight: 600; color: #000;
+  max-height: 50px;
 }
 .crm-connector-banner.banner-connector { background: #ffedc4; }
 .crm-connector-banner.banner-via-connector { background: rgba(141,255,95,0.1); }
@@ -2855,6 +2872,7 @@ h2.crm-detail-name {
   flex-shrink: 0;
   overflow: visible;
   position: relative;
+  max-height: 80px;
   z-index: 5;
 }
 .crm-detail-pipeline {
@@ -9901,6 +9919,22 @@ function openCrmDetailView(contactId) {
   renderCrmStockTab(c, panels[3], contactId);
   renderCrmDocumentsTab(c, panels[4], contactId);
   renderCrmReferencesTab(c, panels[5], contactId, _refsData);
+
+  // Collapsible header on scroll
+  detailView.classList.remove("header-collapsed");
+  var _lastScrollTop = 0;
+  var _scrollThreshold = 30;
+  if (body._crmScrollHandler) body.removeEventListener("scroll", body._crmScrollHandler);
+  body._crmScrollHandler = function() {
+    var st = body.scrollTop;
+    if (st > _scrollThreshold && st > _lastScrollTop) {
+      detailView.classList.add("header-collapsed");
+    } else if (st < _lastScrollTop) {
+      detailView.classList.remove("header-collapsed");
+    }
+    _lastScrollTop = st;
+  };
+  body.addEventListener("scroll", body._crmScrollHandler, { passive: true });
 
   detailView.style.display = "flex";
   document.getElementById("crm-modal-overlay").classList.add("open");
