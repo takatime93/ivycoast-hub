@@ -9726,6 +9726,9 @@ function openCrmDetailView(contactId) {
     marker.appendChild(label);
     marker.onclick = function() {
       if (stage === currentStage) return;
+      var companyName = c.company || c.name || "this contact";
+      var newLabel = pipelineLabels[stage] || stage;
+      if (!confirm("Move " + companyName + " to \"" + newLabel + "\"?")) return;
       crmContacts.forEach(function(x) { if (x.id === contactId) x.stage = stage; });
       renderCrmPipeline();
       renderCrmActiveView();
@@ -9756,49 +9759,7 @@ function openCrmDetailView(contactId) {
   });
   pipelineWrap.appendChild(pipelineRow);
 
-  // Settings cog for stage change
-  var cogWrap = document.createElement("div");
-  cogWrap.className = "crm-more-menu-wrap";
-  var cogBtn = document.createElement("button");
-  cogBtn.className = "crm-pipeline-cog";
-  cogBtn.title = "Change stage";
-  cogBtn.appendChild(_crmFa6Icon("\uf013", 15, 300));
-  cogWrap.appendChild(cogBtn);
-  var cogMenu = document.createElement("div");
-  cogMenu.className = "crm-detail-more-menu";
-  // All stages including inactive for the menu (inactive is not shown in the visual pipeline)
-  var allStages = ["inactive", "prospect", "outreach", "negotiation", "active_partner"];
-  var allLabels = { inactive: "Inactive", prospect: "Prospect", outreach: "Outreach", negotiation: "Negotiation", active_partner: "Active Partner" };
-  allStages.forEach(function(stage) {
-    var stageItem = document.createElement("button");
-    stageItem.className = "crm-detail-more-menu-item";
-    if (stage === currentStage) { stageItem.style.fontWeight = "600"; stageItem.style.color = "#0e413b"; }
-    stageItem.textContent = allLabels[stage];
-    stageItem.onclick = function() {
-      cogMenu.classList.remove("open");
-      if (stage === currentStage) return;
-      crmContacts.forEach(function(x) { if (x.id === contactId) x.stage = stage; });
-      renderCrmPipeline();
-      renderCrmActiveView();
-      renderHomeCrmStats();
-      saveDataCache();
-      openCrmDetailView(contactId);
-      crmApiPost({ action: "update", contact: { id: contactId, stage: stage } })
-        .catch(function() { fetchCrmContacts(); });
-    };
-    cogMenu.appendChild(stageItem);
-  });
-  cogWrap.appendChild(cogMenu);
-  cogBtn.onclick = function(e) { e.stopPropagation(); cogMenu.classList.toggle("open"); };
-  // Reuse the same outside-click cleanup for cog menu
-  var oldCleanup = _crmMoreMenuCleanup;
-  if (_crmMoreMenuCleanup) { document.removeEventListener("click", _crmMoreMenuCleanup); }
-  _crmMoreMenuCleanup = function(e) {
-    if (!moreWrap.contains(e.target)) { moreMenu.classList.remove("open"); }
-    if (!cogWrap.contains(e.target)) { cogMenu.classList.remove("open"); }
-  };
-  document.addEventListener("click", _crmMoreMenuCleanup);
-  pipelineWrap.appendChild(cogWrap);
+  // Cog menu removed — stage changes via pipeline dots with confirmation
   // Insert pipeline between header and tabs — hide for active partners
   if (currentStage !== "active_partner") {
     detailView.insertBefore(pipelineWrap, tabsBar);
