@@ -9588,13 +9588,7 @@ function openCrmDetailView(contactId) {
   headerActions.className = "crm-detail-header-actions";
   var iconGroup = document.createElement("div");
   iconGroup.className = "icon-group";
-  var editBtn = document.createElement("button");
-  editBtn.className = "crm-edit-btn";
-  editBtn.title = "Edit";
-  editBtn.appendChild(_crmFa6Icon("\uf044", 18, 300));
-  editBtn.onclick = function() { switchToCrmEditMode(contactId); };
-  iconGroup.appendChild(editBtn);
-  // More menu (three-dot) — Stage selector + Delete
+  // More menu (three-dot) — Edit, Stage selector, Delete
   var moreWrap = document.createElement("div");
   moreWrap.className = "crm-more-menu-wrap";
   var moreBtn = document.createElement("button");
@@ -9603,6 +9597,18 @@ function openCrmDetailView(contactId) {
   moreWrap.appendChild(moreBtn);
   var moreMenu = document.createElement("div");
   moreMenu.className = "crm-detail-more-menu";
+
+  // Edit Contact item
+  var editItem = document.createElement("button");
+  editItem.className = "crm-detail-more-menu-item";
+  editItem.textContent = "Edit Contact";
+  editItem.onclick = function() { moreMenu.classList.remove("open"); switchToCrmEditMode(contactId); };
+  moreMenu.appendChild(editItem);
+
+  // Divider before stage
+  var editDivider = document.createElement("div");
+  editDivider.style.cssText = "height:1px;background:#e0e0e0;margin:4px 0";
+  moreMenu.appendChild(editDivider);
 
   // Vendor Stage item with submenu
   var stageColors = { inactive: "#f2f2f2", prospect: "#3cb1ff", outreach: "#fec553", negotiation: "#ff5e5e", active_partner: "#0e413b" };
