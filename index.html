@@ -8359,7 +8359,14 @@ globalSearchInput.addEventListener("input", function() {
            (c.tags && c.tags.toLowerCase().indexOf(q) !== -1);
   }).slice(0, 5);
 
-  if (docMatches.length === 0 && taskMatches.length === 0 && crmMatches.length === 0 && productMatches.length === 0 && orderMatches.length === 0 && customerMatches.length === 0) {
+  var peopleMatches = (typeof contactPeople !== "undefined" ? contactPeople : []).filter(function(p) {
+    return (p.nameJa && p.nameJa.toLowerCase().indexOf(q) !== -1) ||
+           (p.nameEn && p.nameEn.toLowerCase().indexOf(q) !== -1) ||
+           (p.email && p.email.toLowerCase().indexOf(q) !== -1) ||
+           (p.title && p.title.toLowerCase().indexOf(q) !== -1);
+  }).slice(0, 5);
+
+  if (docMatches.length === 0 && taskMatches.length === 0 && crmMatches.length === 0 && productMatches.length === 0 && orderMatches.length === 0 && customerMatches.length === 0 && peopleMatches.length === 0) {
     var noRes = document.createElement("div");
     noRes.className = "search-no-results";
     noRes.textContent = "No results found";
@@ -8393,10 +8400,23 @@ globalSearchInput.addEventListener("input", function() {
   if (crmMatches.length > 0) {
     var label3 = document.createElement("div");
     label3.className = "search-group-label";
-    label3.textContent = "CRM Contacts";
+    label3.textContent = "CRM Vendors";
     searchResultsEl.appendChild(label3);
     crmMatches.forEach(function(c) {
-      searchResultsEl.appendChild(createSearchItem(c.name, c.type || "Contact", "", "crm", c.id));
+      searchResultsEl.appendChild(createSearchItem(c.company || c.name, c.type || "Vendor", "", "crm", c.id));
+    });
+  }
+
+  if (peopleMatches.length > 0) {
+    var labelP = document.createElement("div");
+    labelP.className = "search-group-label";
+    labelP.textContent = "People";
+    searchResultsEl.appendChild(labelP);
+    peopleMatches.forEach(function(p) {
+      var displayName = (p.nameJa ? p.nameJa + " · " : "") + (p.nameEn || "");
+      var vendor = p.vendorId ? crmContacts.find(function(v) { return v.id === p.vendorId; }) : null;
+      var subtitle = vendor ? (vendor.company || vendor.name || "") : (p.title || "Contact");
+      searchResultsEl.appendChild(createSearchItem(displayName, subtitle, "", "person", p.id));
     });
   }
 
@@ -8448,6 +8468,10 @@ searchResultsEl.addEventListener("click", function(e) {
     navigateTo("board");
   } else if (item.dataset.action === "crm") {
     navigateTo("crm");
+    setTimeout(function() { if (item.dataset.id) openCrmDetailView(item.dataset.id); }, 100);
+  } else if (item.dataset.action === "person") {
+    navigateTo("crm");
+    setTimeout(function() { if (item.dataset.id) openContactProfileStandalone(item.dataset.id); }, 100);
   } else if (item.dataset.action === "product") {
     navigateTo("products");
   } else if (item.dataset.action === "order") {
