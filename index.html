@@ -6632,7 +6632,12 @@ function saveDataCache() {
       invoices: invoices || [],
       receipts: receipts || [],
       partnerStock: partnerStock || [],
-      contactDocuments: contactDocuments || []
+      contactDocuments: contactDocuments || [],
+      contactPeople: contactPeople || [],
+      contactInteractions: contactInteractions || [],
+      contactNotes: contactNotes || [],
+      contactActivityEvents: contactActivityEvents || [],
+      contactAttachments: contactAttachments || []
     };
     localStorage.setItem(CACHE_KEY, JSON.stringify(payload));
   } catch(e) { /* storage full — ignore */ }
@@ -6652,6 +6657,11 @@ function loadDataCache() {
     receipts = c.receipts || [];
     partnerStock = c.partnerStock || [];
     contactDocuments = c.contactDocuments || [];
+    contactPeople = c.contactPeople || [];
+    contactInteractions = c.contactInteractions || [];
+    contactNotes = c.contactNotes || [];
+    contactActivityEvents = c.contactActivityEvents || [];
+    contactAttachments = c.contactAttachments || [];
     // Normalize CRM images from cache
     crmContacts.forEach(function(ct) {
       if (ct.profileImageUrl) ct.profileImageUrl = normalizeDriveImageUrl(ct.profileImageUrl);
@@ -8333,6 +8343,11 @@ function updateBoardBadge() {
 var crmContacts = [];
 var partnerStock = [];
 var contactDocuments = [];
+var contactPeople = [];
+var contactInteractions = [];
+var contactNotes = [];
+var contactActivityEvents = [];
+var contactAttachments = [];
 var crmRefreshTimer = null;
 var crmActiveSubView = localStorage.getItem("ivyhub_crmSubView") || "crm-vendors";
 var crmVendorViewMode = localStorage.getItem("ivyhub_crmVendorView") || "tile";
@@ -9251,6 +9266,377 @@ function resetCrmCardPreview(side) {
   document.getElementById("crm-card-" + side + "-img").src = "";
   document.getElementById("crm-card-" + side + "-label").style.display = "";
   document.getElementById("crm-card-" + side + "-upload").classList.remove("has-preview");
+}
+
+// ── Contact Profile — Initials Computation (Section 10) ───────
+function computeContactInitials(nameJa, nameEn) {
+  // Rule 1: Japanese name present
+  if (nameJa && nameJa.trim()) {
+    var jaName = nameJa.trim();
+    // Check if the name contains Japanese characters
+    var jaRegex = /[\u4e00-\u9fff\u3040-\u309f\u30a0-\u30ff]/;
+    if (jaRegex.test(jaName)) {
+      var jaParts = jaName.split(/\s+/);
+      if (jaParts.length >= 2) {
+        // First kanji of family name + first kanji of given name
+        return jaParts[0].charAt(0) + jaParts[1].charAt(0);
+      }
+      // Single-word Japanese name: first two characters
+      if (jaName.length >= 2) return jaName.charAt(0) + jaName.charAt(1);
+    }
+  }
+  // Rule 2: No Japanese name — use English name
+  if (nameEn && nameEn.trim()) {
+    var enParts = nameEn.trim().split(/\s+/);
+    if (enParts.length >= 2) {
+      // First char of first word + first char of last word
+      return (enParts[0].charAt(0) + enParts[enParts.length - 1].charAt(0)).toUpperCase();
+    }
+    // Single-word English name: first two characters
+    if (enParts[0].length >= 2) return enParts[0].substring(0, 2).toUpperCase();
+  }
+  // Rule 3: Fallback
+  return "??";
+}
+
+// ── Contact Profile — Derived Field Computation ───────────────
+function getContactDerived(contact) {
+  var derived = {};
+  // daysSinceContact
+  if (contact.lastContactedAt) {
+    var lastDate = new Date(contact.lastContactedAt);
+    derived.daysSinceContact = Math.floor((Date.now() - lastDate.getTime()) / 86400000);
+  } else {
+    derived.daysSinceContact = null;
+  }
+  // interactionsCount
+  derived.interactionsCount = contactInteractions.filter(function(i) {
+    return i.contactId === contact.id;
+  }).length;
+  // shopsIntroducedCount
+  derived.shopsIntroducedCount = contactActivityEvents.filter(function(e) {
+    return e.eventType === "SHOP_INTRODUCED" && e.contactId === contact.id;
+  }).length;
+  // peerContacts
+  if (contact.vendorId) {
+    derived.peerContacts = contactPeople.filter(function(p) {
+      return p.vendorId === contact.vendorId && p.id !== contact.id;
+    });
+  } else {
+    derived.peerContacts = [];
+  }
+  return derived;
+}
+
+// ── Contact Profile — CRUD Helpers ────────────────────────────
+function _generateContactId() {
+  return "cp-" + Date.now() + "-" + Math.random().toString(36).slice(2, 6);
+}
+
+function createContact(data) {
+  // Validate required fields
+  if (!data.nameEn || !data.nameEn.trim()) {
+    console.error("createContact: nameEn is required");
+    return null;
+  }
+  var now = new Date().toISOString();
+  var contact = {
+    id: data.id || _generateContactId(),
+    nameJa: data.nameJa || null,
+    nameEn: data.nameEn.trim(),
+    initials: computeContactInitials(data.nameJa || null, data.nameEn),
+    title: data.title || null,
+    avatarImageUrl: data.avatarImageUrl || null,
+    email: data.email || null,
+    phone: data.phone || null,
+    lineId: data.lineId || null,
+    instagramHandle: data.instagramHandle || null,
+    preferredContact: data.preferredContact || null,
+    vendorId: data.vendorId || null,
+    vendorRole: data.vendorId ? (data.vendorRole || "SECONDARY") : null,
+    isPrimary: false,
+    languages: data.languages || [],
+    communicationPrefs: data.communicationPrefs || [],
+    background: data.background || null,
+    howWeMet: data.howWeMet || null,
+    lastContactedAt: data.lastContactedAt || null,
+    lastContactedType: data.lastContactedAt ? (data.lastContactedType || null) : null,
+    firstMetAt: data.firstMetAt || null,
+    createdAt: data.createdAt || now,
+    updatedAt: data.updatedAt || now
+  };
+  // Enforce is_primary uniqueness
+  if (data.isPrimary && contact.vendorId) {
+    contactPeople.forEach(function(p) {
+      if (p.vendorId === contact.vendorId && p.isPrimary) {
+        p.isPrimary = false;
+      }
+    });
+    contact.isPrimary = true;
+  }
+  // Cannot be primary without a vendor
+  if (!contact.vendorId) contact.isPrimary = false;
+  // vendor_role must be null when no vendor
+  if (!contact.vendorId) contact.vendorRole = null;
+  contactPeople.push(contact);
+  // Create CONTACT_CREATED activity event
+  contactActivityEvents.push({
+    id: _generateContactId(),
+    contactId: contact.id,
+    eventType: "CONTACT_CREATED",
+    title: "Contact created",
+    detail: contact.nameEn,
+    relatedId: null,
+    occurredAt: contact.createdAt
+  });
+  // If vendor linked, create VENDOR_LINKED event
+  if (contact.vendorId) {
+    contactActivityEvents.push({
+      id: _generateContactId(),
+      contactId: contact.id,
+      eventType: "VENDOR_LINKED",
+      title: "Linked to vendor",
+      detail: null,
+      relatedId: contact.vendorId,
+      occurredAt: contact.createdAt
+    });
+  }
+  // If primary assigned, create PRIMARY_ASSIGNED event
+  if (contact.isPrimary) {
+    contactActivityEvents.push({
+      id: _generateContactId(),
+      contactId: contact.id,
+      eventType: "PRIMARY_ASSIGNED",
+      title: "Set as primary contact",
+      detail: null,
+      relatedId: contact.vendorId,
+      occurredAt: contact.createdAt
+    });
+  }
+  saveDataCache();
+  return contact;
+}
+
+function updateContact(id, data) {
+  var contact = contactPeople.find(function(p) { return p.id === id; });
+  if (!contact) {
+    console.error("updateContact: contact not found:", id);
+    return null;
+  }
+  var now = new Date().toISOString();
+  var oldVendorId = contact.vendorId;
+  var oldIsPrimary = contact.isPrimary;
+  // Update fields if provided
+  if (data.nameJa !== undefined) contact.nameJa = data.nameJa || null;
+  if (data.nameEn !== undefined) {
+    if (!data.nameEn || !data.nameEn.trim()) {
+      console.error("updateContact: nameEn cannot be empty");
+      return null;
+    }
+    contact.nameEn = data.nameEn.trim();
+  }
+  // Recompute initials if name changed
+  if (data.nameJa !== undefined || data.nameEn !== undefined) {
+    contact.initials = computeContactInitials(contact.nameJa, contact.nameEn);
+  }
+  if (data.title !== undefined) contact.title = data.title || null;
+  if (data.avatarImageUrl !== undefined) contact.avatarImageUrl = data.avatarImageUrl || null;
+  if (data.email !== undefined) contact.email = data.email || null;
+  if (data.phone !== undefined) contact.phone = data.phone || null;
+  if (data.lineId !== undefined) contact.lineId = data.lineId || null;
+  if (data.instagramHandle !== undefined) contact.instagramHandle = data.instagramHandle || null;
+  if (data.preferredContact !== undefined) contact.preferredContact = data.preferredContact || null;
+  if (data.vendorId !== undefined) contact.vendorId = data.vendorId || null;
+  if (data.vendorRole !== undefined) contact.vendorRole = contact.vendorId ? (data.vendorRole || null) : null;
+  if (data.languages !== undefined) contact.languages = data.languages || [];
+  if (data.communicationPrefs !== undefined) contact.communicationPrefs = data.communicationPrefs || [];
+  if (data.background !== undefined) contact.background = data.background || null;
+  if (data.howWeMet !== undefined) contact.howWeMet = data.howWeMet || null;
+  if (data.lastContactedAt !== undefined) contact.lastContactedAt = data.lastContactedAt || null;
+  if (data.lastContactedType !== undefined) contact.lastContactedType = contact.lastContactedAt ? (data.lastContactedType || null) : null;
+  if (data.firstMetAt !== undefined) contact.firstMetAt = data.firstMetAt || null;
+  // Enforce: no vendor = no role, no primary
+  if (!contact.vendorId) {
+    contact.vendorRole = null;
+    contact.isPrimary = false;
+  }
+  // Enforce: lastContactedType requires lastContactedAt
+  if (!contact.lastContactedAt) contact.lastContactedType = null;
+  // Handle is_primary change
+  if (data.isPrimary !== undefined && contact.vendorId) {
+    if (data.isPrimary && !oldIsPrimary) {
+      // Clear other primary contacts for this vendor
+      contactPeople.forEach(function(p) {
+        if (p.vendorId === contact.vendorId && p.id !== contact.id && p.isPrimary) {
+          p.isPrimary = false;
+        }
+      });
+      contact.isPrimary = true;
+      contactActivityEvents.push({
+        id: _generateContactId(),
+        contactId: contact.id,
+        eventType: "PRIMARY_ASSIGNED",
+        title: "Set as primary contact",
+        detail: null,
+        relatedId: contact.vendorId,
+        occurredAt: now
+      });
+    } else {
+      contact.isPrimary = data.isPrimary;
+    }
+  }
+  // Log vendor link change
+  if (data.vendorId !== undefined && contact.vendorId !== oldVendorId) {
+    if (oldVendorId && contact.vendorId) {
+      contactActivityEvents.push({
+        id: _generateContactId(),
+        contactId: contact.id,
+        eventType: "VENDOR_LINK_CHANGED",
+        title: "Vendor link changed",
+        detail: null,
+        relatedId: contact.vendorId,
+        occurredAt: now
+      });
+    } else if (!oldVendorId && contact.vendorId) {
+      contactActivityEvents.push({
+        id: _generateContactId(),
+        contactId: contact.id,
+        eventType: "VENDOR_LINKED",
+        title: "Linked to vendor",
+        detail: null,
+        relatedId: contact.vendorId,
+        occurredAt: now
+      });
+    }
+  }
+  contact.updatedAt = now;
+  saveDataCache();
+  return contact;
+}
+
+function deleteContactPermanently(id) {
+  var contact = contactPeople.find(function(p) { return p.id === id; });
+  if (!contact) {
+    console.error("deleteContactPermanently: contact not found:", id);
+    return false;
+  }
+  if (!confirm("Permanently delete " + (contact.nameJa || contact.nameEn) + " and all associated notes, interactions, activity events, attachments, and tasks? This cannot be undone.")) {
+    return false;
+  }
+  // Cascading delete: remove all associated records
+  contactNotes = contactNotes.filter(function(n) { return n.contactId !== id; });
+  contactInteractions = contactInteractions.filter(function(i) { return i.contactId !== id; });
+  contactActivityEvents = contactActivityEvents.filter(function(e) { return e.contactId !== id; });
+  contactAttachments = contactAttachments.filter(function(a) { return a.contactId !== id; });
+  // Remove tasks linked to this contact (tasks with only contact_id; tasks with both vendor_id and contact_id lose the contact link)
+  boardTasks = boardTasks.filter(function(t) {
+    if (t.contactId === id) {
+      if (t.vendorId) {
+        // Task also linked to vendor — clear contact link, keep task
+        t.contactId = null;
+        return true;
+      }
+      return false;
+    }
+    return true;
+  });
+  // Remove the contact itself
+  contactPeople = contactPeople.filter(function(p) { return p.id !== id; });
+  saveDataCache();
+  return true;
+}
+
+function createContactInteraction(contactId, data) {
+  var contact = contactPeople.find(function(p) { return p.id === contactId; });
+  if (!contact) {
+    console.error("createContactInteraction: contact not found:", contactId);
+    return null;
+  }
+  if (!data.type) {
+    console.error("createContactInteraction: type is required");
+    return null;
+  }
+  var now = new Date().toISOString();
+  var interaction = {
+    id: data.id || _generateContactId(),
+    contactId: contactId,
+    vendorId: data.vendorId || contact.vendorId || null,
+    type: data.type,
+    summary: data.summary || null,
+    occurredAt: data.occurredAt || now,
+    createdAt: data.createdAt || now
+  };
+  contactInteractions.push(interaction);
+  // Update contact's last_contacted_at if this interaction is more recent
+  var interactionTime = new Date(interaction.occurredAt).getTime();
+  var currentLastTime = contact.lastContactedAt ? new Date(contact.lastContactedAt).getTime() : 0;
+  if (interactionTime > currentLastTime) {
+    contact.lastContactedAt = interaction.occurredAt;
+    contact.lastContactedType = interaction.type;
+    contact.updatedAt = now;
+  }
+  // Create matching INTERACTION_* activity event
+  var eventTypeMap = {
+    EMAIL: "INTERACTION_EMAIL",
+    CALL: "INTERACTION_CALL",
+    MEETING: "INTERACTION_MEETING",
+    EVENT: "INTERACTION_EVENT",
+    MESSAGE: "INTERACTION_MESSAGE",
+    OTHER: "INTERACTION_EMAIL"
+  };
+  var eventTitle = {
+    EMAIL: "Email sent",
+    CALL: "Call logged",
+    MEETING: "Meeting logged",
+    EVENT: "Event logged",
+    MESSAGE: "Message logged",
+    OTHER: "Interaction logged"
+  };
+  contactActivityEvents.push({
+    id: _generateContactId(),
+    contactId: contactId,
+    eventType: eventTypeMap[interaction.type] || "INTERACTION_EMAIL",
+    title: eventTitle[interaction.type] || "Interaction logged",
+    detail: interaction.summary || null,
+    relatedId: interaction.id,
+    occurredAt: interaction.occurredAt
+  });
+  saveDataCache();
+  return interaction;
+}
+
+function createContactNote(contactId, data) {
+  var contact = contactPeople.find(function(p) { return p.id === contactId; });
+  if (!contact) {
+    console.error("createContactNote: contact not found:", contactId);
+    return null;
+  }
+  if (!data.body || !data.body.trim()) {
+    console.error("createContactNote: body is required");
+    return null;
+  }
+  var now = new Date().toISOString();
+  var note = {
+    id: data.id || _generateContactId(),
+    contactId: contactId,
+    body: data.body.trim(),
+    context: data.context || "GENERAL",
+    createdAt: data.createdAt || now,
+    createdBy: data.createdBy || null
+  };
+  contactNotes.push(note);
+  // Create NOTE_ADDED activity event
+  contactActivityEvents.push({
+    id: _generateContactId(),
+    contactId: contactId,
+    eventType: "NOTE_ADDED",
+    title: "Note added",
+    detail: note.body.length > 60 ? note.body.substring(0, 60) + "..." : note.body,
+    relatedId: note.id,
+    occurredAt: note.createdAt
+  });
+  saveDataCache();
+  return note;
 }
 
 function toggleCrmAddDropdown() {
@@ -18372,6 +18758,203 @@ window._injectDemoVendors = function() {
     { id: "di4", invoiceNumber: "INV-3001", contactId: "demo-via-2", contactName: "Daikanyama Select", invoiceDate: "2026-03-12", total: 198000, status: "sent" },
     { id: "di5", invoiceNumber: "INV-3002", contactId: "demo-via-2", contactName: "Daikanyama Select", invoiceDate: "2026-02-05", total: 76000, status: "paid" },
     { id: "di6", invoiceNumber: "INV-3003", contactId: "demo-via-2", contactName: "Daikanyama Select", invoiceDate: "2026-01-28", total: 256000, status: "paid" }
+  );
+
+  // ━━━ Demo Contact People (Contact Profile Phase 1) ━━━
+  if (contactPeople.find(function(p) { return p.id === "demo-cp-1"; })) return;
+
+  // Contact 1: Yoshihiro Fukumoto — primary at Kamakura Goods (demo-direct-1)
+  contactPeople.push({
+    id: "demo-cp-1",
+    nameJa: "\u798F\u672C \u5263\u5E83",
+    nameEn: "Yoshihiro Fukumoto",
+    initials: computeContactInitials("\u798F\u672C \u5263\u5E83", "Yoshihiro Fukumoto"),
+    title: "\u4EE3\u8868\u53D6\u7DE0\u5F79 / CEO",
+    avatarImageUrl: null,
+    email: "fukumoto@kamakuragoods.jp",
+    phone: "0467-22-1234",
+    lineId: "fukumoto_kamakura",
+    instagramHandle: "@fukumoto_kamakura",
+    preferredContact: "LINE first, then email",
+    vendorId: "demo-direct-1",
+    vendorRole: "PRIMARY",
+    isPrimary: true,
+    languages: ["Japanese", "English"],
+    communicationPrefs: ["LINE (fast)", "Email for formal", "Japanese in writing"],
+    background: "Founded Kamakura Goods in 2018 after 10 years in retail merchandising at Isetan Mitsukoshi. Passionate about artisanal goods and Australian culture. Spent a gap year in Melbourne in his 20s. Strong eye for product curation and visual merchandising.",
+    howWeMet: "Met at the Yokohama Handmade Marche in September 2025. He approached our booth after smelling the Byron Bay soap and said it reminded him of his time in Australia. Exchanged LINE contacts on the spot.",
+    lastContactedAt: "2026-03-14T09:30:00Z",
+    lastContactedType: "EMAIL",
+    firstMetAt: "2025-09-15",
+    createdAt: "2025-09-15T10:00:00Z",
+    updatedAt: "2026-03-14T09:30:00Z"
+  });
+
+  // Contact 2: Joseph Plante — primary at Edgeof Creative (demo-connector-1)
+  contactPeople.push({
+    id: "demo-cp-2",
+    nameJa: null,
+    nameEn: "Joseph Plante",
+    initials: computeContactInitials(null, "Joseph Plante"),
+    title: "Director of Partnerships / \u30D1\u30FC\u30C8\u30CA\u30FC\u30B7\u30C3\u30D7\u30C7\u30A3\u30EC\u30AF\u30BF\u30FC",
+    avatarImageUrl: null,
+    email: "joseph@edgeof.co.jp",
+    phone: "03-6427-8901",
+    lineId: null,
+    instagramHandle: "@josephplante",
+    preferredContact: "Email first, then phone",
+    vendorId: "demo-connector-1",
+    vendorRole: "PRIMARY",
+    isPrimary: true,
+    languages: ["English", "Japanese", "French"],
+    communicationPrefs: ["Email first", "English or Japanese OK", "Prefers scheduled calls"],
+    background: "Canadian-born, based in Tokyo since 2015. Runs partnership development at Edgeof Creative. Has deep connections across Tokyo retail and lifestyle spaces. Previously worked at Dentsu on brand strategy. Fluent in Japanese with a Kansai accent from his first year in Osaka.",
+    howWeMet: "Introduced by a mutual friend at a D2C brands networking event in Shibuya in October 2025. He was immediately interested in our product line for his retail partners. Scheduled a follow-up coffee the next week.",
+    lastContactedAt: "2026-03-15T09:30:00Z",
+    lastContactedType: "MEETING",
+    firstMetAt: "2025-10-20",
+    createdAt: "2025-11-01T10:00:00Z",
+    updatedAt: "2026-03-15T09:30:00Z"
+  });
+
+  // Contact 3: Yukari Tanaka — primary at Northshore Cafe (demo-via-1)
+  contactPeople.push({
+    id: "demo-cp-3",
+    nameJa: "\u7530\u4E2D \u3086\u304B\u308A",
+    nameEn: "Yukari Tanaka",
+    initials: computeContactInitials("\u7530\u4E2D \u3086\u304B\u308A", "Yukari Tanaka"),
+    title: "\u30AA\u30FC\u30CA\u30FC / Owner",
+    avatarImageUrl: null,
+    email: "yukari@northshorecafe.jp",
+    phone: "0466-55-1234",
+    lineId: "yukari_northshore",
+    instagramHandle: "@yukari_northshore",
+    preferredContact: "LINE preferred, call if urgent",
+    vendorId: "demo-via-1",
+    vendorRole: "PRIMARY",
+    isPrimary: true,
+    languages: ["Japanese"],
+    communicationPrefs: ["LINE (fast)", "Japanese only", "Morning calls preferred"],
+    background: "Opened Northshore Cafe in 2020 after years working in surf culture retail in Shonan. The cafe is a hybrid concept: specialty coffee, lifestyle goods, and a surf community hub. She curates every product personally and has a strong instinct for what her customers want.",
+    howWeMet: "Introduced by Joseph Plante from Edgeof Creative in December 2025. Joseph brought us to the cafe for an initial meeting. Yukari loved the coastal branding of Byron Bay soap and placed an initial order on the spot.",
+    lastContactedAt: "2026-03-12T10:00:00Z",
+    lastContactedType: "MESSAGE",
+    firstMetAt: "2025-12-01",
+    createdAt: "2025-12-01T10:00:00Z",
+    updatedAt: "2026-03-12T10:00:00Z"
+  });
+
+  // Contact 4: Junna Kobayashi — secondary at Daikanyama Select (demo-via-2)
+  contactPeople.push({
+    id: "demo-cp-4",
+    nameJa: "\u5C0F\u6797 \u7D14\u5948",
+    nameEn: "Junna Kobayashi",
+    initials: computeContactInitials("\u5C0F\u6797 \u7D14\u5948", "Junna Kobayashi"),
+    title: "\u30D0\u30A4\u30E4\u30FC / Buyer & Merchandiser",
+    avatarImageUrl: null,
+    email: "junna@daikanyama-select.jp",
+    phone: "03-3461-7891",
+    lineId: "junna_daikanyama",
+    instagramHandle: "@junna_select",
+    preferredContact: "Email for proposals, LINE for quick questions",
+    vendorId: "demo-via-2",
+    vendorRole: "OPERATIONAL",
+    isPrimary: false,
+    languages: ["Japanese", "English"],
+    communicationPrefs: ["Email for formal", "LINE for quick", "Bring samples to meetings"],
+    background: "Experienced buyer with background in premium cosmetics and lifestyle retail. Previously at Isetan Salon de Parfum. Has deep knowledge of the Japanese premium consumer market. Very detail-oriented \u2014 always wants to smell and touch products before committing to stock.",
+    howWeMet: "Met through Joseph Plante in January 2026 when Edgeof facilitated the Daikanyama Select partnership. Junna attended the product presentation at Edgeof office and was particularly impressed by the Tasmanian Citrus candle.",
+    lastContactedAt: "2026-03-13T11:00:00Z",
+    lastContactedType: "EMAIL",
+    firstMetAt: "2026-01-15",
+    createdAt: "2026-01-15T14:00:00Z",
+    updatedAt: "2026-03-13T11:00:00Z"
+  });
+
+  // ━━━ Demo Contact Notes ━━━
+  contactNotes.push(
+    { id: "demo-cn-1", contactId: "demo-cp-1", body: "Fukumoto-san is very enthusiastic about Australian botanical products. He spent a gap year in Melbourne and has a genuine personal connection to the brand story. Always asks about new product development and wants to be first to stock new items.", context: "MEETING", createdAt: "2026-03-14T09:30:00Z", createdBy: "taka@ivycoast.co" },
+    { id: "demo-cn-2", contactId: "demo-cp-1", body: "Prefers Thursday deliveries to prep for weekend traffic. His shop sees 3x more foot traffic on weekends. Suggested creating a Kamakura-exclusive bundle for the summer season.", context: "CALL", createdAt: "2026-02-28T14:30:00Z", createdBy: "yoko@ivycoast.co" },
+    { id: "demo-cn-3", contactId: "demo-cp-2", body: "Joseph has connections across 40+ retail locations in Tokyo metro area. He sees our products fitting into the premium natural lifestyle segment. Discussed expanding to Omotesando and Jiyugaoka areas next quarter.", context: "MEETING", createdAt: "2026-03-15T09:30:00Z", createdBy: "taka@ivycoast.co" },
+    { id: "demo-cn-4", contactId: "demo-cp-2", body: "Confirmed connector fee at 10% across all shops. Joseph is very straightforward on commercial terms. He prefers everything documented clearly in English. Monthly invoicing, net-30.", context: "EMAIL", createdAt: "2026-03-01T14:00:00Z", createdBy: "yoko@ivycoast.co" },
+    { id: "demo-cn-5", contactId: "demo-cp-3", body: "Yukari runs a tight ship at Northshore. She personally approves every product on the shelves. Byron Bay soap is now her #1 non-food item. She wants to create a \u201CShonan Set\u201D gift box combining our soap with local roasted coffee.", context: "MEETING", createdAt: "2026-03-12T10:00:00Z", createdBy: "taka@ivycoast.co" },
+    { id: "demo-cn-6", contactId: "demo-cp-3", body: "Yukari asked about seasonal scents for summer. She wants something fresh and citrusy for the surf crowd. Very responsive on LINE \u2014 usually replies within 30 minutes during business hours.", context: "GENERAL", createdAt: "2026-02-20T16:00:00Z", createdBy: "yoko@ivycoast.co" },
+    { id: "demo-cn-7", contactId: "demo-cp-4", body: "Junna is extremely detail-oriented. She wants to see, smell, and test every product before placing orders. Brought product samples to the meeting and she spent 20 minutes evaluating each one. She particularly loved Tasmanian Citrus candle.", context: "MEETING", createdAt: "2026-03-13T11:00:00Z", createdBy: "taka@ivycoast.co" },
+    { id: "demo-cn-8", contactId: "demo-cp-4", body: "Discussed co-branded Instagram campaign. Daikanyama Select has 12K followers. Junna is open to a joint giveaway featuring our candle + their tote bag. Great cross-promotion opportunity for the premium audience.", context: "EMAIL", createdAt: "2026-02-15T10:00:00Z", createdBy: "taka@ivycoast.co" }
+  );
+
+  // ━━━ Demo Contact Interactions ━━━
+  contactInteractions.push(
+    { id: "demo-ci-1", contactId: "demo-cp-1", vendorId: "demo-direct-1", type: "EMAIL", summary: "Sent March restock confirmation and candle samples tracking number", occurredAt: "2026-03-14T09:30:00Z", createdAt: "2026-03-14T09:30:00Z" },
+    { id: "demo-ci-2", contactId: "demo-cp-1", vendorId: "demo-direct-1", type: "MEETING", summary: "In-store visit with Yoko \u2014 reviewed display, discussed summer bundle concept", occurredAt: "2026-02-28T14:30:00Z", createdAt: "2026-02-28T14:30:00Z" },
+    { id: "demo-ci-3", contactId: "demo-cp-1", vendorId: "demo-direct-1", type: "CALL", summary: "Discussed delivery schedule preferences and Q2 ordering forecast", occurredAt: "2026-01-20T10:00:00Z", createdAt: "2026-01-20T10:00:00Z" },
+    { id: "demo-ci-4", contactId: "demo-cp-2", vendorId: "demo-connector-1", type: "MEETING", summary: "Quarterly review at Edgeof office \u2014 reviewed shop performance and pipeline", occurredAt: "2026-03-15T09:30:00Z", createdAt: "2026-03-15T09:30:00Z" },
+    { id: "demo-ci-5", contactId: "demo-cp-2", vendorId: "demo-connector-1", type: "EMAIL", summary: "Sent updated connector agreement with finalized 10% fee terms", occurredAt: "2026-03-01T14:00:00Z", createdAt: "2026-03-01T14:00:00Z" },
+    { id: "demo-ci-6", contactId: "demo-cp-2", vendorId: "demo-connector-1", type: "CALL", summary: "Discussed Omotesando prospect \u2014 speciality Australian imports shop", occurredAt: "2026-02-20T11:15:00Z", createdAt: "2026-02-20T11:15:00Z" },
+    { id: "demo-ci-7", contactId: "demo-cp-3", vendorId: "demo-via-1", type: "MESSAGE", summary: "LINE \u2014 confirmed restock delivery for next week, asked about summer scents", occurredAt: "2026-03-12T10:00:00Z", createdAt: "2026-03-12T10:00:00Z" },
+    { id: "demo-ci-8", contactId: "demo-cp-3", vendorId: "demo-via-1", type: "MEETING", summary: "Store visit \u2014 photographed display, discussed Shonan Set concept", occurredAt: "2026-01-15T11:00:00Z", createdAt: "2026-01-15T11:00:00Z" },
+    { id: "demo-ci-9", contactId: "demo-cp-4", vendorId: "demo-via-2", type: "EMAIL", summary: "Sent holiday packaging concept mockups for year-end gifting collection", occurredAt: "2026-03-13T11:00:00Z", createdAt: "2026-03-13T11:00:00Z" },
+    { id: "demo-ci-10", contactId: "demo-cp-4", vendorId: "demo-via-2", type: "MEETING", summary: "Product presentation at Edgeof office \u2014 Junna evaluated all samples", occurredAt: "2026-01-15T14:00:00Z", createdAt: "2026-01-15T14:00:00Z" }
+  );
+
+  // ━━━ Demo Contact Activity Events ━━━
+  contactActivityEvents.push(
+    // Fukumoto (demo-cp-1)
+    { id: "demo-cae-1", contactId: "demo-cp-1", eventType: "CONTACT_CREATED", title: "Contact created", detail: "Yoshihiro Fukumoto", relatedId: null, occurredAt: "2025-09-15T10:00:00Z" },
+    { id: "demo-cae-2", contactId: "demo-cp-1", eventType: "VENDOR_LINKED", title: "Linked to vendor", detail: "Kamakura Goods", relatedId: "demo-direct-1", occurredAt: "2025-09-15T10:00:00Z" },
+    { id: "demo-cae-3", contactId: "demo-cp-1", eventType: "PRIMARY_ASSIGNED", title: "Set as primary contact", detail: "Kamakura Goods", relatedId: "demo-direct-1", occurredAt: "2025-09-15T10:00:00Z" },
+    { id: "demo-cae-4", contactId: "demo-cp-1", eventType: "INTERACTION_CALL", title: "Call logged", detail: "Discussed delivery schedule preferences and Q2 ordering forecast", relatedId: "demo-ci-3", occurredAt: "2026-01-20T10:00:00Z" },
+    { id: "demo-cae-5", contactId: "demo-cp-1", eventType: "INTERACTION_MEETING", title: "Meeting logged", detail: "In-store visit with Yoko \u2014 reviewed display, discussed summer bundle concept", relatedId: "demo-ci-2", occurredAt: "2026-02-28T14:30:00Z" },
+    { id: "demo-cae-6", contactId: "demo-cp-1", eventType: "NOTE_ADDED", title: "Note added", detail: "Prefers Thursday deliveries to prep for weekend traffic...", relatedId: "demo-cn-2", occurredAt: "2026-02-28T14:30:00Z" },
+    { id: "demo-cae-7", contactId: "demo-cp-1", eventType: "INTERACTION_EMAIL", title: "Email sent", detail: "Sent March restock confirmation and candle samples tracking number", relatedId: "demo-ci-1", occurredAt: "2026-03-14T09:30:00Z" },
+    { id: "demo-cae-8", contactId: "demo-cp-1", eventType: "NOTE_ADDED", title: "Note added", detail: "Fukumoto-san is very enthusiastic about Australian botanical products...", relatedId: "demo-cn-1", occurredAt: "2026-03-14T09:30:00Z" },
+    // Joseph Plante (demo-cp-2)
+    { id: "demo-cae-9", contactId: "demo-cp-2", eventType: "CONTACT_CREATED", title: "Contact created", detail: "Joseph Plante", relatedId: null, occurredAt: "2025-11-01T10:00:00Z" },
+    { id: "demo-cae-10", contactId: "demo-cp-2", eventType: "VENDOR_LINKED", title: "Linked to vendor", detail: "Edgeof Creative", relatedId: "demo-connector-1", occurredAt: "2025-11-01T10:00:00Z" },
+    { id: "demo-cae-11", contactId: "demo-cp-2", eventType: "PRIMARY_ASSIGNED", title: "Set as primary contact", detail: "Edgeof Creative", relatedId: "demo-connector-1", occurredAt: "2025-11-01T10:00:00Z" },
+    { id: "demo-cae-12", contactId: "demo-cp-2", eventType: "SHOP_INTRODUCED", title: "Shop introduced", detail: "Northshore Cafe \u2014 Shonan, Kanagawa", relatedId: "demo-via-1", occurredAt: "2025-12-01T10:00:00Z" },
+    { id: "demo-cae-13", contactId: "demo-cp-2", eventType: "SHOP_INTRODUCED", title: "Shop introduced", detail: "Daikanyama Select \u2014 Daikanyama, Tokyo", relatedId: "demo-via-2", occurredAt: "2026-01-15T14:00:00Z" },
+    { id: "demo-cae-14", contactId: "demo-cp-2", eventType: "INTERACTION_CALL", title: "Call logged", detail: "Discussed Omotesando prospect \u2014 speciality Australian imports shop", relatedId: "demo-ci-6", occurredAt: "2026-02-20T11:15:00Z" },
+    { id: "demo-cae-15", contactId: "demo-cp-2", eventType: "INTERACTION_EMAIL", title: "Email sent", detail: "Sent updated connector agreement with finalized 10% fee terms", relatedId: "demo-ci-5", occurredAt: "2026-03-01T14:00:00Z" },
+    { id: "demo-cae-16", contactId: "demo-cp-2", eventType: "NOTE_ADDED", title: "Note added", detail: "Confirmed connector fee at 10% across all shops...", relatedId: "demo-cn-4", occurredAt: "2026-03-01T14:00:00Z" },
+    { id: "demo-cae-17", contactId: "demo-cp-2", eventType: "INTERACTION_MEETING", title: "Meeting logged", detail: "Quarterly review at Edgeof office \u2014 reviewed shop performance and pipeline", relatedId: "demo-ci-4", occurredAt: "2026-03-15T09:30:00Z" },
+    { id: "demo-cae-18", contactId: "demo-cp-2", eventType: "NOTE_ADDED", title: "Note added", detail: "Joseph has connections across 40+ retail locations...", relatedId: "demo-cn-3", occurredAt: "2026-03-15T09:30:00Z" },
+    // Yukari Tanaka (demo-cp-3)
+    { id: "demo-cae-19", contactId: "demo-cp-3", eventType: "CONTACT_CREATED", title: "Contact created", detail: "Yukari Tanaka", relatedId: null, occurredAt: "2025-12-01T10:00:00Z" },
+    { id: "demo-cae-20", contactId: "demo-cp-3", eventType: "VENDOR_LINKED", title: "Linked to vendor", detail: "Northshore Cafe", relatedId: "demo-via-1", occurredAt: "2025-12-01T10:00:00Z" },
+    { id: "demo-cae-21", contactId: "demo-cp-3", eventType: "PRIMARY_ASSIGNED", title: "Set as primary contact", detail: "Northshore Cafe", relatedId: "demo-via-1", occurredAt: "2025-12-01T10:00:00Z" },
+    { id: "demo-cae-22", contactId: "demo-cp-3", eventType: "INTERACTION_MEETING", title: "Meeting logged", detail: "Store visit \u2014 photographed display, discussed Shonan Set concept", relatedId: "demo-ci-8", occurredAt: "2026-01-15T11:00:00Z" },
+    { id: "demo-cae-23", contactId: "demo-cp-3", eventType: "NOTE_ADDED", title: "Note added", detail: "Yukari asked about seasonal scents for summer...", relatedId: "demo-cn-6", occurredAt: "2026-02-20T16:00:00Z" },
+    { id: "demo-cae-24", contactId: "demo-cp-3", eventType: "INTERACTION_MESSAGE", title: "Message logged", detail: "LINE \u2014 confirmed restock delivery for next week, asked about summer scents", relatedId: "demo-ci-7", occurredAt: "2026-03-12T10:00:00Z" },
+    { id: "demo-cae-25", contactId: "demo-cp-3", eventType: "NOTE_ADDED", title: "Note added", detail: "Yukari runs a tight ship at Northshore...", relatedId: "demo-cn-5", occurredAt: "2026-03-12T10:00:00Z" },
+    // Junna Kobayashi (demo-cp-4)
+    { id: "demo-cae-26", contactId: "demo-cp-4", eventType: "CONTACT_CREATED", title: "Contact created", detail: "Junna Kobayashi", relatedId: null, occurredAt: "2026-01-15T14:00:00Z" },
+    { id: "demo-cae-27", contactId: "demo-cp-4", eventType: "VENDOR_LINKED", title: "Linked to vendor", detail: "Daikanyama Select", relatedId: "demo-via-2", occurredAt: "2026-01-15T14:00:00Z" },
+    { id: "demo-cae-28", contactId: "demo-cp-4", eventType: "INTERACTION_MEETING", title: "Meeting logged", detail: "Product presentation at Edgeof office \u2014 Junna evaluated all samples", relatedId: "demo-ci-10", occurredAt: "2026-01-15T14:00:00Z" },
+    { id: "demo-cae-29", contactId: "demo-cp-4", eventType: "NOTE_ADDED", title: "Note added", detail: "Discussed co-branded Instagram campaign...", relatedId: "demo-cn-8", occurredAt: "2026-02-15T10:00:00Z" },
+    { id: "demo-cae-30", contactId: "demo-cp-4", eventType: "INTERACTION_EMAIL", title: "Email sent", detail: "Sent holiday packaging concept mockups for year-end gifting collection", relatedId: "demo-ci-9", occurredAt: "2026-03-13T11:00:00Z" },
+    { id: "demo-cae-31", contactId: "demo-cp-4", eventType: "NOTE_ADDED", title: "Note added", detail: "Junna is extremely detail-oriented...", relatedId: "demo-cn-7", occurredAt: "2026-03-13T11:00:00Z" }
+  );
+
+  // ━━━ Demo Contact Tasks (linked to both contact and vendor) ━━━
+  boardTasks.push(
+    { id: "demo-ct-1", vendorId: "demo-direct-1", contactId: "demo-cp-1", text: "Send Tasmanian Citrus + Golden Bushland candle samples to Fukumoto-san", dueDate: "2026-03-20", isCompleted: false, completedAt: null, createdAt: "2026-03-14T09:30:00Z" },
+    { id: "demo-ct-2", vendorId: "demo-direct-1", contactId: "demo-cp-1", text: "Confirm Thursday delivery schedule for March restock", dueDate: "2026-03-21", isCompleted: false, completedAt: null, createdAt: "2026-03-10T10:00:00Z" },
+    { id: "demo-ct-3", vendorId: "demo-connector-1", contactId: "demo-cp-2", text: "Follow up with Joseph on Omotesando shop introduction", dueDate: "2026-03-22", isCompleted: false, completedAt: null, createdAt: "2026-03-15T09:30:00Z" },
+    { id: "demo-ct-4", vendorId: "demo-connector-1", contactId: "demo-cp-2", text: "Review Q1 sales report across all connected shops with Joseph", dueDate: "2026-03-31", isCompleted: false, completedAt: null, createdAt: "2026-03-15T09:30:00Z" },
+    { id: "demo-ct-5", vendorId: "demo-via-1", contactId: "demo-cp-3", text: "Send 6x Lemon Fields Forever candle samples to Yukari", dueDate: "2026-03-20", isCompleted: false, completedAt: null, createdAt: "2026-03-12T10:00:00Z" },
+    { id: "demo-ct-6", vendorId: "demo-via-2", contactId: "demo-cp-4", text: "Send new Tsubaki soap samples to Junna for evaluation", dueDate: "2026-03-22", isCompleted: false, completedAt: null, createdAt: "2026-03-13T11:00:00Z" },
+    { id: "demo-ct-7", vendorId: "demo-via-2", contactId: "demo-cp-4", text: "Coordinate co-branded Instagram giveaway proposal with Junna", dueDate: "2026-03-25", isCompleted: false, completedAt: null, createdAt: "2026-02-15T10:00:00Z" },
+    { id: "demo-ct-8", vendorId: "demo-connector-1", contactId: "demo-cp-2", text: "Finalize connector agreement with 10% fee terms", dueDate: "2026-03-01", isCompleted: true, completedAt: "2026-03-01T14:00:00Z", createdAt: "2026-02-15T10:00:00Z" }
+  );
+
+  // ━━━ Demo Contact Attachments (business cards) ━━━
+  contactAttachments.push(
+    { id: "demo-ca-1", contactId: "demo-cp-1", label: "Business Card Front", fileUrl: "", fileType: "IMAGE", addedAt: "2025-09-15", addedBy: "taka@ivycoast.co" },
+    { id: "demo-ca-2", contactId: "demo-cp-1", label: "Business Card Back", fileUrl: "", fileType: "IMAGE", addedAt: "2025-09-15", addedBy: "taka@ivycoast.co" },
+    { id: "demo-ca-3", contactId: "demo-cp-2", label: "Business Card Front (Joseph Plante)", fileUrl: "", fileType: "IMAGE", addedAt: "2025-11-01", addedBy: "taka@ivycoast.co" },
+    { id: "demo-ca-4", contactId: "demo-cp-4", label: "Business Card Front", fileUrl: "", fileType: "IMAGE", addedAt: "2026-01-15", addedBy: "taka@ivycoast.co" },
+    { id: "demo-ca-5", contactId: "demo-cp-4", label: "Business Card Back (Junna Kobayashi)", fileUrl: "", fileType: "IMAGE", addedAt: "2026-01-15", addedBy: "taka@ivycoast.co" }
   );
 };
 
