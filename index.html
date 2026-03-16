@@ -9920,19 +9920,39 @@ function openCrmDetailView(contactId) {
   renderCrmDocumentsTab(c, panels[4], contactId);
   renderCrmReferencesTab(c, panels[5], contactId, _refsData);
 
-  // Collapsible header on scroll
+  // Collapsible header on scroll (with dead zone to prevent jitter)
   detailView.classList.remove("header-collapsed");
   var _lastScrollTop = 0;
-  var _scrollThreshold = 30;
+  var _collapseAt = 60;   // scroll down this far before collapsing
+  var _expandAt = 20;     // scroll up this far before expanding
+  var _directionDelta = 0;
+  var _isCollapsed = false;
   if (body._crmScrollHandler) body.removeEventListener("scroll", body._crmScrollHandler);
   body._crmScrollHandler = function() {
     var st = body.scrollTop;
-    if (st > _scrollThreshold && st > _lastScrollTop) {
-      detailView.classList.add("header-collapsed");
-    } else if (st < _lastScrollTop) {
-      detailView.classList.remove("header-collapsed");
-    }
+    var delta = st - _lastScrollTop;
     _lastScrollTop = st;
+    // Accumulate direction — reset on direction change
+    if ((delta > 0 && _directionDelta < 0) || (delta < 0 && _directionDelta > 0)) _directionDelta = 0;
+    _directionDelta += delta;
+    // At top: always expand
+    if (st <= 10) {
+      if (_isCollapsed) { detailView.classList.remove("header-collapsed"); _isCollapsed = false; }
+      _directionDelta = 0;
+      return;
+    }
+    // Collapse after sustained scroll down
+    if (!_isCollapsed && _directionDelta > _collapseAt) {
+      detailView.classList.add("header-collapsed");
+      _isCollapsed = true;
+      _directionDelta = 0;
+    }
+    // Expand after sustained scroll up
+    if (_isCollapsed && _directionDelta < -_expandAt) {
+      detailView.classList.remove("header-collapsed");
+      _isCollapsed = false;
+      _directionDelta = 0;
+    }
   };
   body.addEventListener("scroll", body._crmScrollHandler, { passive: true });
 
