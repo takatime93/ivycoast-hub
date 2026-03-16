@@ -10017,47 +10017,77 @@ function _crmBuildFormField(tag, id, type, label, opts) {
 
 // ── Overview Tab ───────────────────────────────────────────────────────────
 
-function renderCrmOverviewTab(c, panel, contactId, tabsBar) {
-  panel.textContent = "";
+var MONTHS_SHORT = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 
-  // --- QUICK STATS (new Figma card style) ---
-  var emailLower = (c.email || "").toLowerCase();
-  var nameLower = (c.name || "").toLowerCase();
-  var matchedOrders = shopifyOrders.filter(function(o) {
-    if (emailLower && (o.email || "").toLowerCase() === emailLower) return true;
-    if (nameLower && (o.customerName || "").toLowerCase() === nameLower) return true;
-    return false;
-  });
-  matchedOrders.sort(function(a, b) { return (b.createdAt || "").localeCompare(a.createdAt || ""); });
-  var totalSpent = 0;
-  matchedOrders.forEach(function(o) { totalSpent += Number(o.totalPrice || 0); });
-  var activeStock = partnerStock.filter(function(s) { return s.contactId === contactId && (s.status || "").toLowerCase() === "active"; });
-  var lastOrderDate = matchedOrders.length && matchedOrders[0].createdAt ? formatDate(matchedOrders[0].createdAt) : "\u2014";
-
-  // --- Connector / Via-Connector data ---
-  var _isConnectorType = c.type === "Connector";
-  var _isViaConnector = c.type === "Partner" && c.connectorId;
-  var connectedShops = _isConnectorType ? crmContacts.filter(function(ct) { return ct.connectorId === contactId; }) : [];
-  var connectorFeePct = Number(c.connectorFeePercent || 0);
-  var connectorAllShopOrders = [];
-  var _shopShareMap = {}; // orderId → shop share pct
-  if (_isConnectorType) {
-    connectedShops.forEach(function(shop) {
-      var sEmail = (shop.email || "").toLowerCase();
-      var sName = (shop.name || "").toLowerCase();
-      var sPct = Number(shop.consignmentPercent || shop.wholesalePercent || 0);
-      shopifyOrders.forEach(function(o) {
-        if (_shopShareMap[o.id] !== undefined) return;
-        var match = (sEmail && (o.email || "").toLowerCase() === sEmail) || (sName && (o.customerName || "").toLowerCase() === sName);
-        if (match) { connectorAllShopOrders.push(o); _shopShareMap[o.id] = sPct; }
-      });
-    });
-    connectorAllShopOrders.sort(function(a, b) { return (b.createdAt || "").localeCompare(a.createdAt || ""); });
+// Pure utility: build period-aware bar chart with hover interaction
+// periodKey: "daily"|"monthly"|"90days"|"6months"|"yearly"|"alltime"
+// onHover(label, amount) called when hovering a bar; onLeave() resets
+function _buildBarChart(orders, periodKey, onHover, onLeave) {
+  var now = new Date();
+  var buckets = []; // [{label, start, end}]
+  if (periodKey === "daily") {
+    for (var h = 23; h >= 0; h--) {
+      var s = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours() - h, 0, 0);
+      var e = new Date(s.getTime() + 3600000 - 1);
+      buckets.push({ label: s.getHours() + ":00", start: s, end: e });
+    }
+  } else if (periodKey === "monthly") {
+    for (var i = 11; i >= 0; i--) {
+      var ms = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      var me = new Date(now.getFullYear(), now.getMonth() - i + 1, 0, 23, 59, 59);
+      buckets.push({ label: MONTHS_SHORT[ms.getMonth()] + " " + ms.getFullYear(), start: ms, end: me });
+    }
+  } else if (periodKey === "90days") {
+    for (var j = 2; j >= 0; j--) {
+      var ds = new Date(now.getTime() - (j + 1) * 30 * 86400000);
+      var de = new Date(now.getTime() - j * 30 * 86400000 - 1);
+      if (j === 0) de = now;
+      buckets.push({ label: MONTHS_SHORT[ds.getMonth()] + " " + ds.getDate() + " - " + MONTHS_SHORT[de.getMonth()] + " " + de.getDate(), start: ds, end: de });
+    }
+  } else if (periodKey === "6months") {
+    for (var k = 5; k >= 0; k--) {
+      var fs = new Date(now.getFullYear(), now.getMonth() - k, 1);
+      var fe = new Date(now.getFullYear(), now.getMonth() - k + 1, 0, 23, 59, 59);
+      buckets.push({ label: MONTHS_SHORT[fs.getMonth()] + " " + fs.getFullYear(), start: fs, end: fe });
+    }
+  } else { // yearly or alltime
+    var minYear = now.getFullYear();
+    orders.forEach(function(o) { if (o.createdAt) { var y = new Date(o.createdAt).getFullYear(); if (y < minYear) minYear = y; } });
+    var startYear = Math.max(minYear, now.getFullYear() - 9);
+    for (var yr = startYear; yr <= now.getFullYear(); yr++) {
+      buckets.push({ label: String(yr), start: new Date(yr, 0, 1), end: new Date(yr, 11, 31, 23, 59, 59) });
+    }
   }
-  var connectorRecord = _isViaConnector ? crmContacts.find(function(ct) { return ct.id === c.connectorId; }) : null;
-  var viaConnectorFeePct = connectorRecord ? Number(connectorRecord.connectorFeePercent || 0) : 0;
-  var shopSharePct = Number(c.consignmentPercent || c.wholesalePercent || 0);
+  // Compute totals per bucket
+  var barData = buckets.map(function(b) {
+    var total = 0;
+    orders.forEach(function(o) {
+      var d = o.createdAt ? new Date(o.createdAt) : null;
+      if (d && d >= b.start && d <= b.end) total += Number(o.totalPrice || 0);
+    });
+    return { label: b.label, total: total };
+  });
+  var maxVal = Math.max.apply(null, barData.map(function(b) { return b.total; })) || 1;
+  var chart = document.createElement("div");
+  chart.className = "stat-bar-chart";
+  barData.forEach(function(bd, idx) {
+    var bar = document.createElement("div");
+    bar.className = "bar" + (idx === barData.length - 1 ? " active" : "");
+    bar.style.height = Math.max(2, Math.round((bd.total / maxVal) * 36)) + "px";
+    // Tooltip
+    var tip = document.createElement("div");
+    tip.className = "bar-tip";
+    tip.textContent = bd.label + ": \u00A5" + bd.total.toLocaleString();
+    bar.appendChild(tip);
+    // Hover updates the card header
+    bar.onmouseenter = function() { if (onHover) onHover(bd.label, bd.total); };
+    bar.onmouseleave = function() { if (onLeave) onLeave(); };
+    chart.appendChild(bar);
+  });
+  return chart;
+}
 
+function _renderAnalyticsSection(panel, c, contactId, matchedOrders, totalSpent, activeStock, connectedShops, connectorAllShopOrders, connectorFeePct, _shopShareMap, shopSharePct, viaConnectorFeePct, tabsBar, _isConnectorType, _isViaConnector) {
   // --- ANALYTICS SECTION ---
   var analyticsSection = document.createElement("div");
   analyticsSection.className = "crm-analytics-section";
@@ -10134,75 +10164,6 @@ function renderCrmOverviewTab(c, panel, contactId, tabsBar) {
   var qsGrid = document.createElement("div");
   qsGrid.className = "crm-detail-quick-stats";
   analyticsSection.appendChild(qsGrid);
-
-  // Helper: build period-aware bar chart with hover interaction
-  // periodKey: "daily"|"monthly"|"90days"|"6months"|"yearly"|"alltime"
-  // onHover(label, amount) called when hovering a bar; onLeave() resets
-  var MONTHS_SHORT = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-  function _buildBarChart(orders, periodKey, onHover, onLeave) {
-    var now = new Date();
-    var buckets = []; // [{label, start, end}]
-    if (periodKey === "daily") {
-      for (var h = 23; h >= 0; h--) {
-        var s = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours() - h, 0, 0);
-        var e = new Date(s.getTime() + 3600000 - 1);
-        buckets.push({ label: s.getHours() + ":00", start: s, end: e });
-      }
-    } else if (periodKey === "monthly") {
-      for (var i = 11; i >= 0; i--) {
-        var ms = new Date(now.getFullYear(), now.getMonth() - i, 1);
-        var me = new Date(now.getFullYear(), now.getMonth() - i + 1, 0, 23, 59, 59);
-        buckets.push({ label: MONTHS_SHORT[ms.getMonth()] + " " + ms.getFullYear(), start: ms, end: me });
-      }
-    } else if (periodKey === "90days") {
-      for (var j = 2; j >= 0; j--) {
-        var ds = new Date(now.getTime() - (j + 1) * 30 * 86400000);
-        var de = new Date(now.getTime() - j * 30 * 86400000 - 1);
-        if (j === 0) de = now;
-        buckets.push({ label: MONTHS_SHORT[ds.getMonth()] + " " + ds.getDate() + " - " + MONTHS_SHORT[de.getMonth()] + " " + de.getDate(), start: ds, end: de });
-      }
-    } else if (periodKey === "6months") {
-      for (var k = 5; k >= 0; k--) {
-        var fs = new Date(now.getFullYear(), now.getMonth() - k, 1);
-        var fe = new Date(now.getFullYear(), now.getMonth() - k + 1, 0, 23, 59, 59);
-        buckets.push({ label: MONTHS_SHORT[fs.getMonth()] + " " + fs.getFullYear(), start: fs, end: fe });
-      }
-    } else { // yearly or alltime
-      var minYear = now.getFullYear();
-      orders.forEach(function(o) { if (o.createdAt) { var y = new Date(o.createdAt).getFullYear(); if (y < minYear) minYear = y; } });
-      var startYear = Math.max(minYear, now.getFullYear() - 9);
-      for (var yr = startYear; yr <= now.getFullYear(); yr++) {
-        buckets.push({ label: String(yr), start: new Date(yr, 0, 1), end: new Date(yr, 11, 31, 23, 59, 59) });
-      }
-    }
-    // Compute totals per bucket
-    var barData = buckets.map(function(b) {
-      var total = 0;
-      orders.forEach(function(o) {
-        var d = o.createdAt ? new Date(o.createdAt) : null;
-        if (d && d >= b.start && d <= b.end) total += Number(o.totalPrice || 0);
-      });
-      return { label: b.label, total: total };
-    });
-    var maxVal = Math.max.apply(null, barData.map(function(b) { return b.total; })) || 1;
-    var chart = document.createElement("div");
-    chart.className = "stat-bar-chart";
-    barData.forEach(function(bd, idx) {
-      var bar = document.createElement("div");
-      bar.className = "bar" + (idx === barData.length - 1 ? " active" : "");
-      bar.style.height = Math.max(2, Math.round((bd.total / maxVal) * 36)) + "px";
-      // Tooltip
-      var tip = document.createElement("div");
-      tip.className = "bar-tip";
-      tip.textContent = bd.label + ": \u00A5" + bd.total.toLocaleString();
-      bar.appendChild(tip);
-      // Hover updates the card header
-      bar.onmouseenter = function() { if (onHover) onHover(bd.label, bd.total); };
-      bar.onmouseleave = function() { if (onLeave) onLeave(); };
-      chart.appendChild(bar);
-    });
-    return chart;
-  }
 
   function updateStatCards(days, periodKey) {
     qsGrid.textContent = "";
@@ -10643,121 +10604,312 @@ function renderCrmOverviewTab(c, panel, contactId, tabsBar) {
   }
   updateStatCards(30, "monthly"); // default to monthly
   panel.appendChild(analyticsSection);
+}
+
+function _renderMoneyFlowBar(panel, c) {
+  var _vcConnRecord = crmContacts.find(function(ct) { return ct.id === c.connectorId; }) || {};
+  var _vcFeePct = Number(_vcConnRecord.connectorFeePercent || 0);
+  var _vcShopPct = Number(c.consignmentPercent || c.wholesalePercent || 0);
+  var _vcRawIvy = Math.max(0, 100 - _vcShopPct - _vcFeePct);
+  var _vcTotal = _vcRawIvy + _vcShopPct + _vcFeePct || 100;
+  var _vcIvyPct = Math.round(_vcRawIvy / _vcTotal * 100);
+  var _vcShopPctN = Math.round(_vcShopPct / _vcTotal * 100);
+  var _vcFeePctN = Math.round(_vcFeePct / _vcTotal * 100);
+  var _vcShopName = c.company || c.name || "Shop";
+  var _vcConnName = _vcConnRecord.company || _vcConnRecord.name || "Connector";
+
+  var flowWrap = document.createElement("div");
+  flowWrap.className = "crm-money-flow";
+
+  var bar = document.createElement("div");
+  bar.className = "crm-money-flow-bar";
+  var seg1 = document.createElement("span");
+  seg1.style.cssText = "background:#00a52c;width:" + _vcIvyPct + "%";
+  bar.appendChild(seg1);
+  var seg2 = document.createElement("span");
+  seg2.style.cssText = "background:#2a4030;width:" + _vcShopPctN + "%";
+  bar.appendChild(seg2);
+  var seg3 = document.createElement("span");
+  seg3.style.cssText = "background:#d9ab13;width:" + _vcFeePctN + "%";
+  bar.appendChild(seg3);
+  flowWrap.appendChild(bar);
+
+  var legend = document.createElement("div");
+  legend.className = "crm-money-flow-legend";
+  var items = [
+    { color: "#00a52c", pct: _vcRawIvy, name: "Ivycoast", role: "Brand" },
+    { color: "#2a4030", pct: _vcShopPct, name: _vcShopName, role: "Seller" },
+    { color: "#d9ab13", pct: _vcFeePct, name: _vcConnName, role: "Connector" }
+  ];
+  items.forEach(function(it) {
+    var item = document.createElement("span");
+    item.className = "crm-money-flow-item";
+    var dot = document.createElement("span");
+    dot.className = "crm-money-flow-dot";
+    dot.style.background = it.color;
+    item.appendChild(dot);
+    var pct = document.createElement("span");
+    pct.className = "crm-money-flow-pct";
+    pct.style.color = it.color;
+    pct.textContent = it.pct + "%";
+    item.appendChild(pct);
+    var nm = document.createElement("span");
+    nm.className = "crm-money-flow-name";
+    nm.textContent = it.name;
+    item.appendChild(nm);
+    var role = document.createElement("span");
+    role.className = "crm-money-flow-role";
+    role.textContent = it.role;
+    item.appendChild(role);
+    legend.appendChild(item);
+  });
+  flowWrap.appendChild(legend);
+  panel.appendChild(flowWrap);
+}
+
+function _renderConnectorInvoices(panel, connectedShops) {
+  var shopIds = {};
+  connectedShops.forEach(function(s) { shopIds[s.id] = s.company || s.name || "Shop"; });
+  var connInvoices = invoices.filter(function(inv) { return shopIds[inv.contactId]; });
+  connInvoices.sort(function(a, b) { return (b.invoiceDate || "").localeCompare(a.invoiceDate || ""); });
+  var invSection = document.createElement("div");
+  invSection.className = "crm-conn-invoices";
+  var invHdr = document.createElement("div");
+  invHdr.className = "crm-conn-invoices-header";
+  var invLabel = document.createElement("span");
+  invLabel.className = "sec-label";
+  invLabel.textContent = "Invoices";
+  invHdr.appendChild(invLabel);
+  var invCount = document.createElement("span");
+  invCount.className = "sec-count";
+  invCount.textContent = "(" + connInvoices.length + ")";
+  invHdr.appendChild(invCount);
+  invSection.appendChild(invHdr);
+  if (connInvoices.length) {
+    connInvoices.forEach(function(inv) {
+      var row = document.createElement("div");
+      row.className = "crm-conn-inv-row";
+      var left = document.createElement("div");
+      left.className = "crm-conn-inv-left";
+      var shop = document.createElement("span");
+      shop.className = "crm-conn-inv-shop";
+      shop.textContent = shopIds[inv.contactId] || inv.contactName || "Shop";
+      left.appendChild(shop);
+      var date = document.createElement("span");
+      date.className = "crm-conn-inv-date";
+      date.textContent = inv.invoiceDate ? formatDate(inv.invoiceDate) : "";
+      left.appendChild(date);
+      row.appendChild(left);
+      var amount = document.createElement("span");
+      amount.className = "crm-conn-inv-amount";
+      amount.textContent = "\u00A5" + Number(inv.total || 0).toLocaleString();
+      row.appendChild(amount);
+      var viewBtn = document.createElement("button");
+      viewBtn.className = "crm-conn-inv-view";
+      viewBtn.textContent = "View Invoice \u203A";
+      viewBtn.onclick = (function(invId) { return function(e) { e.stopPropagation(); openInvoiceEditModal(invId); }; })(inv.id);
+      row.appendChild(viewBtn);
+      invSection.appendChild(row);
+    });
+  } else {
+    var invEmpty = document.createElement("div");
+    invEmpty.style.cssText = "font-size:12px;color:#80868b;padding:8px 0";
+    invEmpty.textContent = "No invoices across connected shops yet";
+    invSection.appendChild(invEmpty);
+  }
+  panel.appendChild(invSection);
+}
+
+function _renderShopsConnected(section, connectedShops, contactId, tabsBar) {
+  var stockHdr = document.createElement("div");
+  stockHdr.className = "crm-overview-col-header";
+  var stockTitle = document.createElement("span");
+  stockTitle.className = "crm-overview-col-title";
+  var stockLabel = document.createElement("span");
+  stockLabel.className = "sec-label";
+  stockLabel.textContent = "Shops they\u2019ve connected us to";
+  stockTitle.appendChild(stockLabel);
+  if (connectedShops.length) {
+    var shopsCount = document.createElement("span");
+    shopsCount.className = "sec-count";
+    shopsCount.textContent = "(" + connectedShops.length + ")";
+    stockTitle.appendChild(shopsCount);
+  }
+  stockHdr.appendChild(stockTitle);
+  var shopsCog = document.createElement("button");
+  shopsCog.className = "crm-overview-col-action";
+  shopsCog.appendChild(_crmFa6Icon("\uf013", 12, 300));
+  shopsCog.onclick = function() { switchToCrmEditMode(contactId); };
+  stockHdr.appendChild(shopsCog);
+  section.appendChild(stockHdr);
+  if (connectedShops.length) {
+    var shopCards = document.createElement("div");
+    shopCards.className = "ivh-flex-col ivh-gap-2";
+    connectedShops.forEach(function(shop) {
+      var card = document.createElement("div");
+      card.style.cssText = "display:flex;align-items:flex-start;gap:12px;border:1px solid #e3e3e3;border-radius:8px;padding:12px 16px;background:#fff;cursor:pointer;transition:background 0.1s";
+      card.onmouseenter = function() { card.style.background = "#f8f9fa"; };
+      card.onmouseleave = function() { card.style.background = "#fff"; };
+      card.onclick = (function(id) { return function() { openCrmDetailView(id); }; })(shop.id);
+      // Avatar
+      var av = document.createElement("div");
+      av.style.cssText = "width:40px;height:40px;border-radius:50%;background:#e8e8e8;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;color:#497871;flex-shrink:0";
+      if (shop.profileImageUrl) {
+        var avImg = document.createElement("img");
+        avImg.src = shop.profileImageUrl;
+        avImg.style.cssText = "width:100%;height:100%;object-fit:cover;border-radius:50%";
+        av.appendChild(avImg);
+      } else {
+        av.textContent = (shop.company || shop.name || "?").substring(0, 2).toUpperCase();
+      }
+      card.appendChild(av);
+      // Info (left)
+      var info = document.createElement("div");
+      info.style.cssText = "flex:1;min-width:0;display:flex;flex-direction:column;gap:2px";
+      var nm = document.createElement("div");
+      nm.style.cssText = "font-size:13px;font-weight:700;color:#000";
+      nm.textContent = shop.company || shop.name || "Unnamed";
+      info.appendChild(nm);
+      if (shop.location) {
+        var addr = document.createElement("div");
+        addr.style.cssText = "font-size:11px;color:#606060";
+        addr.textContent = shop.location;
+        info.appendChild(addr);
+      }
+      // Stock counts with icons
+      var shopStock = partnerStock.filter(function(s) { return s.contactId === shop.id && (s.status || "").toLowerCase() === "active"; });
+      if (shopStock.length) {
+        var stockRow = document.createElement("div");
+        stockRow.style.cssText = "display:flex;gap:8px;margin-top:2px";
+        var soapCount = 0, candleCount = 0;
+        shopStock.forEach(function(s) {
+          var sku = (s.sku || "").toUpperCase();
+          if (sku.indexOf("SOP") === 0) soapCount += Number(s.quantity || 0);
+          else if (sku.indexOf("CND") === 0) candleCount += Number(s.quantity || 0);
+        });
+        if (soapCount) {
+          var soapChip = document.createElement("span");
+          soapChip.style.cssText = "display:flex;align-items:center;gap:2px;font-size:10px;color:#3e3e3e";
+          var soapIcon = document.createElement("span");
+          soapIcon.className = "ivh-icon"; soapIcon.style.fontWeight = "400"; soapIcon.style.fontSize = "10px";
+          soapIcon.textContent = "\ue06e";
+          soapChip.appendChild(soapIcon);
+          soapChip.appendChild(document.createTextNode(soapCount));
+          stockRow.appendChild(soapChip);
+        }
+        if (candleCount) {
+          var candleChip = document.createElement("span");
+          candleChip.style.cssText = "display:flex;align-items:center;gap:2px;font-size:10px;color:#3e3e3e";
+          var candleIcon = document.createElement("span");
+          candleIcon.className = "ivh-icon"; candleIcon.style.fontWeight = "400"; candleIcon.style.fontSize = "10px";
+          candleIcon.textContent = "\uf6bc";
+          candleChip.appendChild(candleIcon);
+          candleChip.appendChild(document.createTextNode(candleCount));
+          stockRow.appendChild(candleChip);
+        }
+        info.appendChild(stockRow);
+      }
+      card.appendChild(info);
+      // Sales stats (right)
+      var shopEmail = (shop.email || "").toLowerCase();
+      var shopNameLo = (shop.name || "").toLowerCase();
+      var shopOrders = shopifyOrders.filter(function(o) {
+        if (shopEmail && (o.email || "").toLowerCase() === shopEmail) return true;
+        if (shopNameLo && (o.customerName || "").toLowerCase() === shopNameLo) return true;
+        return false;
+      });
+      var now30 = new Date(Date.now() - 30 * 86400000);
+      var monthSales = 0, totalSales = 0;
+      shopOrders.forEach(function(o) {
+        var amt = Number(o.totalPrice || 0);
+        totalSales += amt;
+        if (o.createdAt && new Date(o.createdAt) >= now30) monthSales += amt;
+      });
+      var stats = document.createElement("div");
+      stats.style.cssText = "display:flex;flex-direction:column;gap:6px;text-align:right;flex-shrink:0";
+      var s1 = document.createElement("div");
+      var s1Val = document.createElement("div");
+      s1Val.style.cssText = "font-size:14px;font-weight:700;color:#000";
+      s1Val.textContent = "\u00A5" + monthSales.toLocaleString();
+      s1.appendChild(s1Val);
+      var s1Lbl = document.createElement("div");
+      s1Lbl.style.cssText = "font-size:10px;color:#606060";
+      s1Lbl.textContent = "Sales this month";
+      s1.appendChild(s1Lbl);
+      stats.appendChild(s1);
+      var s2 = document.createElement("div");
+      var s2Val = document.createElement("div");
+      s2Val.style.cssText = "font-size:14px;font-weight:700;color:#000";
+      s2Val.textContent = "\u00A5" + totalSales.toLocaleString();
+      s2.appendChild(s2Val);
+      var s2Lbl = document.createElement("div");
+      s2Lbl.style.cssText = "font-size:10px;color:#606060";
+      s2Lbl.textContent = "Total sales";
+      s2.appendChild(s2Lbl);
+      stats.appendChild(s2);
+      card.appendChild(stats);
+      shopCards.appendChild(card);
+    });
+    section.appendChild(shopCards);
+  } else {
+    var shopsEmpty = document.createElement("div");
+    shopsEmpty.className = "crm-overview-empty";
+    shopsEmpty.textContent = "No shops connected yet";
+    section.appendChild(shopsEmpty);
+  }
+}
+
+function renderCrmOverviewTab(c, panel, contactId, tabsBar) {
+  panel.textContent = "";
+
+  // --- QUICK STATS (new Figma card style) ---
+  var emailLower = (c.email || "").toLowerCase();
+  var nameLower = (c.name || "").toLowerCase();
+  var matchedOrders = shopifyOrders.filter(function(o) {
+    if (emailLower && (o.email || "").toLowerCase() === emailLower) return true;
+    if (nameLower && (o.customerName || "").toLowerCase() === nameLower) return true;
+    return false;
+  });
+  matchedOrders.sort(function(a, b) { return (b.createdAt || "").localeCompare(a.createdAt || ""); });
+  var totalSpent = 0;
+  matchedOrders.forEach(function(o) { totalSpent += Number(o.totalPrice || 0); });
+  var activeStock = partnerStock.filter(function(s) { return s.contactId === contactId && (s.status || "").toLowerCase() === "active"; });
+  var lastOrderDate = matchedOrders.length && matchedOrders[0].createdAt ? formatDate(matchedOrders[0].createdAt) : "\u2014";
+
+  // --- Connector / Via-Connector data ---
+  var _isConnectorType = c.type === "Connector";
+  var _isViaConnector = c.type === "Partner" && c.connectorId;
+  var connectedShops = _isConnectorType ? crmContacts.filter(function(ct) { return ct.connectorId === contactId; }) : [];
+  var connectorFeePct = Number(c.connectorFeePercent || 0);
+  var connectorAllShopOrders = [];
+  var _shopShareMap = {}; // orderId → shop share pct
+  if (_isConnectorType) {
+    connectedShops.forEach(function(shop) {
+      var sEmail = (shop.email || "").toLowerCase();
+      var sName = (shop.name || "").toLowerCase();
+      var sPct = Number(shop.consignmentPercent || shop.wholesalePercent || 0);
+      shopifyOrders.forEach(function(o) {
+        if (_shopShareMap[o.id] !== undefined) return;
+        var match = (sEmail && (o.email || "").toLowerCase() === sEmail) || (sName && (o.customerName || "").toLowerCase() === sName);
+        if (match) { connectorAllShopOrders.push(o); _shopShareMap[o.id] = sPct; }
+      });
+    });
+    connectorAllShopOrders.sort(function(a, b) { return (b.createdAt || "").localeCompare(a.createdAt || ""); });
+  }
+  var connectorRecord = _isViaConnector ? crmContacts.find(function(ct) { return ct.id === c.connectorId; }) : null;
+  var viaConnectorFeePct = connectorRecord ? Number(connectorRecord.connectorFeePercent || 0) : 0;
+  var shopSharePct = Number(c.consignmentPercent || c.wholesalePercent || 0);
+
+  _renderAnalyticsSection(panel, c, contactId, matchedOrders, totalSpent, activeStock, connectedShops, connectorAllShopOrders, connectorFeePct, _shopShareMap, shopSharePct, viaConnectorFeePct, tabsBar, _isConnectorType, _isViaConnector);
 
   // === "WHERE THE MONEY GOES" BAR (Via Connector only) ===
   if (_isViaConnector) {
-    var _vcConnRecord = crmContacts.find(function(ct) { return ct.id === c.connectorId; }) || {};
-    var _vcFeePct = Number(_vcConnRecord.connectorFeePercent || 0);
-    var _vcShopPct = Number(c.consignmentPercent || c.wholesalePercent || 0);
-    var _vcRawIvy = Math.max(0, 100 - _vcShopPct - _vcFeePct);
-    var _vcTotal = _vcRawIvy + _vcShopPct + _vcFeePct || 100;
-    var _vcIvyPct = Math.round(_vcRawIvy / _vcTotal * 100);
-    var _vcShopPctN = Math.round(_vcShopPct / _vcTotal * 100);
-    var _vcFeePctN = Math.round(_vcFeePct / _vcTotal * 100);
-    var _vcShopName = c.company || c.name || "Shop";
-    var _vcConnName = _vcConnRecord.company || _vcConnRecord.name || "Connector";
-
-    var flowWrap = document.createElement("div");
-    flowWrap.className = "crm-money-flow";
-
-    var bar = document.createElement("div");
-    bar.className = "crm-money-flow-bar";
-    var seg1 = document.createElement("span");
-    seg1.style.cssText = "background:#00a52c;width:" + _vcIvyPct + "%";
-    bar.appendChild(seg1);
-    var seg2 = document.createElement("span");
-    seg2.style.cssText = "background:#2a4030;width:" + _vcShopPctN + "%";
-    bar.appendChild(seg2);
-    var seg3 = document.createElement("span");
-    seg3.style.cssText = "background:#d9ab13;width:" + _vcFeePctN + "%";
-    bar.appendChild(seg3);
-    flowWrap.appendChild(bar);
-
-    var legend = document.createElement("div");
-    legend.className = "crm-money-flow-legend";
-    var items = [
-      { color: "#00a52c", pct: _vcRawIvy, name: "Ivycoast", role: "Brand" },
-      { color: "#2a4030", pct: _vcShopPct, name: _vcShopName, role: "Seller" },
-      { color: "#d9ab13", pct: _vcFeePct, name: _vcConnName, role: "Connector" }
-    ];
-    items.forEach(function(it) {
-      var item = document.createElement("span");
-      item.className = "crm-money-flow-item";
-      var dot = document.createElement("span");
-      dot.className = "crm-money-flow-dot";
-      dot.style.background = it.color;
-      item.appendChild(dot);
-      var pct = document.createElement("span");
-      pct.className = "crm-money-flow-pct";
-      pct.style.color = it.color;
-      pct.textContent = it.pct + "%";
-      item.appendChild(pct);
-      var nm = document.createElement("span");
-      nm.className = "crm-money-flow-name";
-      nm.textContent = it.name;
-      item.appendChild(nm);
-      var role = document.createElement("span");
-      role.className = "crm-money-flow-role";
-      role.textContent = it.role;
-      item.appendChild(role);
-      legend.appendChild(item);
-    });
-    flowWrap.appendChild(legend);
-    panel.appendChild(flowWrap);
+    _renderMoneyFlowBar(panel, c);
   }
 
   // === INVOICES SECTION (B2B2B Connector only) ===
   if (_isConnectorType && connectedShops.length) {
-    var shopIds = {};
-    connectedShops.forEach(function(s) { shopIds[s.id] = s.company || s.name || "Shop"; });
-    var connInvoices = invoices.filter(function(inv) { return shopIds[inv.contactId]; });
-    connInvoices.sort(function(a, b) { return (b.invoiceDate || "").localeCompare(a.invoiceDate || ""); });
-    var invSection = document.createElement("div");
-    invSection.className = "crm-conn-invoices";
-    var invHdr = document.createElement("div");
-    invHdr.className = "crm-conn-invoices-header";
-    var invLabel = document.createElement("span");
-    invLabel.className = "sec-label";
-    invLabel.textContent = "Invoices";
-    invHdr.appendChild(invLabel);
-    var invCount = document.createElement("span");
-    invCount.className = "sec-count";
-    invCount.textContent = "(" + connInvoices.length + ")";
-    invHdr.appendChild(invCount);
-    invSection.appendChild(invHdr);
-    if (connInvoices.length) {
-      connInvoices.forEach(function(inv) {
-        var row = document.createElement("div");
-        row.className = "crm-conn-inv-row";
-        var left = document.createElement("div");
-        left.className = "crm-conn-inv-left";
-        var shop = document.createElement("span");
-        shop.className = "crm-conn-inv-shop";
-        shop.textContent = shopIds[inv.contactId] || inv.contactName || "Shop";
-        left.appendChild(shop);
-        var date = document.createElement("span");
-        date.className = "crm-conn-inv-date";
-        date.textContent = inv.invoiceDate ? formatDate(inv.invoiceDate) : "";
-        left.appendChild(date);
-        row.appendChild(left);
-        var amount = document.createElement("span");
-        amount.className = "crm-conn-inv-amount";
-        amount.textContent = "\u00A5" + Number(inv.total || 0).toLocaleString();
-        row.appendChild(amount);
-        var viewBtn = document.createElement("button");
-        viewBtn.className = "crm-conn-inv-view";
-        viewBtn.textContent = "View Invoice \u203A";
-        viewBtn.onclick = (function(invId) { return function(e) { e.stopPropagation(); openInvoiceEditModal(invId); }; })(inv.id);
-        row.appendChild(viewBtn);
-        invSection.appendChild(row);
-      });
-    } else {
-      var invEmpty = document.createElement("div");
-      invEmpty.style.cssText = "font-size:12px;color:#80868b;padding:8px 0";
-      invEmpty.textContent = "No invoices across connected shops yet";
-      invSection.appendChild(invEmpty);
-    }
-    panel.appendChild(invSection);
+    _renderConnectorInvoices(panel, connectedShops);
   }
 
   // === TWO-COLUMN LAYOUT ===
@@ -10860,148 +11012,19 @@ function renderCrmOverviewTab(c, panel, contactId, tabsBar) {
   // --- LEFT: Products in Stock / Shops Connected ---
   var stockSection = document.createElement("div");
   stockSection.className = "crm-overview-col-section";
-  var stockHdr = document.createElement("div");
-  stockHdr.className = "crm-overview-col-header";
-  var stockTitle = document.createElement("span");
-  stockTitle.className = "crm-overview-col-title";
-  var stockLabel = document.createElement("span");
-  stockLabel.className = "sec-label";
 
   if (_isConnType) {
     // === SHOPS CONNECTED (Connector only) ===
-    stockLabel.textContent = "Shops they\u2019ve connected us to";
-    stockTitle.appendChild(stockLabel);
-    if (connectedShops.length) {
-      var shopsCount = document.createElement("span");
-      shopsCount.className = "sec-count";
-      shopsCount.textContent = "(" + connectedShops.length + ")";
-      stockTitle.appendChild(shopsCount);
-    }
-    stockHdr.appendChild(stockTitle);
-    var shopsCog = document.createElement("button");
-    shopsCog.className = "crm-overview-col-action";
-    shopsCog.appendChild(_crmFa6Icon("\uf013", 12, 300));
-    shopsCog.onclick = function() { switchToCrmEditMode(contactId); };
-    stockHdr.appendChild(shopsCog);
-    stockSection.appendChild(stockHdr);
-    if (connectedShops.length) {
-      var shopCards = document.createElement("div");
-      shopCards.className = "ivh-flex-col ivh-gap-2";
-      connectedShops.forEach(function(shop) {
-        var card = document.createElement("div");
-        card.style.cssText = "display:flex;align-items:flex-start;gap:12px;border:1px solid #e3e3e3;border-radius:8px;padding:12px 16px;background:#fff;cursor:pointer;transition:background 0.1s";
-        card.onmouseenter = function() { card.style.background = "#f8f9fa"; };
-        card.onmouseleave = function() { card.style.background = "#fff"; };
-        card.onclick = (function(id) { return function() { openCrmDetailView(id); }; })(shop.id);
-        // Avatar
-        var av = document.createElement("div");
-        av.style.cssText = "width:40px;height:40px;border-radius:50%;background:#e8e8e8;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;color:#497871;flex-shrink:0";
-        if (shop.profileImageUrl) {
-          var avImg = document.createElement("img");
-          avImg.src = shop.profileImageUrl;
-          avImg.style.cssText = "width:100%;height:100%;object-fit:cover;border-radius:50%";
-          av.appendChild(avImg);
-        } else {
-          av.textContent = (shop.company || shop.name || "?").substring(0, 2).toUpperCase();
-        }
-        card.appendChild(av);
-        // Info (left)
-        var info = document.createElement("div");
-        info.style.cssText = "flex:1;min-width:0;display:flex;flex-direction:column;gap:2px";
-        var nm = document.createElement("div");
-        nm.style.cssText = "font-size:13px;font-weight:700;color:#000";
-        nm.textContent = shop.company || shop.name || "Unnamed";
-        info.appendChild(nm);
-        if (shop.location) {
-          var addr = document.createElement("div");
-          addr.style.cssText = "font-size:11px;color:#606060";
-          addr.textContent = shop.location;
-          info.appendChild(addr);
-        }
-        // Stock counts with icons
-        var shopStock = partnerStock.filter(function(s) { return s.contactId === shop.id && (s.status || "").toLowerCase() === "active"; });
-        if (shopStock.length) {
-          var stockRow = document.createElement("div");
-          stockRow.style.cssText = "display:flex;gap:8px;margin-top:2px";
-          var soapCount = 0, candleCount = 0;
-          shopStock.forEach(function(s) {
-            var sku = (s.sku || "").toUpperCase();
-            if (sku.indexOf("SOP") === 0) soapCount += Number(s.quantity || 0);
-            else if (sku.indexOf("CND") === 0) candleCount += Number(s.quantity || 0);
-          });
-          if (soapCount) {
-            var soapChip = document.createElement("span");
-            soapChip.style.cssText = "display:flex;align-items:center;gap:2px;font-size:10px;color:#3e3e3e";
-            var soapIcon = document.createElement("span");
-            soapIcon.className = "ivh-icon"; soapIcon.style.fontWeight = "400"; soapIcon.style.fontSize = "10px";
-            soapIcon.textContent = "\ue06e";
-            soapChip.appendChild(soapIcon);
-            soapChip.appendChild(document.createTextNode(soapCount));
-            stockRow.appendChild(soapChip);
-          }
-          if (candleCount) {
-            var candleChip = document.createElement("span");
-            candleChip.style.cssText = "display:flex;align-items:center;gap:2px;font-size:10px;color:#3e3e3e";
-            var candleIcon = document.createElement("span");
-            candleIcon.className = "ivh-icon"; candleIcon.style.fontWeight = "400"; candleIcon.style.fontSize = "10px";
-            candleIcon.textContent = "\uf6bc";
-            candleChip.appendChild(candleIcon);
-            candleChip.appendChild(document.createTextNode(candleCount));
-            stockRow.appendChild(candleChip);
-          }
-          info.appendChild(stockRow);
-        }
-        card.appendChild(info);
-        // Sales stats (right)
-        var shopEmail = (shop.email || "").toLowerCase();
-        var shopNameLo = (shop.name || "").toLowerCase();
-        var shopOrders = shopifyOrders.filter(function(o) {
-          if (shopEmail && (o.email || "").toLowerCase() === shopEmail) return true;
-          if (shopNameLo && (o.customerName || "").toLowerCase() === shopNameLo) return true;
-          return false;
-        });
-        var now30 = new Date(Date.now() - 30 * 86400000);
-        var monthSales = 0, totalSales = 0;
-        shopOrders.forEach(function(o) {
-          var amt = Number(o.totalPrice || 0);
-          totalSales += amt;
-          if (o.createdAt && new Date(o.createdAt) >= now30) monthSales += amt;
-        });
-        var stats = document.createElement("div");
-        stats.style.cssText = "display:flex;flex-direction:column;gap:6px;text-align:right;flex-shrink:0";
-        var s1 = document.createElement("div");
-        var s1Val = document.createElement("div");
-        s1Val.style.cssText = "font-size:14px;font-weight:700;color:#000";
-        s1Val.textContent = "\u00A5" + monthSales.toLocaleString();
-        s1.appendChild(s1Val);
-        var s1Lbl = document.createElement("div");
-        s1Lbl.style.cssText = "font-size:10px;color:#606060";
-        s1Lbl.textContent = "Sales this month";
-        s1.appendChild(s1Lbl);
-        stats.appendChild(s1);
-        var s2 = document.createElement("div");
-        var s2Val = document.createElement("div");
-        s2Val.style.cssText = "font-size:14px;font-weight:700;color:#000";
-        s2Val.textContent = "\u00A5" + totalSales.toLocaleString();
-        s2.appendChild(s2Val);
-        var s2Lbl = document.createElement("div");
-        s2Lbl.style.cssText = "font-size:10px;color:#606060";
-        s2Lbl.textContent = "Total sales";
-        s2.appendChild(s2Lbl);
-        stats.appendChild(s2);
-        card.appendChild(stats);
-        shopCards.appendChild(card);
-      });
-      stockSection.appendChild(shopCards);
-    } else {
-      var shopsEmpty = document.createElement("div");
-      shopsEmpty.className = "crm-overview-empty";
-      shopsEmpty.textContent = "No shops connected yet";
-      stockSection.appendChild(shopsEmpty);
-    }
+    _renderShopsConnected(stockSection, connectedShops, contactId, tabsBar);
     leftCol.appendChild(stockSection);
   } else {
     // === PRODUCTS IN STOCK (Direct / Via Connector) ===
+    var stockHdr = document.createElement("div");
+    stockHdr.className = "crm-overview-col-header";
+    var stockTitle = document.createElement("span");
+    stockTitle.className = "crm-overview-col-title";
+    var stockLabel = document.createElement("span");
+    stockLabel.className = "sec-label";
     stockLabel.textContent = "Products in Stock";
     stockTitle.appendChild(stockLabel);
     var totalStockQty = 0;
