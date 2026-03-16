@@ -5148,6 +5148,7 @@ h2.crm-detail-name {
         <button class="crm-subtab active" data-subview="crm-vendors" onclick="switchCrmSubView('crm-vendors')">Vendors</button>
         <button class="crm-subtab" data-subview="crm-contacts" onclick="switchCrmSubView('crm-contacts')">Contacts</button>
         <button class="crm-subtab" data-subview="crm-pipeline" onclick="switchCrmSubView('crm-pipeline')">Pipeline</button>
+        <button class="crm-subtab" data-subview="crm-archived" onclick="switchCrmSubView('crm-archived')">Archived</button>
       </div>
       <div class="crm-header-right">
         <div class="crm-view-toggle" id="crm-header-view-toggle"></div>
@@ -5207,6 +5208,11 @@ h2.crm-detail-name {
           <div class="kanban-col-body" id="crm-col-inactive"></div>
         </div>
       </div>
+    </div>
+
+    <div id="crm-archived" class="crm-subview">
+      <div class="crm-empty-state" id="crm-archived-empty" style="display:none">No archived contacts</div>
+      <div id="crm-archived-list"></div>
     </div>
 
   </div>
@@ -8430,7 +8436,8 @@ function updateCrmSubtabBadges() {
   var all = getFilteredCrmContacts();
   var vendors = all.filter(function(c) { return c.type === "Vendor" || c.type === "Partner" || c.type === "Connector"; });
   var contacts = all.filter(function(c) { return c.type !== "Vendor" && c.type !== "Partner" && c.type !== "Connector"; });
-  var badges = { "crm-vendors": vendors.length, "crm-contacts": contacts.length };
+  var archivedCount = crmContacts.filter(function(c) { return c.stage === "archived"; }).length;
+  var badges = { "crm-vendors": vendors.length, "crm-contacts": contacts.length, "crm-archived": archivedCount };
   document.querySelectorAll(".crm-subtab").forEach(function(t) {
     var existing = t.querySelector(".crm-subtab-badge");
     if (existing) existing.remove();
@@ -8468,6 +8475,7 @@ function getFilteredCrmContacts() {
   return crmContacts.filter(function(c) {
     if (wsFilter && c.workspace !== wsFilter) return false;
     if (typeFilter && c.type !== typeFilter) return false;
+    if (c.stage === "archived") return false; // hide archived from main views
     return true;
   });
 }
@@ -8476,7 +8484,60 @@ function renderCrmActiveView() {
   if (crmActiveSubView === "crm-vendors") renderCrmVendors();
   else if (crmActiveSubView === "crm-contacts") renderCrmContacts();
   else if (crmActiveSubView === "crm-pipeline") renderCrmPipeline();
+  else if (crmActiveSubView === "crm-archived") renderCrmArchived();
   updateCrmSubtabBadges();
+}
+
+function renderCrmArchived() {
+  var list = document.getElementById("crm-archived-list");
+  var empty = document.getElementById("crm-archived-empty");
+  list.textContent = "";
+  var archived = crmContacts.filter(function(c) { return c.stage === "archived"; });
+  if (!archived.length) { empty.style.display = "block"; return; }
+  empty.style.display = "none";
+  var table = document.createElement("table");
+  table.className = "ivh-table crm-table";
+  var thead = document.createElement("thead");
+  var hr = document.createElement("tr");
+  ["Name", "Type", "Archived Date", "Actions"].forEach(function(h) {
+    var th = document.createElement("th"); th.textContent = h; hr.appendChild(th);
+  });
+  thead.appendChild(hr); table.appendChild(thead);
+  var tbody = document.createElement("tbody");
+  archived.forEach(function(c) {
+    var tr = document.createElement("tr");
+    var tdName = document.createElement("td");
+    tdName.textContent = c.company || c.name || "Unnamed";
+    tdName.style.cursor = "pointer";
+    tdName.onclick = function() { openCrmDetailView(c.id); };
+    tr.appendChild(tdName);
+    var tdType = document.createElement("td"); tdType.textContent = c.type || ""; tr.appendChild(tdType);
+    var tdDate = document.createElement("td"); tdDate.textContent = c.archivedDate ? formatDate(c.archivedDate) : "—"; tr.appendChild(tdDate);
+    var tdActions = document.createElement("td");
+    var restoreBtn = document.createElement("button");
+    restoreBtn.textContent = "Restore";
+    restoreBtn.style.cssText = "padding:4px 10px;border:1px solid #0e413b;border-radius:4px;background:none;color:#0e413b;cursor:pointer;font-size:12px;margin-right:8px";
+    restoreBtn.onclick = function() {
+      if (!confirm("Restore " + (c.company || c.name) + " to active contacts?")) return;
+      c.stage = "prospect"; c.archivedDate = "";
+      renderCrmActiveView(); saveDataCache();
+      crmApiPost({ action: "update", contact: { id: c.id, stage: "prospect", archivedDate: "" } });
+    };
+    tdActions.appendChild(restoreBtn);
+    var deleteBtn = document.createElement("button");
+    deleteBtn.textContent = "Delete";
+    deleteBtn.style.cssText = "padding:4px 10px;border:1px solid #c5221f;border-radius:4px;background:none;color:#c5221f;cursor:pointer;font-size:12px";
+    deleteBtn.onclick = function() {
+      if (!confirm("Permanently delete " + (c.company || c.name) + "? This cannot be undone.")) return;
+      crmContacts = crmContacts.filter(function(x) { return x.id !== c.id; });
+      renderCrmActiveView(); saveDataCache();
+      crmApiPost({ action: "delete", id: c.id, itemName: c.company || c.name });
+    };
+    tdActions.appendChild(deleteBtn);
+    tr.appendChild(tdActions);
+    tbody.appendChild(tr);
+  });
+  table.appendChild(tbody); list.appendChild(table);
 }
 
 function renderCrmContacts() {
@@ -9292,7 +9353,7 @@ function openCrmEditModal(contactId) {
   document.getElementById("crm-modal-socialmedia").value = c.socialMedia || "";
   document.getElementById("crm-modal-connected").value = c.connectedDate || "";
   document.getElementById("crm-modal-lastcontact").value = c.lastContactDate || "";
-  document.getElementById("crm-modal-delete-btn").style.display = "inline-block";
+  document.getElementById("crm-modal-delete-btn").style.display = "none";
   document.getElementById("crm-modal-wholesale").value = c.wholesalePercent || "";
   document.getElementById("crm-modal-consignment").value = c.consignmentPercent || "";
   document.getElementById("crm-modal-connector-fee").value = c.connectorFeePercent || "";
@@ -9668,12 +9729,38 @@ function openCrmDetailView(contactId) {
   menuDivider.style.cssText = "height:1px;background:#e0e0e0;margin:4px 0";
   moreMenu.appendChild(menuDivider);
 
-  // Delete
-  var deleteItem = document.createElement("button");
-  deleteItem.className = "crm-detail-more-menu-item danger";
-  deleteItem.textContent = "Delete Contact";
-  deleteItem.onclick = function() { moreMenu.classList.remove("open"); deleteCrmContactConfirm(); };
-  moreMenu.appendChild(deleteItem);
+  // Archive or Delete (only show Delete for already-archived contacts)
+  if (c.stage === "archived") {
+    var restoreItem = document.createElement("button");
+    restoreItem.className = "crm-detail-more-menu-item";
+    restoreItem.textContent = "Restore Contact";
+    restoreItem.onclick = function() {
+      moreMenu.classList.remove("open");
+      if (!confirm("Restore " + (c.company || c.name) + " to active contacts?")) return;
+      crmContacts.forEach(function(x) { if (x.id === contactId) { x.stage = "prospect"; x.archivedDate = ""; } });
+      closeCrmModal(); renderCrmActiveView(); saveDataCache();
+      crmApiPost({ action: "update", contact: { id: contactId, stage: "prospect", archivedDate: "" } });
+    };
+    moreMenu.appendChild(restoreItem);
+    var deleteItem = document.createElement("button");
+    deleteItem.className = "crm-detail-more-menu-item danger";
+    deleteItem.textContent = "Delete Permanently";
+    deleteItem.onclick = function() { moreMenu.classList.remove("open"); deleteCrmContactConfirm(); };
+    moreMenu.appendChild(deleteItem);
+  } else {
+    var archiveItem = document.createElement("button");
+    archiveItem.className = "crm-detail-more-menu-item danger";
+    archiveItem.textContent = "Archive Contact";
+    archiveItem.onclick = function() {
+      moreMenu.classList.remove("open");
+      var name = c.company || c.name || "this contact";
+      if (!confirm("Archive " + name + "? They will be moved to the Archived tab.")) return;
+      crmContacts.forEach(function(x) { if (x.id === contactId) { x.stage = "archived"; x.archivedDate = new Date().toISOString(); } });
+      closeCrmModal(); renderCrmActiveView(); saveDataCache();
+      crmApiPost({ action: "update", contact: { id: contactId, stage: "archived", archivedDate: new Date().toISOString() } });
+    };
+    moreMenu.appendChild(archiveItem);
+  }
   moreWrap.appendChild(moreMenu);
   moreBtn.onclick = function(e) { e.stopPropagation(); moreMenu.classList.toggle("open"); };
   if (_crmMoreMenuCleanup) { document.removeEventListener("click", _crmMoreMenuCleanup); }
@@ -13288,7 +13375,7 @@ function switchToCrmEditMode(contactId) {
   document.getElementById("crm-modal-socialmedia").value = c.socialMedia || "";
   document.getElementById("crm-modal-connected").value = c.connectedDate || "";
   document.getElementById("crm-modal-lastcontact").value = c.lastContactDate || "";
-  document.getElementById("crm-modal-delete-btn").style.display = "inline-block";
+  document.getElementById("crm-modal-delete-btn").style.display = "none";
   document.getElementById("crm-modal-wholesale").value = c.wholesalePercent || "";
   document.getElementById("crm-modal-consignment").value = c.consignmentPercent || "";
   document.getElementById("crm-modal-connector-fee").value = c.connectorFeePercent || "";
