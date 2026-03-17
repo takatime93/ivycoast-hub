@@ -178,6 +178,65 @@
 .ivh-icon-md { width: 18px; height: 18px; font-size: 14px; }
 .ivh-icon-lg { width: 24px; height: 24px; font-size: 18px; }
 
+/* ── Empty-state text ── */
+.ivh-empty { font-size: 13px; color: #80868b; margin: 0; }
+.ivh-empty-sm { font-family: var(--font-body); font-size: 12px; color: var(--color-text-disabled); padding: 8px 0; }
+
+/* ── Links ── */
+.ivh-link { color: #0e413b; text-decoration: none; }
+
+/* ── Avatars ── */
+.ivh-avatar-40 { width: 40px; height: 40px; border-radius: 50%; background: #e8e8e8; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; color: #497871; flex-shrink: 0; overflow: hidden; }
+.ivh-peer-avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--color-primary-tint); color: var(--color-primary); font-family: var(--font-display); font-size: 12px; font-weight: 600; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+
+/* ── Peer row helpers ── */
+.ivh-peer-info { flex: 1; min-width: 0; }
+.ivh-peer-name { font-family: var(--font-text); font-size: 14px; font-weight: 600; color: var(--color-text-heading); }
+.ivh-peer-sub { font-family: var(--font-body); font-size: 12px; color: var(--color-text-subtle); }
+
+/* ── Image cover ── */
+.ivh-img-cover { width: 100%; height: 100%; object-fit: cover; }
+
+/* ── Menu divider ── */
+.ivh-divider { height: 1px; background: #e0e0e0; margin: 4px 0; }
+
+/* ── Form input base ── */
+.ivh-form-input { width: 100%; padding: 6px 8px; border: 1px solid #dadce0; border-radius: 6px; font-size: 13px; font-family: inherit; }
+
+/* ── Flex info column ── */
+.ivh-info-col { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+
+/* ── Section label (uppercase) ── */
+.ivh-section-label { font-size: 12px; color: #5f6368; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 8px; }
+
+/* ── Linked-document card ── */
+.ivh-doc-card { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: #f8f9fa; border: 1px solid #ebebeb; border-radius: 8px; margin-bottom: 8px; cursor: pointer; }
+.ivh-doc-title { font-weight: 600; font-size: 14px; color: #202124; }
+.ivh-doc-meta { font-size: 12px; color: #5f6368; margin-top: 2px; }
+
+/* ── Stat value / label ── */
+.ivh-stat-val { font-size: 14px; font-weight: 700; color: #000; }
+.ivh-stat-lbl { font-size: 10px; color: #606060; }
+
+/* ── Mono badges ── */
+.ivh-badge-primary { font-family: var(--font-mono); font-size: 10px; background: var(--color-primary-tint); color: var(--color-primary); border: 1px solid rgba(14,65,59,.15); border-radius: 2px; padding: 1px 5px; letter-spacing: -0.3px; }
+.ivh-badge-role { font-family: var(--font-mono); font-size: 10px; background: var(--color-surface-tertiary); color: var(--color-text-secondary); border-radius: 2px; padding: 1px 5px; letter-spacing: -0.3px; }
+
+/* ── Stock chip ── */
+.ivh-stock-chip { display: flex; align-items: center; gap: 2px; font-size: 10px; color: #3e3e3e; }
+
+/* ── Logo image (invoice/receipt preview) ── */
+.ivh-logo-img { height: 42px; width: auto; }
+
+/* ── Remove button (line items) ── */
+.ivh-remove-btn { background: none; border: none; font-size: 18px; color: #d93025; cursor: pointer; }
+
+/* ── Small outline action button ── */
+.ivh-btn-outline-sm { background: none; border: 1px solid #dadce0; border-radius: 4px; padding: 3px 8px; font-size: 12px; cursor: pointer; font-family: inherit; }
+
+/* ── Outline action button (CRM) ── */
+.ivh-btn-outline { background: none; border: 1px solid var(--color-border); border-radius: 6px; padding: 4px 8px; cursor: pointer; }
+
 body { font-family: var(--font-body); background: var(--color-surface); color: var(--color-text); line-height: var(--leading-normal); }
 
 /* Header */
@@ -8848,7 +8907,7 @@ function _renderCrmContactsFromPeople(wrap, empty) {
       var a = document.createElement("a");
       a.href = "mailto:" + cp.email;
       a.textContent = cp.email;
-      a.style.cssText = "color:#0e413b;text-decoration:none";
+      a.className = "ivh-link";
       a.addEventListener("click", function(e) { e.stopPropagation(); });
       tdEmail.appendChild(a);
     } else {
@@ -8916,7 +8975,7 @@ function _renderCrmContactsLegacy(wrap, empty) {
       var a = document.createElement("a");
       a.href = "mailto:" + displayEmail;
       a.textContent = displayEmail;
-      a.style.cssText = "color:#0e413b;text-decoration:none;";
+      a.className = "ivh-link";
       a.addEventListener("click", function(e) { e.stopPropagation(); });
       tdEmail.appendChild(a);
     } else { tdEmail.textContent = "\u2014"; }
@@ -9032,7 +9091,7 @@ function _renderCrmVendorTable(container, contacts) {
       wLink.target = "_blank";
       wLink.rel = "noopener";
       wLink.textContent = c.website.replace(/^https?:\/\//, "").replace(/\/$/, "");
-      wLink.style.cssText = "color:#0e413b;text-decoration:none;font-size:12px;";
+      wLink.className = "ivh-link"; wLink.style.fontSize = "12px";
       wLink.addEventListener("click", function(e) { e.stopPropagation(); });
       tdWeb.appendChild(wLink);
     } else { tdWeb.textContent = "\u2014"; }
@@ -9042,7 +9101,7 @@ function _renderCrmVendorTable(container, contacts) {
       var a = document.createElement("a");
       a.href = "mailto:" + c.email;
       a.textContent = c.email;
-      a.style.cssText = "color:#0e413b;text-decoration:none;";
+      a.className = "ivh-link";
       a.addEventListener("click", function(e) { e.stopPropagation(); });
       tdEmail.appendChild(a);
     } else { tdEmail.textContent = "\u2014"; }
@@ -10222,7 +10281,7 @@ function _ivhAvatar(name, imageUrl, size) {
     var img = document.createElement("img");
     img.src = imageUrl;
     img.alt = name || "";
-    img.style.cssText = "width:100%;height:100%;object-fit:cover";
+    img.className = "ivh-img-cover";
     img.onerror = function() { el.removeChild(img); el.textContent = (name || "?").charAt(0).toUpperCase(); };
     el.appendChild(img);
   } else {
@@ -10432,7 +10491,7 @@ function openCrmDetailView(contactId) {
 
   // Divider before stage
   var editDivider = document.createElement("div");
-  editDivider.style.cssText = "height:1px;background:#e0e0e0;margin:4px 0";
+  editDivider.className = "ivh-divider";
   moreMenu.appendChild(editDivider);
 
   // Vendor Stage item with submenu
@@ -10490,7 +10549,7 @@ function openCrmDetailView(contactId) {
 
   // Divider
   var menuDivider = document.createElement("div");
-  menuDivider.style.cssText = "height:1px;background:#e0e0e0;margin:4px 0";
+  menuDivider.className = "ivh-divider";
   moreMenu.appendChild(menuDivider);
 
   // Archive or Delete (only show Delete for already-archived contacts)
@@ -11153,7 +11212,7 @@ function _renderAnalyticsSection(panel, c, contactId, matchedOrders, totalSpent,
         });
         if (connectedShops.length > 4) {
           var moreRow = document.createElement("div"); moreRow.className = "stat-product-row";
-          var moreText = document.createElement("span"); moreText.style.cssText = "font-size:10px;color:#606060";
+          var moreText = document.createElement("span"); moreText.className = "ivh-stat-lbl";
           moreText.textContent = "+" + (connectedShops.length - 4) + " more";
           moreRow.appendChild(moreText);
           shopList.appendChild(moreRow);
@@ -11635,11 +11694,11 @@ function _renderShopsConnected(section, connectedShops, contactId, tabsBar) {
       card.onclick = (function(id) { return function() { openCrmDetailView(id); }; })(shop.id);
       // Avatar
       var av = document.createElement("div");
-      av.style.cssText = "width:40px;height:40px;border-radius:50%;background:#e8e8e8;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;color:#497871;flex-shrink:0";
+      av.className = "ivh-avatar-40";
       if (shop.profileImageUrl) {
         var avImg = document.createElement("img");
         avImg.src = shop.profileImageUrl;
-        avImg.style.cssText = "width:100%;height:100%;object-fit:cover;border-radius:50%";
+        avImg.className = "ivh-img-cover"; avImg.style.borderRadius = "50%";
         av.appendChild(avImg);
       } else {
         av.textContent = (shop.company || shop.name || "?").substring(0, 2).toUpperCase();
@@ -11647,7 +11706,7 @@ function _renderShopsConnected(section, connectedShops, contactId, tabsBar) {
       card.appendChild(av);
       // Info (left)
       var info = document.createElement("div");
-      info.style.cssText = "flex:1;min-width:0;display:flex;flex-direction:column;gap:2px";
+      info.className = "ivh-info-col"; info.style.gap = "2px";
       var nm = document.createElement("div");
       nm.style.cssText = "font-size:13px;font-weight:700;color:#000";
       nm.textContent = shop.company || shop.name || "Unnamed";
@@ -11671,7 +11730,7 @@ function _renderShopsConnected(section, connectedShops, contactId, tabsBar) {
         });
         if (soapCount) {
           var soapChip = document.createElement("span");
-          soapChip.style.cssText = "display:flex;align-items:center;gap:2px;font-size:10px;color:#3e3e3e";
+          soapChip.className = "ivh-stock-chip";
           var soapIcon = document.createElement("span");
           soapIcon.className = "ivh-icon"; soapIcon.style.fontWeight = "400"; soapIcon.style.fontSize = "10px";
           soapIcon.textContent = "\ue06e";
@@ -11681,7 +11740,7 @@ function _renderShopsConnected(section, connectedShops, contactId, tabsBar) {
         }
         if (candleCount) {
           var candleChip = document.createElement("span");
-          candleChip.style.cssText = "display:flex;align-items:center;gap:2px;font-size:10px;color:#3e3e3e";
+          candleChip.className = "ivh-stock-chip";
           var candleIcon = document.createElement("span");
           candleIcon.className = "ivh-icon"; candleIcon.style.fontWeight = "400"; candleIcon.style.fontSize = "10px";
           candleIcon.textContent = "\uf6bc";
@@ -11711,21 +11770,21 @@ function _renderShopsConnected(section, connectedShops, contactId, tabsBar) {
       stats.style.cssText = "display:flex;flex-direction:column;gap:6px;text-align:right;flex-shrink:0";
       var s1 = document.createElement("div");
       var s1Val = document.createElement("div");
-      s1Val.style.cssText = "font-size:14px;font-weight:700;color:#000";
+      s1Val.className = "ivh-stat-val";
       s1Val.textContent = "\u00A5" + monthSales.toLocaleString();
       s1.appendChild(s1Val);
       var s1Lbl = document.createElement("div");
-      s1Lbl.style.cssText = "font-size:10px;color:#606060";
+      s1Lbl.className = "ivh-stat-lbl";
       s1Lbl.textContent = "Sales this month";
       s1.appendChild(s1Lbl);
       stats.appendChild(s1);
       var s2 = document.createElement("div");
       var s2Val = document.createElement("div");
-      s2Val.style.cssText = "font-size:14px;font-weight:700;color:#000";
+      s2Val.className = "ivh-stat-val";
       s2Val.textContent = "\u00A5" + totalSales.toLocaleString();
       s2.appendChild(s2Val);
       var s2Lbl = document.createElement("div");
-      s2Lbl.style.cssText = "font-size:10px;color:#606060";
+      s2Lbl.className = "ivh-stat-lbl";
       s2Lbl.textContent = "Total sales";
       s2.appendChild(s2Lbl);
       stats.appendChild(s2);
@@ -12030,18 +12089,18 @@ function renderCrmOverviewTab(c, panel, contactId, tabsBar) {
       var card = document.createElement("div");
       card.style.cssText = "display:flex;align-items:center;gap:8px;padding:12px;border:1px solid #e3e3e3;border-radius:8px;background:#fff;cursor:pointer";
       var av = document.createElement("div");
-      av.style.cssText = "width:40px;height:40px;border-radius:50%;background:#e8e8e8;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;color:#497871;flex-shrink:0;overflow:hidden";
+      av.className = "ivh-avatar-40";
       if (p.profileImageUrl) {
         var img = document.createElement("img");
         img.src = p.profileImageUrl;
-        img.style.cssText = "width:100%;height:100%;object-fit:cover";
+        img.className = "ivh-img-cover";
         av.appendChild(img);
       } else {
         av.textContent = ((p.firstName || "")[0] || "") + ((p.lastName || "")[0] || "");
       }
       card.appendChild(av);
       var info = document.createElement("div");
-      info.style.cssText = "flex:1;min-width:0;display:flex;flex-direction:column;gap:1px";
+      info.className = "ivh-info-col"; info.style.gap = "1px";
       var nameRow = document.createElement("div");
       nameRow.style.cssText = "display:flex;align-items:center;gap:6px";
       var nm = document.createElement("span");
@@ -12201,7 +12260,7 @@ function renderCrmPeopleSection(c, panel, contactId) {
     listEl.textContent = "";
     if (!people.length) {
       var empty = document.createElement("p");
-      empty.style.cssText = "font-size:13px;color:#80868b;margin:0;";
+      empty.className = "ivh-empty";
       empty.textContent = "No people added yet";
       listEl.appendChild(empty);
       return;
@@ -12534,7 +12593,7 @@ function renderCrmNotesSection(c, panel, contactId) {
     timeline.textContent = "";
     if (!notes.length) {
       var empty = document.createElement("p");
-      empty.style.cssText = "font-size:13px;color:#80868b;margin:0;padding:20px 0;text-align:center;";
+      empty.className = "ivh-empty"; empty.style.padding = "20px 0"; empty.style.textAlign = "center";
       empty.textContent = "No notes yet";
       timeline.appendChild(empty);
       return;
@@ -12684,7 +12743,7 @@ function renderCrmTicketsSection(c, panel, contactId) {
 
     if (!tickets.length) {
       var empty = document.createElement("p");
-      empty.style.cssText = "font-size:13px;color:#80868b;margin:0;";
+      empty.className = "ivh-empty";
       empty.textContent = "No tasks yet";
       timeline.appendChild(empty);
       return;
@@ -12791,7 +12850,7 @@ function renderCrmActivitySection(c, panel, contactId) {
 
   if (!filtered.length) {
     var empty = document.createElement("p");
-    empty.style.cssText = "font-size:13px;color:#80868b;margin:0;";
+    empty.className = "ivh-empty";
     empty.textContent = "No activity recorded yet";
     timeline.appendChild(empty);
   } else {
@@ -13046,8 +13105,7 @@ function renderContactProfileEmbedded(contact, vendorRecord, bodyEl, contactId, 
   nameJaRow.textContent = contact.nameJa || contact.nameEn || "Unnamed";
   if (contact.isPrimary) {
     var primaryBadge = document.createElement("span");
-    primaryBadge.className = "crm-badge";
-    primaryBadge.style.cssText = "font-family:var(--font-mono);font-size:10px;background:var(--color-primary-tint);color:var(--color-primary);border:1px solid rgba(14,65,59,.15);border-radius:2px;padding:1px 5px";
+    primaryBadge.className = "crm-badge ivh-badge-primary";
     primaryBadge.textContent = "Primary Contact";
     nameJaRow.appendChild(primaryBadge);
   }
@@ -13071,8 +13129,7 @@ function renderContactProfileEmbedded(contact, vendorRecord, bodyEl, contactId, 
     var badges = document.createElement("div");
     badges.className = "contact-profile-badges";
     var roleBadge = document.createElement("span");
-    roleBadge.className = "crm-badge";
-    roleBadge.style.cssText = "font-family:var(--font-mono);font-size:10px;background:var(--color-surface-tertiary);color:var(--color-text-secondary);border-radius:2px;padding:1px 5px";
+    roleBadge.className = "crm-badge ivh-badge-role";
     var roleLabels = { PRIMARY: "Primary", SECONDARY: "Secondary", DECISION_MAKER: "Decision Maker", OPERATIONAL: "Operational" };
     roleBadge.textContent = roleLabels[contact.vendorRole] || contact.vendorRole;
     badges.appendChild(roleBadge);
@@ -13306,7 +13363,7 @@ function renderContactOverviewEmbedded(contact, derived, vendorRecord, panel, bo
     panel.appendChild(todoCard);
   } else {
     var emptyTodo = document.createElement("div");
-    emptyTodo.style.cssText = "font-family:var(--font-body);font-size:12px;color:var(--color-text-disabled);padding:8px 0";
+    emptyTodo.className = "ivh-empty-sm";
     emptyTodo.textContent = "No tasks yet";
     panel.appendChild(emptyTodo);
   }
@@ -13326,17 +13383,17 @@ function renderContactOverviewEmbedded(contact, derived, vendorRecord, panel, bo
       var peerRow = document.createElement("div");
       peerRow.className = "contact-peer-row";
       var peerAv = document.createElement("div");
-      peerAv.style.cssText = "width:36px;height:36px;border-radius:50%;background:var(--color-primary-tint);color:var(--color-primary);font-family:var(--font-display);font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0";
+      peerAv.className = "ivh-peer-avatar";
       peerAv.textContent = peer.initials || "??";
       peerRow.appendChild(peerAv);
       var peerInfo = document.createElement("div");
-      peerInfo.style.cssText = "flex:1;min-width:0";
+      peerInfo.className = "ivh-peer-info";
       var peerName = document.createElement("div");
-      peerName.style.cssText = "font-family:var(--font-text);font-size:14px;font-weight:600;color:var(--color-text-heading)";
+      peerName.className = "ivh-peer-name";
       peerName.textContent = peer.nameJa || peer.nameEn || "Unnamed";
       peerInfo.appendChild(peerName);
       var peerSub = document.createElement("div");
-      peerSub.style.cssText = "font-family:var(--font-body);font-size:12px;color:var(--color-text-subtle)";
+      peerSub.className = "ivh-peer-sub";
       var subParts = [];
       var roleLabels = { PRIMARY: "Primary", SECONDARY: "Secondary", DECISION_MAKER: "Decision Maker", OPERATIONAL: "Operational" };
       if (peer.vendorRole) subParts.push(roleLabels[peer.vendorRole] || peer.vendorRole);
@@ -13421,7 +13478,7 @@ function renderContactNotesTab(contact, panel, bodyEl, contactId, tabsBar, vendo
 
   if (notes.length === 0) {
     var empty = document.createElement("div");
-    empty.style.cssText = "font-family:var(--font-body);font-size:12px;color:var(--color-text-disabled);padding:8px 0";
+    empty.className = "ivh-empty-sm";
     empty.textContent = "No notes yet";
     panel.appendChild(empty);
   }
@@ -13452,7 +13509,7 @@ function renderContactActivityTab(contact, panel) {
 
   if (events.length === 0) {
     var empty = document.createElement("div");
-    empty.style.cssText = "font-family:var(--font-body);font-size:12px;color:var(--color-text-disabled);padding:8px 0";
+    empty.className = "ivh-empty-sm";
     empty.textContent = "No activity yet";
     panel.appendChild(empty);
     return;
@@ -13593,7 +13650,7 @@ function renderContactAttachmentsTab(contact, panel) {
 
   if (atts.length === 0 && !businessCards.length) {
     var empty = document.createElement("div");
-    empty.style.cssText = "font-family:var(--font-body);font-size:12px;color:var(--color-text-disabled);padding:8px 0";
+    empty.className = "ivh-empty-sm";
     empty.textContent = "No attachments yet";
     panel.insertBefore(empty, addFile);
   }
@@ -14107,7 +14164,7 @@ function renderContactProfileStandalone(contact, detailView, headerEl, bodyEl, t
 
   // ─── Header ───
   var headerWrap = document.createElement("div");
-  headerWrap.style.cssText = "display:flex;flex-direction:column";
+  headerWrap.className = "ivh-flex-col";
 
   // Back bar with actions
   var backBar = document.createElement("div");
@@ -14126,7 +14183,7 @@ function renderContactProfileStandalone(contact, detailView, headerEl, bodyEl, t
 
   // More menu (ellipsis)
   var moreBtn = document.createElement("button");
-  moreBtn.style.cssText = "background:none;border:1px solid var(--color-border);border-radius:6px;padding:4px 8px;cursor:pointer;position:relative";
+  moreBtn.className = "ivh-btn-outline"; moreBtn.style.position = "relative";
   moreBtn.appendChild(_crmFa6Icon("\uf141", 14, 400));
   var moreMenuOpen = false;
   var moreMenu = null;
@@ -14176,7 +14233,7 @@ function renderContactProfileStandalone(contact, detailView, headerEl, bodyEl, t
 
   // Close button
   var closeBtn = document.createElement("button");
-  closeBtn.style.cssText = "background:none;border:1px solid var(--color-border);border-radius:6px;padding:4px 8px;cursor:pointer";
+  closeBtn.className = "ivh-btn-outline";
   closeBtn.appendChild(_crmFa6Icon("\uf00d", 14, 300));
   closeBtn.onclick = function() {
     closeCrmModal();
@@ -14224,13 +14281,13 @@ function renderContactProfileStandalone(contact, detailView, headerEl, bodyEl, t
   badgeRow.style.cssText = "display:flex;gap:4px;margin-top:4px;flex-wrap:wrap;align-items:center";
   if (contact.isPrimary) {
     var primaryBadge = document.createElement("span");
-    primaryBadge.style.cssText = "font-family:var(--font-mono);font-size:10px;background:var(--color-primary-tint);color:var(--color-primary);border:1px solid rgba(14,65,59,.15);border-radius:2px;padding:1px 5px;letter-spacing:-0.3px";
+    primaryBadge.className = "ivh-badge-primary";
     primaryBadge.textContent = "Primary Contact";
     badgeRow.appendChild(primaryBadge);
   }
   if (vendor && vendor.type) {
     var typeBadge = document.createElement("span");
-    typeBadge.style.cssText = "font-family:var(--font-mono);font-size:10px;background:var(--color-surface-tertiary);color:var(--color-text-secondary);border-radius:2px;padding:1px 5px;letter-spacing:-0.3px";
+    typeBadge.className = "ivh-badge-role";
     typeBadge.textContent = _getVendorTypeLabel(vendor);
     badgeRow.appendChild(typeBadge);
   }
@@ -14651,7 +14708,7 @@ function _renderContactStandaloneOverview(contact, derived, vendor, panel, detai
     leftCol.appendChild(todoCard);
   } else {
     var emptyTodo = document.createElement("div");
-    emptyTodo.style.cssText = "font-family:var(--font-body);font-size:12px;color:var(--color-text-disabled);padding:8px 0";
+    emptyTodo.className = "ivh-empty-sm";
     emptyTodo.textContent = "No tasks yet";
     leftCol.appendChild(emptyTodo);
   }
@@ -14675,17 +14732,17 @@ function _renderContactStandaloneOverview(contact, derived, vendor, panel, detai
       var peerRow = document.createElement("div");
       peerRow.className = "contact-peer-row";
       var peerAv = document.createElement("div");
-      peerAv.style.cssText = "width:36px;height:36px;border-radius:50%;background:var(--color-primary-tint);color:var(--color-primary);font-family:var(--font-display);font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0";
+      peerAv.className = "ivh-peer-avatar";
       peerAv.textContent = peer.initials || "??";
       peerRow.appendChild(peerAv);
       var peerInfo = document.createElement("div");
-      peerInfo.style.cssText = "flex:1;min-width:0";
+      peerInfo.className = "ivh-peer-info";
       var peerName = document.createElement("div");
-      peerName.style.cssText = "font-family:var(--font-text);font-size:14px;font-weight:600;color:var(--color-text-heading)";
+      peerName.className = "ivh-peer-name";
       peerName.textContent = peer.nameJa || peer.nameEn || "Unnamed";
       peerInfo.appendChild(peerName);
       var peerSub = document.createElement("div");
-      peerSub.style.cssText = "font-family:var(--font-body);font-size:12px;color:var(--color-text-subtle)";
+      peerSub.className = "ivh-peer-sub";
       var subParts = [];
       var roleLabels = { PRIMARY: "Primary", SECONDARY: "Secondary", DECISION_MAKER: "Decision Maker", OPERATIONAL: "Operational" };
       if (peer.vendorRole) subParts.push(roleLabels[peer.vendorRole] || peer.vendorRole);
@@ -14836,7 +14893,7 @@ function renderCrmTeamTab(c, panel, contactId) {
     _teamMenuCleanups = [];
     if (!people.length) {
       var empty = document.createElement("p");
-      empty.style.cssText = "font-size:13px;color:#80868b;margin:0;padding:16px 0;";
+      empty.className = "ivh-empty"; empty.style.padding = "16px 0";
       empty.textContent = "No team members added yet";
       gridEl.appendChild(empty);
       return;
@@ -15695,7 +15752,7 @@ function renderCrmDocumentsTab(c, panel, contactId) {
     invSec.appendChild(invList);
   } else {
     var emptyInv = document.createElement("p");
-    emptyInv.style.cssText = "font-size:13px;color:#80868b;margin:0 0 4px;";
+    emptyInv.className = "ivh-empty"; emptyInv.style.marginBottom = "4px";
     emptyInv.textContent = "No invoices yet";
     invSec.appendChild(emptyInv);
   }
@@ -16479,14 +16536,14 @@ function renderDocuments() {
     if (row.invoice) {
       var prevBtn = document.createElement("button");
       prevBtn.textContent = "Preview";
-      prevBtn.style.cssText = "background:none;border:1px solid #dadce0;border-radius:4px;padding:3px 8px;font-size:12px;color:#0e413b;cursor:pointer;font-family:inherit;";
+      prevBtn.className = "ivh-btn-outline-sm"; prevBtn.style.color = "#0e413b";
       prevBtn.addEventListener("click", (function(inv) {
         return function(e) { e.stopPropagation(); previewInvoiceFromData(inv); };
       })(row.invoice));
       tdActions.appendChild(prevBtn);
       var dlBtn = document.createElement("button");
       dlBtn.textContent = "PDF";
-      dlBtn.style.cssText = "background:none;border:1px solid #dadce0;border-radius:4px;padding:3px 8px;font-size:12px;color:#5f6368;cursor:pointer;font-family:inherit;";
+      dlBtn.className = "ivh-btn-outline-sm"; dlBtn.style.color = "#5f6368";
       dlBtn.addEventListener("click", (function(inv) {
         return function(e) { e.stopPropagation(); downloadInvoicePdf(inv); };
       })(row.invoice));
@@ -17194,7 +17251,7 @@ function buildInvoicePreviewTo(page, data) {
   var logoImg = document.createElement("img");
   logoImg.src = "icons/logo.png";
   logoImg.alt = "IVYCOAST";
-  logoImg.style.cssText = "height:42px;width:auto;";
+  logoImg.className = "ivh-logo-img";
   header.appendChild(logoImg);
   var rightDiv = document.createElement("div");
   var numDiv = document.createElement("div");
@@ -18142,8 +18199,7 @@ function addReceiptLineItem(desc, qty, price) {
   var descInput = document.createElement("input");
   descInput.type = "text"; descInput.placeholder = "Product or service";
   descInput.value = desc || "";
-  descInput.style.cssText = "width:100%;padding:6px 8px;border:1px solid #dadce0;border-radius:6px;font-size:13px;font-family:inherit";
-  descInput.className = "rec-line-desc";
+  descInput.className = "rec-line-desc ivh-form-input";
   // Product autocomplete
   descInput.setAttribute("list", "inv-product-options");
   descInput.addEventListener("change", function() {
@@ -18156,14 +18212,12 @@ function addReceiptLineItem(desc, qty, price) {
   });
   var qtyInput = document.createElement("input");
   qtyInput.type = "number"; qtyInput.min = "1"; qtyInput.value = qty || "1";
-  qtyInput.style.cssText = "width:100%;padding:6px 8px;border:1px solid #dadce0;border-radius:6px;font-size:13px;font-family:inherit;text-align:center";
-  qtyInput.className = "rec-line-qty";
+  qtyInput.className = "rec-line-qty ivh-form-input"; qtyInput.style.textAlign = "center";
   qtyInput.oninput = recalcReceiptTotals;
   var priceInput = document.createElement("input");
   priceInput.type = "number"; priceInput.value = price || "";
   priceInput.placeholder = "0";
-  priceInput.style.cssText = "width:100%;padding:6px 8px;border:1px solid #dadce0;border-radius:6px;font-size:13px;font-family:inherit;text-align:right";
-  priceInput.className = "rec-line-price";
+  priceInput.className = "rec-line-price ivh-form-input"; priceInput.style.textAlign = "right";
   priceInput.oninput = recalcReceiptTotals;
 
   var td1 = document.createElement("td"); td1.appendChild(descInput);
@@ -18175,7 +18229,7 @@ function addReceiptLineItem(desc, qty, price) {
   var td5 = document.createElement("td");
   var removeBtn = document.createElement("button");
   removeBtn.type = "button"; removeBtn.textContent = "\u00d7";
-  removeBtn.style.cssText = "background:none;border:none;font-size:18px;color:#d93025;cursor:pointer";
+  removeBtn.className = "ivh-remove-btn";
   removeBtn.onclick = function() { tr.remove(); recalcReceiptTotals(); };
   td5.appendChild(removeBtn);
   tr.appendChild(td1); tr.appendChild(td2); tr.appendChild(td3); tr.appendChild(tdApplied); tr.appendChild(td4); tr.appendChild(tdNetAmt); tr.appendChild(td5);
@@ -18554,7 +18608,7 @@ function buildReceiptPreviewTo(page, data) {
   var logoImg = document.createElement("img");
   logoImg.src = "icons/logo.png";
   logoImg.alt = "IVYCOAST";
-  logoImg.style.cssText = "height:42px;width:auto;";
+  logoImg.className = "ivh-logo-img";
   header.appendChild(logoImg);
   var rightDiv = document.createElement("div");
   var numDiv = document.createElement("div");
@@ -20169,7 +20223,7 @@ function openOrderDetailModal(order) {
   if (order.lineItems) {
     var lbl2 = document.createElement("label");
     lbl2.textContent = "Items";
-    lbl2.style.cssText = "font-size:12px;color:#5f6368;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:8px";
+    lbl2.className = "ivh-section-label";
     itemsDiv.appendChild(lbl2);
 
     order.lineItems.split(";").forEach(function(item) {
@@ -20251,22 +20305,22 @@ function openOrderDetailModal(order) {
     docsDiv.style.display = "";
     var docsLabel = document.createElement("label");
     docsLabel.textContent = "Linked Documents";
-    docsLabel.style.cssText = "font-size:12px;color:#5f6368;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:8px";
+    docsLabel.className = "ivh-section-label";
     docsDiv.appendChild(docsLabel);
 
     if (linkedInv) {
       var invCard = document.createElement("div");
-      invCard.style.cssText = "display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#f8f9fa;border:1px solid #ebebeb;border-radius:8px;margin-bottom:8px;cursor:pointer";
+      invCard.className = "ivh-doc-card";
       invCard.onmouseover = function() { invCard.style.background = "#e8f0ee"; };
       invCard.onmouseout = function() { invCard.style.background = "#f8f9fa"; };
       invCard.onclick = function() { closeOrderDetailModal(); openInvoiceEditModal(linkedInv.id); };
       var invLeft = document.createElement("div");
       var invNum = document.createElement("div");
-      invNum.style.cssText = "font-weight:600;font-size:14px;color:#202124";
+      invNum.className = "ivh-doc-title";
       invNum.textContent = linkedInv.invoiceNumber || "Invoice";
       invLeft.appendChild(invNum);
       var invMeta = document.createElement("div");
-      invMeta.style.cssText = "font-size:12px;color:#5f6368;margin-top:2px";
+      invMeta.className = "ivh-doc-meta";
       var invParts = [];
       if (linkedInv.date) invParts.push(linkedInv.date);
       if (linkedInv.grandTotal) invParts.push("\u00A5" + Number(linkedInv.grandTotal).toLocaleString());
@@ -20282,17 +20336,17 @@ function openOrderDetailModal(order) {
 
     if (linkedRec) {
       var recCard = document.createElement("div");
-      recCard.style.cssText = "display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#f8f9fa;border:1px solid #ebebeb;border-radius:8px;margin-bottom:8px;cursor:pointer";
+      recCard.className = "ivh-doc-card";
       recCard.onmouseover = function() { recCard.style.background = "#e8f0ee"; };
       recCard.onmouseout = function() { recCard.style.background = "#f8f9fa"; };
       recCard.onclick = function() { closeOrderDetailModal(); openReceiptEditModal(linkedRec.id); };
       var recLeft = document.createElement("div");
       var recNum = document.createElement("div");
-      recNum.style.cssText = "font-weight:600;font-size:14px;color:#202124";
+      recNum.className = "ivh-doc-title";
       recNum.textContent = linkedRec.receiptNumber || "Receipt";
       recLeft.appendChild(recNum);
       var recMeta = document.createElement("div");
-      recMeta.style.cssText = "font-size:12px;color:#5f6368;margin-top:2px";
+      recMeta.className = "ivh-doc-meta";
       var recParts = [];
       if (linkedRec.date) recParts.push(linkedRec.date);
       if (linkedRec.grandTotal) recParts.push("\u00A5" + Number(linkedRec.grandTotal).toLocaleString());
@@ -20480,7 +20534,7 @@ function addManualOrderLineItem() {
   var tdDel = document.createElement("td");
   var delBtn = document.createElement("button");
   delBtn.textContent = "\u00D7";
-  delBtn.style.cssText = "background:none;border:none;color:#d93025;font-size:16px;cursor:pointer;padding:2px 6px;";
+  delBtn.className = "ivh-remove-btn"; delBtn.style.fontSize = "16px"; delBtn.style.padding = "2px 6px";
   delBtn.addEventListener("click", function() { tr.remove(); recalcManualOrderTotal(); });
   tdDel.appendChild(delBtn);
   tr.appendChild(tdDel);

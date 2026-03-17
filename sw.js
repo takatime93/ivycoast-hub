@@ -1,4 +1,4 @@
-var CACHE_NAME = "ivyhub-v3";
+var CACHE_NAME = "ivyhub-v4";
 var STATIC_ASSETS = [
   "/ivycoast-hub/",
   "/ivycoast-hub/index.html",
