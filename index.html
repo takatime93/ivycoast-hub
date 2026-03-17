@@ -2161,6 +2161,155 @@ body.crm-panel-open { overflow: hidden; }
 .inv-product-option .inv-prod-name { color: var(--color-text-heading); }
 .inv-product-option .inv-prod-price { color: var(--color-text-secondary); font-size: var(--text-tab); white-space: nowrap; margin-left: 8px; }
 
+/* Searchable Contact Dropdown */
+.inv-contact-search-wrap { position: relative; }
+.inv-contact-search-input {
+  width: 100%;
+  padding: 8px 10px 8px 30px;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  font-size: var(--text-md);
+  font-family: inherit;
+  background: var(--color-surface);
+  box-sizing: border-box;
+}
+.inv-contact-search-input:focus { border-color: var(--color-primary); outline: none; }
+.inv-contact-search-icon {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--color-text-secondary);
+  font-size: 13px;
+  pointer-events: none;
+}
+.inv-contact-search-clear {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--color-text-secondary);
+  font-size: 16px;
+  cursor: pointer;
+  padding: 2px 4px;
+  line-height: 1;
+  display: none;
+}
+.inv-contact-search-clear.visible { display: block; }
+.inv-contact-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  margin-top: 4px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  max-height: 280px;
+  overflow-y: auto;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.14);
+  z-index: 310;
+  display: none;
+  padding: 4px 0;
+}
+.inv-contact-dropdown.open { display: block; }
+.inv-contact-group-label {
+  padding: 6px 12px 4px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.inv-contact-option {
+  padding: 7px 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.inv-contact-option:hover,
+.inv-contact-option.active { background: var(--color-surface-tertiary); }
+.inv-contact-option-info { flex: 1; min-width: 0; }
+.inv-contact-option-name { font-size: var(--text-md); font-weight: 500; color: var(--color-text-heading); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.inv-contact-option-company { font-size: 12px; color: var(--color-text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.inv-contact-badge {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 4px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.inv-contact-badge.wholesale { background: #e8f0fe; color: #1a73e8; }
+.inv-contact-badge.consignment { background: #fef7e0; color: #e37400; }
+.inv-contact-option-new {
+  padding: 8px 12px;
+  cursor: pointer;
+  font-size: var(--text-md);
+  font-weight: 500;
+  color: var(--color-primary);
+  border-top: 1px solid var(--color-border-light);
+}
+.inv-contact-option-new:hover { background: var(--color-surface-tertiary); }
+
+/* Quick Add Product Panel */
+.inv-quick-add-wrap { margin-bottom: 8px; }
+.inv-quick-add-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  background: none;
+  border: 1px solid var(--color-border-light);
+  border-radius: 6px;
+  font-size: 12px;
+  font-family: inherit;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  margin-bottom: 6px;
+}
+.inv-quick-add-toggle:hover { background: var(--color-surface-tertiary); }
+.inv-quick-add-panel {
+  display: none;
+  padding: 8px 0;
+}
+.inv-quick-add-panel.open { display: block; }
+.inv-quick-add-section-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
+  margin-top: 4px;
+}
+.inv-quick-add-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+.inv-quick-add-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  background: var(--color-surface-secondary);
+  border: 1px solid var(--color-border-light);
+  border-radius: 6px;
+  font-size: 12px;
+  font-family: inherit;
+  cursor: pointer;
+  color: var(--color-text-heading);
+  white-space: nowrap;
+  transition: background 0.15s;
+}
+.inv-quick-add-chip:hover { background: var(--color-primary-tint, #e6eeec); border-color: var(--color-primary); }
+.inv-quick-add-chip-price { color: var(--color-text-secondary); font-size: 11px; }
+
 /* Manual Order Discount Cell */
 .mo-discount-cell { display: flex; align-items: center; gap: 2px; }
 .mo-discount-cell input { width: 52px; border: 1px solid var(--color-border); border-radius: 4px; padding: 6px 4px; font-size: var(--text-md); text-align: right; font-family: inherit; }
@@ -5912,10 +6061,14 @@ select.contact-edit-input { appearance: auto; cursor: pointer; }
 
     <div class="inv-field-row">
       <div>
-        <label for="inv-modal-contact">Vendor / Contact</label>
-        <select id="inv-modal-contact" onchange="onInvoiceContactChange()">
-          <option value="">-- Select Contact --</option>
-        </select>
+        <label for="inv-contact-search">Vendor / Contact</label>
+        <div class="inv-contact-search-wrap" id="inv-contact-search-wrap">
+          <span class="inv-contact-search-icon"><i class="fa-light fa-magnifying-glass"></i></span>
+          <input type="text" id="inv-contact-search" class="inv-contact-search-input" placeholder="Search contacts..." autocomplete="off">
+          <button type="button" class="inv-contact-search-clear" id="inv-contact-search-clear">&times;</button>
+          <input type="hidden" id="inv-modal-contact" value="">
+          <div class="inv-contact-dropdown" id="inv-contact-dropdown"></div>
+        </div>
       </div>
       <div>
         <label for="inv-modal-workspace">Workspace</label>
@@ -5990,7 +6143,11 @@ select.contact-edit-input { appearance: auto; cursor: pointer; }
       </div>
     </div>
 
-    <label>Line Items</label>
+    <div class="inv-quick-add-wrap" id="inv-quick-add-wrap">
+      <label>Line Items</label>
+      <button type="button" class="inv-quick-add-toggle" id="inv-quick-add-toggle" onclick="toggleInvQuickAdd()">Quick Add <span id="inv-quick-add-arrow">&#9662;</span></button>
+      <div class="inv-quick-add-panel" id="inv-quick-add-panel"></div>
+    </div>
     <table class="inv-line-items">
       <thead>
         <tr>
@@ -6103,9 +6260,13 @@ select.contact-edit-input { appearance: auto; cursor: pointer; }
       <div class="inv-field-row">
         <div>
           <label>Or from Contact</label>
-          <select id="rec-from-contact" onchange="onRecFromContactChange()">
-            <option value="">-- None --</option>
-          </select>
+          <div class="inv-contact-search-wrap" id="rec-contact-search-wrap">
+            <span class="inv-contact-search-icon"><i class="fa-light fa-magnifying-glass"></i></span>
+            <input type="text" id="rec-contact-search" class="inv-contact-search-input" placeholder="Search contacts..." autocomplete="off">
+            <button type="button" class="inv-contact-search-clear" id="rec-contact-search-clear">&times;</button>
+            <input type="hidden" id="rec-from-contact" value="">
+            <div class="inv-contact-dropdown" id="rec-contact-dropdown"></div>
+          </div>
         </div>
         <div></div>
       </div>
@@ -6173,7 +6334,11 @@ select.contact-edit-input { appearance: auto; cursor: pointer; }
       </div>
     </div>
 
-    <label>Line Items</label>
+    <div class="inv-quick-add-wrap" id="rec-quick-add-wrap">
+      <label>Line Items</label>
+      <button type="button" class="inv-quick-add-toggle" id="rec-quick-add-toggle" onclick="toggleRecQuickAdd()">Quick Add <span id="rec-quick-add-arrow">&#9662;</span></button>
+      <div class="inv-quick-add-panel" id="rec-quick-add-panel"></div>
+    </div>
     <table class="inv-line-items">
       <thead>
         <tr>
@@ -16643,6 +16808,362 @@ function onInvoiceContactChange() {
   }
 }
 
+// ── Searchable Contact Dropdown ──────────────────────────────
+// Reusable for both invoice and receipt modals
+
+function getRecentInvoiceContacts(limit) {
+  limit = limit || 5;
+  var seen = {};
+  var recent = [];
+  var sortedInvoices = (typeof invoices !== "undefined" ? invoices : []).slice().sort(function(a, b) {
+    return (b.updatedAt || b.createdAt || "").localeCompare(a.updatedAt || a.createdAt || "");
+  });
+  for (var i = 0; i < sortedInvoices.length && recent.length < limit; i++) {
+    var inv = sortedInvoices[i];
+    if (inv.contactId && !seen[inv.contactId]) {
+      seen[inv.contactId] = true;
+      var c = (typeof crmContacts !== "undefined" ? crmContacts : []).find(function(x) { return x.id === inv.contactId; });
+      if (c) recent.push(c);
+    }
+  }
+  return recent;
+}
+
+function renderContactDropdownItems(dropdown, contacts, groupLabel, activeIndex, startIndex, onSelect) {
+  if (!contacts.length) return startIndex;
+  var label = document.createElement("div");
+  label.className = "inv-contact-group-label";
+  label.textContent = groupLabel;
+  dropdown.appendChild(label);
+  contacts.forEach(function(c, i) {
+    var idx = startIndex + i;
+    var opt = document.createElement("div");
+    opt.className = "inv-contact-option";
+    if (idx === activeIndex) opt.classList.add("active");
+    opt.dataset.index = idx;
+    opt.dataset.contactId = c.id;
+    var info = document.createElement("div");
+    info.className = "inv-contact-option-info";
+    var nameEl = document.createElement("div");
+    nameEl.className = "inv-contact-option-name";
+    nameEl.textContent = c.name || "";
+    info.appendChild(nameEl);
+    if (c.company) {
+      var compEl = document.createElement("div");
+      compEl.className = "inv-contact-option-company";
+      compEl.textContent = c.company;
+      info.appendChild(compEl);
+    }
+    opt.appendChild(info);
+    // Badge for pricing type
+    if (c.wholesalePercent) {
+      var badge = document.createElement("span");
+      badge.className = "inv-contact-badge wholesale";
+      badge.textContent = "W " + c.wholesalePercent + "%";
+      opt.appendChild(badge);
+    } else if (c.consignmentPercent) {
+      var badge = document.createElement("span");
+      badge.className = "inv-contact-badge consignment";
+      badge.textContent = "C " + c.consignmentPercent + "%";
+      opt.appendChild(badge);
+    }
+    opt.addEventListener("mousedown", function(e) {
+      e.preventDefault();
+      onSelect(c);
+    });
+    dropdown.appendChild(opt);
+  });
+  return startIndex + contacts.length;
+}
+
+function initContactSearch(config) {
+  // config: { inputId, clearBtnId, dropdownId, hiddenId, onSelect, prefix }
+  var input = document.getElementById(config.inputId);
+  var clearBtn = document.getElementById(config.clearBtnId);
+  var dropdown = document.getElementById(config.dropdownId);
+  var hidden = document.getElementById(config.hiddenId);
+  if (!input || !dropdown) return;
+
+  var ddIndex = -1;
+  var isOpen = false;
+
+  function getFilteredContacts(query) {
+    var contacts = (typeof crmContacts !== "undefined" ? crmContacts : []);
+    if (!query) return contacts;
+    var q = query.toLowerCase();
+    return contacts.filter(function(c) {
+      return (c.name && c.name.toLowerCase().indexOf(q) !== -1) ||
+             (c.company && c.company.toLowerCase().indexOf(q) !== -1) ||
+             (c.email && c.email.toLowerCase().indexOf(q) !== -1);
+    });
+  }
+
+  function render(query) {
+    dropdown.textContent = "";
+    ddIndex = -1;
+    var recent = getRecentInvoiceContacts(5);
+    var filtered = getFilteredContacts(query);
+    var nextIdx = 0;
+
+    // Show recent section only when no query
+    if (!query && recent.length) {
+      nextIdx = renderContactDropdownItems(dropdown, recent, "Recent", ddIndex, nextIdx, selectContact);
+    }
+
+    // Filter out recent from all contacts if showing both
+    var allContacts = filtered;
+    if (!query && recent.length) {
+      var recentIds = {};
+      recent.forEach(function(c) { recentIds[c.id] = true; });
+      allContacts = filtered.filter(function(c) { return !recentIds[c.id]; });
+    }
+
+    if (allContacts.length) {
+      var label = query ? "Results" : "All Contacts";
+      nextIdx = renderContactDropdownItems(dropdown, allContacts.slice(0, 20), label, ddIndex, nextIdx, selectContact);
+    }
+
+    if (!filtered.length && query) {
+      var empty = document.createElement("div");
+      empty.className = "inv-contact-group-label";
+      empty.textContent = "No contacts found";
+      dropdown.appendChild(empty);
+    }
+
+    // + New Contact option at bottom
+    var newOpt = document.createElement("div");
+    newOpt.className = "inv-contact-option-new";
+    newOpt.dataset.index = nextIdx;
+    newOpt.textContent = "+ New Contact";
+    newOpt.addEventListener("mousedown", function(e) {
+      e.preventDefault();
+      selectNew();
+    });
+    dropdown.appendChild(newOpt);
+
+    dropdown.classList.add("open");
+    isOpen = true;
+  }
+
+  function selectContact(c) {
+    input.value = c.name + (c.company ? " (" + c.company + ")" : "");
+    hidden.value = c.id;
+    dropdown.classList.remove("open");
+    isOpen = false;
+    clearBtn.classList.add("visible");
+    if (config.onSelect) config.onSelect();
+  }
+
+  function selectNew() {
+    hidden.value = "__new__";
+    input.value = "";
+    dropdown.classList.remove("open");
+    isOpen = false;
+    clearBtn.classList.remove("visible");
+    if (config.onSelect) config.onSelect();
+  }
+
+  function close() {
+    dropdown.classList.remove("open");
+    isOpen = false;
+  }
+
+  input.addEventListener("focus", function() {
+    render(input.value.trim());
+  });
+
+  input.addEventListener("input", function() {
+    render(input.value.trim());
+    clearBtn.classList.toggle("visible", !!input.value);
+  });
+
+  input.addEventListener("blur", function() {
+    setTimeout(close, 180);
+  });
+
+  input.addEventListener("keydown", function(e) {
+    if (!isOpen) return;
+    var opts = dropdown.querySelectorAll(".inv-contact-option");
+    var totalOpts = opts.length;
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      ddIndex = Math.min(ddIndex + 1, totalOpts - 1);
+      opts.forEach(function(o, i) { o.classList.toggle("active", i === ddIndex); });
+      if (opts[ddIndex]) opts[ddIndex].scrollIntoView({ block: "nearest" });
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      ddIndex = Math.max(ddIndex - 1, 0);
+      opts.forEach(function(o, i) { o.classList.toggle("active", i === ddIndex); });
+      if (opts[ddIndex]) opts[ddIndex].scrollIntoView({ block: "nearest" });
+    } else if (e.key === "Enter") {
+      e.preventDefault();
+      if (ddIndex >= 0 && ddIndex < totalOpts) {
+        opts[ddIndex].dispatchEvent(new Event("mousedown"));
+      }
+    } else if (e.key === "Escape") {
+      close();
+      input.blur();
+    }
+  });
+
+  clearBtn.addEventListener("click", function() {
+    input.value = "";
+    hidden.value = "";
+    clearBtn.classList.remove("visible");
+    if (config.onSelect) config.onSelect();
+    input.focus();
+  });
+}
+
+function initInvContactSearch() {
+  initContactSearch({
+    inputId: "inv-contact-search",
+    clearBtnId: "inv-contact-search-clear",
+    dropdownId: "inv-contact-dropdown",
+    hiddenId: "inv-modal-contact",
+    onSelect: function() { onInvoiceContactChange(); }
+  });
+}
+
+function initRecContactSearch() {
+  initContactSearch({
+    inputId: "rec-contact-search",
+    clearBtnId: "rec-contact-search-clear",
+    dropdownId: "rec-contact-dropdown",
+    hiddenId: "rec-from-contact",
+    onSelect: function() { onRecFromContactChange(); }
+  });
+}
+
+// ── Quick Add Product Panel ──────────────────────────────────
+
+function getRecentProducts(limit) {
+  limit = limit || 5;
+  var seen = {};
+  var recent = [];
+  var products = (typeof shopifyProducts !== "undefined" ? shopifyProducts : []);
+  var sortedInvoices = (typeof invoices !== "undefined" ? invoices : []).slice().sort(function(a, b) {
+    return (b.updatedAt || b.createdAt || "").localeCompare(a.updatedAt || a.createdAt || "");
+  });
+  for (var i = 0; i < sortedInvoices.length && recent.length < limit; i++) {
+    var inv = sortedInvoices[i];
+    var items = [];
+    try { items = typeof inv.items === "string" ? JSON.parse(inv.items) : (inv.items || []); } catch(e) {}
+    for (var j = 0; j < items.length && recent.length < limit; j++) {
+      var desc = items[j].description || "";
+      if (desc && !seen[desc]) {
+        seen[desc] = true;
+        // Match to a Shopify product for price
+        var prod = products.find(function(p) {
+          var fullTitle = p.title + (p.variantTitle ? " \u2014 " + p.variantTitle : "");
+          return fullTitle === desc || p.title === desc;
+        });
+        recent.push({
+          title: desc,
+          price: prod ? prod.price : (items[j].unitPrice || 0)
+        });
+      }
+    }
+  }
+  return recent;
+}
+
+function renderQuickAddPanel(panelId, addFn) {
+  var panel = document.getElementById(panelId);
+  if (!panel) return;
+  panel.textContent = "";
+  var products = (typeof shopifyProducts !== "undefined" ? shopifyProducts : []);
+  var recent = getRecentProducts(5);
+
+  // Recent products section
+  if (recent.length) {
+    var recentLabel = document.createElement("div");
+    recentLabel.className = "inv-quick-add-section-label";
+    recentLabel.textContent = "Recent";
+    panel.appendChild(recentLabel);
+    var recentChips = document.createElement("div");
+    recentChips.className = "inv-quick-add-chips";
+    recent.forEach(function(p) {
+      var chip = document.createElement("button");
+      chip.type = "button";
+      chip.className = "inv-quick-add-chip";
+      var nameSpan = document.createElement("span");
+      nameSpan.textContent = p.title;
+      chip.appendChild(nameSpan);
+      var priceSpan = document.createElement("span");
+      priceSpan.className = "inv-quick-add-chip-price";
+      priceSpan.textContent = "\u00A5" + Number(p.price || 0).toLocaleString();
+      chip.appendChild(priceSpan);
+      chip.addEventListener("click", function() {
+        addFn(p.title, 1, p.price || "");
+      });
+      recentChips.appendChild(chip);
+    });
+    panel.appendChild(recentChips);
+  }
+
+  // All products section
+  if (products.length) {
+    var allLabel = document.createElement("div");
+    allLabel.className = "inv-quick-add-section-label";
+    allLabel.textContent = "All Products";
+    panel.appendChild(allLabel);
+    var allChips = document.createElement("div");
+    allChips.className = "inv-quick-add-chips";
+    products.forEach(function(p) {
+      var chip = document.createElement("button");
+      chip.type = "button";
+      chip.className = "inv-quick-add-chip";
+      var nameSpan = document.createElement("span");
+      var title = p.title + (p.variantTitle ? " \u2014 " + p.variantTitle : "");
+      nameSpan.textContent = title;
+      chip.appendChild(nameSpan);
+      var priceSpan = document.createElement("span");
+      priceSpan.className = "inv-quick-add-chip-price";
+      priceSpan.textContent = "\u00A5" + Number(p.price || 0).toLocaleString();
+      chip.appendChild(priceSpan);
+      chip.addEventListener("click", function() {
+        addFn(title, 1, p.price || "");
+      });
+      allChips.appendChild(chip);
+    });
+    panel.appendChild(allChips);
+  }
+
+  if (!products.length && !recent.length) {
+    var empty = document.createElement("div");
+    empty.className = "inv-quick-add-section-label";
+    empty.textContent = "No products loaded";
+    panel.appendChild(empty);
+  }
+}
+
+function toggleInvQuickAdd() {
+  var panel = document.getElementById("inv-quick-add-panel");
+  var arrow = document.getElementById("inv-quick-add-arrow");
+  if (panel.classList.contains("open")) {
+    panel.classList.remove("open");
+    arrow.innerHTML = "&#9662;";
+  } else {
+    renderQuickAddPanel("inv-quick-add-panel", addInvoiceLineItem);
+    panel.classList.add("open");
+    arrow.innerHTML = "&#9652;";
+  }
+}
+
+function toggleRecQuickAdd() {
+  var panel = document.getElementById("rec-quick-add-panel");
+  var arrow = document.getElementById("rec-quick-add-arrow");
+  if (panel.classList.contains("open")) {
+    panel.classList.remove("open");
+    arrow.innerHTML = "&#9662;";
+  } else {
+    renderQuickAddPanel("rec-quick-add-panel", addReceiptLineItem);
+    panel.classList.add("open");
+    arrow.innerHTML = "&#9652;";
+  }
+}
+
 function addInvPricingParty(name, contactId, type, percent) {
   var container = document.getElementById("inv-pricing-parties");
   var row = document.createElement("div");
@@ -16807,12 +17328,20 @@ function openInvoiceCreateModal() {
   document.getElementById("inv-modal-delete-btn").style.display = "none";
   document.getElementById("inv-line-items-body").textContent = "";
   populateInvoiceContactDropdown();
+  initInvContactSearch();
   populateInvOrderDropdown();
   document.getElementById("inv-from-order").value = "";
   document.getElementById("inv-from-order-row").style.display = "";
   document.getElementById("inv-modal-contact").value = "";
+  document.getElementById("inv-contact-search").value = "";
+  document.getElementById("inv-contact-search-clear").classList.remove("visible");
   document.getElementById("inv-new-contact-row").style.display = "none";
   document.getElementById("inv-modal-contact-name").value = "";
+  // Reset quick-add panel
+  var _qap = document.getElementById("inv-quick-add-panel");
+  if (_qap) { _qap.classList.remove("open"); _qap.textContent = ""; }
+  var _qaa = document.getElementById("inv-quick-add-arrow");
+  if (_qaa) _qaa.innerHTML = "&#9662;";
   addInvoiceLineItem();
   recalcInvoiceTotals();
   document.getElementById("inv-modal-overlay").classList.add("open");
@@ -16849,16 +17378,29 @@ function openInvoiceEditModal(invId) {
     addInvPricingParty(inv.contactName || "", inv.contactId || "", inv.pricingType, inv.pricingPercent);
   }
   populateInvoiceContactDropdown();
+  initInvContactSearch();
   // If invoice has no contactId but has a contactName, it was a new contact entry
   if (!inv.contactId && inv.contactName) {
     document.getElementById("inv-modal-contact").value = "__new__";
+    document.getElementById("inv-contact-search").value = "";
+    document.getElementById("inv-contact-search-clear").classList.remove("visible");
     document.getElementById("inv-new-contact-row").style.display = "";
     document.getElementById("inv-modal-contact-name").value = inv.contactName || "";
   } else {
     document.getElementById("inv-modal-contact").value = inv.contactId || "";
+    // Show selected contact name in search input
+    var _invC = (typeof crmContacts !== "undefined" ? crmContacts : []).find(function(x) { return x.id === inv.contactId; });
+    var _invLabel = _invC ? (_invC.name + (_invC.company ? " (" + _invC.company + ")" : "")) : (inv.contactName || "");
+    document.getElementById("inv-contact-search").value = _invLabel;
+    document.getElementById("inv-contact-search-clear").classList.toggle("visible", !!_invLabel);
     document.getElementById("inv-new-contact-row").style.display = "none";
     document.getElementById("inv-modal-contact-name").value = "";
   }
+  // Reset quick-add panel
+  var _qap2 = document.getElementById("inv-quick-add-panel");
+  if (_qap2) { _qap2.classList.remove("open"); _qap2.textContent = ""; }
+  var _qaa2 = document.getElementById("inv-quick-add-arrow");
+  if (_qaa2) _qaa2.innerHTML = "&#9662;";
 
   // Parse and render line items
   document.getElementById("inv-line-items-body").textContent = "";
@@ -18317,19 +18859,10 @@ function populateRecSourceDropdowns() {
     opt.textContent = (inv.invoiceNumber || "?") + " \u2014 " + (inv.contactCompany || inv.contactName || "");
     invSel.appendChild(opt);
   });
-  // Contact dropdown
-  var cSel = document.getElementById("rec-from-contact");
-  cSel.textContent = "";
-  var cOpt0 = document.createElement("option");
-  cOpt0.value = ""; cOpt0.textContent = "-- None --";
-  cSel.appendChild(cOpt0);
-  var contacts = (typeof crmContacts !== "undefined" ? crmContacts : []);
-  contacts.forEach(function(c) {
-    var opt = document.createElement("option");
-    opt.value = c.id;
-    opt.textContent = c.name + (c.company ? " (" + c.company + ")" : "");
-    cSel.appendChild(opt);
-  });
+  // Contact searchable dropdown is initialized separately via initRecContactSearch()
+  document.getElementById("rec-from-contact").value = "";
+  var recSearchInput = document.getElementById("rec-contact-search");
+  if (recSearchInput) recSearchInput.value = "";
 }
 
 function onRecFromInvoiceChange() {
@@ -18340,6 +18873,7 @@ function onRecFromInvoiceChange() {
   // Reset other dropdowns
   document.getElementById("rec-from-order").value = "";
   document.getElementById("rec-from-contact").value = "";
+  var _rcs2 = document.getElementById("rec-contact-search"); if (_rcs2) _rcs2.value = "";
   // Fill fields from invoice
   document.getElementById("rec-modal-invoice-id").value = inv.id;
   document.getElementById("rec-modal-invoice-number").value = inv.invoiceNumber || "";
@@ -18407,6 +18941,7 @@ function onRecFromOrderChange() {
   // Reset other source dropdowns
   document.getElementById("rec-from-invoice").value = "";
   document.getElementById("rec-from-contact").value = "";
+  var _rcs = document.getElementById("rec-contact-search"); if (_rcs) _rcs.value = "";
   document.getElementById("rec-linked-invoice-row").style.display = "none";
   document.getElementById("rec-modal-invoice-id").value = "";
   document.getElementById("rec-modal-invoice-number").value = "";
@@ -18444,6 +18979,9 @@ function openReceiptCreateModal() {
   document.getElementById("rec-linked-invoice-row").style.display = "none";
   document.getElementById("rec-from-source-row").style.display = "";
   populateRecSourceDropdowns();
+  initRecContactSearch();
+  document.getElementById("rec-contact-search").value = "";
+  document.getElementById("rec-contact-search-clear").classList.remove("visible");
   document.getElementById("rec-modal-contact-name").value = "";
   document.getElementById("rec-modal-company").value = "";
   document.getElementById("rec-modal-email").value = "";
@@ -18457,6 +18995,11 @@ function openReceiptCreateModal() {
   clearRecPricingParties();
   document.getElementById("rec-modal-workspace").value = "IVYCOAST";
   document.getElementById("rec-line-items-body").textContent = "";
+  // Reset quick-add panel
+  var _rqp = document.getElementById("rec-quick-add-panel");
+  if (_rqp) { _rqp.classList.remove("open"); _rqp.textContent = ""; }
+  var _rqa = document.getElementById("rec-quick-add-arrow");
+  if (_rqa) _rqa.innerHTML = "&#9662;";
   addReceiptLineItem();
   document.getElementById("rec-modal-delete-btn").style.display = "none";
   document.getElementById("rec-modal-overlay").classList.add("open");
@@ -18496,6 +19039,12 @@ function openReceiptEditModal(recId) {
   } else if (rec.pricingType && rec.pricingPercent) {
     addRecPricingParty(rec.contactName || "", "", rec.pricingType, rec.pricingPercent);
   }
+  initRecContactSearch();
+  // Reset quick-add panel
+  var _rqp2 = document.getElementById("rec-quick-add-panel");
+  if (_rqp2) { _rqp2.classList.remove("open"); _rqp2.textContent = ""; }
+  var _rqa2 = document.getElementById("rec-quick-add-arrow");
+  if (_rqa2) _rqa2.innerHTML = "&#9662;";
   document.getElementById("rec-line-items-body").textContent = "";
   var items = [];
   try { items = JSON.parse(rec.items); } catch(e) {}
