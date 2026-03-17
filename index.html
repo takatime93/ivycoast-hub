@@ -15444,44 +15444,6 @@ function renderCrmTeamTab(c, panel, contactId) {
   }
 
   renderTeamGrid();
-
-  addBtn.addEventListener("click", function() {
-    var fn = fnInput.value.trim();
-    var ln = lnInput.value.trim();
-    if (!fn && !ln) {
-      // Flash red borders on empty inputs
-      [fnInput, lnInput].forEach(function(inp) {
-        inp.style.borderColor = "#c5221f";
-        setTimeout(function() { inp.style.borderColor = ""; }, 1200);
-      });
-      return;
-    }
-    var newId = "person-" + Date.now();
-    people.push({
-      id: newId,
-      firstName: fn,
-      lastName: ln,
-      email: "",
-      phone: "",
-      role: "",
-      notes: ""
-    });
-    fnInput.value = "";
-    lnInput.value = "";
-    _highlightPersonId = newId;
-    savePeople();
-    renderTeamGrid();
-    // Scroll new card into view
-    var newCard = gridEl.lastElementChild;
-    if (newCard) newCard.scrollIntoView({ behavior: "smooth", block: "nearest" });
-  });
-
-  lnInput.addEventListener("keydown", function(e) {
-    if (e.key === "Enter") addBtn.click();
-  });
-  fnInput.addEventListener("keydown", function(e) {
-    if (e.key === "Enter") lnInput.focus();
-  });
 }
 
 // ── Orders Tab ─────────────────────────────────────────────────────────────
