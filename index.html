@@ -15933,6 +15933,14 @@ function renderCrmDocumentsTab(c, panel, contactId) {
     setTimeout(function() {
       var sel = document.getElementById("inv-modal-contact");
       if (sel) { sel.value = contactId; onInvoiceContactChange(); }
+      var _crmC = crmContacts.find(function(x) { return x.id === contactId; });
+      if (_crmC) {
+        var _si = document.getElementById("inv-contact-search");
+        if (_si) {
+          _si.value = (_crmC.name || "") + (_crmC.company ? " (" + _crmC.company + ")" : "");
+          document.getElementById("inv-contact-search-clear").classList.add("visible");
+        }
+      }
       if (c.workspace) { document.getElementById("inv-modal-workspace").value = c.workspace; }
     }, 50);
   };
@@ -16752,23 +16760,7 @@ function fetchDocuments(force) {
 
 // ── Invoice Modal ─────────────────────────────────────────────
 function populateInvoiceContactDropdown() {
-  var sel = document.getElementById("inv-modal-contact");
-  sel.textContent = "";
-  var opt0 = document.createElement("option");
-  opt0.value = "";
-  opt0.textContent = "-- Select Contact --";
-  sel.appendChild(opt0);
-  var optNew = document.createElement("option");
-  optNew.value = "__new__";
-  optNew.textContent = "+ New Contact";
-  sel.appendChild(optNew);
-  var contacts = (typeof crmContacts !== "undefined" ? crmContacts : []);
-  contacts.forEach(function(c) {
-    var opt = document.createElement("option");
-    opt.value = c.id;
-    opt.textContent = c.name + (c.company ? " (" + c.company + ")" : "");
-    sel.appendChild(opt);
-  });
+  // Legacy: replaced by initInvContactSearch(). No-op for backward compat.
 }
 
 function onInvoiceContactChange() {
@@ -17143,11 +17135,11 @@ function toggleInvQuickAdd() {
   var arrow = document.getElementById("inv-quick-add-arrow");
   if (panel.classList.contains("open")) {
     panel.classList.remove("open");
-    arrow.innerHTML = "&#9662;";
+    arrow.textContent = "\u25BE";
   } else {
     renderQuickAddPanel("inv-quick-add-panel", addInvoiceLineItem);
     panel.classList.add("open");
-    arrow.innerHTML = "&#9652;";
+    arrow.textContent = "\u25B4";
   }
 }
 
@@ -17156,11 +17148,11 @@ function toggleRecQuickAdd() {
   var arrow = document.getElementById("rec-quick-add-arrow");
   if (panel.classList.contains("open")) {
     panel.classList.remove("open");
-    arrow.innerHTML = "&#9662;";
+    arrow.textContent = "\u25BE";
   } else {
     renderQuickAddPanel("rec-quick-add-panel", addReceiptLineItem);
     panel.classList.add("open");
-    arrow.innerHTML = "&#9652;";
+    arrow.textContent = "\u25B4";
   }
 }
 
@@ -17327,7 +17319,6 @@ function openInvoiceCreateModal() {
   document.getElementById("inv-modal-workspace").value = "IVYCOAST";
   document.getElementById("inv-modal-delete-btn").style.display = "none";
   document.getElementById("inv-line-items-body").textContent = "";
-  populateInvoiceContactDropdown();
   initInvContactSearch();
   populateInvOrderDropdown();
   document.getElementById("inv-from-order").value = "";
@@ -17341,7 +17332,7 @@ function openInvoiceCreateModal() {
   var _qap = document.getElementById("inv-quick-add-panel");
   if (_qap) { _qap.classList.remove("open"); _qap.textContent = ""; }
   var _qaa = document.getElementById("inv-quick-add-arrow");
-  if (_qaa) _qaa.innerHTML = "&#9662;";
+  if (_qaa) _qaa.textContent = "\u25BE";
   addInvoiceLineItem();
   recalcInvoiceTotals();
   document.getElementById("inv-modal-overlay").classList.add("open");
@@ -17377,7 +17368,6 @@ function openInvoiceEditModal(invId) {
   } else if (inv.pricingType && inv.pricingPercent) {
     addInvPricingParty(inv.contactName || "", inv.contactId || "", inv.pricingType, inv.pricingPercent);
   }
-  populateInvoiceContactDropdown();
   initInvContactSearch();
   // If invoice has no contactId but has a contactName, it was a new contact entry
   if (!inv.contactId && inv.contactName) {
@@ -17400,7 +17390,7 @@ function openInvoiceEditModal(invId) {
   var _qap2 = document.getElementById("inv-quick-add-panel");
   if (_qap2) { _qap2.classList.remove("open"); _qap2.textContent = ""; }
   var _qaa2 = document.getElementById("inv-quick-add-arrow");
-  if (_qaa2) _qaa2.innerHTML = "&#9662;";
+  if (_qaa2) _qaa2.textContent = "\u25BE";
 
   // Parse and render line items
   document.getElementById("inv-line-items-body").textContent = "";
@@ -17671,7 +17661,8 @@ function saveInvoice() {
     contactName = document.getElementById("inv-modal-contact-name").value.trim();
     contactId = "";
   } else if (contactId) {
-    contactName = contactSel.options[contactSel.selectedIndex].textContent.split(" (")[0];
+    var _c = crmContacts.find(function(x) { return x.id === contactId; });
+    contactName = _c ? (_c.name || _c.company || "") : "";
   }
 
   var invoice = {
@@ -18233,6 +18224,11 @@ function populateInvFromOrder(order) {
     });
     if (contact) {
       document.getElementById("inv-modal-contact").value = contact.id;
+      var _searchInput = document.getElementById("inv-contact-search");
+      if (_searchInput) {
+        _searchInput.value = contact.name + (contact.company ? " (" + contact.company + ")" : "");
+        document.getElementById("inv-contact-search-clear").classList.add("visible");
+      }
       onInvoiceContactChange();
     }
   }
@@ -18999,7 +18995,7 @@ function openReceiptCreateModal() {
   var _rqp = document.getElementById("rec-quick-add-panel");
   if (_rqp) { _rqp.classList.remove("open"); _rqp.textContent = ""; }
   var _rqa = document.getElementById("rec-quick-add-arrow");
-  if (_rqa) _rqa.innerHTML = "&#9662;";
+  if (_rqa) _rqa.textContent = "\u25BE";
   addReceiptLineItem();
   document.getElementById("rec-modal-delete-btn").style.display = "none";
   document.getElementById("rec-modal-overlay").classList.add("open");
@@ -19044,7 +19040,7 @@ function openReceiptEditModal(recId) {
   var _rqp2 = document.getElementById("rec-quick-add-panel");
   if (_rqp2) { _rqp2.classList.remove("open"); _rqp2.textContent = ""; }
   var _rqa2 = document.getElementById("rec-quick-add-arrow");
-  if (_rqa2) _rqa2.innerHTML = "&#9662;";
+  if (_rqa2) _rqa2.textContent = "\u25BE";
   document.getElementById("rec-line-items-body").textContent = "";
   var items = [];
   try { items = JSON.parse(rec.items); } catch(e) {}
