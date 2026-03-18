@@ -3896,7 +3896,21 @@ h2.crm-detail-name {
 .contact-standalone-two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px; }
 
 /* ── Contact Edit Form (Phase 4) ──────────────────────────── */
-.contact-edit-form { padding: 16px 32px; display: flex; flex-direction: column; gap: 16px; }
+/* Contact edit modal overlay */
+.contact-edit-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 300;
+  display: flex; align-items: center; justify-content: center;
+}
+.contact-edit-modal {
+  background: var(--color-surface); border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xl); width: 520px; max-width: 92vw;
+  max-height: 85vh; overflow-y: auto; display: flex; flex-direction: column;
+}
+.contact-edit-modal-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 20px 24px 0; flex-shrink: 0;
+}
+.contact-edit-form { padding: 16px 24px 24px; display: flex; flex-direction: column; gap: 16px; }
 .contact-edit-section { display: flex; flex-direction: column; gap: 8px; }
 .contact-edit-section-title { font-family: var(--font-display); font-size: 12px; font-weight: 600; color: var(--color-section-label); margin-bottom: 4px; }
 .contact-edit-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
@@ -13959,7 +13973,31 @@ function renderContactEditForm(contact, container, options) {
   var onSave = options.onSave || function() {};
   var onCancel = options.onCancel || function() {};
 
-  container.textContent = "";
+  // Remove any existing contact edit overlay
+  var existingOverlay = document.querySelector(".contact-edit-overlay");
+  if (existingOverlay) existingOverlay.remove();
+
+  // Create modal overlay
+  var overlay = document.createElement("div");
+  overlay.className = "contact-edit-overlay";
+  overlay.onclick = function(e) { if (e.target === overlay) { overlay.remove(); onCancel(); } };
+
+  var modalWrap = document.createElement("div");
+  modalWrap.className = "contact-edit-modal";
+
+  var modalHeader = document.createElement("div");
+  modalHeader.className = "contact-edit-modal-header";
+  var modalTitle = document.createElement("div");
+  modalTitle.className = "crm-quick-edit-title";
+  modalTitle.textContent = isNew ? "New Contact" : "Edit Contact";
+  modalHeader.appendChild(modalTitle);
+  var closeBtn = document.createElement("button");
+  closeBtn.className = "crm-quick-edit-cancel";
+  closeBtn.textContent = "\u2715";
+  closeBtn.style.cssText = "padding:4px 8px;font-size:16px;line-height:1;border:none";
+  closeBtn.onclick = function() { overlay.remove(); onCancel(); };
+  modalHeader.appendChild(closeBtn);
+  modalWrap.appendChild(modalHeader);
 
   var form = document.createElement("div");
   form.className = "contact-edit-form";
@@ -14300,7 +14338,7 @@ function renderContactEditForm(contact, container, options) {
   cancelBtn.className = "contact-edit-cancel-btn";
   cancelBtn.type = "button";
   cancelBtn.textContent = "Cancel";
-  cancelBtn.onclick = function() { onCancel(); };
+  cancelBtn.onclick = function() { overlay.remove(); onCancel(); };
   saveBar.appendChild(cancelBtn);
 
   var saveBtn = document.createElement("button");
@@ -14384,13 +14422,19 @@ function renderContactEditForm(contact, container, options) {
     }
 
     if (savedContact) {
+      overlay.remove();
       onSave(savedContact);
     }
   };
   saveBar.appendChild(saveBtn);
   form.appendChild(saveBar);
 
-  container.appendChild(form);
+  modalWrap.appendChild(form);
+  overlay.appendChild(modalWrap);
+  document.body.appendChild(overlay);
+  // Focus first input
+  var firstInput = form.querySelector("input, select");
+  if (firstInput) setTimeout(function() { firstInput.focus(); }, 50);
 }
 
 // ── Contact Profile — Standalone View (Phase 3) ─────────────────────────────
