@@ -10392,11 +10392,8 @@ function _ivhTooltip(iconUnicode, text, opts) {
   var wrap = document.createElement("span");
   wrap.className = "ivh-tooltip-trigger";
   var icon = document.createElement("span");
-  icon.className = "ivh-icon ivh-icon-sm";
-  icon.style.color = "#0e413b";
-  icon.style.cursor = "pointer";
-  icon.style.fontWeight = "900";
-  icon.textContent = iconUnicode;
+  icon.style.cssText = "display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;font-size:14px;color:#0e413b;cursor:pointer;font-style:normal";
+  icon.textContent = "\u24D8";
   wrap.appendChild(icon);
   var tip = document.createElement("div");
   tip.className = "ivh-tooltip" + (opts.align === "right" ? " ivh-tooltip-right" : opts.align === "left" ? " ivh-tooltip-left" : "");
