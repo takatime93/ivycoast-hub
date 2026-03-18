@@ -3527,6 +3527,40 @@ h2.crm-detail-name {
   align-items: center;
   justify-content: center;
 }
+/* Inline quick-edit modal */
+.crm-quick-edit-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.3); z-index: 200;
+  display: flex; align-items: center; justify-content: center;
+}
+.crm-quick-edit-modal {
+  background: var(--color-surface); border-radius: var(--radius-lg); padding: 24px;
+  box-shadow: var(--shadow-xl); width: 380px; max-width: 90vw; max-height: 80vh; overflow-y: auto;
+}
+.crm-quick-edit-title {
+  font-family: var(--font-display); font-size: var(--text-h3); font-weight: 600;
+  color: var(--color-text-heading); margin-bottom: 16px;
+}
+.crm-quick-edit-row { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+.crm-quick-edit-label { font-size: var(--text-sm); color: var(--color-text-tertiary); font-weight: 400; }
+.crm-quick-edit-input {
+  background: var(--color-surface-secondary); border: 1px solid var(--color-border);
+  border-radius: var(--radius-md); padding: 8px 10px; font-size: var(--text-md);
+  font-family: inherit; color: var(--color-text); outline: none;
+}
+.crm-quick-edit-input:focus { border-color: var(--color-primary); box-shadow: var(--shadow-focus); }
+.crm-quick-edit-actions {
+  display: flex; justify-content: flex-end; gap: 8px; margin-top: 18px;
+  padding-top: 14px; border-top: 1px solid var(--color-border-separator);
+}
+.crm-quick-edit-save {
+  background: var(--color-primary); color: #fff; border: none; border-radius: var(--radius-md);
+  padding: 7px 18px; font-size: var(--text-sm); cursor: pointer;
+}
+.crm-quick-edit-save:hover { background: var(--color-primary-hover); }
+.crm-quick-edit-cancel {
+  background: transparent; border: 1px solid var(--color-border); color: var(--color-text-secondary);
+  border-radius: var(--radius-md); padding: 7px 18px; font-size: var(--text-sm); cursor: pointer;
+}
 /* Center empty states inside overview column sections */
 .crm-overview-col-section .crm-empty-state,
 .crm-overview-col-section .crm-notes-timeline p:only-child,
@@ -10369,6 +10403,104 @@ function cancelCrmEdit() {
   }
 }
 
+// ── Quick-edit inline modals ──
+function _openQuickEdit(title, fields, onSave) {
+  var overlay = document.createElement("div");
+  overlay.className = "crm-quick-edit-overlay";
+  overlay.onclick = function(e) { if (e.target === overlay) overlay.remove(); };
+  var modal = document.createElement("div");
+  modal.className = "crm-quick-edit-modal";
+  var titleEl = document.createElement("div");
+  titleEl.className = "crm-quick-edit-title";
+  titleEl.textContent = title;
+  modal.appendChild(titleEl);
+  var inputs = {};
+  fields.forEach(function(f) {
+    var row = document.createElement("div");
+    row.className = "crm-quick-edit-row";
+    var label = document.createElement("label");
+    label.className = "crm-quick-edit-label";
+    label.textContent = f.label;
+    row.appendChild(label);
+    var input;
+    if (f.type === "select") {
+      input = document.createElement("select");
+      input.className = "crm-quick-edit-input";
+      (f.options || []).forEach(function(opt) {
+        var o = document.createElement("option");
+        o.value = opt.value; o.textContent = opt.label;
+        input.appendChild(o);
+      });
+      if (f.value) input.value = f.value;
+    } else {
+      input = document.createElement("input");
+      input.className = "crm-quick-edit-input";
+      input.type = f.type || "text";
+      input.placeholder = f.placeholder || "";
+      if (f.value) input.value = f.value;
+    }
+    row.appendChild(input);
+    inputs[f.key] = input;
+    modal.appendChild(row);
+  });
+  var actions = document.createElement("div");
+  actions.className = "crm-quick-edit-actions";
+  var cancelBtn = document.createElement("button");
+  cancelBtn.className = "crm-quick-edit-cancel";
+  cancelBtn.textContent = "Cancel";
+  cancelBtn.onclick = function() { overlay.remove(); };
+  actions.appendChild(cancelBtn);
+  var saveBtn = document.createElement("button");
+  saveBtn.className = "crm-quick-edit-save";
+  saveBtn.textContent = "Save";
+  saveBtn.onclick = function() {
+    var values = {};
+    for (var k in inputs) values[k] = inputs[k].value;
+    onSave(values);
+    overlay.remove();
+  };
+  actions.appendChild(saveBtn);
+  modal.appendChild(actions);
+  overlay.appendChild(modal);
+  document.body.appendChild(overlay);
+  // Focus first input
+  var firstInput = modal.querySelector("input, select");
+  if (firstInput) setTimeout(function() { firstInput.focus(); }, 50);
+}
+
+function openQuickEditRules(contactId) {
+  var c = crmContacts.find(function(x) { return x.id === contactId; });
+  if (!c) return;
+  _openQuickEdit("How we work together", [
+    { key: "pricingType", label: "Pricing type", type: "select", value: c.consignmentPercent ? "consignment" : c.wholesalePercent ? "wholesale" : "", options: [
+      { value: "", label: "Select..." }, { value: "consignment", label: "Consignment" }, { value: "wholesale", label: "Wholesale" }
+    ]},
+    { key: "pricingPercent", label: "Their share (%)", type: "number", placeholder: "e.g. 30", value: c.consignmentPercent || c.wholesalePercent || "" },
+    { key: "invoiceFreq", label: "We invoice", type: "select", value: "monthly", options: [
+      { value: "monthly", label: "Monthly" }, { value: "per-order", label: "Per order" }, { value: "quarterly", label: "Quarterly" }
+    ]},
+    { key: "paymentTerms", label: "They pay within", type: "select", value: "30", options: [
+      { value: "30", label: "30 days" }, { value: "60", label: "60 days" }, { value: "14", label: "14 days" }, { value: "0", label: "Immediate" }
+    ]}
+  ], function(values) {
+    var update = {};
+    if (values.pricingType === "consignment") {
+      update.consignmentPercent = values.pricingPercent || "";
+      update.wholesalePercent = "";
+    } else if (values.pricingType === "wholesale") {
+      update.wholesalePercent = values.pricingPercent || "";
+      update.consignmentPercent = "";
+    } else {
+      update.consignmentPercent = "";
+      update.wholesalePercent = "";
+    }
+    crmContacts.forEach(function(x) { if (x.id === contactId) Object.assign(x, update); });
+    saveDataCache();
+    crmApiPost({ action: "update", contact: Object.assign({ id: contactId }, update) }).catch(function() {});
+    openCrmDetailView(contactId);
+  });
+}
+
 function closeCrmModal() {
   crmCurrentDetailContactId = null;
   localStorage.removeItem("ivyhub_crmOpenContact");
@@ -11842,7 +11974,7 @@ function _renderShopsConnected(section, connectedShops, contactId, tabsBar) {
   var shopsCog = document.createElement("button");
   shopsCog.className = "crm-overview-col-action";
   shopsCog.appendChild(_crmFa6Icon("\uf013", 12, 300));
-  shopsCog.onclick = function() { switchToCrmEditMode(contactId); };
+  shopsCog.onclick = function() { openQuickEditRules(contactId); };
   stockHdr.appendChild(shopsCog);
   section.appendChild(stockHdr);
   if (connectedShops.length) {
@@ -12044,7 +12176,7 @@ function renderCrmOverviewTab(c, panel, contactId, tabsBar) {
   var rulesCog = document.createElement("button");
   rulesCog.className = "crm-overview-col-action";
   rulesCog.appendChild(_crmFa6Icon("\uf013", 12, 300));
-  rulesCog.onclick = function() { switchToCrmEditMode(contactId); };
+  rulesCog.onclick = function() { openQuickEditRules(contactId); };
   rulesHdr.appendChild(rulesCog);
   rulesSection.appendChild(rulesHdr);
   var _isConnType = c.type === "Connector";
@@ -12106,7 +12238,7 @@ function renderCrmOverviewTab(c, panel, contactId, tabsBar) {
     var setRulesText = document.createElement("span");
     setRulesText.textContent = "Set working rules";
     setRulesBtn.appendChild(setRulesText);
-    setRulesBtn.onclick = function() { switchToCrmEditMode(contactId); };
+    setRulesBtn.onclick = function() { openQuickEditRules(contactId); };
     rulesEmpty.appendChild(setRulesBtn);
     rulesSection.appendChild(rulesEmpty);
   }
