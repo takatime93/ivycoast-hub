@@ -14010,45 +14010,85 @@ function renderContactEditForm(contact, container, options) {
   nameTitle.textContent = "Name";
   nameSec.appendChild(nameTitle);
 
-  // Japanese name (full width)
-  var nameJaField = document.createElement("div");
-  nameJaField.className = "contact-edit-field full";
-  var nameJaLabel = document.createElement("label");
-  nameJaLabel.className = "contact-edit-label";
-  nameJaLabel.textContent = "Japanese name";
-  nameJaField.appendChild(nameJaLabel);
-  var nameJaInput = document.createElement("input");
-  nameJaInput.className = "contact-edit-input";
-  nameJaInput.type = "text";
-  nameJaInput.placeholder = "Japanese name (optional)";
-  if (contact && contact.nameJa) nameJaInput.value = contact.nameJa;
-  nameJaField.appendChild(nameJaInput);
-  // Wrap in a grid row for full width
+  // Japanese name — Last (姓) then First (名)
   var nameJaRow = document.createElement("div");
   nameJaRow.className = "contact-edit-row";
-  nameJaRow.appendChild(nameJaField);
+  var nameJaLastField = document.createElement("div");
+  nameJaLastField.className = "contact-edit-field";
+  var nameJaLastLabel = document.createElement("label");
+  nameJaLastLabel.className = "contact-edit-label";
+  nameJaLastLabel.textContent = "\u59D3 Last name (JP)";
+  nameJaLastField.appendChild(nameJaLastLabel);
+  var nameJaLastInput = document.createElement("input");
+  nameJaLastInput.className = "contact-edit-input";
+  nameJaLastInput.type = "text";
+  nameJaLastInput.placeholder = "\u59D3 (optional)";
+  nameJaLastField.appendChild(nameJaLastInput);
+  nameJaRow.appendChild(nameJaLastField);
+  var nameJaFirstField = document.createElement("div");
+  nameJaFirstField.className = "contact-edit-field";
+  var nameJaFirstLabel = document.createElement("label");
+  nameJaFirstLabel.className = "contact-edit-label";
+  nameJaFirstLabel.textContent = "\u540D First name (JP)";
+  nameJaFirstField.appendChild(nameJaFirstLabel);
+  var nameJaFirstInput = document.createElement("input");
+  nameJaFirstInput.className = "contact-edit-input";
+  nameJaFirstInput.type = "text";
+  nameJaFirstInput.placeholder = "\u540D (optional)";
+  nameJaFirstField.appendChild(nameJaFirstInput);
+  nameJaRow.appendChild(nameJaFirstField);
+  // Pre-fill: nameJa is "Last First" (space-separated)
+  if (contact && contact.nameJa) {
+    var jaParts = contact.nameJa.split(" ");
+    nameJaLastInput.value = jaParts[0] || "";
+    nameJaFirstInput.value = jaParts.slice(1).join(" ") || "";
+  }
   nameSec.appendChild(nameJaRow);
 
-  // English name + Title (two-column)
+  // English name — First then Last
   var nameEnRow = document.createElement("div");
   nameEnRow.className = "contact-edit-row";
-  var nameEnField = document.createElement("div");
-  nameEnField.className = "contact-edit-field";
-  var nameEnLabel = document.createElement("label");
-  nameEnLabel.className = "contact-edit-label";
-  nameEnLabel.textContent = "English name";
-  nameEnField.appendChild(nameEnLabel);
-  var nameEnInput = document.createElement("input");
-  nameEnInput.className = "contact-edit-input";
-  nameEnInput.type = "text";
-  nameEnInput.placeholder = "English name *";
-  nameEnInput.required = true;
-  if (contact && contact.nameEn) nameEnInput.value = contact.nameEn;
-  nameEnField.appendChild(nameEnInput);
-  nameEnRow.appendChild(nameEnField);
+  var nameEnFirstField = document.createElement("div");
+  nameEnFirstField.className = "contact-edit-field";
+  var nameEnFirstLabel = document.createElement("label");
+  nameEnFirstLabel.className = "contact-edit-label";
+  nameEnFirstLabel.textContent = "First name (EN) *";
+  nameEnFirstField.appendChild(nameEnFirstLabel);
+  var nameEnFirstInput = document.createElement("input");
+  nameEnFirstInput.className = "contact-edit-input";
+  nameEnFirstInput.type = "text";
+  nameEnFirstInput.placeholder = "First name *";
+  nameEnFirstInput.required = true;
+  nameEnFirstField.appendChild(nameEnFirstInput);
+  nameEnRow.appendChild(nameEnFirstField);
+  var nameEnLastField = document.createElement("div");
+  nameEnLastField.className = "contact-edit-field";
+  var nameEnLastLabel = document.createElement("label");
+  nameEnLastLabel.className = "contact-edit-label";
+  nameEnLastLabel.textContent = "Last name (EN) *";
+  nameEnLastField.appendChild(nameEnLastLabel);
+  var nameEnLastInput = document.createElement("input");
+  nameEnLastInput.className = "contact-edit-input";
+  nameEnLastInput.type = "text";
+  nameEnLastInput.placeholder = "Last name *";
+  nameEnLastInput.required = true;
+  nameEnLastField.appendChild(nameEnLastInput);
+  nameEnRow.appendChild(nameEnLastField);
+  // Pre-fill: nameEn is "First Last" (space-separated)
+  if (contact && contact.nameEn) {
+    var enParts = contact.nameEn.split(" ");
+    nameEnFirstInput.value = enParts[0] || "";
+    nameEnLastInput.value = enParts.slice(1).join(" ") || "";
+  }
+  // Virtual inputs for backward compat — compose full names from parts
+  var nameEnInput = { get value() { return (nameEnFirstInput.value.trim() + " " + nameEnLastInput.value.trim()).trim(); } };
+  var nameJaInput = { get value() { var l = nameJaLastInput.value.trim(); var f = nameJaFirstInput.value.trim(); return l && f ? l + " " + f : l || f || ""; } };
 
+  // Title (full width row)
+  var titleRow = document.createElement("div");
+  titleRow.className = "contact-edit-row";
   var titleField = document.createElement("div");
-  titleField.className = "contact-edit-field";
+  titleField.className = "contact-edit-field full";
   var titleLabel = document.createElement("label");
   titleLabel.className = "contact-edit-label";
   titleLabel.textContent = "Title";
@@ -14059,8 +14099,9 @@ function renderContactEditForm(contact, container, options) {
   titleInput.placeholder = "Job title";
   if (contact && contact.title) titleInput.value = contact.title;
   titleField.appendChild(titleInput);
-  nameEnRow.appendChild(titleField);
+  titleRow.appendChild(titleField);
   nameSec.appendChild(nameEnRow);
+  nameSec.appendChild(titleRow);
   form.appendChild(nameSec);
 
   // ─── Section 2: Contact Info ───
@@ -14366,7 +14407,7 @@ function renderContactEditForm(contact, container, options) {
     // Validate nameEn required
     if (!nameEnVal) {
       alert("English name is required.");
-      nameEnInput.focus();
+      nameEnFirstInput.focus();
       return;
     }
 
