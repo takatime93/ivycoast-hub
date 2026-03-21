@@ -5888,6 +5888,35 @@ select.contact-edit-input { appearance: auto; cursor: pointer; }
           <!-- Oil list -->
           <div class="formulator-oil-list" id="formulator-oil-list"></div>
 
+          <!-- Additives (non-oil ingredients — not included in saponification) -->
+          <div style="margin-top:16px;padding-top:12px;border-top:1px solid var(--color-border-separator)">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+              <label style="font-family:var(--font-display);font-size:var(--text-sm);font-weight:600;color:#062420">その他の材料 (Additives)</label>
+            </div>
+            <div class="formulator-add-row" style="margin-bottom:8px">
+              <div class="formulator-field" style="flex:1">
+                <input type="text" id="formulator-additive-name" placeholder="材料名 (e.g. CBD Oil, Blue Clay...)" style="width:100%">
+              </div>
+              <div class="formulator-field" style="width:70px">
+                <input type="number" id="formulator-additive-amount" min="0" step="0.1" value="0" style="width:100%">
+              </div>
+              <div class="formulator-field" style="width:70px">
+                <select id="formulator-additive-unit" style="width:100%">
+                  <option value="g">g</option>
+                  <option value="drops">drops</option>
+                  <option value="ml">ml</option>
+                  <option value="tbsp">tbsp</option>
+                  <option value="tsp">tsp</option>
+                </select>
+              </div>
+              <div class="formulator-field" style="width:70px">
+                <input type="number" id="formulator-additive-cost" min="0" step="0.01" value="0" placeholder="¥" style="width:100%">
+              </div>
+              <button class="formulator-add-btn" onclick="formulatorAddAdditive()" style="font-size:var(--text-sm)">追加</button>
+            </div>
+            <div id="formulator-additive-list"></div>
+          </div>
+
           <!-- Settings -->
           <div class="formulator-input-group">
             <div class="formulator-field">
@@ -17128,37 +17157,63 @@ var SOAP_OIL_DB = [
 var SOAP_PRODUCT_PRESETS = [
   { name: "Byron Bay + CBD", category: "Soap", date: "2025-10-08",
     oils: [{name:"Olive Oil",weightOz:345},{name:"Coconut Oil (76\u00b0)",weightOz:240},{name:"Cocoa Butter",weightOz:70}],
-    superfat:8, lyeConcentration:30,
-    fragrance:"Peppermint Oil 260 drops", fragranceOz:13,
-    colorant:"Blue Clay 10g + Aust Salt 8g + Poppyseed 4.5g",
-    notes:"CBD Oil 65 drops. \u3088\u304f\u3064\u3076\u3059\u3053\u3068\uff01(salt). 椿オレンジMIX (clay). NaOH 93.1g, P.W 223g per batch. ×2 = 24 bars." },
+    superfat:8, lyeConcentration:30, fragrance:"Peppermint Oil", fragranceOz:13, colorant:"",
+    additives: [
+      {name:"CBD Oil", amount:65, unit:"drops", costPerUnit:0},
+      {name:"Australian Salt", amount:8, unit:"g", costPerUnit:0},
+      {name:"Poppyseed", amount:4.5, unit:"g", costPerUnit:0},
+      {name:"Blue Clay", amount:10, unit:"g", costPerUnit:0},
+      {name:"Peppermint EO", amount:260, unit:"drops", costPerUnit:0}
+    ],
+    notes:"\u3088\u304f\u3064\u3076\u3059\u3053\u3068\uff01(salt). \u00d72 = 24 bars." },
   { name: "Paradise + CBD", category: "Soap", date: "2026-03-13",
     oils: [{name:"Olive Oil",weightOz:475},{name:"Coconut Oil (76\u00b0)",weightOz:118},{name:"Cocoa Butter",weightOz:62}],
-    superfat:8, lyeConcentration:30,
-    fragrance:"Tea Tree 8.8g + Eucalyptus 8.8g + Peppermint 8.8g", fragranceOz:26.4,
-    colorant:"Green Clay 35g + 23g Jojoba Oil",
-    notes:"CBD 6g. NaOH 175.6g, P.W 446g for ×2 batch. ミルキーだいすき (soap note on package)." },
+    superfat:8, lyeConcentration:30, fragrance:"", fragranceOz:0, colorant:"",
+    additives: [
+      {name:"Tea Tree EO", amount:8.8, unit:"g", costPerUnit:0},
+      {name:"Eucalyptus EO", amount:8.8, unit:"g", costPerUnit:0},
+      {name:"Peppermint EO", amount:8.8, unit:"g", costPerUnit:0},
+      {name:"CBD Oil", amount:6, unit:"g", costPerUnit:0},
+      {name:"Green Clay", amount:35, unit:"g", costPerUnit:0},
+      {name:"Jojoba Oil (clay mix)", amount:23, unit:"g", costPerUnit:0}
+    ],
+    notes:"\u30DF\u30EB\u30AD\u30FC\u3060\u3044\u3059\u304D. \u00d72 batch." },
   { name: "Chamomile + CBD", category: "Soap", date: "2026-03-16",
     oils: [{name:"Olive Oil",weightOz:198},{name:"Coconut Oil (76\u00b0)",weightOz:156},{name:"Cocoa Butter",weightOz:78},{name:"Rice Bran Oil",weightOz:156},{name:"Jojoba Oil",weightOz:42},{name:"Shea Butter",weightOz:20}],
-    superfat:8, lyeConcentration:30,
-    fragrance:"Chamomile 4.6g + Ylang Ylang 12.5g + Bergamot 8.9g", fragranceOz:26,
-    colorant:"Chamomile Tincture 4 tbls + Dry Flower 4 tbls",
-    notes:"CBD 6g. P.W = \u30AB\u30E2\u30DF\u30ECTEA. 520 \u524D\u56DEBatch\u3088\u308A\u591A\u3081\u306B\u3059\u308B. NaOH 174g, Water 442g for ×2 batch." },
+    superfat:8, lyeConcentration:30, fragrance:"", fragranceOz:0, colorant:"",
+    additives: [
+      {name:"Chamomile EO", amount:4.6, unit:"g", costPerUnit:0},
+      {name:"Ylang Ylang EO", amount:12.5, unit:"g", costPerUnit:0},
+      {name:"Bergamot EO", amount:8.9, unit:"g", costPerUnit:0},
+      {name:"CBD Oil", amount:6, unit:"g", costPerUnit:0},
+      {name:"Chamomile Tincture", amount:4, unit:"tbsp", costPerUnit:0},
+      {name:"Chamomile Dry Flower", amount:4, unit:"tbsp", costPerUnit:0}
+    ],
+    notes:"P.W = \u30AB\u30E2\u30DF\u30ECTEA. \u524D\u56DEBatch\u3088\u308A\u591A\u3081\u306B\u3059\u308B. \u00d72 batch." },
   { name: "\u9EBB\u30B9\u30DF (Hemp Charcoal) + CBD", category: "Soap", date: "2026-03-12",
     oils: [{name:"Rice Bran Oil",weightOz:156},{name:"Coconut Oil (76\u00b0)",weightOz:166},{name:"Cocoa Butter",weightOz:9},{name:"Sunflower Oil",weightOz:191},{name:"Castor Oil",weightOz:26},{name:"Avocado Oil",weightOz:21}],
-    superfat:8, lyeConcentration:30,
-    fragrance:"Lavender 14.5g + Rosemary 11.5g (1.5%)", fragranceOz:26,
-    colorant:"\u70AD (Charcoal) 4.5g",
-    notes:"CBD 6g. \u5927\u767D\u6CB9 = Sunflower Oil. NaOH 177.8g, P.W 442g for \u00d72 batch. Avocado Oil is NEW addition." },
+    superfat:8, lyeConcentration:30, fragrance:"", fragranceOz:0, colorant:"",
+    additives: [
+      {name:"Lavender EO", amount:14.5, unit:"g", costPerUnit:0},
+      {name:"Rosemary EO", amount:11.5, unit:"g", costPerUnit:0},
+      {name:"CBD Oil", amount:6, unit:"g", costPerUnit:0},
+      {name:"\u70AD (Charcoal)", amount:4.5, unit:"g", costPerUnit:0}
+    ],
+    notes:"\u5927\u767D\u6CB9 = Sunflower Oil. Avocado Oil is NEW. EO = 1.5%. \u00d72 batch." },
   { name: "\u693F (Tsubaki) + CBD", category: "Soap", date: "2026-03-11",
     oils: [{name:"Olive Oil",weightOz:305},{name:"Coconut Oil (76\u00b0)",weightOz:245},{name:"Cocoa Butter",weightOz:70},{name:"Tsubaki Oil (Camellia)",weightOz:30}],
-    superfat:8, lyeConcentration:30,
-    fragrance:"Lavender \u30D6\u30EB\u30AC\u30EA 14g + Orange 12g", fragranceOz:26,
-    colorant:"Rose Clay 6g",
-    notes:"CBD Oil 120 drops = 6g (0.5%). NaOH 92.7g per batch (185.4g \u00d72), P.W 221g per batch (442g \u00d72)." },
+    superfat:8, lyeConcentration:30, fragrance:"", fragranceOz:0, colorant:"",
+    additives: [
+      {name:"Lavender \u30D6\u30EB\u30AC\u30EA EO", amount:14, unit:"g", costPerUnit:0},
+      {name:"Orange EO", amount:12, unit:"g", costPerUnit:0},
+      {name:"CBD Oil", amount:6, unit:"g", costPerUnit:0},
+      {name:"Rose Clay", amount:6, unit:"g", costPerUnit:0}
+    ],
+    notes:"CBD = 120 drops = 6g (0.5%). \u00d72 batch." },
 ];
 
 var formulatorOils = [];
+var formulatorAdditives = []; // {name, amount, unit, costPerUnit}
 // soapBatches declared earlier with other global arrays
 var formulatorEditingBatchId = null;
 
@@ -17245,15 +17300,18 @@ function calcQualityScore(properties) {
 }
 
 // ── Cost per bar ──
-function calcCostPerBar(oilEntries, fragranceOz, fragranceCostPerOz, barsProduced) {
+function calcCostPerBar(oilEntries, fragranceOz, fragranceCostPerOz, barsProduced, additives) {
   var oilCost = 0;
   oilEntries.forEach(function(e) { oilCost += e.weightOz * e.oil.costPerOz; });
   var fragCost = (fragranceOz || 0) * (fragranceCostPerOz || 0);
-  var totalCost = oilCost + fragCost;
+  var additiveCost = 0;
+  (additives || []).forEach(function(a) { additiveCost += (a.amount || 0) * (a.costPerUnit || 0); });
+  var totalCost = oilCost + fragCost + additiveCost;
   var costPerBar = barsProduced > 0 ? totalCost / barsProduced : 0;
   return {
     oilCost: Math.round(oilCost * 100) / 100,
     fragranceCost: Math.round(fragCost * 100) / 100,
+    additiveCost: Math.round(additiveCost * 100) / 100,
     totalCost: Math.round(totalCost * 100) / 100,
     costPerBar: Math.round(costPerBar * 100) / 100
   };
@@ -17418,7 +17476,7 @@ function formulatorRecalc() {
   }
 
   // Cost
-  var cost = calcCostPerBar(formulatorOils, fragOz, fragCost, bars);
+  var cost = calcCostPerBar(formulatorOils, fragOz, fragCost, bars, formulatorAdditives);
   document.getElementById("formulator-oil-cost").textContent = "¥" + cost.oilCost.toFixed(2);
   document.getElementById("formulator-frag-cost").textContent = "¥" + cost.fragranceCost.toFixed(2);
   document.getElementById("formulator-cost-per-bar").textContent = "¥" + cost.costPerBar.toFixed(2);
@@ -17503,8 +17561,9 @@ function formulatorSaveBatch() {
   var f = _formulatorReadForm();
   var props = calcSoapProperties(formulatorOils);
   var lyeCalc = calcLye(formulatorOils, f.superfat, f.lyeConc);
-  var cost = calcCostPerBar(formulatorOils, f.fragOz, f.fragCost, f.bars);
+  var cost = calcCostPerBar(formulatorOils, f.fragOz, f.fragCost, f.bars, formulatorAdditives);
   var oilsSnapshot = formulatorOils.map(function(e) { return { name: e.oil.name, weightOz: e.weightOz }; });
+  var additivesSnapshot = formulatorAdditives.map(function(a) { return { name: a.name, amount: a.amount, unit: a.unit, costPerUnit: a.costPerUnit }; });
   var defaultName = f.fragName ? f.fragName + " バー" : "新規石けんバッチ";
 
   _openBatchSaveModal(defaultName, f, oilsSnapshot, props, lyeCalc, cost, function(modalValues) {
@@ -17526,7 +17585,7 @@ function formulatorSaveBatch() {
         batch.name = batchName; batch.batchNumber = batchNumber;
         batch.oils = oilsSnapshot; batch.superfat = f.superfat; batch.lyeConcentration = f.lyeConc;
         batch.fragrance = f.fragName; batch.fragranceOz = f.fragOz; batch.fragranceCostPerOz = f.fragCost;
-        batch.colorant = f.colorant; batch.notes = notes;
+        batch.colorant = f.colorant; batch.additives = additivesSnapshot; batch.notes = notes;
         batch.properties = props; batch.lyeCalc = lyeCalc; batch.qualityScore = props.qualityScore;
         batch.barsProduced = f.bars; batch.costPerBar = cost.costPerBar;
         batch.linkedProductId = linkedProductId; batch.linkedProductName = linkedProductName;
@@ -17541,7 +17600,7 @@ function formulatorSaveBatch() {
         date: new Date().toISOString().slice(0, 10),
         oils: oilsSnapshot, superfat: f.superfat, lyeConcentration: f.lyeConc,
         fragrance: f.fragName, fragranceOz: f.fragOz, fragranceCostPerOz: f.fragCost,
-        colorant: f.colorant, notes: notes,
+        colorant: f.colorant, additives: additivesSnapshot, notes: notes,
         properties: props, lyeCalc: lyeCalc, qualityScore: props.qualityScore,
         status: "planning", barsProduced: f.bars, costPerBar: cost.costPerBar,
         linkedProductId: linkedProductId, linkedProductName: linkedProductName,
@@ -18299,7 +18358,7 @@ function formulatorSaveMasterFormula() {
   var oilsSnapshot = formulatorOils.map(function(e) { return { name: e.oil.name, weightOz: e.weightOz }; });
   var props = calcSoapProperties(formulatorOils);
   var lyeCalc = calcLye(formulatorOils, f.superfat, f.lyeConc);
-  var cost = calcCostPerBar(formulatorOils, f.fragOz, f.fragCost, f.bars);
+  var cost = calcCostPerBar(formulatorOils, f.fragOz, f.fragCost, f.bars, formulatorAdditives);
 
   if (existing) {
     // Save current state to version history before overwriting
@@ -18388,10 +18447,84 @@ function formulatorPopulateProductLink() {
 }
 
 // ── New batch (clear form) ──
+// ── Additives (non-oil ingredients) ──
+function formulatorAddAdditive() {
+  var nameInput = document.getElementById("formulator-additive-name");
+  var amountInput = document.getElementById("formulator-additive-amount");
+  var unitSelect = document.getElementById("formulator-additive-unit");
+  var costInput = document.getElementById("formulator-additive-cost");
+  var name = (nameInput.value || "").trim();
+  if (!name) { nameInput.focus(); return; }
+  var amount = parseFloat(amountInput.value) || 0;
+  var unit = unitSelect.value || "g";
+  var cost = parseFloat(costInput.value) || 0;
+  formulatorAdditives.push({ name: name, amount: amount, unit: unit, costPerUnit: cost });
+  nameInput.value = ""; amountInput.value = "0"; costInput.value = "0";
+  formulatorRenderAdditiveList();
+  formulatorRecalc();
+}
+
+function formulatorRemoveAdditive(idx) {
+  formulatorAdditives.splice(idx, 1);
+  formulatorRenderAdditiveList();
+  formulatorRecalc();
+}
+
+function formulatorRenderAdditiveList() {
+  var container = document.getElementById("formulator-additive-list");
+  if (!container) return;
+  container.textContent = "";
+  if (formulatorAdditives.length === 0) return;
+  formulatorAdditives.forEach(function(a, idx) {
+    var row = document.createElement("div");
+    row.className = "formulator-oil-row";
+    var nameSpan = document.createElement("span");
+    nameSpan.className = "formulator-oil-name";
+    nameSpan.style.fontSize = "var(--text-sm)";
+    nameSpan.textContent = a.name;
+    row.appendChild(nameSpan);
+    // Editable amount
+    var amountWrap = document.createElement("span");
+    amountWrap.className = "formulator-oil-weight";
+    var amountInput = document.createElement("input");
+    amountInput.type = "number"; amountInput.min = "0"; amountInput.step = "0.1";
+    amountInput.value = a.amount;
+    amountInput.style.cssText = "width:50px;padding:2px 4px;border:1px solid var(--color-border);border-radius:3px;font-size:var(--text-sm);text-align:right;font-family:inherit";
+    amountInput.onchange = (function(i) { return function() { formulatorAdditives[i].amount = parseFloat(this.value) || 0; formulatorRecalc(); }; })(idx);
+    amountWrap.appendChild(amountInput);
+    // Unit selector
+    var unitSel = document.createElement("select");
+    unitSel.style.cssText = "font-size:var(--text-xs);border:1px solid var(--color-border);border-radius:3px;padding:1px 2px;margin-left:2px";
+    ["g","drops","ml","tbsp","tsp"].forEach(function(u) {
+      var opt = document.createElement("option");
+      opt.value = u; opt.textContent = u;
+      if (u === a.unit) opt.selected = true;
+      unitSel.appendChild(opt);
+    });
+    unitSel.onchange = (function(i) { return function() { formulatorAdditives[i].unit = this.value; }; })(idx);
+    amountWrap.appendChild(unitSel);
+    row.appendChild(amountWrap);
+    // Cost display
+    var costSpan = document.createElement("span");
+    costSpan.className = "formulator-oil-pct";
+    costSpan.textContent = a.costPerUnit > 0 ? "\u00A5" + (a.amount * a.costPerUnit).toFixed(0) : "";
+    row.appendChild(costSpan);
+    // Remove
+    var removeBtn = document.createElement("button");
+    removeBtn.className = "formulator-oil-remove";
+    removeBtn.textContent = "\u00d7";
+    removeBtn.onclick = (function(i) { return function() { formulatorRemoveAdditive(i); }; })(idx);
+    row.appendChild(removeBtn);
+    container.appendChild(row);
+  });
+}
+
 function formulatorNewBatch() {
   formulatorEditingBatchId = null;
   formulatorOils = [];
+  formulatorAdditives = [];
   formulatorRenderOilList();
+  formulatorRenderAdditiveList();
   document.getElementById("formulator-superfat").value = "5";
   document.getElementById("formulator-lye-conc").value = "33";
   document.getElementById("formulator-fragrance-name").value = "";
@@ -18482,8 +18615,11 @@ function formulatorLoadPreset(val) {
     document.getElementById("formulator-fragrance-name").value = preset.fragrance || "";
     document.getElementById("formulator-fragrance-oz").value = preset.fragranceOz || "0";
     document.getElementById("formulator-colorant").value = preset.colorant || "";
+    // Load additives from preset
+    formulatorAdditives = (preset.additives || []).map(function(a) { return { name: a.name, amount: a.amount, unit: a.unit || "g", costPerUnit: a.costPerUnit || 0 }; });
+    formulatorRenderAdditiveList();
     document.getElementById("formulator-batch-number").value = "";
-    document.getElementById("formulator-notes").value = "製品プリセットから読込: " + preset.name;
+    document.getElementById("formulator-notes").value = preset.notes || "\u88FD\u54C1\u30D7\u30EA\u30BB\u30C3\u30C8\u304B\u3089\u8AAD\u8FBC: " + preset.name;
     // Auto-select product in link dropdown if possible
     var linkSel = document.getElementById("formulator-link-product");
     if (linkSel) {
@@ -18515,6 +18651,9 @@ function formulatorLoadBatch(batchId) {
   document.getElementById("formulator-fragrance-oz").value = String(batch.fragranceOz || 0);
   document.getElementById("formulator-fragrance-cost").value = String(batch.fragranceCostPerOz || 0);
   document.getElementById("formulator-colorant").value = batch.colorant || "";
+  // Load additives
+  formulatorAdditives = (batch.additives || []).map(function(a) { return { name: a.name, amount: a.amount, unit: a.unit || "g", costPerUnit: a.costPerUnit || 0 }; });
+  formulatorRenderAdditiveList();
   document.getElementById("formulator-bars").value = String(batch.barsProduced || 10);
   document.getElementById("formulator-notes").value = batch.notes || "";
   document.getElementById("formulator-batch-number").value = batch.batchNumber || "";
