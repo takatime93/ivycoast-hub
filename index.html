@@ -5318,6 +5318,107 @@ select.contact-edit-input { appearance: auto; cursor: pointer; }
 .formulator-empty { text-align:center; padding:40px 20px; color:var(--color-text-tertiary); font-family:var(--font-text); font-size:var(--text-md); }
 @media (max-width:900px) { .formulator-container { grid-template-columns:1fr; } }
 
+/* ── Batch Save Modal / Batch Formula Modal / Product Detail Modal ── */
+.batch-save-modal { width: 420px; }
+.batch-formula-modal { width: 580px; }
+.product-detail-modal { width: 540px; }
+.batch-modal-field { display:flex; flex-direction:column; gap:6px; margin-bottom:14px; }
+.batch-modal-field label { font-size:var(--text-sm); color:var(--color-text-tertiary); font-weight:400; }
+.batch-modal-field input,
+.batch-modal-field select,
+.batch-modal-field textarea {
+  background:var(--color-surface-secondary); border:1px solid var(--color-border);
+  border-radius:var(--radius-md); padding:8px 10px; font-size:var(--text-md);
+  font-family:inherit; color:var(--color-text); outline:none;
+}
+.batch-modal-field input:focus,
+.batch-modal-field select:focus,
+.batch-modal-field textarea:focus { border-color:var(--color-primary); box-shadow:var(--shadow-focus); }
+.batch-modal-field textarea { resize:vertical; min-height:60px; }
+.batch-modal-checkbox { display:flex; align-items:center; gap:8px; margin-bottom:14px; }
+.batch-modal-checkbox input[type="checkbox"] { width:16px; height:16px; accent-color:var(--color-primary); }
+.batch-modal-checkbox label { font-size:var(--text-sm); color:var(--color-text-secondary); cursor:pointer; }
+
+/* Formula summary sections */
+.formula-section { margin-bottom:16px; }
+.formula-section-title {
+  font-family:var(--font-mono); font-size:var(--text-xs); color:var(--color-text-tertiary);
+  letter-spacing:-0.3px; text-transform:uppercase; margin-bottom:8px; padding-bottom:4px;
+  border-bottom:1px solid var(--color-border-separator);
+}
+.formula-header { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:16px; }
+.formula-header-name { font-family:var(--font-display); font-size:var(--text-h3); font-weight:600; color:var(--color-text-heading); }
+.formula-header-badge {
+  display:inline-block; padding:2px 8px; border-radius:2px;
+  font-family:var(--font-mono); font-size:var(--text-xs); font-weight:400;
+}
+.formula-header-date { font-family:var(--font-mono); font-size:var(--text-xs); color:var(--color-text-tertiary); }
+.formula-oils-table { width:100%; border-collapse:collapse; margin-bottom:8px; }
+.formula-oils-table th {
+  font-family:var(--font-mono); font-size:var(--text-xs); color:var(--color-text-tertiary);
+  text-align:left; padding:4px 8px; border-bottom:1px solid var(--color-border-separator);
+  font-weight:400; text-transform:uppercase; letter-spacing:-0.3px;
+}
+.formula-oils-table td { padding:5px 8px; font-size:var(--text-md); color:var(--color-text); }
+.formula-oils-table tr:nth-child(even) td { background:var(--color-surface-secondary); }
+.formula-settings-row { display:flex; gap:24px; padding:8px 0; }
+.formula-setting { display:flex; flex-direction:column; gap:2px; }
+.formula-setting-label { font-family:var(--font-mono); font-size:var(--text-xs); color:var(--color-text-tertiary); }
+.formula-setting-value { font-family:var(--font-display); font-size:var(--text-md); font-weight:600; color:var(--color-text-heading); }
+.formula-lye-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px 16px; }
+.formula-lye-item { display:flex; flex-direction:column; gap:2px; }
+.formula-lye-label { font-family:var(--font-mono); font-size:var(--text-xs); color:var(--color-text-tertiary); }
+.formula-lye-value { font-family:var(--font-display); font-size:var(--text-md); font-weight:600; color:var(--color-text-heading); }
+.formula-score-big {
+  text-align:center; padding:16px; margin-bottom:12px;
+  background:var(--color-surface-secondary); border-radius:var(--radius-lg);
+}
+.formula-score-number { font-family:var(--font-display); font-size:42px; font-weight:600; line-height:1; }
+.formula-score-label { font-family:var(--font-mono); font-size:var(--text-xs); color:var(--color-text-tertiary); margin-top:4px; }
+.formula-notes { font-size:var(--text-md); color:var(--color-text-secondary); line-height:1.5; padding:8px 0; }
+.formula-footer { display:flex; justify-content:flex-end; gap:8px; margin-top:18px; padding-top:14px; border-top:1px solid var(--color-border-separator); }
+
+/* Product detail modal: batch cards */
+.product-batch-cards { display:flex; flex-direction:column; gap:8px; }
+.product-batch-card {
+  display:flex; align-items:center; gap:12px; padding:10px 12px;
+  background:var(--color-surface-secondary); border-radius:var(--radius-md);
+  border:1px solid var(--color-border-subtle); cursor:pointer; transition:border-color var(--transition-fast);
+}
+.product-batch-card:hover { border-color:var(--color-primary); }
+.product-batch-number {
+  font-family:var(--font-mono); font-size:var(--text-sm); font-weight:600;
+  color:var(--color-primary); background:var(--color-primary-tint);
+  padding:2px 8px; border-radius:var(--radius-sm); white-space:nowrap;
+}
+.product-batch-score {
+  font-family:var(--font-display); font-size:var(--text-sm); font-weight:600;
+  min-width:28px; text-align:center;
+}
+.product-batch-date { font-family:var(--font-mono); font-size:var(--text-xs); color:var(--color-text-tertiary); flex:1; }
+.product-batch-empty { text-align:center; padding:20px; color:var(--color-text-tertiary); font-size:var(--text-sm); }
+.product-detail-section { margin-bottom:16px; }
+.product-detail-section-title {
+  font-family:var(--font-mono); font-size:var(--text-xs); color:var(--color-text-tertiary);
+  text-transform:uppercase; letter-spacing:-0.3px; margin-bottom:8px;
+}
+.product-detail-info { display:grid; grid-template-columns:1fr 1fr; gap:8px 16px; margin-bottom:16px; }
+.product-detail-item { display:flex; flex-direction:column; gap:2px; }
+.product-detail-label { font-family:var(--font-mono); font-size:var(--text-xs); color:var(--color-text-tertiary); }
+.product-detail-value { font-size:var(--text-md); color:var(--color-text); font-weight:500; }
+.product-detail-header { display:flex; align-items:center; gap:12px; margin-bottom:16px; }
+.product-detail-header img { width:60px; height:60px; object-fit:cover; border-radius:var(--radius-md); }
+.product-detail-header-info { flex:1; }
+.product-detail-title { font-family:var(--font-display); font-size:var(--text-h3); font-weight:600; color:var(--color-text-heading); }
+.product-detail-variant { font-size:var(--text-sm); color:var(--color-text-secondary); }
+.product-batch-view-all {
+  text-align:center; padding:8px; font-size:var(--text-sm); color:var(--color-primary);
+  cursor:pointer; font-weight:500;
+}
+.product-batch-view-all:hover { text-decoration:underline; }
+.products-table tr { cursor:pointer; }
+.products-table tr:hover td { background:var(--color-surface-secondary); }
+
 </style>
 </head>
 <body>
@@ -17289,55 +17390,497 @@ function _formulatorReadForm() {
   };
 }
 
-// ── Save batch ──
+// ── Save batch (opens modal) ──
 function formulatorSaveBatch() {
   if (formulatorOils.length === 0) return;
   var f = _formulatorReadForm();
   var props = calcSoapProperties(formulatorOils);
   var lyeCalc = calcLye(formulatorOils, f.superfat, f.lyeConc);
   var cost = calcCostPerBar(formulatorOils, f.fragOz, f.fragCost, f.bars);
-
-  var batchName = prompt("Batch name:", f.fragName ? f.fragName + " Bar" : "New Soap Batch");
-  if (!batchName) return;
-
   var oilsSnapshot = formulatorOils.map(function(e) { return { name: e.oil.name, weightOz: e.weightOz }; });
-  var linkedProductName = "";
-  if (f.linkedProductId) {
-    var prod = (typeof shopifyProducts !== "undefined" ? shopifyProducts : []).find(function(p) { return p.id === f.linkedProductId; });
-    linkedProductName = prod ? prod.title : "";
+  var defaultName = f.fragName ? f.fragName + " Bar" : "New Soap Batch";
+
+  _openBatchSaveModal(defaultName, f, oilsSnapshot, props, lyeCalc, cost, function(modalValues) {
+    var batchName = modalValues.batchName;
+    var batchNumber = modalValues.batchNumber;
+    var linkedProductId = modalValues.linkedProductId;
+    var notes = modalValues.notes;
+    var isMasterFormula = modalValues.isMasterFormula;
+
+    var linkedProductName = "";
+    if (linkedProductId) {
+      var prod = (typeof shopifyProducts !== "undefined" ? shopifyProducts : []).find(function(p) { return p.id === linkedProductId; });
+      linkedProductName = prod ? prod.title : "";
+    }
+
+    if (formulatorEditingBatchId) {
+      var batch = soapBatches.find(function(b) { return b.id === formulatorEditingBatchId; });
+      if (batch) {
+        batch.name = batchName; batch.batchNumber = batchNumber;
+        batch.oils = oilsSnapshot; batch.superfat = f.superfat; batch.lyeConcentration = f.lyeConc;
+        batch.fragrance = f.fragName; batch.fragranceOz = f.fragOz; batch.fragranceCostPerOz = f.fragCost;
+        batch.colorant = f.colorant; batch.notes = notes;
+        batch.properties = props; batch.lyeCalc = lyeCalc; batch.qualityScore = props.qualityScore;
+        batch.barsProduced = f.bars; batch.costPerBar = cost.costPerBar;
+        batch.linkedProductId = linkedProductId; batch.linkedProductName = linkedProductName;
+        batch.isMasterFormula = isMasterFormula;
+        batch.updatedAt = new Date().toISOString().slice(0, 10);
+      }
+      formulatorSaveBatches(batch);
+      formulatorEditingBatchId = null;
+    } else {
+      var newBatch = {
+        id: "sb_" + Date.now(), name: batchName, batchNumber: batchNumber,
+        date: new Date().toISOString().slice(0, 10),
+        oils: oilsSnapshot, superfat: f.superfat, lyeConcentration: f.lyeConc,
+        fragrance: f.fragName, fragranceOz: f.fragOz, fragranceCostPerOz: f.fragCost,
+        colorant: f.colorant, notes: notes,
+        properties: props, lyeCalc: lyeCalc, qualityScore: props.qualityScore,
+        status: "planning", barsProduced: f.bars, costPerBar: cost.costPerBar,
+        linkedProductId: linkedProductId, linkedProductName: linkedProductName,
+        isMasterFormula: isMasterFormula
+      };
+      soapBatches.push(newBatch);
+      formulatorSaveBatches(newBatch);
+    }
+    // Sync form fields with modal values
+    document.getElementById("formulator-notes").value = notes;
+    document.getElementById("formulator-batch-number").value = batchNumber;
+    var linkSel = document.getElementById("formulator-link-product");
+    if (linkSel) linkSel.value = linkedProductId;
+    var masterCb = document.getElementById("formulator-master-formula");
+    if (masterCb) masterCb.checked = isMasterFormula;
+    formulatorRenderBatchTable();
+    formulatorPopulateLoadDropdown();
+  });
+}
+
+// ── Batch Save Modal ──
+function _openBatchSaveModal(defaultName, formData, oilsSnapshot, props, lyeCalc, cost, callback) {
+  var overlay = document.createElement("div");
+  overlay.className = "crm-quick-edit-overlay";
+  overlay.addEventListener("click", function(e) { if (e.target === overlay) overlay.remove(); });
+
+  var modal = document.createElement("div");
+  modal.className = "crm-quick-edit-modal batch-save-modal";
+
+  // Title
+  var titleEl = document.createElement("div");
+  titleEl.className = "crm-quick-edit-title";
+  titleEl.textContent = "Save Batch";
+  modal.appendChild(titleEl);
+
+  // Batch Name
+  var nameField = document.createElement("div");
+  nameField.className = "batch-modal-field";
+  var nameLabel = document.createElement("label");
+  nameLabel.textContent = "Batch Name";
+  nameField.appendChild(nameLabel);
+  var nameInput = document.createElement("input");
+  nameInput.type = "text";
+  nameInput.value = defaultName;
+  nameInput.placeholder = "e.g. Lavender Dream Bar";
+  nameField.appendChild(nameInput);
+  modal.appendChild(nameField);
+
+  // Batch Number
+  var numField = document.createElement("div");
+  numField.className = "batch-modal-field";
+  var numLabel = document.createElement("label");
+  numLabel.textContent = "Batch Number";
+  numField.appendChild(numLabel);
+  var numInput = document.createElement("input");
+  numInput.type = "text";
+  numInput.value = formData.batchNumber || "";
+  numInput.placeholder = "e.g. SOAP-2026-001";
+  numField.appendChild(numInput);
+  modal.appendChild(numField);
+
+  // Link to Product
+  var prodField = document.createElement("div");
+  prodField.className = "batch-modal-field";
+  var prodLabel = document.createElement("label");
+  prodLabel.textContent = "Link to Product";
+  prodField.appendChild(prodLabel);
+  var prodSelect = document.createElement("select");
+  var defOpt = document.createElement("option");
+  defOpt.value = "";
+  defOpt.textContent = "-- Not linked --";
+  prodSelect.appendChild(defOpt);
+  var products = typeof shopifyProducts !== "undefined" ? shopifyProducts : [];
+  var soapProducts = products.filter(function(p) {
+    var haystack = ((p.productType || "") + " " + (p.tags || "") + " " + (p.title || "")).toLowerCase();
+    return haystack.indexOf("soap") !== -1;
+  });
+  var productsToShow = soapProducts.length > 0 ? soapProducts : products;
+  productsToShow.forEach(function(p) {
+    var opt = document.createElement("option");
+    opt.value = p.id;
+    opt.textContent = p.title + (p.sku ? " (" + p.sku + ")" : "");
+    prodSelect.appendChild(opt);
+  });
+  if (formData.linkedProductId) prodSelect.value = formData.linkedProductId;
+  prodField.appendChild(prodSelect);
+  modal.appendChild(prodField);
+
+  // Notes
+  var notesField = document.createElement("div");
+  notesField.className = "batch-modal-field";
+  var notesLabel = document.createElement("label");
+  notesLabel.textContent = "Notes";
+  notesField.appendChild(notesLabel);
+  var notesTextarea = document.createElement("textarea");
+  notesTextarea.value = formData.notes || "";
+  notesTextarea.placeholder = "Recipe notes, tweaks from base formula...";
+  notesField.appendChild(notesTextarea);
+  modal.appendChild(notesField);
+
+  // Master formula checkbox
+  var checkRow = document.createElement("div");
+  checkRow.className = "batch-modal-checkbox";
+  var checkInput = document.createElement("input");
+  checkInput.type = "checkbox";
+  checkInput.id = "batch-save-master-" + Date.now();
+  checkInput.checked = !!formData.isMasterFormula;
+  checkRow.appendChild(checkInput);
+  var checkLabel = document.createElement("label");
+  checkLabel.setAttribute("for", checkInput.id);
+  checkLabel.textContent = "Set as master formula for linked product";
+  checkRow.appendChild(checkLabel);
+  modal.appendChild(checkRow);
+
+  // Actions
+  var actions = document.createElement("div");
+  actions.className = "crm-quick-edit-actions";
+  var cancelBtn = document.createElement("button");
+  cancelBtn.className = "crm-quick-edit-cancel";
+  cancelBtn.textContent = "Cancel";
+  cancelBtn.addEventListener("click", function() { overlay.remove(); });
+  actions.appendChild(cancelBtn);
+
+  var saveBtn = document.createElement("button");
+  saveBtn.className = "crm-quick-edit-save";
+  saveBtn.textContent = "Save Batch";
+  saveBtn.addEventListener("click", function() {
+    var batchName = nameInput.value.trim();
+    if (!batchName) { nameInput.focus(); return; }
+    overlay.remove();
+    callback({
+      batchName: batchName,
+      batchNumber: numInput.value.trim(),
+      linkedProductId: prodSelect.value,
+      notes: notesTextarea.value,
+      isMasterFormula: checkInput.checked
+    });
+  });
+  actions.appendChild(saveBtn);
+  modal.appendChild(actions);
+
+  overlay.appendChild(modal);
+  document.body.appendChild(overlay);
+  setTimeout(function() { nameInput.focus(); nameInput.select(); }, 50);
+}
+
+// ── Batch Formula Summary Modal (read-only, callable from anywhere) ──
+function openBatchFormulaModal(batchId) {
+  var batch = soapBatches.find(function(b) { return b.id === batchId; });
+  if (!batch) return;
+
+  var overlay = document.createElement("div");
+  overlay.className = "crm-quick-edit-overlay";
+  overlay.addEventListener("click", function(e) { if (e.target === overlay) overlay.remove(); });
+
+  var modal = document.createElement("div");
+  modal.className = "crm-quick-edit-modal batch-formula-modal";
+
+  // Header: name + batch number + date + status
+  var header = document.createElement("div");
+  header.className = "formula-header";
+  var headerName = document.createElement("span");
+  headerName.className = "formula-header-name";
+  headerName.textContent = batch.name || "Untitled Batch";
+  header.appendChild(headerName);
+  if (batch.batchNumber) {
+    var headerNum = document.createElement("span");
+    headerNum.className = "formula-header-badge";
+    headerNum.style.background = "var(--color-primary-tint)";
+    headerNum.style.color = "var(--color-primary)";
+    headerNum.textContent = batch.batchNumber;
+    header.appendChild(headerNum);
+  }
+  if (batch.date) {
+    var headerDate = document.createElement("span");
+    headerDate.className = "formula-header-date";
+    headerDate.textContent = batch.date;
+    header.appendChild(headerDate);
+  }
+  if (batch.status) {
+    var statusBadge = document.createElement("span");
+    statusBadge.className = "formulator-batch-status formulator-status-" + (batch.status || "planning");
+    statusBadge.textContent = (batch.status || "planning").replace("-", " ");
+    header.appendChild(statusBadge);
+  }
+  modal.appendChild(header);
+
+  // Oils table
+  if (batch.oils && batch.oils.length > 0) {
+    var oilSection = document.createElement("div");
+    oilSection.className = "formula-section";
+    var oilTitle = document.createElement("div");
+    oilTitle.className = "formula-section-title";
+    oilTitle.textContent = "Oils";
+    oilSection.appendChild(oilTitle);
+
+    var totalWeight = 0;
+    batch.oils.forEach(function(o) { totalWeight += (o.weightOz || 0); });
+
+    var oilTable = document.createElement("table");
+    oilTable.className = "formula-oils-table";
+    var thead = document.createElement("thead");
+    var thRow = document.createElement("tr");
+    ["Oil", "Weight (oz)", "%"].forEach(function(txt) {
+      var th = document.createElement("th");
+      th.textContent = txt;
+      thRow.appendChild(th);
+    });
+    thead.appendChild(thRow);
+    oilTable.appendChild(thead);
+    var tbody = document.createElement("tbody");
+    batch.oils.forEach(function(o) {
+      var tr = document.createElement("tr");
+      var tdName = document.createElement("td");
+      tdName.textContent = o.name;
+      tr.appendChild(tdName);
+      var tdWeight = document.createElement("td");
+      tdWeight.textContent = (o.weightOz || 0).toFixed(1);
+      tdWeight.style.fontFamily = "var(--font-mono)";
+      tdWeight.style.fontSize = "var(--text-xs)";
+      tr.appendChild(tdWeight);
+      var tdPct = document.createElement("td");
+      tdPct.textContent = totalWeight > 0 ? ((o.weightOz / totalWeight) * 100).toFixed(1) + "%" : "0%";
+      tdPct.style.fontFamily = "var(--font-mono)";
+      tdPct.style.fontSize = "var(--text-xs)";
+      tr.appendChild(tdPct);
+      tbody.appendChild(tr);
+    });
+    oilTable.appendChild(tbody);
+    oilSection.appendChild(oilTable);
+    modal.appendChild(oilSection);
   }
 
-  if (formulatorEditingBatchId) {
-    var batch = soapBatches.find(function(b) { return b.id === formulatorEditingBatchId; });
-    if (batch) {
-      batch.name = batchName; batch.batchNumber = f.batchNumber;
-      batch.oils = oilsSnapshot; batch.superfat = f.superfat; batch.lyeConcentration = f.lyeConc;
-      batch.fragrance = f.fragName; batch.fragranceOz = f.fragOz; batch.fragranceCostPerOz = f.fragCost;
-      batch.colorant = f.colorant; batch.notes = f.notes;
-      batch.properties = props; batch.lyeCalc = lyeCalc; batch.qualityScore = props.qualityScore;
-      batch.barsProduced = f.bars; batch.costPerBar = cost.costPerBar;
-      batch.linkedProductId = f.linkedProductId; batch.linkedProductName = linkedProductName;
-      batch.isMasterFormula = f.isMasterFormula;
-      batch.updatedAt = new Date().toISOString().slice(0, 10);
+  // Settings row: superfat + lye concentration
+  var settingsSection = document.createElement("div");
+  settingsSection.className = "formula-section";
+  var settingsTitle = document.createElement("div");
+  settingsTitle.className = "formula-section-title";
+  settingsTitle.textContent = "Settings";
+  settingsSection.appendChild(settingsTitle);
+  var settingsRow = document.createElement("div");
+  settingsRow.className = "formula-settings-row";
+  var sfItem = document.createElement("div");
+  sfItem.className = "formula-setting";
+  var sfLabel = document.createElement("span");
+  sfLabel.className = "formula-setting-label";
+  sfLabel.textContent = "Superfat";
+  sfItem.appendChild(sfLabel);
+  var sfVal = document.createElement("span");
+  sfVal.className = "formula-setting-value";
+  sfVal.textContent = (batch.superfat != null ? batch.superfat : "--") + "%";
+  sfItem.appendChild(sfVal);
+  settingsRow.appendChild(sfItem);
+  var lcItem = document.createElement("div");
+  lcItem.className = "formula-setting";
+  var lcLabel = document.createElement("span");
+  lcLabel.className = "formula-setting-label";
+  lcLabel.textContent = "Lye Concentration";
+  lcItem.appendChild(lcLabel);
+  var lcVal = document.createElement("span");
+  lcVal.className = "formula-setting-value";
+  lcVal.textContent = (batch.lyeConcentration != null ? batch.lyeConcentration : "--") + "%";
+  lcItem.appendChild(lcVal);
+  settingsRow.appendChild(lcItem);
+  settingsSection.appendChild(settingsRow);
+  modal.appendChild(settingsSection);
+
+  // Fragrance + Colorant
+  if (batch.fragrance || batch.colorant) {
+    var fragSection = document.createElement("div");
+    fragSection.className = "formula-section";
+    var fragTitle = document.createElement("div");
+    fragTitle.className = "formula-section-title";
+    fragTitle.textContent = "Fragrance & Colorant";
+    fragSection.appendChild(fragTitle);
+    var fragRow = document.createElement("div");
+    fragRow.className = "formula-settings-row";
+    if (batch.fragrance) {
+      var fragItem = document.createElement("div");
+      fragItem.className = "formula-setting";
+      var fragLabel = document.createElement("span");
+      fragLabel.className = "formula-setting-label";
+      fragLabel.textContent = "Fragrance";
+      fragItem.appendChild(fragLabel);
+      var fragVal = document.createElement("span");
+      fragVal.className = "formula-setting-value";
+      fragVal.textContent = batch.fragrance + (batch.fragranceOz ? " (" + batch.fragranceOz + " oz)" : "");
+      fragItem.appendChild(fragVal);
+      fragRow.appendChild(fragItem);
     }
-    formulatorEditingBatchId = null;
-  } else {
-    var newBatch = {
-      id: "sb_" + Date.now(), name: batchName, batchNumber: f.batchNumber,
-      date: new Date().toISOString().slice(0, 10),
-      oils: oilsSnapshot, superfat: f.superfat, lyeConcentration: f.lyeConc,
-      fragrance: f.fragName, fragranceOz: f.fragOz, fragranceCostPerOz: f.fragCost,
-      colorant: f.colorant, notes: f.notes,
-      properties: props, lyeCalc: lyeCalc, qualityScore: props.qualityScore,
-      status: "planning", barsProduced: f.bars, costPerBar: cost.costPerBar,
-      linkedProductId: f.linkedProductId, linkedProductName: linkedProductName,
-      isMasterFormula: f.isMasterFormula
-    };
-    soapBatches.push(newBatch);
+    if (batch.colorant) {
+      var colItem = document.createElement("div");
+      colItem.className = "formula-setting";
+      var colLabel = document.createElement("span");
+      colLabel.className = "formula-setting-label";
+      colLabel.textContent = "Colorant";
+      colItem.appendChild(colLabel);
+      var colVal = document.createElement("span");
+      colVal.className = "formula-setting-value";
+      colVal.textContent = batch.colorant;
+      colItem.appendChild(colVal);
+      fragRow.appendChild(colItem);
+    }
+    fragSection.appendChild(fragRow);
+    modal.appendChild(fragSection);
   }
-  formulatorSaveBatches(formulatorEditingBatchId ? batch : newBatch);
-  formulatorRenderBatchTable();
-  formulatorPopulateLoadDropdown();
+
+  // Properties bars
+  var batchProps = batch.properties;
+  if (batchProps) {
+    var propsSection = document.createElement("div");
+    propsSection.className = "formula-section";
+    var propsTitle = document.createElement("div");
+    propsTitle.className = "formula-section-title";
+    propsTitle.textContent = "Properties";
+    propsSection.appendChild(propsTitle);
+    var propsContainer = document.createElement("div");
+    propsContainer.className = "formulator-properties";
+
+    var barDefs = [
+      { key:"hardness", label:"Hardness", lo:29, hi:54, max:100 },
+      { key:"cleansing", label:"Cleansing", lo:12, hi:22, max:80 },
+      { key:"conditioning", label:"Conditioning", lo:44, hi:69, max:100 },
+      { key:"bubbly", label:"Bubbly", lo:14, hi:46, max:100 },
+      { key:"creamy", label:"Creamy", lo:16, hi:48, max:100 },
+      { key:"iodine", label:"Iodine", lo:41, hi:70, max:200 },
+      { key:"ins", label:"INS", lo:136, hi:165, max:270 }
+    ];
+    barDefs.forEach(function(d) {
+      var val = batchProps[d.key] || 0;
+      var barRow = document.createElement("div");
+      barRow.className = "formulator-property-bar";
+      var label = document.createElement("span");
+      label.className = "formulator-property-label";
+      label.textContent = d.label;
+      barRow.appendChild(label);
+      var track = document.createElement("div");
+      track.className = "formulator-property-track";
+      var fill = document.createElement("div");
+      fill.className = "formulator-property-fill";
+      fill.style.width = Math.min(val / d.max * 100, 100) + "%";
+      var diff = 0;
+      if (val < d.lo) diff = d.lo - val;
+      else if (val > d.hi) diff = val - d.hi;
+      if (diff === 0) fill.classList.add("formulator-bar-green");
+      else if (diff <= 10) fill.classList.add("formulator-bar-amber");
+      else fill.classList.add("formulator-bar-red");
+      track.appendChild(fill);
+      barRow.appendChild(track);
+      var valSpan = document.createElement("span");
+      valSpan.className = "formulator-property-value";
+      valSpan.textContent = String(val);
+      barRow.appendChild(valSpan);
+      propsContainer.appendChild(barRow);
+    });
+    propsSection.appendChild(propsContainer);
+    modal.appendChild(propsSection);
+  }
+
+  // Quality score big number
+  var scoreSection = document.createElement("div");
+  scoreSection.className = "formula-score-big";
+  var scoreNum = document.createElement("div");
+  scoreNum.className = "formula-score-number";
+  var qs = batch.qualityScore;
+  scoreNum.textContent = qs != null ? String(qs) : "--";
+  if (qs >= 80) scoreNum.style.color = "#00a52c";
+  else if (qs >= 60) scoreNum.style.color = "#b06000";
+  else if (qs != null) scoreNum.style.color = "#c5221f";
+  scoreSection.appendChild(scoreNum);
+  var scoreLbl = document.createElement("div");
+  scoreLbl.className = "formula-score-label";
+  scoreLbl.textContent = "Quality Score";
+  scoreSection.appendChild(scoreLbl);
+  modal.appendChild(scoreSection);
+
+  // Lye calculator results
+  var lyeData = batch.lyeCalc;
+  if (lyeData) {
+    var lyeSection = document.createElement("div");
+    lyeSection.className = "formula-section";
+    var lyeTitle = document.createElement("div");
+    lyeTitle.className = "formula-section-title";
+    lyeTitle.textContent = "Lye Calculator";
+    lyeSection.appendChild(lyeTitle);
+    var lyeGrid = document.createElement("div");
+    lyeGrid.className = "formula-lye-grid";
+    [
+      { label: "NaOH", value: (lyeData.naohWeight || 0).toFixed(2) + " oz" },
+      { label: "Water", value: (lyeData.waterWeight || 0).toFixed(2) + " oz" },
+      { label: "Total Oil", value: (lyeData.totalOilWeight || 0).toFixed(2) + " oz" },
+      { label: "Total Batch", value: (lyeData.totalBatchWeight || 0).toFixed(2) + " oz" }
+    ].forEach(function(item) {
+      var lyeItem = document.createElement("div");
+      lyeItem.className = "formula-lye-item";
+      var lyeLbl = document.createElement("span");
+      lyeLbl.className = "formula-lye-label";
+      lyeLbl.textContent = item.label;
+      lyeItem.appendChild(lyeLbl);
+      var lyeVal = document.createElement("span");
+      lyeVal.className = "formula-lye-value";
+      lyeVal.textContent = item.value;
+      lyeItem.appendChild(lyeVal);
+      lyeGrid.appendChild(lyeItem);
+    });
+    lyeSection.appendChild(lyeGrid);
+    modal.appendChild(lyeSection);
+  }
+
+  // Notes
+  if (batch.notes) {
+    var notesSection = document.createElement("div");
+    notesSection.className = "formula-section";
+    var notesTitle = document.createElement("div");
+    notesTitle.className = "formula-section-title";
+    notesTitle.textContent = "Notes";
+    notesSection.appendChild(notesTitle);
+    var notesText = document.createElement("div");
+    notesText.className = "formula-notes";
+    notesText.textContent = batch.notes;
+    notesSection.appendChild(notesText);
+    modal.appendChild(notesSection);
+  }
+
+  // Footer buttons
+  var footer = document.createElement("div");
+  footer.className = "formula-footer";
+  var closeBtn = document.createElement("button");
+  closeBtn.className = "crm-quick-edit-cancel";
+  closeBtn.textContent = "Close";
+  closeBtn.addEventListener("click", function() { overlay.remove(); });
+  footer.appendChild(closeBtn);
+
+  var loadBtn = document.createElement("button");
+  loadBtn.className = "crm-quick-edit-save";
+  loadBtn.textContent = "Load into Formulator";
+  loadBtn.addEventListener("click", function() {
+    overlay.remove();
+    navigateTo("tools/formulator");
+    setTimeout(function() { formulatorLoadBatch(batchId); }, 100);
+  });
+  footer.appendChild(loadBtn);
+  modal.appendChild(footer);
+
+  overlay.appendChild(modal);
+  document.body.appendChild(overlay);
 }
 
 // ── Save/update master formula for linked product ──
@@ -21675,9 +22218,178 @@ function renderProducts() {
     tdType.textContent = p.productType || "\u2014";
     tr.appendChild(tdType);
 
+    // Click handler to open product detail modal
+    tr.addEventListener("click", (function(product) {
+      return function(e) {
+        // Don't open modal if clicking stock edit area
+        if (e.target.closest && e.target.closest(".stock-badge, .stock-edit-input, .stock-save-btn")) return;
+        openProductDetailModal(product);
+      };
+    })(p));
+
     frag.appendChild(tr);
   });
   tbody.appendChild(frag);
+}
+
+// ── Product Detail Modal with Batch Cards ──
+function openProductDetailModal(product) {
+  var overlay = document.createElement("div");
+  overlay.className = "crm-quick-edit-overlay";
+  overlay.addEventListener("click", function(e) { if (e.target === overlay) overlay.remove(); });
+
+  var modal = document.createElement("div");
+  modal.className = "crm-quick-edit-modal product-detail-modal";
+
+  // Header: image + title + variant
+  var header = document.createElement("div");
+  header.className = "product-detail-header";
+  if (product.imageUrl) {
+    var img = document.createElement("img");
+    img.src = product.imageUrl;
+    img.alt = product.title || "";
+    img.loading = "lazy";
+    header.appendChild(img);
+  }
+  var headerInfo = document.createElement("div");
+  headerInfo.className = "product-detail-header-info";
+  var titleEl = document.createElement("div");
+  titleEl.className = "product-detail-title";
+  titleEl.textContent = product.title || "Untitled Product";
+  headerInfo.appendChild(titleEl);
+  if (product.variantTitle) {
+    var varEl = document.createElement("div");
+    varEl.className = "product-detail-variant";
+    varEl.textContent = product.variantTitle;
+    headerInfo.appendChild(varEl);
+  }
+  header.appendChild(headerInfo);
+  modal.appendChild(header);
+
+  // Product info grid
+  var infoGrid = document.createElement("div");
+  infoGrid.className = "product-detail-info";
+  var infoItems = [
+    { label: "SKU", value: product.sku || "\u2014" },
+    { label: "Price", value: product.price ? "\u00A5" + Number(product.price).toLocaleString() : "\u2014" },
+    { label: "Stock", value: String(parseInt(product.inventoryQuantity, 10) || 0) },
+    { label: "Status", value: product.status || "draft" },
+    { label: "Type", value: product.productType || "\u2014" },
+    { label: "Vendor", value: product.vendor || "\u2014" }
+  ];
+  infoItems.forEach(function(item) {
+    var el = document.createElement("div");
+    el.className = "product-detail-item";
+    var lbl = document.createElement("span");
+    lbl.className = "product-detail-label";
+    lbl.textContent = item.label;
+    el.appendChild(lbl);
+    var val = document.createElement("span");
+    val.className = "product-detail-value";
+    val.textContent = item.value;
+    el.appendChild(val);
+    infoGrid.appendChild(el);
+  });
+  modal.appendChild(infoGrid);
+
+  // Soap Batches section
+  var batchSection = document.createElement("div");
+  batchSection.className = "product-detail-section";
+
+  // Find batches linked to this product
+  var productBatches = (typeof soapBatches !== "undefined" ? soapBatches : []).filter(function(b) {
+    if (b.linkedProductId && b.linkedProductId === product.id) return true;
+    if (b.linkedProductName && product.title && b.linkedProductName.toLowerCase() === product.title.toLowerCase()) return true;
+    return false;
+  });
+  // Sort by date descending
+  productBatches.sort(function(a, b) { return (b.date || "").localeCompare(a.date || ""); });
+
+  var batchHeaderRow = document.createElement("div");
+  batchHeaderRow.style.cssText = "display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;";
+  var batchTitle = document.createElement("div");
+  batchTitle.className = "product-detail-section-title";
+  batchTitle.style.marginBottom = "0";
+  batchTitle.textContent = "Soap Batches (" + productBatches.length + ")";
+  batchHeaderRow.appendChild(batchTitle);
+  batchSection.appendChild(batchHeaderRow);
+
+  if (productBatches.length === 0) {
+    var emptyEl = document.createElement("div");
+    emptyEl.className = "product-batch-empty";
+    emptyEl.textContent = "No batches recorded";
+    batchSection.appendChild(emptyEl);
+  } else {
+    var cardsContainer = document.createElement("div");
+    cardsContainer.className = "product-batch-cards";
+    var showBatches = productBatches.slice(0, 5);
+    showBatches.forEach(function(batch) {
+      var card = document.createElement("div");
+      card.className = "product-batch-card";
+      card.addEventListener("click", function(e) {
+        e.stopPropagation();
+        overlay.remove();
+        openBatchFormulaModal(batch.id);
+      });
+
+      // Batch number badge
+      var numBadge = document.createElement("span");
+      numBadge.className = "product-batch-number";
+      numBadge.textContent = batch.batchNumber || batch.id;
+      card.appendChild(numBadge);
+
+      // Quality score
+      var scoreEl = document.createElement("span");
+      scoreEl.className = "product-batch-score";
+      var qs = batch.qualityScore;
+      scoreEl.textContent = qs != null ? String(qs) : "--";
+      if (qs >= 80) scoreEl.style.color = "#00a52c";
+      else if (qs >= 60) scoreEl.style.color = "#b06000";
+      else if (qs != null) scoreEl.style.color = "#c5221f";
+      card.appendChild(scoreEl);
+
+      // Date
+      var dateEl = document.createElement("span");
+      dateEl.className = "product-batch-date";
+      dateEl.textContent = batch.date || "";
+      card.appendChild(dateEl);
+
+      // Status badge
+      var statusEl = document.createElement("span");
+      statusEl.className = "formulator-batch-status formulator-status-" + (batch.status || "planning");
+      statusEl.textContent = (batch.status || "planning").replace("-", " ");
+      card.appendChild(statusEl);
+
+      cardsContainer.appendChild(card);
+    });
+    batchSection.appendChild(cardsContainer);
+
+    // "View all in Formulator" link if more than 5
+    if (productBatches.length > 5) {
+      var viewAll = document.createElement("div");
+      viewAll.className = "product-batch-view-all";
+      viewAll.textContent = "View all " + productBatches.length + " batches in Formulator";
+      viewAll.addEventListener("click", function() {
+        overlay.remove();
+        navigateTo("tools/formulator");
+      });
+      batchSection.appendChild(viewAll);
+    }
+  }
+  modal.appendChild(batchSection);
+
+  // Footer
+  var footer = document.createElement("div");
+  footer.className = "formula-footer";
+  var closeBtn = document.createElement("button");
+  closeBtn.className = "crm-quick-edit-cancel";
+  closeBtn.textContent = "Close";
+  closeBtn.addEventListener("click", function() { overlay.remove(); });
+  footer.appendChild(closeBtn);
+  modal.appendChild(footer);
+
+  overlay.appendChild(modal);
+  document.body.appendChild(overlay);
 }
 
 function openInlineStockEdit(product, cell) {
