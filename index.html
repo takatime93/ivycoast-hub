@@ -17123,12 +17123,39 @@ var SOAP_OIL_DB = [
 
 // Current recipe state
 // Product recipe presets — actual Ivycoast product formulas
+// Real production formulas (single batch = 12×130g bars)
+// All use 鹸化率 92% (superfat 8%), water = 34% of oil weight
 var SOAP_PRODUCT_PRESETS = [
-  { name: "Byron Bay", category: "Soap", oils: [{name:"Olive Oil",weightOz:14},{name:"Coconut Oil (76°)",weightOz:8},{name:"Shea Butter",weightOz:4},{name:"Castor Oil",weightOz:2},{name:"Sweet Almond Oil",weightOz:2}], superfat:5, lyeConcentration:33, fragrance:"Byron Bay Blend (Lemon Myrtle + Eucalyptus)", fragranceOz:1.2, colorant:"Ocean blue mica swirl" },
-  { name: "Sunlight", category: "Soap", oils: [{name:"Olive Oil",weightOz:16},{name:"Coconut Oil (76°)",weightOz:6},{name:"Shea Butter",weightOz:4},{name:"Castor Oil",weightOz:2},{name:"Avocado Oil",weightOz:2}], superfat:6, lyeConcentration:33, fragrance:"Yuzu + Bergamot", fragranceOz:1, colorant:"Yellow oxide + turmeric" },
-  { name: "Moonlight", category: "Soap", oils: [{name:"Olive Oil",weightOz:15},{name:"Coconut Oil (76°)",weightOz:7},{name:"Cocoa Butter",weightOz:4},{name:"Castor Oil",weightOz:2},{name:"Avocado Oil",weightOz:2}], superfat:5, lyeConcentration:33, fragrance:"Lavender + Chamomile", fragranceOz:1.2, colorant:"Purple mica + activated charcoal accent" },
-  { name: "Tsubaki", category: "Soap", oils: [{name:"Olive Oil",weightOz:12},{name:"Coconut Oil (76°)",weightOz:6},{name:"Rice Bran Oil",weightOz:6},{name:"Shea Butter",weightOz:3},{name:"Castor Oil",weightOz:2},{name:"Sweet Almond Oil",weightOz:1}], superfat:7, lyeConcentration:33, fragrance:"Camellia + Hinoki", fragranceOz:1, colorant:"Pink clay" },
-  { name: "Paradise", category: "Soap", oils: [{name:"Coconut Oil (76°)",weightOz:10},{name:"Olive Oil",weightOz:10},{name:"Shea Butter",weightOz:4},{name:"Mango Butter",weightOz:3},{name:"Castor Oil",weightOz:3}], superfat:5, lyeConcentration:33, fragrance:"Tropical Coconut + Plumeria", fragranceOz:1.5, colorant:"Green and white swirl" },
+  { name: "Byron Bay + CBD", category: "Soap", date: "2025-10-08",
+    oils: [{name:"Olive Oil",weightOz:345},{name:"Coconut Oil (76\u00b0)",weightOz:240},{name:"Cocoa Butter",weightOz:70}],
+    superfat:8, lyeConcentration:30,
+    fragrance:"Peppermint Oil 260 drops", fragranceOz:13,
+    colorant:"Blue Clay 10g + Aust Salt 8g + Poppyseed 4.5g",
+    notes:"CBD Oil 65 drops. \u3088\u304f\u3064\u3076\u3059\u3053\u3068\uff01(salt). 椿オレンジMIX (clay). NaOH 93.1g, P.W 223g per batch. ×2 = 24 bars." },
+  { name: "Paradise + CBD", category: "Soap", date: "2026-03-13",
+    oils: [{name:"Olive Oil",weightOz:475},{name:"Coconut Oil (76\u00b0)",weightOz:118},{name:"Cocoa Butter",weightOz:62}],
+    superfat:8, lyeConcentration:30,
+    fragrance:"Tea Tree 8.8g + Eucalyptus 8.8g + Peppermint 8.8g", fragranceOz:26.4,
+    colorant:"Green Clay 35g + 23g Jojoba Oil",
+    notes:"CBD 6g. NaOH 175.6g, P.W 446g for ×2 batch. ミルキーだいすき (soap note on package)." },
+  { name: "Chamomile + CBD", category: "Soap", date: "2026-03-16",
+    oils: [{name:"Olive Oil",weightOz:198},{name:"Coconut Oil (76\u00b0)",weightOz:156},{name:"Cocoa Butter",weightOz:78},{name:"Rice Bran Oil",weightOz:156},{name:"Jojoba Oil",weightOz:42},{name:"Shea Butter",weightOz:20}],
+    superfat:8, lyeConcentration:30,
+    fragrance:"Chamomile 4.6g + Ylang Ylang 12.5g + Bergamot 8.9g", fragranceOz:26,
+    colorant:"Chamomile Tincture 4 tbls + Dry Flower 4 tbls",
+    notes:"CBD 6g. P.W = \u30AB\u30E2\u30DF\u30ECTEA. 520 \u524D\u56DEBatch\u3088\u308A\u591A\u3081\u306B\u3059\u308B. NaOH 174g, Water 442g for ×2 batch." },
+  { name: "\u9EBB\u30B9\u30DF (Hemp Charcoal) + CBD", category: "Soap", date: "2026-03-12",
+    oils: [{name:"Rice Bran Oil",weightOz:156},{name:"Coconut Oil (76\u00b0)",weightOz:166},{name:"Cocoa Butter",weightOz:9},{name:"Sunflower Oil",weightOz:191},{name:"Castor Oil",weightOz:26},{name:"Avocado Oil",weightOz:21}],
+    superfat:8, lyeConcentration:30,
+    fragrance:"Lavender 14.5g + Rosemary 11.5g (1.5%)", fragranceOz:26,
+    colorant:"\u70AD (Charcoal) 4.5g",
+    notes:"CBD 6g. \u5927\u767D\u6CB9 = Sunflower Oil. NaOH 177.8g, P.W 442g for \u00d72 batch. Avocado Oil is NEW addition." },
+  { name: "\u693F (Tsubaki) + CBD", category: "Soap", date: "2026-03-11",
+    oils: [{name:"Olive Oil",weightOz:305},{name:"Coconut Oil (76\u00b0)",weightOz:245},{name:"Cocoa Butter",weightOz:70},{name:"Tsubaki Oil (Camellia)",weightOz:30}],
+    superfat:8, lyeConcentration:30,
+    fragrance:"Lavender \u30D6\u30EB\u30AC\u30EA 14g + Orange 12g", fragranceOz:26,
+    colorant:"Rose Clay 6g",
+    notes:"CBD Oil 120 drops = 6g (0.5%). NaOH 92.7g per batch (185.4g \u00d72), P.W 221g per batch (442g \u00d72)." },
 ];
 
 var formulatorOils = [];
