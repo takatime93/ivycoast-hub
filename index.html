@@ -5866,6 +5866,17 @@ select.contact-edit-input { appearance: auto; cursor: pointer; }
               <input type="number" id="formulator-superfat" min="0" max="25" step="1" value="5" style="width:80px" oninput="formulatorRecalc()">
             </div>
             <div class="formulator-field">
+              <label>Water Method</label>
+              <select id="formulator-water-method" style="width:160px" onchange="formulatorToggleWaterMethod();formulatorRecalc()">
+                <option value="pct">Japanese (% of oil)</option>
+                <option value="conc">Lye Concentration %</option>
+              </select>
+            </div>
+            <div class="formulator-field" id="formulator-water-pct-wrap">
+              <label>Water % of Oil</label>
+              <input type="number" id="formulator-water-pct" min="25" max="45" step="1" value="34" style="width:80px" oninput="formulatorRecalc()">
+            </div>
+            <div class="formulator-field" id="formulator-lye-conc-wrap" style="display:none">
               <label>Lye Concentration %</label>
               <input type="number" id="formulator-lye-conc" min="20" max="50" step="1" value="33" style="width:80px" oninput="formulatorRecalc()">
             </div>
@@ -17128,7 +17139,8 @@ function calcSoapProperties(oilEntries) {
 }
 
 // ── Lye calculation ──
-function calcLye(oilEntries, superfatPct, lyeConcentrationPct) {
+// waterMethod: "conc" (lye concentration %) or "pct" (水＝油脂 × 水の割合%)
+function calcLye(oilEntries, superfatPct, lyeConcentrationPct, waterMethod, waterPctOfOil) {
   var totalOilWeight = 0;
   var totalLyeNeeded = 0;
   oilEntries.forEach(function(e) {
@@ -17136,7 +17148,14 @@ function calcLye(oilEntries, superfatPct, lyeConcentrationPct) {
     totalLyeNeeded += e.weightOz * e.oil.sapNaOH;
   });
   var actualLye = totalLyeNeeded * (1 - superfatPct / 100);
-  var waterWeight = actualLye * (100 - lyeConcentrationPct) / lyeConcentrationPct;
+  var waterWeight;
+  if (waterMethod === "pct") {
+    // Japanese method: water = total oil × water percentage
+    waterWeight = totalOilWeight * (waterPctOfOil || 34) / 100;
+  } else {
+    // Standard method: water from lye concentration
+    waterWeight = actualLye * (100 - lyeConcentrationPct) / lyeConcentrationPct;
+  }
   return {
     naohWeight: Math.round(actualLye * 100) / 100,
     waterWeight: Math.round(waterWeight * 100) / 100,
@@ -17304,15 +17323,23 @@ function formulatorRenderOilList() {
 }
 
 // ── Recalculate everything ──
+function formulatorToggleWaterMethod() {
+  var method = document.getElementById("formulator-water-method").value;
+  document.getElementById("formulator-water-pct-wrap").style.display = method === "pct" ? "" : "none";
+  document.getElementById("formulator-lye-conc-wrap").style.display = method === "conc" ? "" : "none";
+}
+
 function formulatorRecalc() {
   var superfat = parseFloat(document.getElementById("formulator-superfat").value) || 5;
   var lyeConc = parseFloat(document.getElementById("formulator-lye-conc").value) || 33;
+  var waterMethod = document.getElementById("formulator-water-method").value || "pct";
+  var waterPct = parseFloat(document.getElementById("formulator-water-pct").value) || 34;
   var fragOz = parseFloat(document.getElementById("formulator-fragrance-oz").value) || 0;
   var fragCost = parseFloat(document.getElementById("formulator-fragrance-cost").value) || 0;
   var bars = parseInt(document.getElementById("formulator-bars").value, 10) || 10;
 
   // Lye results
-  var lye = calcLye(formulatorOils, superfat, lyeConc);
+  var lye = calcLye(formulatorOils, superfat, lyeConc, waterMethod, waterPct);
   document.getElementById("formulator-naoh").textContent = lye.naohWeight.toFixed(2);
   document.getElementById("formulator-water").textContent = lye.waterWeight.toFixed(2);
   document.getElementById("formulator-total-oil").textContent = lye.totalOilWeight.toFixed(2);
