@@ -5773,7 +5773,7 @@ select.contact-edit-input { appearance: auto; cursor: pointer; }
     <!-- Tools sub-navigation -->
     <div class="tools-subnav" id="tools-subnav">
       <button class="tools-subnav-tab active" data-tool="documents" onclick="navigateTo('tools/documents')">Documents</button>
-      <button class="tools-subnav-tab" data-tool="formulator" onclick="navigateTo('tools/formulator')">Soap Formulator</button>
+      <button class="tools-subnav-tab" data-tool="formulator" onclick="navigateTo('tools/formulator')">石けんフォーミュレーター</button>
     </div>
 
     <div id="tools-documents">
@@ -5823,37 +5823,37 @@ select.contact-edit-input { appearance: auto; cursor: pointer; }
 
     <!-- SOAP FORMULATOR -->
     <div id="tools-formulator" style="display:none">
-      <h2 class="section-title">Soap Formulator</h2>
-      <p class="section-subtitle">Calculate lye, water, and soap properties</p>
+      <h2 class="section-title">石けんフォーミュレーター</h2>
+      <p class="section-subtitle">苛性ソーダ・水・石けんの特性を計算</p>
 
       <div style="display:flex;align-items:center;gap:12px;margin:12px 32px 0;flex-wrap:wrap">
-        <label style="font-family:var(--font-display);font-size:var(--text-sm);font-weight:600;color:#062420">Load Recipe:</label>
+        <label style="font-family:var(--font-display);font-size:var(--text-sm);font-weight:600;color:#062420">レシピ読込:</label>
         <select id="formulator-load-preset" style="padding:6px 10px;border:1px solid var(--color-border);border-radius:var(--radius-md);font-size:var(--text-md);font-family:inherit;min-width:200px" onchange="formulatorLoadPreset(this.value)">
-          <option value="">— Select a recipe —</option>
-          <optgroup label="Ivycoast Products">
+          <option value="">— レシピを選択 —</option>
+          <optgroup label="Ivycoast 製品">
           </optgroup>
-          <optgroup label="Saved Batches">
+          <optgroup label="保存済みバッチ">
           </optgroup>
         </select>
-        <button onclick="formulatorNewBatch()" style="padding:6px 12px;border:1px solid var(--color-border);border-radius:var(--radius-md);background:none;font-size:var(--text-sm);cursor:pointer;color:var(--color-text-secondary)">Clear / New</button>
+        <button onclick="formulatorNewBatch()" style="padding:6px 12px;border:1px solid var(--color-border);border-radius:var(--radius-md);background:none;font-size:var(--text-sm);cursor:pointer;color:var(--color-text-secondary)">クリア / 新規</button>
       </div>
 
       <div class="formulator-container">
         <!-- Left: Recipe Builder -->
         <div class="formulator-panel">
-          <div class="formulator-panel-title">Recipe Builder</div>
+          <div class="formulator-panel-title">レシピ</div>
 
           <!-- Add oil row -->
           <div class="formulator-add-row">
             <div class="formulator-field" style="flex:1">
-              <label>Oil / Butter</label>
+              <label>油脂名 (Oil / Butter)</label>
               <select id="formulator-oil-select"></select>
             </div>
             <div class="formulator-field">
-              <label>Weight (g)</label>
+              <label>分量 (g)</label>
               <input type="number" id="formulator-oil-weight" min="0.1" step="0.1" value="10" style="width:80px">
             </div>
-            <button class="formulator-add-btn" onclick="formulatorAddOil()">Add Oil</button>
+            <button class="formulator-add-btn" onclick="formulatorAddOil()">追加</button>
           </div>
 
           <!-- Oil list -->
@@ -5862,22 +5862,22 @@ select.contact-edit-input { appearance: auto; cursor: pointer; }
           <!-- Settings -->
           <div class="formulator-input-group">
             <div class="formulator-field">
-              <label>Superfat %</label>
+              <label>鹸化率 % (Superfat)</label>
               <input type="number" id="formulator-superfat" min="0" max="25" step="1" value="5" style="width:80px" oninput="formulatorRecalc()">
             </div>
             <div class="formulator-field">
-              <label>Water Method</label>
+              <label>水の計算方法</label>
               <select id="formulator-water-method" style="width:160px" onchange="formulatorToggleWaterMethod();formulatorRecalc()">
-                <option value="pct">Japanese (% of oil)</option>
-                <option value="conc">Lye Concentration %</option>
+                <option value="pct">油脂の割合 (%)</option>
+                <option value="conc">アルカリ濃度 %</option>
               </select>
             </div>
             <div class="formulator-field" id="formulator-water-pct-wrap">
-              <label>Water % of Oil</label>
+              <label>水の割合 %</label>
               <input type="number" id="formulator-water-pct" min="25" max="45" step="1" value="34" style="width:80px" oninput="formulatorRecalc()">
             </div>
             <div class="formulator-field" id="formulator-lye-conc-wrap" style="display:none">
-              <label>Lye Concentration %</label>
+              <label>アルカリ濃度 %</label>
               <input type="number" id="formulator-lye-conc" min="20" max="50" step="1" value="33" style="width:80px" oninput="formulatorRecalc()">
             </div>
           </div>
@@ -5885,116 +5885,116 @@ select.contact-edit-input { appearance: auto; cursor: pointer; }
           <!-- Fragrance -->
           <div class="formulator-input-group">
             <div class="formulator-field" style="flex:1">
-              <label>Fragrance</label>
+              <label>香料 (Fragrance)</label>
               <input type="text" id="formulator-fragrance-name" placeholder="e.g. Lavender EO">
             </div>
             <div class="formulator-field">
-              <label>Fragrance (g)</label>
+              <label>香料 (g)</label>
               <input type="number" id="formulator-fragrance-oz" min="0" step="0.1" value="0" style="width:80px" oninput="formulatorRecalc()">
             </div>
             <div class="formulator-field">
-              <label>Cost/g ($)</label>
+              <label>コスト/g (¥)</label>
               <input type="number" id="formulator-fragrance-cost" min="0" step="0.01" value="0" style="width:80px" oninput="formulatorRecalc()">
             </div>
           </div>
 
           <!-- Colorant -->
           <div class="formulator-field" style="margin-bottom:12px">
-            <label>Colorant</label>
+            <label>着色料 (Colorant)</label>
             <input type="text" id="formulator-colorant" placeholder="e.g. Activated Charcoal 1 tsp">
           </div>
 
           <!-- Batch number -->
           <div class="formulator-field" style="margin-bottom:12px">
-            <label>Batch Number</label>
+            <label>バッチ番号</label>
             <input type="text" id="formulator-batch-number" placeholder="e.g. SOAP-2026-001" style="width:180px">
           </div>
 
           <!-- Link to product -->
           <div class="formulator-field" style="margin-bottom:12px">
-            <label>Link to Product</label>
+            <label>製品に紐付け</label>
             <select id="formulator-link-product" style="width:100%">
-              <option value="">-- Not linked --</option>
+              <option value="">-- 紐付けなし --</option>
             </select>
           </div>
 
           <!-- Bars produced -->
           <div class="formulator-field" style="margin-bottom:12px">
-            <label>Bars Produced</label>
+            <label>生産個数 (Bars)</label>
             <input type="number" id="formulator-bars" min="1" step="1" value="10" style="width:80px" oninput="formulatorRecalc()">
           </div>
 
           <!-- Notes -->
           <div class="formulator-field" style="margin-bottom:12px">
-            <label>Notes</label>
-            <textarea id="formulator-notes" placeholder="Recipe notes, tweaks from base formula..."></textarea>
+            <label>メモ (Notes)</label>
+            <textarea id="formulator-notes" placeholder="レシピメモ、ベースフォーミュラからの変更点..."></textarea>
           </div>
 
           <!-- Master formula checkbox -->
           <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
             <input type="checkbox" id="formulator-master-formula" style="width:16px;height:16px">
-            <label for="formulator-master-formula" style="font-size:var(--text-sm);color:var(--color-text-secondary);cursor:pointer">Set as master formula for linked product</label>
+            <label for="formulator-master-formula" style="font-size:var(--text-sm);color:var(--color-text-secondary);cursor:pointer">マスターフォーミュラに設定</label>
           </div>
 
           <!-- Save batch button -->
-          <button class="formulator-add-btn" onclick="formulatorSaveBatch()" style="width:100%">Save as Batch</button>
-          <button class="formulator-add-btn" onclick="formulatorSaveMasterFormula()" style="width:100%;background:transparent;color:var(--color-primary);border:1px solid var(--color-primary);margin-top:6px">Update Master Formula</button>
+          <button class="formulator-add-btn" onclick="formulatorSaveBatch()" style="width:100%">バッチとして保存</button>
+          <button class="formulator-add-btn" onclick="formulatorSaveMasterFormula()" style="width:100%;background:transparent;color:var(--color-primary);border:1px solid var(--color-primary);margin-top:6px">マスターフォーミュラを更新</button>
         </div>
 
         <!-- Right: Results -->
         <div class="formulator-panel">
-          <div class="formulator-panel-title">Results</div>
+          <div class="formulator-panel-title">結果</div>
 
           <!-- Lye Calculator -->
           <div class="formulator-result-card" id="formulator-lye-results">
-            <div class="formulator-result-card-title">Lye Calculator</div>
+            <div class="formulator-result-card-title">アルカリ計算 (Lye Calculator)</div>
             <div class="formulator-result-row">
-              <span class="formulator-result-label">NaOH Weight</span>
+              <span class="formulator-result-label">苛性ソーダ (NaOH)</span>
               <span><span class="formulator-result-value" id="formulator-naoh">0.00</span><span class="formulator-result-unit">g</span></span>
             </div>
             <div class="formulator-result-row">
-              <span class="formulator-result-label">Water Weight</span>
+              <span class="formulator-result-label">水の量 (Water)</span>
               <span><span class="formulator-result-value" id="formulator-water">0.00</span><span class="formulator-result-unit">g</span></span>
             </div>
             <div class="formulator-result-row">
-              <span class="formulator-result-label">Total Oil</span>
+              <span class="formulator-result-label">油脂合計 (Total Oil)</span>
               <span><span class="formulator-result-value-sm" id="formulator-total-oil">0.00</span><span class="formulator-result-unit">g</span></span>
             </div>
             <div class="formulator-result-row">
-              <span class="formulator-result-label">Total Batch</span>
+              <span class="formulator-result-label">合計重量 (Total Batch)</span>
               <span><span class="formulator-result-value-sm" id="formulator-total-batch">0.00</span><span class="formulator-result-unit">g</span></span>
             </div>
           </div>
 
           <!-- Properties -->
           <div class="formulator-result-card">
-            <div class="formulator-result-card-title">Soap Properties</div>
+            <div class="formulator-result-card-title">石けんシミュレーション (Soap Properties)</div>
             <div class="formulator-properties" id="formulator-properties"></div>
           </div>
 
           <!-- Quality Score -->
           <div class="formulator-result-card">
-            <div class="formulator-result-card-title">Quality Score</div>
+            <div class="formulator-result-card-title">品質スコア (Quality Score)</div>
             <div class="formulator-score" id="formulator-score-container">
               <div class="formulator-score-number" id="formulator-score">--</div>
-              <div class="formulator-score-label">out of 100</div>
+              <div class="formulator-score-label">/100</div>
             </div>
           </div>
 
           <!-- Cost -->
           <div class="formulator-result-card" id="formulator-cost-card">
-            <div class="formulator-result-card-title">Cost Estimate</div>
+            <div class="formulator-result-card-title">コスト見積 (Cost Estimate)</div>
             <div class="formulator-cost-row">
-              <span class="formulator-result-label">Oil Cost</span>
-              <span class="formulator-result-value-sm" id="formulator-oil-cost">$0.00</span>
+              <span class="formulator-result-label">油脂コスト</span>
+              <span class="formulator-result-value-sm" id="formulator-oil-cost">¥0.00</span>
             </div>
             <div class="formulator-cost-row">
-              <span class="formulator-result-label">Fragrance Cost</span>
-              <span class="formulator-result-value-sm" id="formulator-frag-cost">$0.00</span>
+              <span class="formulator-result-label">香料コスト</span>
+              <span class="formulator-result-value-sm" id="formulator-frag-cost">¥0.00</span>
             </div>
             <div class="formulator-cost-row" style="border-top:1px solid var(--color-border-separator);padding-top:8px;margin-top:4px">
-              <span class="formulator-result-label">Cost per Bar</span>
-              <span class="formulator-result-value" id="formulator-cost-per-bar">$0.00</span>
+              <span class="formulator-result-label">1個あたり (Cost/Bar)</span>
+              <span class="formulator-result-value" id="formulator-cost-per-bar">¥0.00</span>
             </div>
           </div>
         </div>
@@ -6003,23 +6003,23 @@ select.contact-edit-input { appearance: auto; cursor: pointer; }
       <!-- Batch History -->
       <div class="formulator-batch-section">
         <div class="formulator-batch-header">
-          <div class="formulator-batch-title">Batch History</div>
-          <button class="formulator-add-btn" onclick="formulatorNewBatch()">+ New Batch</button>
+          <div class="formulator-batch-title">バッチ履歴 (Batch History)</div>
+          <button class="formulator-add-btn" onclick="formulatorNewBatch()">+ 新規バッチ</button>
         </div>
         <table class="ivh-table formulator-batch-table">
           <thead>
             <tr>
-              <th>Name</th>
-              <th>Date</th>
-              <th>Status</th>
-              <th>Quality</th>
-              <th>Bars</th>
-              <th>Cost/Bar</th>
+              <th>名前</th>
+              <th>日付</th>
+              <th>ステータス</th>
+              <th>品質</th>
+              <th>個数</th>
+              <th>単価</th>
             </tr>
           </thead>
           <tbody id="formulator-batch-body"></tbody>
         </table>
-        <p class="formulator-empty" id="formulator-batch-empty" style="display:none">No batches yet. Save your first recipe above.</p>
+        <p class="formulator-empty" id="formulator-batch-empty" style="display:none">バッチがありません。上のレシピを保存してください。</p>
       </div>
     </div>
 
@@ -17262,7 +17262,7 @@ function formulatorRenderOilList() {
   if (formulatorOils.length === 0) {
     var empty = document.createElement("div");
     empty.className = "formulator-empty";
-    empty.textContent = "Add oils to start building your recipe";
+    empty.textContent = "油脂を追加してレシピを作成";
     container.appendChild(empty);
     return;
   }
@@ -17300,7 +17300,7 @@ function formulatorRenderOilList() {
     if (entry.originalWeight !== undefined && Math.abs(entry.originalWeight - entry.weightOz) > 0.05) {
       var origNote = document.createElement("div");
       origNote.style.cssText = "font-size:9px;color:var(--color-text-disabled);margin-top:1px";
-      origNote.textContent = "was " + entry.originalWeight.toFixed(1) + "g";
+      origNote.textContent = "元: " + entry.originalWeight.toFixed(1) + "g";
       weightWrap.appendChild(origNote);
     }
     row.appendChild(weightWrap);
@@ -17363,9 +17363,9 @@ function formulatorRecalc() {
 
   // Cost
   var cost = calcCostPerBar(formulatorOils, fragOz, fragCost, bars);
-  document.getElementById("formulator-oil-cost").textContent = "$" + cost.oilCost.toFixed(2);
-  document.getElementById("formulator-frag-cost").textContent = "$" + cost.fragranceCost.toFixed(2);
-  document.getElementById("formulator-cost-per-bar").textContent = "$" + cost.costPerBar.toFixed(2);
+  document.getElementById("formulator-oil-cost").textContent = "¥" + cost.oilCost.toFixed(2);
+  document.getElementById("formulator-frag-cost").textContent = "¥" + cost.fragranceCost.toFixed(2);
+  document.getElementById("formulator-cost-per-bar").textContent = "¥" + cost.costPerBar.toFixed(2);
 }
 
 // ── Render property bars ──
@@ -17375,13 +17375,13 @@ function formulatorRenderProperties(props) {
   while (container.firstChild) container.removeChild(container.firstChild);
 
   var defs = [
-    { key:"hardness", label:"Hardness", lo:29, hi:54, max:100 },
-    { key:"cleansing", label:"Cleansing", lo:12, hi:22, max:80 },
-    { key:"conditioning", label:"Conditioning", lo:44, hi:69, max:100 },
-    { key:"bubbly", label:"Bubbly", lo:14, hi:46, max:100 },
-    { key:"creamy", label:"Creamy", lo:16, hi:48, max:100 },
-    { key:"iodine", label:"Iodine", lo:41, hi:70, max:200 },
-    { key:"ins", label:"INS", lo:136, hi:165, max:270 }
+    { key:"hardness", label:"硬さ (Hardness)", lo:29, hi:54, max:100 },
+    { key:"cleansing", label:"洗浄力 (Cleansing)", lo:12, hi:22, max:80 },
+    { key:"conditioning", label:"肌適性 (Conditioning)", lo:44, hi:69, max:100 },
+    { key:"bubbly", label:"起泡力 (Bubbly)", lo:14, hi:46, max:100 },
+    { key:"creamy", label:"くずれにくさ (Creamy)", lo:16, hi:48, max:100 },
+    { key:"iodine", label:"ヨウ素価 (Iodine)", lo:41, hi:70, max:200 },
+    { key:"ins", label:"INS値", lo:136, hi:165, max:270 }
   ];
 
   defs.forEach(function(d) {
@@ -17449,7 +17449,7 @@ function formulatorSaveBatch() {
   var lyeCalc = calcLye(formulatorOils, f.superfat, f.lyeConc);
   var cost = calcCostPerBar(formulatorOils, f.fragOz, f.fragCost, f.bars);
   var oilsSnapshot = formulatorOils.map(function(e) { return { name: e.oil.name, weightOz: e.weightOz }; });
-  var defaultName = f.fragName ? f.fragName + " Bar" : "New Soap Batch";
+  var defaultName = f.fragName ? f.fragName + " バー" : "新規石けんバッチ";
 
   _openBatchSaveModal(defaultName, f, oilsSnapshot, props, lyeCalc, cost, function(modalValues) {
     var batchName = modalValues.batchName;
@@ -17518,14 +17518,14 @@ function _openBatchSaveModal(defaultName, formData, oilsSnapshot, props, lyeCalc
   // Title
   var titleEl = document.createElement("div");
   titleEl.className = "crm-quick-edit-title";
-  titleEl.textContent = "Save Batch";
+  titleEl.textContent = "バッチ保存";
   modal.appendChild(titleEl);
 
   // Batch Name
   var nameField = document.createElement("div");
   nameField.className = "batch-modal-field";
   var nameLabel = document.createElement("label");
-  nameLabel.textContent = "Batch Name";
+  nameLabel.textContent = "バッチ名";
   nameField.appendChild(nameLabel);
   var nameInput = document.createElement("input");
   nameInput.type = "text";
@@ -17538,7 +17538,7 @@ function _openBatchSaveModal(defaultName, formData, oilsSnapshot, props, lyeCalc
   var numField = document.createElement("div");
   numField.className = "batch-modal-field";
   var numLabel = document.createElement("label");
-  numLabel.textContent = "Batch Number";
+  numLabel.textContent = "バッチ番号";
   numField.appendChild(numLabel);
   var numInput = document.createElement("input");
   numInput.type = "text";
@@ -17551,12 +17551,12 @@ function _openBatchSaveModal(defaultName, formData, oilsSnapshot, props, lyeCalc
   var prodField = document.createElement("div");
   prodField.className = "batch-modal-field";
   var prodLabel = document.createElement("label");
-  prodLabel.textContent = "Link to Product";
+  prodLabel.textContent = "製品に紐付け";
   prodField.appendChild(prodLabel);
   var prodSelect = document.createElement("select");
   var defOpt = document.createElement("option");
   defOpt.value = "";
-  defOpt.textContent = "-- Not linked --";
+  defOpt.textContent = "-- 紐付けなし --";
   prodSelect.appendChild(defOpt);
   var products = typeof shopifyProducts !== "undefined" ? shopifyProducts : [];
   var soapProducts = products.filter(function(p) {
@@ -17578,7 +17578,7 @@ function _openBatchSaveModal(defaultName, formData, oilsSnapshot, props, lyeCalc
   var notesField = document.createElement("div");
   notesField.className = "batch-modal-field";
   var notesLabel = document.createElement("label");
-  notesLabel.textContent = "Notes";
+  notesLabel.textContent = "メモ (Notes)";
   notesField.appendChild(notesLabel);
   var notesTextarea = document.createElement("textarea");
   notesTextarea.value = formData.notes || "";
@@ -17596,7 +17596,7 @@ function _openBatchSaveModal(defaultName, formData, oilsSnapshot, props, lyeCalc
   checkRow.appendChild(checkInput);
   var checkLabel = document.createElement("label");
   checkLabel.setAttribute("for", checkInput.id);
-  checkLabel.textContent = "Set as master formula for linked product";
+  checkLabel.textContent = "マスターフォーミュラに設定";
   checkRow.appendChild(checkLabel);
   modal.appendChild(checkRow);
 
@@ -17605,13 +17605,13 @@ function _openBatchSaveModal(defaultName, formData, oilsSnapshot, props, lyeCalc
   actions.className = "crm-quick-edit-actions";
   var cancelBtn = document.createElement("button");
   cancelBtn.className = "crm-quick-edit-cancel";
-  cancelBtn.textContent = "Cancel";
+  cancelBtn.textContent = "キャンセル";
   cancelBtn.addEventListener("click", function() { overlay.remove(); });
   actions.appendChild(cancelBtn);
 
   var saveBtn = document.createElement("button");
   saveBtn.className = "crm-quick-edit-save";
-  saveBtn.textContent = "Save Batch";
+  saveBtn.textContent = "バッチ保存";
   saveBtn.addEventListener("click", function() {
     var batchName = nameInput.value.trim();
     if (!batchName) { nameInput.focus(); return; }
@@ -17649,7 +17649,7 @@ function openBatchFormulaModal(batchId) {
   header.className = "formula-header";
   var headerName = document.createElement("span");
   headerName.className = "formula-header-name";
-  headerName.textContent = batch.name || "Untitled Batch";
+  headerName.textContent = batch.name || "無題バッチ";
   header.appendChild(headerName);
   if (batch.batchNumber) {
     var headerNum = document.createElement("span");
@@ -17668,7 +17668,8 @@ function openBatchFormulaModal(batchId) {
   if (batch.status) {
     var statusBadge = document.createElement("span");
     statusBadge.className = "formulator-batch-status formulator-status-" + (batch.status || "planning");
-    statusBadge.textContent = (batch.status || "planning").replace("-", " ");
+    var _bsMap = { planning:"計画中", "in-progress":"進行中", curing:"養生中", complete:"完了" };
+    statusBadge.textContent = _bsMap[batch.status] || (batch.status || "planning").replace("-", " ");
     header.appendChild(statusBadge);
   }
   modal.appendChild(header);
@@ -17679,7 +17680,7 @@ function openBatchFormulaModal(batchId) {
     oilSection.className = "formula-section";
     var oilTitle = document.createElement("div");
     oilTitle.className = "formula-section-title";
-    oilTitle.textContent = "Oils";
+    oilTitle.textContent = "油脂 (Oils)";
     oilSection.appendChild(oilTitle);
 
     var totalWeight = 0;
@@ -17689,7 +17690,7 @@ function openBatchFormulaModal(batchId) {
     oilTable.className = "formula-oils-table";
     var thead = document.createElement("thead");
     var thRow = document.createElement("tr");
-    ["Oil", "Weight (g)", "%"].forEach(function(txt) {
+    ["油脂名", "分量 (g)", "%"].forEach(function(txt) {
       var th = document.createElement("th");
       th.textContent = txt;
       thRow.appendChild(th);
@@ -17724,7 +17725,7 @@ function openBatchFormulaModal(batchId) {
   settingsSection.className = "formula-section";
   var settingsTitle = document.createElement("div");
   settingsTitle.className = "formula-section-title";
-  settingsTitle.textContent = "Settings";
+  settingsTitle.textContent = "設定 (Settings)";
   settingsSection.appendChild(settingsTitle);
   var settingsRow = document.createElement("div");
   settingsRow.className = "formula-settings-row";
@@ -17732,7 +17733,7 @@ function openBatchFormulaModal(batchId) {
   sfItem.className = "formula-setting";
   var sfLabel = document.createElement("span");
   sfLabel.className = "formula-setting-label";
-  sfLabel.textContent = "Superfat";
+  sfLabel.textContent = "鹸化率 (Superfat)";
   sfItem.appendChild(sfLabel);
   var sfVal = document.createElement("span");
   sfVal.className = "formula-setting-value";
@@ -17743,7 +17744,7 @@ function openBatchFormulaModal(batchId) {
   lcItem.className = "formula-setting";
   var lcLabel = document.createElement("span");
   lcLabel.className = "formula-setting-label";
-  lcLabel.textContent = "Lye Concentration";
+  lcLabel.textContent = "アルカリ濃度";
   lcItem.appendChild(lcLabel);
   var lcVal = document.createElement("span");
   lcVal.className = "formula-setting-value";
@@ -17759,7 +17760,7 @@ function openBatchFormulaModal(batchId) {
     fragSection.className = "formula-section";
     var fragTitle = document.createElement("div");
     fragTitle.className = "formula-section-title";
-    fragTitle.textContent = "Fragrance & Colorant";
+    fragTitle.textContent = "香料・着色料";
     fragSection.appendChild(fragTitle);
     var fragRow = document.createElement("div");
     fragRow.className = "formula-settings-row";
@@ -17768,7 +17769,7 @@ function openBatchFormulaModal(batchId) {
       fragItem.className = "formula-setting";
       var fragLabel = document.createElement("span");
       fragLabel.className = "formula-setting-label";
-      fragLabel.textContent = "Fragrance";
+      fragLabel.textContent = "香料 (Fragrance)";
       fragItem.appendChild(fragLabel);
       var fragVal = document.createElement("span");
       fragVal.className = "formula-setting-value";
@@ -17781,7 +17782,7 @@ function openBatchFormulaModal(batchId) {
       colItem.className = "formula-setting";
       var colLabel = document.createElement("span");
       colLabel.className = "formula-setting-label";
-      colLabel.textContent = "Colorant";
+      colLabel.textContent = "着色料 (Colorant)";
       colItem.appendChild(colLabel);
       var colVal = document.createElement("span");
       colVal.className = "formula-setting-value";
@@ -17800,19 +17801,19 @@ function openBatchFormulaModal(batchId) {
     propsSection.className = "formula-section";
     var propsTitle = document.createElement("div");
     propsTitle.className = "formula-section-title";
-    propsTitle.textContent = "Properties";
+    propsTitle.textContent = "石けんシミュレーション (Properties)";
     propsSection.appendChild(propsTitle);
     var propsContainer = document.createElement("div");
     propsContainer.className = "formulator-properties";
 
     var barDefs = [
-      { key:"hardness", label:"Hardness", lo:29, hi:54, max:100 },
-      { key:"cleansing", label:"Cleansing", lo:12, hi:22, max:80 },
-      { key:"conditioning", label:"Conditioning", lo:44, hi:69, max:100 },
-      { key:"bubbly", label:"Bubbly", lo:14, hi:46, max:100 },
-      { key:"creamy", label:"Creamy", lo:16, hi:48, max:100 },
-      { key:"iodine", label:"Iodine", lo:41, hi:70, max:200 },
-      { key:"ins", label:"INS", lo:136, hi:165, max:270 }
+      { key:"hardness", label:"硬さ (Hardness)", lo:29, hi:54, max:100 },
+      { key:"cleansing", label:"洗浄力 (Cleansing)", lo:12, hi:22, max:80 },
+      { key:"conditioning", label:"肌適性 (Conditioning)", lo:44, hi:69, max:100 },
+      { key:"bubbly", label:"起泡力 (Bubbly)", lo:14, hi:46, max:100 },
+      { key:"creamy", label:"くずれにくさ (Creamy)", lo:16, hi:48, max:100 },
+      { key:"iodine", label:"ヨウ素価 (Iodine)", lo:41, hi:70, max:200 },
+      { key:"ins", label:"INS値", lo:136, hi:165, max:270 }
     ];
     barDefs.forEach(function(d) {
       var val = batchProps[d.key] || 0;
@@ -17858,7 +17859,7 @@ function openBatchFormulaModal(batchId) {
   scoreSection.appendChild(scoreNum);
   var scoreLbl = document.createElement("div");
   scoreLbl.className = "formula-score-label";
-  scoreLbl.textContent = "Quality Score";
+  scoreLbl.textContent = "品質スコア";
   scoreSection.appendChild(scoreLbl);
   modal.appendChild(scoreSection);
 
@@ -17869,15 +17870,15 @@ function openBatchFormulaModal(batchId) {
     lyeSection.className = "formula-section";
     var lyeTitle = document.createElement("div");
     lyeTitle.className = "formula-section-title";
-    lyeTitle.textContent = "Lye Calculator";
+    lyeTitle.textContent = "アルカリ計算 (Lye Calculator)";
     lyeSection.appendChild(lyeTitle);
     var lyeGrid = document.createElement("div");
     lyeGrid.className = "formula-lye-grid";
     [
-      { label: "NaOH", value: (lyeData.naohWeight || 0).toFixed(2) + " g" },
-      { label: "Water", value: (lyeData.waterWeight || 0).toFixed(2) + " g" },
-      { label: "Total Oil", value: (lyeData.totalOilWeight || 0).toFixed(2) + " g" },
-      { label: "Total Batch", value: (lyeData.totalBatchWeight || 0).toFixed(2) + " g" }
+      { label: "苛性ソーダ (NaOH)", value: (lyeData.naohWeight || 0).toFixed(2) + " g" },
+      { label: "水の量 (Water)", value: (lyeData.waterWeight || 0).toFixed(2) + " g" },
+      { label: "油脂合計 (Total Oil)", value: (lyeData.totalOilWeight || 0).toFixed(2) + " g" },
+      { label: "合計重量 (Total Batch)", value: (lyeData.totalBatchWeight || 0).toFixed(2) + " g" }
     ].forEach(function(item) {
       var lyeItem = document.createElement("div");
       lyeItem.className = "formula-lye-item";
@@ -17901,7 +17902,7 @@ function openBatchFormulaModal(batchId) {
     notesSection.className = "formula-section";
     var notesTitle = document.createElement("div");
     notesTitle.className = "formula-section-title";
-    notesTitle.textContent = "Notes";
+    notesTitle.textContent = "メモ (Notes)";
     notesSection.appendChild(notesTitle);
     var notesText = document.createElement("div");
     notesText.className = "formula-notes";
@@ -17915,13 +17916,13 @@ function openBatchFormulaModal(batchId) {
   footer.className = "formula-footer";
   var closeBtn = document.createElement("button");
   closeBtn.className = "crm-quick-edit-cancel";
-  closeBtn.textContent = "Close";
+  closeBtn.textContent = "閉じる";
   closeBtn.addEventListener("click", function() { overlay.remove(); });
   footer.appendChild(closeBtn);
 
   var loadBtn = document.createElement("button");
   loadBtn.className = "crm-quick-edit-save";
-  loadBtn.textContent = "Load into Formulator";
+  loadBtn.textContent = "フォーミュレーターに読込";
   loadBtn.addEventListener("click", function() {
     overlay.remove();
     navigateTo("tools/formulator");
@@ -17936,9 +17937,9 @@ function openBatchFormulaModal(batchId) {
 
 // ── Save/update master formula for linked product ──
 function formulatorSaveMasterFormula() {
-  if (formulatorOils.length === 0) { alert("Add oils to the recipe first."); return; }
+  if (formulatorOils.length === 0) { alert("先に油脂をレシピに追加してください。"); return; }
   var f = _formulatorReadForm();
-  if (!f.linkedProductId) { alert("Select a product to link this formula to."); return; }
+  if (!f.linkedProductId) { alert("フォーミュラに紐付ける製品を選択してください。"); return; }
 
   var prod = (typeof shopifyProducts !== "undefined" ? shopifyProducts : []).find(function(p) { return p.id === f.linkedProductId; });
   var productName = prod ? prod.title : "Unknown Product";
@@ -17951,7 +17952,7 @@ function formulatorSaveMasterFormula() {
   var cost = calcCostPerBar(formulatorOils, f.fragOz, f.fragCost, f.bars);
 
   if (existing) {
-    existing.name = productName + " Master Formula";
+    existing.name = productName + " マスターフォーミュラ";
     existing.oils = oilsSnapshot; existing.superfat = f.superfat; existing.lyeConcentration = f.lyeConc;
     existing.fragrance = f.fragName; existing.fragranceOz = f.fragOz; existing.fragranceCostPerOz = f.fragCost;
     existing.colorant = f.colorant; existing.notes = f.notes;
@@ -17959,10 +17960,10 @@ function formulatorSaveMasterFormula() {
     existing.barsProduced = f.bars; existing.costPerBar = cost.costPerBar;
     existing.updatedAt = new Date().toISOString().slice(0, 10);
     formulatorSaveBatches(existing);
-    alert("Master formula updated for " + productName);
+    alert("マスターフォーミュラを更新しました: " + productName);
   } else {
     var masterBatch = {
-      id: "sb_master_" + Date.now(), name: productName + " Master Formula",
+      id: "sb_master_" + Date.now(), name: productName + " マスターフォーミュラ",
       date: new Date().toISOString().slice(0, 10),
       oils: oilsSnapshot, superfat: f.superfat, lyeConcentration: f.lyeConc,
       fragrance: f.fragName, fragranceOz: f.fragOz, fragranceCostPerOz: f.fragCost,
@@ -17974,7 +17975,7 @@ function formulatorSaveMasterFormula() {
     };
     soapBatches.push(masterBatch);
     formulatorSaveBatches(masterBatch);
-    alert("Master formula saved for " + productName);
+    alert("マスターフォーミュラを保存しました: " + productName);
   }
   formulatorRenderBatchTable();
   formulatorPopulateLoadDropdown();
@@ -17986,7 +17987,7 @@ function formulatorPopulateProductLink() {
   if (!sel) return;
   sel.textContent = "";
   var def = document.createElement("option");
-  def.value = ""; def.textContent = "-- Not linked --";
+  def.value = ""; def.textContent = "-- 紐付けなし --";
   sel.appendChild(def);
   // Shopify products (soaps only — filter by type or tag if possible)
   var products = typeof shopifyProducts !== "undefined" ? shopifyProducts : [];
@@ -18035,11 +18036,11 @@ function formulatorPopulateLoadDropdown() {
   if (!sel) return;
   sel.textContent = "";
   var def = document.createElement("option");
-  def.value = ""; def.textContent = "\u2014 Select a recipe \u2014";
+  def.value = ""; def.textContent = "\u2014 レシピを選択 \u2014";
   sel.appendChild(def);
   // Product presets
   var prodGroup = document.createElement("optgroup");
-  prodGroup.label = "Ivycoast Products";
+  prodGroup.label = "Ivycoast 製品";
   SOAP_PRODUCT_PRESETS.forEach(function(p, i) {
     var opt = document.createElement("option");
     opt.value = "preset-" + i;
@@ -18050,7 +18051,7 @@ function formulatorPopulateLoadDropdown() {
   // Saved batches
   if (soapBatches.length) {
     var batchGroup = document.createElement("optgroup");
-    batchGroup.label = "Saved Batches";
+    batchGroup.label = "保存済みバッチ";
     soapBatches.slice().sort(function(a, b) { return (b.date || "").localeCompare(a.date || ""); }).forEach(function(b) {
       var opt = document.createElement("option");
       opt.value = "batch-" + b.id;
@@ -18063,14 +18064,14 @@ function formulatorPopulateLoadDropdown() {
   var linkedProducts = soapBatches.filter(function(b) { return b.linkedProductId; });
   if (linkedProducts.length) {
     var linkGroup = document.createElement("optgroup");
-    linkGroup.label = "Product-Linked Formulas";
+    linkGroup.label = "製品紐付けフォーミュラ";
     var seen = {};
     linkedProducts.forEach(function(b) {
       if (seen[b.linkedProductId]) return;
       seen[b.linkedProductId] = true;
       var opt = document.createElement("option");
       opt.value = "batch-" + b.id;
-      opt.textContent = (b.linkedProductName || b.name) + " (current formula)";
+      opt.textContent = (b.linkedProductName || b.name) + " (現在のフォーミュラ)";
       linkGroup.appendChild(opt);
     });
     sel.appendChild(linkGroup);
@@ -18088,7 +18089,7 @@ function formulatorLoadPreset(val) {
     if (master) {
       // Load from master formula instead of hardcoded preset
       formulatorLoadBatch(master.id);
-      document.getElementById("formulator-notes").value = "Loaded from master formula: " + preset.name;
+      document.getElementById("formulator-notes").value = "マスターフォーミュラから読込: " + preset.name;
       return;
     }
     // Fall back to hardcoded preset
@@ -18103,7 +18104,7 @@ function formulatorLoadPreset(val) {
     document.getElementById("formulator-fragrance-oz").value = preset.fragranceOz || "0";
     document.getElementById("formulator-colorant").value = preset.colorant || "";
     document.getElementById("formulator-batch-number").value = "";
-    document.getElementById("formulator-notes").value = "Loaded from product preset: " + preset.name;
+    document.getElementById("formulator-notes").value = "製品プリセットから読込: " + preset.name;
     // Auto-select product in link dropdown if possible
     var linkSel = document.getElementById("formulator-link-product");
     if (linkSel) {
@@ -18168,7 +18169,7 @@ function formulatorRenderBatchTable() {
     tr.onclick = function() { formulatorLoadBatch(batch.id); };
 
     var tdName = document.createElement("td");
-    tdName.textContent = batch.name || "Untitled";
+    tdName.textContent = batch.name || "無題";
     tdName.style.fontWeight = "500";
     tr.appendChild(tdName);
 
@@ -18181,7 +18182,8 @@ function formulatorRenderBatchTable() {
     var tdStatus = document.createElement("td");
     var statusBadge = document.createElement("span");
     statusBadge.className = "formulator-batch-status formulator-status-" + (batch.status || "planning");
-    statusBadge.textContent = (batch.status || "planning").replace("-", " ");
+    var _bsMap2 = { planning:"計画中", "in-progress":"進行中", curing:"養生中", complete:"完了" };
+    statusBadge.textContent = _bsMap2[batch.status] || (batch.status || "planning").replace("-", " ");
     tdStatus.appendChild(statusBadge);
     tr.appendChild(tdStatus);
 
@@ -18198,7 +18200,7 @@ function formulatorRenderBatchTable() {
     tr.appendChild(tdBars);
 
     var tdCost = document.createElement("td");
-    tdCost.textContent = batch.costPerBar != null ? "$" + batch.costPerBar.toFixed(2) : "--";
+    tdCost.textContent = batch.costPerBar != null ? "¥" + batch.costPerBar.toFixed(2) : "--";
     tdCost.style.fontFamily = "var(--font-mono)";
     tdCost.style.fontSize = "var(--text-xs)";
     tr.appendChild(tdCost);
@@ -22408,7 +22410,8 @@ function openProductDetailModal(product) {
       // Status badge
       var statusEl = document.createElement("span");
       statusEl.className = "formulator-batch-status formulator-status-" + (batch.status || "planning");
-      statusEl.textContent = (batch.status || "planning").replace("-", " ");
+      var _bsMap3 = { planning:"計画中", "in-progress":"進行中", curing:"養生中", complete:"完了" };
+      statusEl.textContent = _bsMap3[batch.status] || (batch.status || "planning").replace("-", " ");
       card.appendChild(statusEl);
 
       cardsContainer.appendChild(card);
