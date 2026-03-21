@@ -5850,7 +5850,7 @@ select.contact-edit-input { appearance: auto; cursor: pointer; }
               <select id="formulator-oil-select"></select>
             </div>
             <div class="formulator-field">
-              <label>Weight (oz)</label>
+              <label>Weight (g)</label>
               <input type="number" id="formulator-oil-weight" min="0.1" step="0.1" value="10" style="width:80px">
             </div>
             <button class="formulator-add-btn" onclick="formulatorAddOil()">Add Oil</button>
@@ -5878,11 +5878,11 @@ select.contact-edit-input { appearance: auto; cursor: pointer; }
               <input type="text" id="formulator-fragrance-name" placeholder="e.g. Lavender EO">
             </div>
             <div class="formulator-field">
-              <label>Fragrance (oz)</label>
+              <label>Fragrance (g)</label>
               <input type="number" id="formulator-fragrance-oz" min="0" step="0.1" value="0" style="width:80px" oninput="formulatorRecalc()">
             </div>
             <div class="formulator-field">
-              <label>Cost/oz ($)</label>
+              <label>Cost/g ($)</label>
               <input type="number" id="formulator-fragrance-cost" min="0" step="0.01" value="0" style="width:80px" oninput="formulatorRecalc()">
             </div>
           </div>
@@ -5939,19 +5939,19 @@ select.contact-edit-input { appearance: auto; cursor: pointer; }
             <div class="formulator-result-card-title">Lye Calculator</div>
             <div class="formulator-result-row">
               <span class="formulator-result-label">NaOH Weight</span>
-              <span><span class="formulator-result-value" id="formulator-naoh">0.00</span><span class="formulator-result-unit">oz</span></span>
+              <span><span class="formulator-result-value" id="formulator-naoh">0.00</span><span class="formulator-result-unit">g</span></span>
             </div>
             <div class="formulator-result-row">
               <span class="formulator-result-label">Water Weight</span>
-              <span><span class="formulator-result-value" id="formulator-water">0.00</span><span class="formulator-result-unit">oz</span></span>
+              <span><span class="formulator-result-value" id="formulator-water">0.00</span><span class="formulator-result-unit">g</span></span>
             </div>
             <div class="formulator-result-row">
               <span class="formulator-result-label">Total Oil</span>
-              <span><span class="formulator-result-value-sm" id="formulator-total-oil">0.00</span><span class="formulator-result-unit">oz</span></span>
+              <span><span class="formulator-result-value-sm" id="formulator-total-oil">0.00</span><span class="formulator-result-unit">g</span></span>
             </div>
             <div class="formulator-result-row">
               <span class="formulator-result-label">Total Batch</span>
-              <span><span class="formulator-result-value-sm" id="formulator-total-batch">0.00</span><span class="formulator-result-unit">oz</span></span>
+              <span><span class="formulator-result-value-sm" id="formulator-total-batch">0.00</span><span class="formulator-result-unit">g</span></span>
             </div>
           </div>
 
@@ -17254,13 +17254,37 @@ function formulatorRenderOilList() {
 
     var nameSpan = document.createElement("span");
     nameSpan.className = "formulator-oil-name";
-    nameSpan.textContent = entry.oil.name;
+    nameSpan.textContent = (entry.oil.nameJa ? entry.oil.nameJa + " / " : "") + entry.oil.name;
     row.appendChild(nameSpan);
 
-    var weightSpan = document.createElement("span");
-    weightSpan.className = "formulator-oil-weight";
-    weightSpan.textContent = entry.weightOz.toFixed(1) + " oz";
-    row.appendChild(weightSpan);
+    // Editable weight input (in grams)
+    var weightWrap = document.createElement("span");
+    weightWrap.className = "formulator-oil-weight";
+    var weightInput = document.createElement("input");
+    weightInput.type = "number";
+    weightInput.min = "0.1";
+    weightInput.step = "0.1";
+    weightInput.value = entry.weightOz.toFixed(1);
+    weightInput.style.cssText = "width:60px;padding:2px 4px;border:1px solid var(--color-border);border-radius:3px;font-size:var(--text-sm);text-align:right;font-family:inherit";
+    weightInput.onchange = (function(i) { return function() {
+      var newVal = parseFloat(this.value) || 0;
+      formulatorOils[i].weightOz = newVal;
+      formulatorRenderOilList();
+      formulatorRecalc();
+    }; })(idx);
+    weightWrap.appendChild(weightInput);
+    var gLabel = document.createElement("span");
+    gLabel.style.cssText = "font-size:var(--text-xs);color:var(--color-text-tertiary);margin-left:2px";
+    gLabel.textContent = "g";
+    weightWrap.appendChild(gLabel);
+    // Show original template value if different
+    if (entry.originalWeight !== undefined && Math.abs(entry.originalWeight - entry.weightOz) > 0.05) {
+      var origNote = document.createElement("div");
+      origNote.style.cssText = "font-size:9px;color:var(--color-text-disabled);margin-top:1px";
+      origNote.textContent = "was " + entry.originalWeight.toFixed(1) + "g";
+      weightWrap.appendChild(origNote);
+    }
+    row.appendChild(weightWrap);
 
     var pct = totalWeight > 0 ? (entry.weightOz / totalWeight * 100) : 0;
     var pctSpan = document.createElement("span");
@@ -17638,7 +17662,7 @@ function openBatchFormulaModal(batchId) {
     oilTable.className = "formula-oils-table";
     var thead = document.createElement("thead");
     var thRow = document.createElement("tr");
-    ["Oil", "Weight (oz)", "%"].forEach(function(txt) {
+    ["Oil", "Weight (g)", "%"].forEach(function(txt) {
       var th = document.createElement("th");
       th.textContent = txt;
       thRow.appendChild(th);
@@ -17721,7 +17745,7 @@ function openBatchFormulaModal(batchId) {
       fragItem.appendChild(fragLabel);
       var fragVal = document.createElement("span");
       fragVal.className = "formula-setting-value";
-      fragVal.textContent = batch.fragrance + (batch.fragranceOz ? " (" + batch.fragranceOz + " oz)" : "");
+      fragVal.textContent = batch.fragrance + (batch.fragranceOz ? " (" + batch.fragranceOz + "g)" : "");
       fragItem.appendChild(fragVal);
       fragRow.appendChild(fragItem);
     }
@@ -17823,10 +17847,10 @@ function openBatchFormulaModal(batchId) {
     var lyeGrid = document.createElement("div");
     lyeGrid.className = "formula-lye-grid";
     [
-      { label: "NaOH", value: (lyeData.naohWeight || 0).toFixed(2) + " oz" },
-      { label: "Water", value: (lyeData.waterWeight || 0).toFixed(2) + " oz" },
-      { label: "Total Oil", value: (lyeData.totalOilWeight || 0).toFixed(2) + " oz" },
-      { label: "Total Batch", value: (lyeData.totalBatchWeight || 0).toFixed(2) + " oz" }
+      { label: "NaOH", value: (lyeData.naohWeight || 0).toFixed(2) + " g" },
+      { label: "Water", value: (lyeData.waterWeight || 0).toFixed(2) + " g" },
+      { label: "Total Oil", value: (lyeData.totalOilWeight || 0).toFixed(2) + " g" },
+      { label: "Total Batch", value: (lyeData.totalBatchWeight || 0).toFixed(2) + " g" }
     ].forEach(function(item) {
       var lyeItem = document.createElement("div");
       lyeItem.className = "formula-lye-item";
@@ -18043,7 +18067,7 @@ function formulatorLoadPreset(val) {
     // Fall back to hardcoded preset
     formulatorEditingBatchId = null;
     formulatorOils = preset.oils.map(function(o) {
-      return { oil: SOAP_OIL_DB.find(function(db) { return db.name === o.name; }), weightOz: o.weightOz };
+      return { oil: SOAP_OIL_DB.find(function(db) { return db.name === o.name; }), weightOz: o.weightOz, originalWeight: o.weightOz };
     }).filter(function(e) { return e.oil; });
     formulatorRenderOilList();
     document.getElementById("formulator-superfat").value = preset.superfat || "5";
@@ -18075,7 +18099,7 @@ function formulatorLoadBatch(batchId) {
   formulatorOils = [];
   (batch.oils || []).forEach(function(oilEntry) {
     var dbOil = SOAP_OIL_DB.find(function(o) { return o.name === oilEntry.name; });
-    if (dbOil) formulatorOils.push({ oil: dbOil, weightOz: oilEntry.weightOz });
+    if (dbOil) formulatorOils.push({ oil: dbOil, weightOz: oilEntry.weightOz, originalWeight: oilEntry.weightOz });
   });
   formulatorRenderOilList();
   document.getElementById("formulator-superfat").value = String(batch.superfat || 5);
