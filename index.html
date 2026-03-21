@@ -5378,6 +5378,35 @@ select.contact-edit-input { appearance: auto; cursor: pointer; }
 .formula-notes { font-size:var(--text-md); color:var(--color-text-secondary); line-height:1.5; padding:8px 0; }
 .formula-footer { display:flex; justify-content:flex-end; gap:8px; margin-top:18px; padding-top:14px; border-top:1px solid var(--color-border-separator); }
 
+/* Formulator toast notification */
+.formulator-toast {
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+  background: var(--color-primary, #0e413b); color: #fff; padding: 10px 24px; border-radius: var(--radius-md, 8px);
+  font-size: var(--text-sm, 14px); z-index: 9999; box-shadow: 0 4px 14px rgba(0,0,0,0.15);
+  animation: toastFade 0.3s ease;
+}
+@keyframes toastFade { from { opacity: 0; transform: translateX(-50%) translateY(10px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+
+/* Version history modal */
+.version-history-list { display:flex; flex-direction:column; gap:8px; max-height:400px; overflow-y:auto; }
+.version-history-item {
+  display:flex; align-items:center; justify-content:space-between; gap:12px; padding:10px 12px;
+  background:var(--color-surface-secondary); border-radius:var(--radius-md);
+  border:1px solid var(--color-border-subtle); cursor:pointer; transition:border-color var(--transition-fast);
+}
+.version-history-item:hover { border-color:var(--color-primary); }
+.version-history-item.active { border-color:var(--color-primary); background:var(--color-primary-tint); }
+.version-meta { display:flex; flex-direction:column; gap:2px; }
+.version-meta-date { font-family:var(--font-mono); font-size:var(--text-xs); color:var(--color-text-secondary); }
+.version-meta-editor { font-size:var(--text-sm); color:var(--color-text-primary); }
+.version-meta-score { font-family:var(--font-mono); font-size:var(--text-xs); color:var(--color-text-tertiary); }
+.version-diff-panel { margin-top:12px; padding:12px; background:var(--color-surface-secondary); border-radius:var(--radius-md); border:1px solid var(--color-border-subtle); }
+.version-diff-title { font-size:var(--text-sm); font-weight:600; color:var(--color-text-primary); margin-bottom:8px; }
+.version-diff-row { font-size:var(--text-xs); color:var(--color-text-secondary); padding:2px 0; }
+.version-diff-added { color:#00a52c; }
+.version-diff-removed { color:#c5221f; }
+.version-diff-changed { color:#b06000; }
+
 /* Product detail modal: batch cards */
 .product-batch-cards { display:flex; flex-direction:column; gap:8px; }
 .product-batch-card {
@@ -17503,7 +17532,19 @@ function formulatorSaveBatch() {
     if (masterCb) masterCb.checked = isMasterFormula;
     formulatorRenderBatchTable();
     formulatorPopulateLoadDropdown();
+    showFormulatorToast("\u30D0\u30C3\u30C1\u3092\u4FDD\u5B58\u3057\u307E\u3057\u305F");
   });
+}
+
+// ── Toast notification for formulator ──
+function showFormulatorToast(message, duration) {
+  var existing = document.querySelector(".formulator-toast");
+  if (existing) existing.remove();
+  var toast = document.createElement("div");
+  toast.className = "formulator-toast";
+  toast.textContent = message;
+  document.body.appendChild(toast);
+  setTimeout(function() { if (toast.parentNode) toast.remove(); }, duration || 3000);
 }
 
 // ── Batch Save Modal ──
@@ -17615,10 +17656,35 @@ function _openBatchSaveModal(defaultName, formData, oilsSnapshot, props, lyeCalc
   saveBtn.addEventListener("click", function() {
     var batchName = nameInput.value.trim();
     if (!batchName) { nameInput.focus(); return; }
+    var batchNumber = numInput.value.trim();
+    var editingId = typeof formulatorEditingBatchId !== "undefined" ? formulatorEditingBatchId : null;
+
+    // Unique name enforcement
+    var dupName = soapBatches.find(function(b) {
+      return b.name === batchName && b.id !== editingId;
+    });
+    if (dupName) {
+      alert("\u540C\u3058\u540D\u524D\u306E\u30D0\u30C3\u30C1\u304C\u65E2\u306B\u5B58\u5728\u3057\u307E\u3059\u3002\u5225\u306E\u540D\u524D\u3092\u4F7F\u7528\u3057\u3066\u304F\u3060\u3055\u3044\u3002");
+      nameInput.focus();
+      return;
+    }
+
+    // Unique batch number enforcement
+    if (batchNumber) {
+      var dupNum = soapBatches.find(function(b) {
+        return b.batchNumber === batchNumber && b.id !== editingId;
+      });
+      if (dupNum) {
+        alert("\u3053\u306E\u30D0\u30C3\u30C1\u756A\u53F7\u306F\u65E2\u306B\u4F7F\u7528\u3055\u308C\u3066\u3044\u307E\u3059\u3002");
+        numInput.focus();
+        return;
+      }
+    }
+
     overlay.remove();
     callback({
       batchName: batchName,
-      batchNumber: numInput.value.trim(),
+      batchNumber: batchNumber,
       linkedProductId: prodSelect.value,
       notes: notesTextarea.value,
       isMasterFormula: checkInput.checked
@@ -17920,6 +17986,20 @@ function openBatchFormulaModal(batchId) {
   closeBtn.addEventListener("click", function() { overlay.remove(); });
   footer.appendChild(closeBtn);
 
+  // History button for master formulas with version history
+  if (batch.isMasterFormula && batch.versionHistory && batch.versionHistory.length > 0) {
+    var histBtn = document.createElement("button");
+    histBtn.className = "crm-quick-edit-cancel";
+    histBtn.style.borderColor = "var(--color-primary)";
+    histBtn.style.color = "var(--color-primary)";
+    histBtn.textContent = "\u5C65\u6B74 (History)";
+    histBtn.addEventListener("click", function() {
+      overlay.remove();
+      openMasterFormulaHistory(batchId);
+    });
+    footer.appendChild(histBtn);
+  }
+
   var loadBtn = document.createElement("button");
   loadBtn.className = "crm-quick-edit-save";
   loadBtn.textContent = "フォーミュレーターに読込";
@@ -17931,6 +18011,249 @@ function openBatchFormulaModal(batchId) {
   footer.appendChild(loadBtn);
   modal.appendChild(footer);
 
+  overlay.appendChild(modal);
+  document.body.appendChild(overlay);
+}
+
+// ── Master Formula Version History ──
+function openMasterFormulaHistory(batchId) {
+  var batch = soapBatches.find(function(b) { return b.id === batchId; });
+  if (!batch || !batch.versionHistory || batch.versionHistory.length === 0) return;
+
+  var overlay = document.createElement("div");
+  overlay.className = "crm-quick-edit-overlay";
+  overlay.addEventListener("click", function(e) { if (e.target === overlay) overlay.remove(); });
+
+  var modal = document.createElement("div");
+  modal.className = "crm-quick-edit-modal batch-formula-modal";
+
+  // Title
+  var titleEl = document.createElement("div");
+  titleEl.className = "crm-quick-edit-title";
+  titleEl.textContent = (batch.name || "\u7121\u984C") + " \u2014 \u30D0\u30FC\u30B8\u30E7\u30F3\u5C65\u6B74";
+  modal.appendChild(titleEl);
+
+  // Version list container
+  var listContainer = document.createElement("div");
+  listContainer.className = "version-history-list";
+
+  // Diff panel (initially hidden, shown when a version is clicked)
+  var diffPanel = document.createElement("div");
+  diffPanel.className = "version-diff-panel";
+  diffPanel.style.display = "none";
+
+  var selectedVersionIdx = null;
+
+  function renderDiff(versionIdx) {
+    var ver = batch.versionHistory[versionIdx];
+    if (!ver || !ver.snapshot) return;
+    diffPanel.textContent = "";
+    diffPanel.style.display = "block";
+    selectedVersionIdx = versionIdx;
+
+    // Highlight selected item
+    var items = listContainer.querySelectorAll(".version-history-item");
+    for (var i = 0; i < items.length; i++) {
+      if (i === versionIdx) items[i].classList.add("active");
+      else items[i].classList.remove("active");
+    }
+
+    var diffTitle = document.createElement("div");
+    diffTitle.className = "version-diff-title";
+    diffTitle.textContent = "\u5909\u66F4\u5185\u5BB9 (Changes)";
+    diffPanel.appendChild(diffTitle);
+
+    var snap = ver.snapshot;
+    var currentOils = batch.oils || [];
+    var snapOils = snap.oils || [];
+
+    // Compare oils
+    var currentOilMap = {};
+    currentOils.forEach(function(o) { currentOilMap[o.name] = o.weightOz; });
+    var snapOilMap = {};
+    snapOils.forEach(function(o) { snapOilMap[o.name] = o.weightOz; });
+
+    // Oils removed from snapshot (present in snapshot but not in current)
+    snapOils.forEach(function(o) {
+      if (!currentOilMap.hasOwnProperty(o.name)) {
+        var row = document.createElement("div");
+        row.className = "version-diff-row version-diff-removed";
+        row.textContent = "\u2212 " + o.name + " (" + o.weightOz.toFixed(1) + "g)";
+        diffPanel.appendChild(row);
+      } else if (Math.abs(currentOilMap[o.name] - o.weightOz) > 0.01) {
+        var row = document.createElement("div");
+        row.className = "version-diff-row version-diff-changed";
+        row.textContent = "\u25B3 " + o.name + ": " + o.weightOz.toFixed(1) + "g \u2192 " + currentOilMap[o.name].toFixed(1) + "g";
+        diffPanel.appendChild(row);
+      }
+    });
+    currentOils.forEach(function(o) {
+      if (!snapOilMap.hasOwnProperty(o.name)) {
+        var row = document.createElement("div");
+        row.className = "version-diff-row version-diff-added";
+        row.textContent = "\uFF0B " + o.name + " (" + o.weightOz.toFixed(1) + "g)";
+        diffPanel.appendChild(row);
+      }
+    });
+
+    // Compare key properties
+    var propDefs = [
+      { key: "superfat", label: "\u9E78\u5316\u7387 (Superfat)", unit: "%" },
+      { key: "lyeConcentration", label: "\u30A2\u30EB\u30AB\u30EA\u6FC3\u5EA6", unit: "%" },
+      { key: "qualityScore", label: "\u54C1\u8CEA\u30B9\u30B3\u30A2", unit: "" }
+    ];
+    propDefs.forEach(function(pd) {
+      var oldVal = snap[pd.key];
+      var newVal = batch[pd.key];
+      if (oldVal != null && newVal != null && oldVal !== newVal) {
+        var row = document.createElement("div");
+        row.className = "version-diff-row version-diff-changed";
+        row.textContent = "\u25B3 " + pd.label + ": " + oldVal + pd.unit + " \u2192 " + newVal + pd.unit;
+        diffPanel.appendChild(row);
+      }
+    });
+
+    // Compare soap properties
+    var snapProps = snap.properties || {};
+    var curProps = batch.properties || {};
+    var propNames = { hardness: "\u786C\u3055", cleansing: "\u6D17\u6D44\u529B", conditioning: "\u808C\u9069\u6027", bubbly: "\u8D77\u6CE1\u529B", creamy: "\u304F\u305A\u308C\u306B\u304F\u3055", iodine: "\u30E8\u30A6\u7D20\u4FA1", ins: "INS\u5024" };
+    Object.keys(propNames).forEach(function(key) {
+      var oldV = snapProps[key];
+      var newV = curProps[key];
+      if (oldV != null && newV != null && oldV !== newV) {
+        var row = document.createElement("div");
+        row.className = "version-diff-row version-diff-changed";
+        row.textContent = "\u25B3 " + propNames[key] + ": " + oldV + " \u2192 " + newV;
+        diffPanel.appendChild(row);
+      }
+    });
+
+    // Check if fragrance/colorant changed
+    if (snap.fragrance !== batch.fragrance) {
+      var row = document.createElement("div");
+      row.className = "version-diff-row version-diff-changed";
+      row.textContent = "\u25B3 \u9999\u6599: " + (snap.fragrance || "\u306A\u3057") + " \u2192 " + (batch.fragrance || "\u306A\u3057");
+      diffPanel.appendChild(row);
+    }
+    if (snap.colorant !== batch.colorant) {
+      var row = document.createElement("div");
+      row.className = "version-diff-row version-diff-changed";
+      row.textContent = "\u25B3 \u7740\u8272\u6599: " + (snap.colorant || "\u306A\u3057") + " \u2192 " + (batch.colorant || "\u306A\u3057");
+      diffPanel.appendChild(row);
+    }
+
+    // If no differences found
+    if (diffPanel.childNodes.length <= 1) {
+      var noChange = document.createElement("div");
+      noChange.className = "version-diff-row";
+      noChange.textContent = "\u5909\u66F4\u306A\u3057";
+      diffPanel.appendChild(noChange);
+    }
+
+    // Revert button
+    var revertBtn = document.createElement("button");
+    revertBtn.className = "crm-quick-edit-save";
+    revertBtn.style.marginTop = "12px";
+    revertBtn.textContent = "\u5143\u306B\u623B\u3059 (Revert)";
+    revertBtn.addEventListener("click", function() {
+      if (!confirm("\u3053\u306E\u30D0\u30FC\u30B8\u30E7\u30F3\u306B\u623B\u3057\u307E\u3059\u304B\uFF1F")) return;
+      var snapData = ver.snapshot;
+      // Push current state as a new version before reverting
+      if (!batch.versionHistory) batch.versionHistory = [];
+      batch.versionHistory.push({
+        date: batch.updatedAt || batch.date,
+        editor: (typeof getCurrentUserName === "function" ? getCurrentUserName() : "") || "Unknown",
+        snapshot: {
+          oils: JSON.parse(JSON.stringify(batch.oils || [])),
+          superfat: batch.superfat,
+          lyeConcentration: batch.lyeConcentration,
+          fragrance: batch.fragrance,
+          fragranceOz: batch.fragranceOz,
+          colorant: batch.colorant,
+          properties: JSON.parse(JSON.stringify(batch.properties || {})),
+          lyeCalc: JSON.parse(JSON.stringify(batch.lyeCalc || {})),
+          qualityScore: batch.qualityScore,
+          notes: batch.notes
+        }
+      });
+      // Restore snapshot fields to the batch
+      batch.oils = JSON.parse(JSON.stringify(snapData.oils || []));
+      batch.superfat = snapData.superfat;
+      batch.lyeConcentration = snapData.lyeConcentration;
+      batch.fragrance = snapData.fragrance;
+      batch.fragranceOz = snapData.fragranceOz;
+      batch.colorant = snapData.colorant;
+      batch.properties = JSON.parse(JSON.stringify(snapData.properties || {}));
+      batch.lyeCalc = JSON.parse(JSON.stringify(snapData.lyeCalc || {}));
+      batch.qualityScore = snapData.qualityScore;
+      batch.notes = snapData.notes;
+      batch.updatedAt = new Date().toISOString().slice(0, 10);
+      formulatorSaveBatches(batch);
+      formulatorRenderBatchTable();
+      formulatorPopulateLoadDropdown();
+      overlay.remove();
+      showFormulatorToast("\u30D0\u30FC\u30B8\u30E7\u30F3\u3092\u5FA9\u5143\u3057\u307E\u3057\u305F");
+    });
+    diffPanel.appendChild(revertBtn);
+  }
+
+  // Render version list items (newest first)
+  var versions = batch.versionHistory.slice().reverse();
+  versions.forEach(function(ver, reversedIdx) {
+    var realIdx = batch.versionHistory.length - 1 - reversedIdx;
+    var item = document.createElement("div");
+    item.className = "version-history-item";
+
+    var meta = document.createElement("div");
+    meta.className = "version-meta";
+
+    var dateLine = document.createElement("div");
+    dateLine.className = "version-meta-date";
+    dateLine.textContent = ver.date || "\u4E0D\u660E";
+    meta.appendChild(dateLine);
+
+    var editorLine = document.createElement("div");
+    editorLine.className = "version-meta-editor";
+    editorLine.textContent = ver.editor || "Unknown";
+    meta.appendChild(editorLine);
+
+    if (ver.snapshot && ver.snapshot.qualityScore != null) {
+      var scoreLine = document.createElement("div");
+      scoreLine.className = "version-meta-score";
+      scoreLine.textContent = "\u54C1\u8CEA\u30B9\u30B3\u30A2: " + ver.snapshot.qualityScore;
+      meta.appendChild(scoreLine);
+    }
+
+    item.appendChild(meta);
+    item.addEventListener("click", function() { renderDiff(realIdx); });
+    listContainer.appendChild(item);
+  });
+
+  modal.appendChild(listContainer);
+  modal.appendChild(diffPanel);
+
+  // Footer
+  var footer = document.createElement("div");
+  footer.className = "formula-footer";
+
+  var backBtn = document.createElement("button");
+  backBtn.className = "crm-quick-edit-cancel";
+  backBtn.style.borderColor = "var(--color-primary)";
+  backBtn.style.color = "var(--color-primary)";
+  backBtn.textContent = "\u2190 \u30D5\u30A9\u30FC\u30DF\u30E5\u30E9\u8A73\u7D30";
+  backBtn.addEventListener("click", function() {
+    overlay.remove();
+    openBatchFormulaModal(batchId);
+  });
+  footer.appendChild(backBtn);
+
+  var closeBtn = document.createElement("button");
+  closeBtn.className = "crm-quick-edit-cancel";
+  closeBtn.textContent = "\u9589\u3058\u308B";
+  closeBtn.addEventListener("click", function() { overlay.remove(); });
+  footer.appendChild(closeBtn);
+
+  modal.appendChild(footer);
   overlay.appendChild(modal);
   document.body.appendChild(overlay);
 }
@@ -17952,6 +18275,24 @@ function formulatorSaveMasterFormula() {
   var cost = calcCostPerBar(formulatorOils, f.fragOz, f.fragCost, f.bars);
 
   if (existing) {
+    // Save current state to version history before overwriting
+    if (!existing.versionHistory) existing.versionHistory = [];
+    existing.versionHistory.push({
+      date: existing.updatedAt || existing.date,
+      editor: (typeof getCurrentUserName === "function" ? getCurrentUserName() : "") || "Unknown",
+      snapshot: {
+        oils: JSON.parse(JSON.stringify(existing.oils || [])),
+        superfat: existing.superfat,
+        lyeConcentration: existing.lyeConcentration,
+        fragrance: existing.fragrance,
+        fragranceOz: existing.fragranceOz,
+        colorant: existing.colorant,
+        properties: JSON.parse(JSON.stringify(existing.properties || {})),
+        lyeCalc: JSON.parse(JSON.stringify(existing.lyeCalc || {})),
+        qualityScore: existing.qualityScore,
+        notes: existing.notes
+      }
+    });
     existing.name = productName + " マスターフォーミュラ";
     existing.oils = oilsSnapshot; existing.superfat = f.superfat; existing.lyeConcentration = f.lyeConc;
     existing.fragrance = f.fragName; existing.fragranceOz = f.fragOz; existing.fragranceCostPerOz = f.fragCost;
@@ -17960,7 +18301,7 @@ function formulatorSaveMasterFormula() {
     existing.barsProduced = f.bars; existing.costPerBar = cost.costPerBar;
     existing.updatedAt = new Date().toISOString().slice(0, 10);
     formulatorSaveBatches(existing);
-    alert("マスターフォーミュラを更新しました: " + productName);
+    showFormulatorToast("\u30DE\u30B9\u30BF\u30FC\u30D5\u30A9\u30FC\u30DF\u30E5\u30E9\u3092\u66F4\u65B0\u3057\u307E\u3057\u305F");
   } else {
     var masterBatch = {
       id: "sb_master_" + Date.now(), name: productName + " マスターフォーミュラ",
@@ -17975,7 +18316,7 @@ function formulatorSaveMasterFormula() {
     };
     soapBatches.push(masterBatch);
     formulatorSaveBatches(masterBatch);
-    alert("マスターフォーミュラを保存しました: " + productName);
+    showFormulatorToast("\u30DE\u30B9\u30BF\u30FC\u30D5\u30A9\u30FC\u30DF\u30E5\u30E9\u3092\u66F4\u65B0\u3057\u307E\u3057\u305F");
   }
   formulatorRenderBatchTable();
   formulatorPopulateLoadDropdown();
@@ -17989,8 +18330,19 @@ function formulatorPopulateProductLink() {
   var def = document.createElement("option");
   def.value = ""; def.textContent = "-- 紐付けなし --";
   sel.appendChild(def);
-  // Shopify products (soaps only — filter by type or tag if possible)
-  var products = typeof shopifyProducts !== "undefined" ? shopifyProducts : [];
+  // Shopify products (soaps only — filter by type, tag, or known product names)
+  var products = (typeof shopifyProducts !== "undefined" ? shopifyProducts : []).filter(function(p) {
+    var title = (p.title || "").toLowerCase();
+    var type = (p.productType || "").toLowerCase();
+    // Include if type contains "soap"
+    if (type.indexOf("soap") >= 0) return true;
+    // Known soap products
+    var soapNames = ["paradise", "moonlight", "byron bay", "sunlight", "tsubaki", "rose garden", "rosemary", "kids soap", "cbd soap"];
+    for (var i = 0; i < soapNames.length; i++) { if (title.indexOf(soapNames[i]) >= 0) return true; }
+    // Include if "soap" or "せっけん" in title
+    if (title.indexOf("soap") >= 0 || title.indexOf("\u305b\u3063\u3051\u3093") >= 0) return true;
+    return false;
+  });
   products.forEach(function(p) {
     var opt = document.createElement("option");
     opt.value = p.id;
