@@ -20,6 +20,7 @@
 // 9. PartnerStock headers: id | contactId | contactName | productName | sku | quantity | unitPrice | pricingType | status | dateDelivered | dateSold | dateReturned | notes | createdAt | updatedAt
 // 10. ContactDocuments headers: id | contactId | contactName | docType | docName | sentDate | receivedDate | fileUrl | notes | createdAt | updatedAt
 // 11. People headers: id | nameJa | nameEn | initials | title | avatarImageUrl | email | phone | lineId | instagramHandle | preferredContact | vendorId | vendorRole | isPrimary | languages | communicationPrefs | background | howWeMet | lastContactedAt | lastContactedType | firstMetAt | createdAt | updatedAt
+// 12. SoapBatches headers: id | name | batchNumber | date | status | oils | superfat | lyeConcentration | fragrance | fragranceOz | colorant | notes | properties | lyeCalc | qualityScore | cureStartDate | cureEndDate | actualResults | barsProduced | costPerBar | linkedProductId | linkedProductName | createdAt | updatedAt
 // 11. Open Extensions → Apps Script, paste this code, deploy as web app
 // 7. Set "Execute as: Me" and "Who has access: Anyone"
 // 8. Copy the deployed URL into the dashboard (Board tab config)
@@ -133,7 +134,8 @@ var SHEET_TO_ITEM_TYPE = {
   Tasks: "task", Contacts: "contact", Products: "product",
   Orders: "order", Customers: "customer", Invoices: "invoice", Receipts: "receipt",
   PartnerStock: "stock", ContactDocuments: "document", People: "person",
-  ContactNotes: "contactNote", ContactInteractions: "contactInteraction", ContactActivityLog: "contactActivity"
+  ContactNotes: "contactNote", ContactInteractions: "contactInteraction", ContactActivityLog: "contactActivity",
+  SoapBatches: "soapBatch"
 };
 
 function ensureSheet(name, headers) {
@@ -156,6 +158,7 @@ function ensureActivityAndPresenceSheets() {
   ensureSheet("ContactNotes", ["id","contactId","body","context","createdAt","createdBy"]);
   ensureSheet("ContactInteractions", ["id","contactId","vendorId","type","summary","occurredAt","createdAt"]);
   ensureSheet("ContactActivityLog", ["id","contactId","eventType","title","detail","relatedId","occurredAt"]);
+  ensureSheet("SoapBatches", ["id","name","batchNumber","date","status","oils","superfat","lyeConcentration","fragrance","fragranceOz","colorant","notes","properties","lyeCalc","qualityScore","cureStartDate","cureEndDate","actualResults","barsProduced","costPerBar","linkedProductId","linkedProductName","createdAt","updatedAt"]);
 }
 
 function logActivity(action, itemType, itemId, itemName, detail, userId, userName) {
@@ -196,6 +199,7 @@ function doGet(e) {
       contactNotes: getAllRows("ContactNotes"),
       contactInteractions: getAllRows("ContactInteractions"),
       contactActivityLog: getAllRows("ContactActivityLog"),
+      soapBatches: getAllRows("SoapBatches"),
       activities: actAll.slice(-100).reverse()
     });
     try { cache.put("batchList", payload, 60); } catch(ex) { /* payload too large for cache */ }
@@ -208,7 +212,7 @@ function doGet(e) {
       var last100 = all.slice(-100).reverse();
       return jsonResponse({ activities: last100 });
     }
-    var keyMap = { "Contacts": "contacts", "Products": "products", "Orders": "orders", "Customers": "customers", "Invoices": "invoices", "Receipts": "receipts", "PartnerStock": "partnerStock", "ContactDocuments": "contactDocuments", "People": "people", "ContactNotes": "contactNotes", "ContactInteractions": "contactInteractions", "ContactActivityLog": "contactActivityLog" };
+    var keyMap = { "Contacts": "contacts", "Products": "products", "Orders": "orders", "Customers": "customers", "Invoices": "invoices", "Receipts": "receipts", "PartnerStock": "partnerStock", "ContactDocuments": "contactDocuments", "People": "people", "ContactNotes": "contactNotes", "ContactInteractions": "contactInteractions", "ContactActivityLog": "contactActivityLog", "SoapBatches": "soapBatches" };
     var key = keyMap[sheetName] || "tasks";
     var result = {};
     result[key] = getAllRows(sheetName);
@@ -232,7 +236,7 @@ function doPost(e) {
 
   var action = body.action;
   var sheetName = body.sheet || "Tasks";
-  var itemKeyMap = { "Contacts": "contact", "Products": "product", "Orders": "order", "Customers": "customer", "Invoices": "invoice", "Receipts": "receipt", "PartnerStock": "stock", "ContactDocuments": "document", "People": "person", "ContactNotes": "contactNote", "ContactInteractions": "contactInteraction", "ContactActivityLog": "contactActivity" };
+  var itemKeyMap = { "Contacts": "contact", "Products": "product", "Orders": "order", "Customers": "customer", "Invoices": "invoice", "Receipts": "receipt", "PartnerStock": "stock", "ContactDocuments": "document", "People": "person", "ContactNotes": "contactNote", "ContactInteractions": "contactInteraction", "ContactActivityLog": "contactActivity", "SoapBatches": "soapBatch" };
   var itemKey = itemKeyMap[sheetName] || "task";
   var item = body[itemKey] || body.task || body.contact || body.invoice || body.receipt || {};
   var userId = body.userId || "";

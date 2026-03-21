@@ -5252,6 +5252,72 @@ select.contact-edit-input { appearance: auto; cursor: pointer; }
 /* CSS containment for performance */
 .task-card { contain: layout style; }
 .crm-vendor-card { contain: layout style; }
+
+/* ── SOAP FORMULATOR ── */
+.tools-subnav { display:flex; gap:0; border-bottom:2px solid var(--color-border-light); margin-bottom:24px; }
+.tools-subnav-tab { padding:10px 20px; font-family:var(--font-text); font-size:var(--text-tab); font-weight:500; color:var(--color-text-secondary); background:none; border:none; border-bottom:2px solid transparent; margin-bottom:-2px; cursor:pointer; transition:color var(--transition-normal),border-color var(--transition-normal); }
+.tools-subnav-tab:hover { color:var(--color-text); }
+.tools-subnav-tab.active { color:var(--color-primary); border-bottom-color:var(--color-primary); font-weight:600; }
+.formulator-container { display:grid; grid-template-columns:1fr 1fr; gap:24px; padding:0 0 32px 0; }
+.formulator-panel { min-width:0; }
+.formulator-panel-title { font-family:var(--font-display); font-size:12px; font-weight:600; color:#062420; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:16px; }
+.formulator-oil-list { margin-bottom:16px; }
+.formulator-oil-row { display:flex; align-items:center; gap:10px; padding:8px 0; border-bottom:1px solid var(--color-border-separator); }
+.formulator-oil-row:last-child { border-bottom:none; }
+.formulator-oil-name { flex:1; font-family:var(--font-text); font-size:var(--text-md); color:var(--color-text); font-weight:500; }
+.formulator-oil-weight { width:70px; font-family:var(--font-mono); font-size:var(--text-xs); color:var(--color-text-secondary); text-align:right; }
+.formulator-oil-pct { width:50px; font-family:var(--font-mono); font-size:var(--text-xs); color:var(--color-text-tertiary); text-align:right; }
+.formulator-oil-remove { width:28px; height:28px; border:none; background:none; color:var(--color-text-disabled); cursor:pointer; border-radius:var(--radius-sm); display:flex; align-items:center; justify-content:center; font-size:14px; transition:color var(--transition-fast),background var(--transition-fast); }
+.formulator-oil-remove:hover { color:var(--color-error-text); background:var(--color-error-bg); }
+.formulator-add-row { display:flex; gap:8px; align-items:center; margin-bottom:20px; }
+.formulator-add-row select { flex:1; }
+.formulator-add-row input[type="number"] { width:80px; }
+.formulator-add-btn { padding:8px 14px; background:var(--color-primary); color:#fff; border:none; border-radius:var(--radius-md); font-family:var(--font-text); font-size:var(--text-md); font-weight:500; cursor:pointer; white-space:nowrap; transition:background var(--transition-fast); }
+.formulator-add-btn:hover { background:var(--color-primary-hover); }
+.formulator-input-group { display:flex; gap:12px; align-items:flex-end; margin-bottom:12px; }
+.formulator-field { display:flex; flex-direction:column; gap:4px; }
+.formulator-field label { font-family:var(--font-mono); font-size:var(--text-xs); color:var(--color-text-tertiary); letter-spacing:-0.3px; }
+.formulator-field input, .formulator-field select, .formulator-field textarea { background:var(--color-surface-secondary); border:1px solid var(--color-border); border-radius:var(--radius-md); padding:8px 10px; font-family:var(--font-text); font-size:var(--text-md); color:var(--color-text); outline:none; transition:border-color var(--transition-fast),box-shadow var(--transition-fast); }
+.formulator-field input:focus, .formulator-field select:focus, .formulator-field textarea:focus { border-color:var(--color-primary); box-shadow:var(--shadow-focus); }
+.formulator-field input::placeholder, .formulator-field textarea::placeholder { color:var(--color-text-disabled); }
+.formulator-field textarea { resize:vertical; min-height:48px; }
+.formulator-field select { appearance:auto; cursor:pointer; }
+.formulator-result-card { border:1px solid var(--color-border-subtle); border-radius:var(--radius-lg); padding:16px 20px; margin-bottom:16px; background:var(--color-surface); }
+.formulator-result-card-title { font-family:var(--font-mono); font-size:var(--text-xs); color:var(--color-text-tertiary); letter-spacing:-0.3px; text-transform:uppercase; margin-bottom:12px; }
+.formulator-result-row { display:flex; justify-content:space-between; align-items:baseline; padding:4px 0; }
+.formulator-result-label { font-family:var(--font-text); font-size:var(--text-md); color:var(--color-text-secondary); }
+.formulator-result-value { font-family:var(--font-display); font-size:var(--text-lg); font-weight:600; color:var(--color-text-heading); }
+.formulator-result-value-sm { font-family:var(--font-display); font-size:var(--text-h3); font-weight:600; color:var(--color-text-heading); }
+.formulator-result-unit { font-family:var(--font-mono); font-size:var(--text-xs); color:var(--color-text-tertiary); margin-left:4px; }
+.formulator-properties { display:flex; flex-direction:column; gap:10px; }
+.formulator-property-bar { display:flex; align-items:center; gap:10px; }
+.formulator-property-label { width:90px; font-family:var(--font-mono); font-size:var(--text-xs); color:var(--color-text-tertiary); letter-spacing:-0.3px; text-align:right; flex-shrink:0; }
+.formulator-property-track { flex:1; height:8px; background:#f1f3f4; border-radius:4px; overflow:hidden; position:relative; }
+.formulator-property-fill { height:100%; border-radius:4px; transition:width var(--transition-normal) ease,background var(--transition-normal) ease; min-width:2px; }
+.formulator-property-value { width:36px; font-family:var(--font-mono); font-size:var(--text-xs); color:var(--color-text); letter-spacing:-0.3px; text-align:right; flex-shrink:0; }
+.formulator-bar-green { background:#00a52c; }
+.formulator-bar-amber { background:#b06000; }
+.formulator-bar-red { background:#c5221f; }
+.formulator-score { text-align:center; padding:20px; }
+.formulator-score-number { font-family:var(--font-display); font-size:48px; font-weight:600; line-height:1; }
+.formulator-score-label { font-family:var(--font-mono); font-size:var(--text-xs); color:var(--color-text-tertiary); letter-spacing:-0.3px; text-transform:uppercase; margin-top:6px; }
+.formulator-score-green { color:#00a52c; }
+.formulator-score-amber { color:#b06000; }
+.formulator-score-red { color:#c5221f; }
+.formulator-cost-row { display:flex; justify-content:space-between; align-items:baseline; padding:6px 0; }
+.formulator-batch-section { margin-top:32px; padding-top:24px; border-top:1px solid var(--color-border-light); }
+.formulator-batch-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; }
+.formulator-batch-title { font-family:var(--font-display); font-size:12px; font-weight:600; color:#062420; text-transform:uppercase; letter-spacing:0.5px; }
+.formulator-batch-table td { cursor:pointer; }
+.formulator-batch-table tr:hover td { background:var(--color-surface-secondary); }
+.formulator-batch-status { display:inline-block; padding:2px 8px; border-radius:2px; font-family:var(--font-mono); font-size:var(--text-xs); letter-spacing:-0.3px; font-weight:400; }
+.formulator-status-planning { background:var(--color-neutral-bg); color:var(--color-neutral-text); }
+.formulator-status-in-progress { background:var(--color-warning-bg); color:var(--color-warning-text); }
+.formulator-status-curing { background:#e0f2fe; color:#0369a1; }
+.formulator-status-complete { background:var(--color-success-bg); color:var(--color-success-text); }
+.formulator-empty { text-align:center; padding:40px 20px; color:var(--color-text-tertiary); font-family:var(--font-text); font-size:var(--text-md); }
+@media (max-width:900px) { .formulator-container { grid-template-columns:1fr; } }
+
 </style>
 </head>
 <body>
@@ -5602,10 +5668,16 @@ select.contact-edit-input { appearance: auto; cursor: pointer; }
 
   <!-- TOOLS / DOCUMENTS -->
   <div id="tools" class="view" role="tabpanel" aria-labelledby="tab-tools">
-    <h2 class="section-title">Documents</h2>
-    <p class="section-subtitle">Order-centric view of invoices and receipts</p>
+
+    <!-- Tools sub-navigation -->
+    <div class="tools-subnav" id="tools-subnav">
+      <button class="tools-subnav-tab active" data-tool="documents" onclick="navigateTo('tools/documents')">Documents</button>
+      <button class="tools-subnav-tab" data-tool="formulator" onclick="navigateTo('tools/formulator')">Soap Formulator</button>
+    </div>
 
     <div id="tools-documents">
+      <h2 class="section-title">Documents</h2>
+      <p class="section-subtitle">Order-centric view of invoices and receipts</p>
       <div class="board-toolbar" id="documents-toolbar">
         <button class="btn-add-task" onclick="openInvoiceCreateModal()">+ Invoice</button>
         <button class="btn-add-task" onclick="openReceiptCreateModal()">+ Receipt</button>
@@ -5647,6 +5719,165 @@ select.contact-edit-input { appearance: auto; cursor: pointer; }
       </div>
       <p id="documents-no-results" style="display:none;text-align:center;padding:32px;color:#5f6368;font-size:14px;">No documents found.</p>
     </div>
+
+    <!-- SOAP FORMULATOR -->
+    <div id="tools-formulator" style="display:none">
+      <h2 class="section-title">Soap Formulator</h2>
+      <p class="section-subtitle">Calculate lye, water, and soap properties</p>
+
+      <div class="formulator-container">
+        <!-- Left: Recipe Builder -->
+        <div class="formulator-panel">
+          <div class="formulator-panel-title">Recipe Builder</div>
+
+          <!-- Add oil row -->
+          <div class="formulator-add-row">
+            <div class="formulator-field" style="flex:1">
+              <label>Oil / Butter</label>
+              <select id="formulator-oil-select"></select>
+            </div>
+            <div class="formulator-field">
+              <label>Weight (oz)</label>
+              <input type="number" id="formulator-oil-weight" min="0.1" step="0.1" value="10" style="width:80px">
+            </div>
+            <button class="formulator-add-btn" onclick="formulatorAddOil()">Add Oil</button>
+          </div>
+
+          <!-- Oil list -->
+          <div class="formulator-oil-list" id="formulator-oil-list"></div>
+
+          <!-- Settings -->
+          <div class="formulator-input-group">
+            <div class="formulator-field">
+              <label>Superfat %</label>
+              <input type="number" id="formulator-superfat" min="0" max="25" step="1" value="5" style="width:80px" oninput="formulatorRecalc()">
+            </div>
+            <div class="formulator-field">
+              <label>Lye Concentration %</label>
+              <input type="number" id="formulator-lye-conc" min="20" max="50" step="1" value="33" style="width:80px" oninput="formulatorRecalc()">
+            </div>
+          </div>
+
+          <!-- Fragrance -->
+          <div class="formulator-input-group">
+            <div class="formulator-field" style="flex:1">
+              <label>Fragrance</label>
+              <input type="text" id="formulator-fragrance-name" placeholder="e.g. Lavender EO">
+            </div>
+            <div class="formulator-field">
+              <label>Fragrance (oz)</label>
+              <input type="number" id="formulator-fragrance-oz" min="0" step="0.1" value="0" style="width:80px" oninput="formulatorRecalc()">
+            </div>
+            <div class="formulator-field">
+              <label>Cost/oz ($)</label>
+              <input type="number" id="formulator-fragrance-cost" min="0" step="0.01" value="0" style="width:80px" oninput="formulatorRecalc()">
+            </div>
+          </div>
+
+          <!-- Colorant -->
+          <div class="formulator-field" style="margin-bottom:12px">
+            <label>Colorant</label>
+            <input type="text" id="formulator-colorant" placeholder="e.g. Activated Charcoal 1 tsp">
+          </div>
+
+          <!-- Bars produced -->
+          <div class="formulator-field" style="margin-bottom:12px">
+            <label>Bars Produced</label>
+            <input type="number" id="formulator-bars" min="1" step="1" value="10" style="width:80px" oninput="formulatorRecalc()">
+          </div>
+
+          <!-- Notes -->
+          <div class="formulator-field" style="margin-bottom:12px">
+            <label>Notes</label>
+            <textarea id="formulator-notes" placeholder="Recipe notes..."></textarea>
+          </div>
+
+          <!-- Save batch button -->
+          <button class="formulator-add-btn" onclick="formulatorSaveBatch()" style="width:100%">Save as Batch</button>
+        </div>
+
+        <!-- Right: Results -->
+        <div class="formulator-panel">
+          <div class="formulator-panel-title">Results</div>
+
+          <!-- Lye Calculator -->
+          <div class="formulator-result-card" id="formulator-lye-results">
+            <div class="formulator-result-card-title">Lye Calculator</div>
+            <div class="formulator-result-row">
+              <span class="formulator-result-label">NaOH Weight</span>
+              <span><span class="formulator-result-value" id="formulator-naoh">0.00</span><span class="formulator-result-unit">oz</span></span>
+            </div>
+            <div class="formulator-result-row">
+              <span class="formulator-result-label">Water Weight</span>
+              <span><span class="formulator-result-value" id="formulator-water">0.00</span><span class="formulator-result-unit">oz</span></span>
+            </div>
+            <div class="formulator-result-row">
+              <span class="formulator-result-label">Total Oil</span>
+              <span><span class="formulator-result-value-sm" id="formulator-total-oil">0.00</span><span class="formulator-result-unit">oz</span></span>
+            </div>
+            <div class="formulator-result-row">
+              <span class="formulator-result-label">Total Batch</span>
+              <span><span class="formulator-result-value-sm" id="formulator-total-batch">0.00</span><span class="formulator-result-unit">oz</span></span>
+            </div>
+          </div>
+
+          <!-- Properties -->
+          <div class="formulator-result-card">
+            <div class="formulator-result-card-title">Soap Properties</div>
+            <div class="formulator-properties" id="formulator-properties"></div>
+          </div>
+
+          <!-- Quality Score -->
+          <div class="formulator-result-card">
+            <div class="formulator-result-card-title">Quality Score</div>
+            <div class="formulator-score" id="formulator-score-container">
+              <div class="formulator-score-number" id="formulator-score">--</div>
+              <div class="formulator-score-label">out of 100</div>
+            </div>
+          </div>
+
+          <!-- Cost -->
+          <div class="formulator-result-card" id="formulator-cost-card">
+            <div class="formulator-result-card-title">Cost Estimate</div>
+            <div class="formulator-cost-row">
+              <span class="formulator-result-label">Oil Cost</span>
+              <span class="formulator-result-value-sm" id="formulator-oil-cost">$0.00</span>
+            </div>
+            <div class="formulator-cost-row">
+              <span class="formulator-result-label">Fragrance Cost</span>
+              <span class="formulator-result-value-sm" id="formulator-frag-cost">$0.00</span>
+            </div>
+            <div class="formulator-cost-row" style="border-top:1px solid var(--color-border-separator);padding-top:8px;margin-top:4px">
+              <span class="formulator-result-label">Cost per Bar</span>
+              <span class="formulator-result-value" id="formulator-cost-per-bar">$0.00</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Batch History -->
+      <div class="formulator-batch-section">
+        <div class="formulator-batch-header">
+          <div class="formulator-batch-title">Batch History</div>
+          <button class="formulator-add-btn" onclick="formulatorNewBatch()">+ New Batch</button>
+        </div>
+        <table class="ivh-table formulator-batch-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Date</th>
+              <th>Status</th>
+              <th>Quality</th>
+              <th>Bars</th>
+              <th>Cost/Bar</th>
+            </tr>
+          </thead>
+          <tbody id="formulator-batch-body"></tbody>
+        </table>
+        <p class="formulator-empty" id="formulator-batch-empty" style="display:none">No batches yet. Save your first recipe above.</p>
+      </div>
+    </div>
+
   </div>
 
   <!-- CUSTOMERS -->
@@ -7034,7 +7265,8 @@ function saveDataCache() {
       contactInteractions: contactInteractions || [],
       contactNotes: contactNotes || [],
       contactActivityEvents: contactActivityEvents || [],
-      contactAttachments: contactAttachments || []
+      contactAttachments: contactAttachments || [],
+      soapBatches: soapBatches || []
     };
     localStorage.setItem(CACHE_KEY, JSON.stringify(payload));
   } catch(e) { /* storage full — ignore */ }
@@ -7059,6 +7291,7 @@ function loadDataCache() {
     contactNotes = c.contactNotes || [];
     contactActivityEvents = c.contactActivityEvents || [];
     contactAttachments = c.contactAttachments || [];
+    soapBatches = c.soapBatches || [];
     // Normalize CRM images from cache
     crmContacts.forEach(function(ct) {
       if (ct.profileImageUrl) ct.profileImageUrl = normalizeDriveImageUrl(ct.profileImageUrl);
@@ -7142,6 +7375,19 @@ function fetchAllData() {
       if (data.contactActivityLog && data.contactActivityLog.length) {
         var evtIds = {}; contactActivityEvents.forEach(function(e) { evtIds[e.id] = true; });
         data.contactActivityLog.forEach(function(e) { if (!evtIds[e.id]) contactActivityEvents.push(e); });
+      }
+      if (data.soapBatches && data.soapBatches.length) {
+        data.soapBatches.forEach(function(b) {
+          try { if (typeof b.oils === "string") b.oils = JSON.parse(b.oils); } catch(e) { b.oils = []; }
+          try { if (typeof b.properties === "string") b.properties = JSON.parse(b.properties); } catch(e) { b.properties = {}; }
+          try { if (typeof b.lyeCalc === "string") b.lyeCalc = JSON.parse(b.lyeCalc); } catch(e) { b.lyeCalc = {}; }
+          try { if (typeof b.actualResults === "string") b.actualResults = JSON.parse(b.actualResults); } catch(e) { b.actualResults = null; }
+        });
+        var bIds = {}; soapBatches.forEach(function(b) { bIds[b.id] = true; });
+        data.soapBatches.forEach(function(b) {
+          if (bIds[b.id]) { var i = soapBatches.findIndex(function(sb) { return sb.id === b.id; }); if (i >= 0) soapBatches[i] = b; }
+          else soapBatches.push(b);
+        });
       }
       if (data.activities) { activityLog = data.activities; updateNotifBell(); updateTabDots(); }
       // Demo mode: ?demo=true injects test vendors — remove after partner review
@@ -8803,6 +9049,7 @@ var contactInteractions = [];
 var contactNotes = [];
 var contactActivityEvents = [];
 var contactAttachments = [];
+var soapBatches = [];
 var crmRefreshTimer = null;
 var crmActiveSubView = localStorage.getItem("ivyhub_crmSubView") || "crm-vendors";
 var crmVendorViewMode = localStorage.getItem("ivyhub_crmVendorView") || "tile";
@@ -8870,6 +9117,10 @@ function contactInteractionsApiPost(body) {
 function contactActivityApiPost(body) {
   body.sheet = "ContactActivityLog"; body.userId = getCurrentUserEmail(); body.userName = getCurrentUserName();
   return fetch(SCRIPT_URL, { method: "POST", headers: { "Content-Type": "text/plain" }, body: JSON.stringify(body) }).then(function(r) { return r.json(); });
+}
+function soapBatchApiPost(body) {
+  body.sheet = "SoapBatches"; body.userId = getCurrentUserEmail(); body.userName = getCurrentUserName();
+  return fetch(SCRIPT_URL, { method: "POST", headers: { "Content-Type": "text/plain" }, body: JSON.stringify(body) }).then(function(r) { return r.json(); }).then(function(data) { setTimeout(fetchActivityLog, 500); return data; });
 }
 
 function fetchCrmContacts(force) {
@@ -16667,9 +16918,642 @@ function fetchInvoices(force) {
     .catch(function() { setInvSyncStatus("Load failed"); });
 }
 
+// ══════════════════════════════════════════════════════════════
+// SOAP FORMULATOR — Oil Database & Calculation Engine
+// ══════════════════════════════════════════════════════════════
+
+var SOAP_OIL_DB = [
+  { name:"Olive Oil", sapNaOH:0.1353, sapKOH:0.19, lauric:0, myristic:0, palmitic:11, stearic:4, ricinoleic:0, oleic:72, linoleic:10, linolenic:1, iodine:85, ins:105, category:"base", costPerOz:0.50 },
+  { name:"Coconut Oil (76\u00b0)", sapNaOH:0.191, sapKOH:0.268, lauric:48, myristic:19, palmitic:9, stearic:3, ricinoleic:0, oleic:8, linoleic:2, linolenic:0, iodine:10, ins:258, category:"base", costPerOz:0.25 },
+  { name:"Palm Oil", sapNaOH:0.1441, sapKOH:0.2024, lauric:0, myristic:1, palmitic:44, stearic:5, ricinoleic:0, oleic:39, linoleic:10, linolenic:0, iodine:53, ins:145, category:"base", costPerOz:0.20 },
+  { name:"Castor Oil", sapNaOH:0.1286, sapKOH:0.1806, lauric:0, myristic:0, palmitic:0, stearic:1, ricinoleic:90, oleic:4, linoleic:4, linolenic:0, iodine:86, ins:95, category:"specialty", costPerOz:0.35 },
+  { name:"Sweet Almond Oil", sapNaOH:0.136, sapKOH:0.191, lauric:0, myristic:0, palmitic:7, stearic:2, ricinoleic:0, oleic:71, linoleic:18, linolenic:0, iodine:99, ins:97, category:"luxury", costPerOz:0.75 },
+  { name:"Avocado Oil", sapNaOH:0.1339, sapKOH:0.1879, lauric:0, myristic:0, palmitic:20, stearic:2, ricinoleic:0, oleic:58, linoleic:12, linolenic:0, iodine:86, ins:99, category:"luxury", costPerOz:0.90 },
+  { name:"Sunflower Oil", sapNaOH:0.136, sapKOH:0.191, lauric:0, myristic:0, palmitic:6, stearic:4, ricinoleic:0, oleic:19, linoleic:68, linolenic:1, iodine:133, ins:63, category:"base", costPerOz:0.20 },
+  { name:"Jojoba Oil", sapNaOH:0.0695, sapKOH:0.0976, lauric:0, myristic:0, palmitic:0, stearic:0, ricinoleic:0, oleic:12, linoleic:0, linolenic:0, iodine:83, ins:11, category:"luxury", costPerOz:1.50 },
+  { name:"Hemp Seed Oil", sapNaOH:0.1357, sapKOH:0.1905, lauric:0, myristic:0, palmitic:6, stearic:2, ricinoleic:0, oleic:12, linoleic:57, linolenic:21, iodine:165, ins:39, category:"specialty", costPerOz:0.85 },
+  { name:"Rice Bran Oil", sapNaOH:0.1284, sapKOH:0.1803, lauric:0, myristic:0, palmitic:17, stearic:2, ricinoleic:0, oleic:47, linoleic:33, linolenic:1, iodine:103, ins:70, category:"base", costPerOz:0.30 },
+  { name:"Babassu Oil", sapNaOH:0.175, sapKOH:0.2457, lauric:50, myristic:20, palmitic:11, stearic:4, ricinoleic:0, oleic:10, linoleic:2, linolenic:0, iodine:15, ins:230, category:"specialty", costPerOz:0.90 },
+  { name:"Apricot Kernel Oil", sapNaOH:0.135, sapKOH:0.1895, lauric:0, myristic:0, palmitic:6, stearic:1, ricinoleic:0, oleic:66, linoleic:25, linolenic:0, iodine:100, ins:91, category:"luxury", costPerOz:1.00 },
+  { name:"Grapeseed Oil", sapNaOH:0.1265, sapKOH:0.1776, lauric:0, myristic:0, palmitic:7, stearic:4, ricinoleic:0, oleic:19, linoleic:69, linolenic:0, iodine:131, ins:66, category:"luxury", costPerOz:0.65 },
+  { name:"Kukui Nut Oil", sapNaOH:0.135, sapKOH:0.1895, lauric:0, myristic:0, palmitic:7, stearic:2, ricinoleic:0, oleic:25, linoleic:40, linolenic:25, iodine:164, ins:24, category:"luxury", costPerOz:1.80 },
+  { name:"Palm Kernel Oil", sapNaOH:0.178, sapKOH:0.2499, lauric:48, myristic:16, palmitic:8, stearic:3, ricinoleic:0, oleic:15, linoleic:2, linolenic:0, iodine:18, ins:227, category:"base", costPerOz:0.22 },
+  { name:"Shea Butter", sapNaOH:0.1282, sapKOH:0.18, lauric:0, myristic:0, palmitic:4, stearic:40, ricinoleic:0, oleic:48, linoleic:6, linolenic:0, iodine:59, ins:116, category:"butter", costPerOz:0.60 },
+  { name:"Cocoa Butter", sapNaOH:0.1378, sapKOH:0.1935, lauric:0, myristic:0, palmitic:26, stearic:34, ricinoleic:0, oleic:35, linoleic:3, linolenic:0, iodine:37, ins:157, category:"butter", costPerOz:0.80 },
+  { name:"Mango Butter", sapNaOH:0.1371, sapKOH:0.1925, lauric:0, myristic:0, palmitic:9, stearic:38, ricinoleic:0, oleic:46, linoleic:5, linolenic:0, iodine:52, ins:146, category:"butter", costPerOz:0.70 }
+];
+
+// Current recipe state
+var formulatorOils = [];
+// soapBatches declared earlier with other global arrays
+var formulatorEditingBatchId = null;
+
+// ── Soap properties calculation (weighted average by oil percentage) ──
+function calcSoapProperties(oilEntries) {
+  var totalWeight = 0;
+  oilEntries.forEach(function(e) { totalWeight += e.weightOz; });
+  if (totalWeight === 0) return { hardness:0, cleansing:0, conditioning:0, bubbly:0, creamy:0, iodine:0, ins:0, qualityScore:0 };
+
+  var hardness = 0, cleansing = 0, conditioning = 0, bubbly = 0, creamy = 0, iodineVal = 0, insVal = 0;
+  oilEntries.forEach(function(e) {
+    var pct = e.weightOz / totalWeight;
+    var o = e.oil;
+    hardness     += (o.palmitic + o.stearic) * pct;
+    cleansing    += (o.lauric + o.myristic) * pct;
+    conditioning += (o.oleic + o.linoleic + o.linolenic) * pct;
+    bubbly       += (o.lauric + o.myristic + o.ricinoleic) * pct;
+    creamy       += (o.palmitic + o.stearic + o.ricinoleic) * pct;
+    iodineVal    += o.iodine * pct;
+    insVal       += o.ins * pct;
+  });
+
+  var props = {
+    hardness: Math.round(hardness),
+    cleansing: Math.round(cleansing),
+    conditioning: Math.round(conditioning),
+    bubbly: Math.round(bubbly),
+    creamy: Math.round(creamy),
+    iodine: Math.round(iodineVal),
+    ins: Math.round(insVal)
+  };
+  props.qualityScore = calcQualityScore(props);
+  return props;
+}
+
+// ── Lye calculation ──
+function calcLye(oilEntries, superfatPct, lyeConcentrationPct) {
+  var totalOilWeight = 0;
+  var totalLyeNeeded = 0;
+  oilEntries.forEach(function(e) {
+    totalOilWeight += e.weightOz;
+    totalLyeNeeded += e.weightOz * e.oil.sapNaOH;
+  });
+  var actualLye = totalLyeNeeded * (1 - superfatPct / 100);
+  var waterWeight = actualLye * (100 - lyeConcentrationPct) / lyeConcentrationPct;
+  return {
+    naohWeight: Math.round(actualLye * 100) / 100,
+    waterWeight: Math.round(waterWeight * 100) / 100,
+    totalOilWeight: Math.round(totalOilWeight * 100) / 100,
+    totalBatchWeight: Math.round((totalOilWeight + actualLye + waterWeight) * 100) / 100
+  };
+}
+
+// ── Quality score (0-100) ──
+function calcQualityScore(properties) {
+  var ranges = {
+    hardness: [29, 54],
+    cleansing: [12, 22],
+    conditioning: [44, 69],
+    bubbly: [14, 46],
+    creamy: [16, 48],
+    iodine: [41, 70],
+    ins: [136, 165]
+  };
+  var totalPenalty = 0;
+  var keys = Object.keys(ranges);
+  keys.forEach(function(k) {
+    var val = properties[k];
+    var lo = ranges[k][0];
+    var hi = ranges[k][1];
+    if (val < lo) totalPenalty += (lo - val);
+    else if (val > hi) totalPenalty += (val - hi);
+  });
+  var score = Math.max(0, Math.round(100 - totalPenalty));
+  return score;
+}
+
+// ── Cost per bar ──
+function calcCostPerBar(oilEntries, fragranceOz, fragranceCostPerOz, barsProduced) {
+  var oilCost = 0;
+  oilEntries.forEach(function(e) { oilCost += e.weightOz * e.oil.costPerOz; });
+  var fragCost = (fragranceOz || 0) * (fragranceCostPerOz || 0);
+  var totalCost = oilCost + fragCost;
+  var costPerBar = barsProduced > 0 ? totalCost / barsProduced : 0;
+  return {
+    oilCost: Math.round(oilCost * 100) / 100,
+    fragranceCost: Math.round(fragCost * 100) / 100,
+    totalCost: Math.round(totalCost * 100) / 100,
+    costPerBar: Math.round(costPerBar * 100) / 100
+  };
+}
+
+// ── Populate oil dropdown ──
+function formulatorPopulateOilSelect() {
+  var sel = document.getElementById("formulator-oil-select");
+  if (!sel) return;
+  while (sel.firstChild) sel.removeChild(sel.firstChild);
+  var categories = ["base", "butter", "specialty", "luxury"];
+  categories.forEach(function(cat) {
+    var group = document.createElement("optgroup");
+    group.label = cat.charAt(0).toUpperCase() + cat.slice(1);
+    SOAP_OIL_DB.filter(function(o) { return o.category === cat; }).forEach(function(o) {
+      var opt = document.createElement("option");
+      opt.value = o.name;
+      opt.textContent = o.name;
+      group.appendChild(opt);
+    });
+    sel.appendChild(group);
+  });
+}
+
+// ── Add oil to recipe ──
+function formulatorAddOil() {
+  var sel = document.getElementById("formulator-oil-select");
+  var weightInput = document.getElementById("formulator-oil-weight");
+  if (!sel || !weightInput) return;
+  var oilName = sel.value;
+  var weight = parseFloat(weightInput.value);
+  if (!oilName || isNaN(weight) || weight <= 0) return;
+  var oilDb = SOAP_OIL_DB.find(function(o) { return o.name === oilName; });
+  if (!oilDb) return;
+  // Check if oil already in list
+  var existing = formulatorOils.find(function(e) { return e.oil.name === oilName; });
+  if (existing) {
+    existing.weightOz += weight;
+  } else {
+    formulatorOils.push({ oil: oilDb, weightOz: weight });
+  }
+  formulatorRenderOilList();
+  formulatorRecalc();
+}
+
+// ── Remove oil ──
+function formulatorRemoveOil(idx) {
+  formulatorOils.splice(idx, 1);
+  formulatorRenderOilList();
+  formulatorRecalc();
+}
+
+// ── Render oil list ──
+function formulatorRenderOilList() {
+  var container = document.getElementById("formulator-oil-list");
+  if (!container) return;
+  while (container.firstChild) container.removeChild(container.firstChild);
+  var totalWeight = 0;
+  formulatorOils.forEach(function(e) { totalWeight += e.weightOz; });
+
+  if (formulatorOils.length === 0) {
+    var empty = document.createElement("div");
+    empty.className = "formulator-empty";
+    empty.textContent = "Add oils to start building your recipe";
+    container.appendChild(empty);
+    return;
+  }
+
+  formulatorOils.forEach(function(entry, idx) {
+    var row = document.createElement("div");
+    row.className = "formulator-oil-row";
+
+    var nameSpan = document.createElement("span");
+    nameSpan.className = "formulator-oil-name";
+    nameSpan.textContent = entry.oil.name;
+    row.appendChild(nameSpan);
+
+    var weightSpan = document.createElement("span");
+    weightSpan.className = "formulator-oil-weight";
+    weightSpan.textContent = entry.weightOz.toFixed(1) + " oz";
+    row.appendChild(weightSpan);
+
+    var pct = totalWeight > 0 ? (entry.weightOz / totalWeight * 100) : 0;
+    var pctSpan = document.createElement("span");
+    pctSpan.className = "formulator-oil-pct";
+    pctSpan.textContent = pct.toFixed(1) + "%";
+    row.appendChild(pctSpan);
+
+    var removeBtn = document.createElement("button");
+    removeBtn.className = "formulator-oil-remove";
+    removeBtn.setAttribute("title", "Remove");
+    removeBtn.textContent = "\u00d7";
+    removeBtn.onclick = (function(i) { return function() { formulatorRemoveOil(i); }; })(idx);
+    row.appendChild(removeBtn);
+
+    container.appendChild(row);
+  });
+}
+
+// ── Recalculate everything ──
+function formulatorRecalc() {
+  var superfat = parseFloat(document.getElementById("formulator-superfat").value) || 5;
+  var lyeConc = parseFloat(document.getElementById("formulator-lye-conc").value) || 33;
+  var fragOz = parseFloat(document.getElementById("formulator-fragrance-oz").value) || 0;
+  var fragCost = parseFloat(document.getElementById("formulator-fragrance-cost").value) || 0;
+  var bars = parseInt(document.getElementById("formulator-bars").value, 10) || 10;
+
+  // Lye results
+  var lye = calcLye(formulatorOils, superfat, lyeConc);
+  document.getElementById("formulator-naoh").textContent = lye.naohWeight.toFixed(2);
+  document.getElementById("formulator-water").textContent = lye.waterWeight.toFixed(2);
+  document.getElementById("formulator-total-oil").textContent = lye.totalOilWeight.toFixed(2);
+  document.getElementById("formulator-total-batch").textContent = lye.totalBatchWeight.toFixed(2);
+
+  // Properties
+  var props = calcSoapProperties(formulatorOils);
+  formulatorRenderProperties(props);
+
+  // Quality score
+  var scoreEl = document.getElementById("formulator-score");
+  if (formulatorOils.length === 0) {
+    scoreEl.textContent = "--";
+    scoreEl.className = "formulator-score-number";
+  } else {
+    scoreEl.textContent = String(props.qualityScore);
+    if (props.qualityScore >= 70) scoreEl.className = "formulator-score-number formulator-score-green";
+    else if (props.qualityScore >= 40) scoreEl.className = "formulator-score-number formulator-score-amber";
+    else scoreEl.className = "formulator-score-number formulator-score-red";
+  }
+
+  // Cost
+  var cost = calcCostPerBar(formulatorOils, fragOz, fragCost, bars);
+  document.getElementById("formulator-oil-cost").textContent = "$" + cost.oilCost.toFixed(2);
+  document.getElementById("formulator-frag-cost").textContent = "$" + cost.fragranceCost.toFixed(2);
+  document.getElementById("formulator-cost-per-bar").textContent = "$" + cost.costPerBar.toFixed(2);
+}
+
+// ── Render property bars ──
+function formulatorRenderProperties(props) {
+  var container = document.getElementById("formulator-properties");
+  if (!container) return;
+  while (container.firstChild) container.removeChild(container.firstChild);
+
+  var defs = [
+    { key:"hardness", label:"Hardness", lo:29, hi:54, max:100 },
+    { key:"cleansing", label:"Cleansing", lo:12, hi:22, max:80 },
+    { key:"conditioning", label:"Conditioning", lo:44, hi:69, max:100 },
+    { key:"bubbly", label:"Bubbly", lo:14, hi:46, max:100 },
+    { key:"creamy", label:"Creamy", lo:16, hi:48, max:100 },
+    { key:"iodine", label:"Iodine", lo:41, hi:70, max:200 },
+    { key:"ins", label:"INS", lo:136, hi:165, max:270 }
+  ];
+
+  defs.forEach(function(d) {
+    var val = props[d.key];
+    var barRow = document.createElement("div");
+    barRow.className = "formulator-property-bar";
+
+    var label = document.createElement("span");
+    label.className = "formulator-property-label";
+    label.textContent = d.label;
+    barRow.appendChild(label);
+
+    var track = document.createElement("div");
+    track.className = "formulator-property-track";
+    var fill = document.createElement("div");
+    fill.className = "formulator-property-fill";
+    var pctWidth = Math.min(val / d.max * 100, 100);
+    fill.style.width = pctWidth + "%";
+
+    // Color: green=in range, amber=borderline (within 10), red=out
+    var diff = 0;
+    if (val < d.lo) diff = d.lo - val;
+    else if (val > d.hi) diff = val - d.hi;
+    if (diff === 0) {
+      fill.classList.add("formulator-bar-green");
+    } else if (diff <= 10) {
+      fill.classList.add("formulator-bar-amber");
+    } else {
+      fill.classList.add("formulator-bar-red");
+    }
+    track.appendChild(fill);
+    barRow.appendChild(track);
+
+    var valSpan = document.createElement("span");
+    valSpan.className = "formulator-property-value";
+    valSpan.textContent = String(val);
+    barRow.appendChild(valSpan);
+
+    container.appendChild(barRow);
+  });
+}
+
+// ── Save batch ──
+function formulatorSaveBatch() {
+  if (formulatorOils.length === 0) return;
+  var superfat = parseFloat(document.getElementById("formulator-superfat").value) || 5;
+  var lyeConc = parseFloat(document.getElementById("formulator-lye-conc").value) || 33;
+  var fragName = document.getElementById("formulator-fragrance-name").value || "";
+  var fragOz = parseFloat(document.getElementById("formulator-fragrance-oz").value) || 0;
+  var fragCost = parseFloat(document.getElementById("formulator-fragrance-cost").value) || 0;
+  var colorant = document.getElementById("formulator-colorant").value || "";
+  var bars = parseInt(document.getElementById("formulator-bars").value, 10) || 10;
+  var notes = document.getElementById("formulator-notes").value || "";
+
+  var props = calcSoapProperties(formulatorOils);
+  var lyeCalc = calcLye(formulatorOils, superfat, lyeConc);
+  var cost = calcCostPerBar(formulatorOils, fragOz, fragCost, bars);
+
+  var batchName = prompt("Batch name:", fragName ? fragName + " Bar" : "New Soap Batch");
+  if (!batchName) return;
+
+  var oilsSnapshot = formulatorOils.map(function(e) { return { name: e.oil.name, weightOz: e.weightOz }; });
+
+  if (formulatorEditingBatchId) {
+    // Update existing batch
+    var batch = soapBatches.find(function(b) { return b.id === formulatorEditingBatchId; });
+    if (batch) {
+      batch.name = batchName;
+      batch.oils = oilsSnapshot;
+      batch.superfat = superfat;
+      batch.lyeConcentration = lyeConc;
+      batch.fragrance = fragName;
+      batch.fragranceOz = fragOz;
+      batch.fragranceCostPerOz = fragCost;
+      batch.colorant = colorant;
+      batch.notes = notes;
+      batch.properties = props;
+      batch.lyeCalc = lyeCalc;
+      batch.qualityScore = props.qualityScore;
+      batch.barsProduced = bars;
+      batch.costPerBar = cost.costPerBar;
+      batch.updatedAt = new Date().toISOString().slice(0, 10);
+    }
+    formulatorEditingBatchId = null;
+  } else {
+    // New batch
+    var newBatch = {
+      id: "sb_" + Date.now(),
+      name: batchName,
+      date: new Date().toISOString().slice(0, 10),
+      oils: oilsSnapshot,
+      superfat: superfat,
+      lyeConcentration: lyeConc,
+      fragrance: fragName,
+      fragranceOz: fragOz,
+      fragranceCostPerOz: fragCost,
+      colorant: colorant,
+      notes: notes,
+      properties: props,
+      lyeCalc: lyeCalc,
+      qualityScore: props.qualityScore,
+      status: "planning",
+      barsProduced: bars,
+      costPerBar: cost.costPerBar
+    };
+    soapBatches.push(newBatch);
+  }
+
+  formulatorSaveBatches(formulatorEditingBatchId ? batch : newBatch);
+  formulatorRenderBatchTable();
+}
+
+// ── New batch (clear form) ──
+function formulatorNewBatch() {
+  formulatorEditingBatchId = null;
+  formulatorOils = [];
+  formulatorRenderOilList();
+  document.getElementById("formulator-superfat").value = "5";
+  document.getElementById("formulator-lye-conc").value = "33";
+  document.getElementById("formulator-fragrance-name").value = "";
+  document.getElementById("formulator-fragrance-oz").value = "0";
+  document.getElementById("formulator-fragrance-cost").value = "0";
+  document.getElementById("formulator-colorant").value = "";
+  document.getElementById("formulator-bars").value = "10";
+  document.getElementById("formulator-notes").value = "";
+  formulatorRecalc();
+}
+
+// ── Load batch into calculator ──
+function formulatorLoadBatch(batchId) {
+  var batch = soapBatches.find(function(b) { return b.id === batchId; });
+  if (!batch) return;
+  formulatorEditingBatchId = batchId;
+  formulatorOils = [];
+  (batch.oils || []).forEach(function(oilEntry) {
+    var dbOil = SOAP_OIL_DB.find(function(o) { return o.name === oilEntry.name; });
+    if (dbOil) formulatorOils.push({ oil: dbOil, weightOz: oilEntry.weightOz });
+  });
+  formulatorRenderOilList();
+  document.getElementById("formulator-superfat").value = String(batch.superfat || 5);
+  document.getElementById("formulator-lye-conc").value = String(batch.lyeConcentration || 33);
+  document.getElementById("formulator-fragrance-name").value = batch.fragrance || "";
+  document.getElementById("formulator-fragrance-oz").value = String(batch.fragranceOz || 0);
+  document.getElementById("formulator-fragrance-cost").value = String(batch.fragranceCostPerOz || 0);
+  document.getElementById("formulator-colorant").value = batch.colorant || "";
+  document.getElementById("formulator-bars").value = String(batch.barsProduced || 10);
+  document.getElementById("formulator-notes").value = batch.notes || "";
+  formulatorRecalc();
+  // Scroll to top of formulator
+  var el = document.getElementById("tools-formulator");
+  if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+// ── Render batch table ──
+function formulatorRenderBatchTable() {
+  var tbody = document.getElementById("formulator-batch-body");
+  var emptyEl = document.getElementById("formulator-batch-empty");
+  if (!tbody) return;
+  while (tbody.firstChild) tbody.removeChild(tbody.firstChild);
+
+  if (soapBatches.length === 0) {
+    if (emptyEl) emptyEl.style.display = "";
+    return;
+  }
+  if (emptyEl) emptyEl.style.display = "none";
+
+  // Sort by date descending
+  var sorted = soapBatches.slice().sort(function(a, b) { return (b.date || "").localeCompare(a.date || ""); });
+  sorted.forEach(function(batch) {
+    var tr = document.createElement("tr");
+    tr.onclick = function() { formulatorLoadBatch(batch.id); };
+
+    var tdName = document.createElement("td");
+    tdName.textContent = batch.name || "Untitled";
+    tdName.style.fontWeight = "500";
+    tr.appendChild(tdName);
+
+    var tdDate = document.createElement("td");
+    tdDate.textContent = batch.date || "";
+    tdDate.style.fontFamily = "var(--font-mono)";
+    tdDate.style.fontSize = "var(--text-xs)";
+    tr.appendChild(tdDate);
+
+    var tdStatus = document.createElement("td");
+    var statusBadge = document.createElement("span");
+    statusBadge.className = "formulator-batch-status formulator-status-" + (batch.status || "planning");
+    statusBadge.textContent = (batch.status || "planning").replace("-", " ");
+    tdStatus.appendChild(statusBadge);
+    tr.appendChild(tdStatus);
+
+    var tdScore = document.createElement("td");
+    tdScore.textContent = batch.qualityScore != null ? String(batch.qualityScore) : "--";
+    tdScore.style.fontWeight = "600";
+    if (batch.qualityScore >= 70) tdScore.style.color = "#00a52c";
+    else if (batch.qualityScore >= 40) tdScore.style.color = "#b06000";
+    else if (batch.qualityScore != null) tdScore.style.color = "#c5221f";
+    tr.appendChild(tdScore);
+
+    var tdBars = document.createElement("td");
+    tdBars.textContent = batch.barsProduced || "--";
+    tr.appendChild(tdBars);
+
+    var tdCost = document.createElement("td");
+    tdCost.textContent = batch.costPerBar != null ? "$" + batch.costPerBar.toFixed(2) : "--";
+    tdCost.style.fontFamily = "var(--font-mono)";
+    tdCost.style.fontSize = "var(--text-xs)";
+    tr.appendChild(tdCost);
+
+    tbody.appendChild(tr);
+  });
+}
+
+// ── Persistence: save/load batches in data cache ──
+function formulatorSaveBatches(batch) {
+  saveDataCache();
+  // Persist to backend
+  if (batch && typeof soapBatchApiPost === "function") {
+    var payload = Object.assign({}, batch);
+    if (payload.oils) payload.oils = JSON.stringify(payload.oils);
+    if (payload.properties) payload.properties = JSON.stringify(payload.properties);
+    if (payload.lyeCalc) payload.lyeCalc = JSON.stringify(payload.lyeCalc);
+    if (payload.actualResults) payload.actualResults = JSON.stringify(payload.actualResults);
+    var action = soapBatches.filter(function(b) { return b.id === batch.id; }).length > 0 ? "update" : "create";
+    soapBatchApiPost({ action: action, soapBatch: payload }).catch(function() {});
+  }
+}
+
+function formulatorLoadBatches() {
+  // soapBatches is already loaded by loadDataCache(); seed if empty
+  if (!soapBatches || soapBatches.length === 0) {
+    formulatorSeedBatches();
+  }
+}
+
+function formulatorSeedBatches() {
+  var seed1Oils = [
+    { name:"Olive Oil", weightOz:14 },
+    { name:"Coconut Oil (76\u00b0)", weightOz:8 },
+    { name:"Shea Butter", weightOz:4 },
+    { name:"Castor Oil", weightOz:2 }
+  ];
+  var seed1Entries = seed1Oils.map(function(s) {
+    return { oil: SOAP_OIL_DB.find(function(o) { return o.name === s.name; }), weightOz: s.weightOz };
+  });
+  var seed1Props = calcSoapProperties(seed1Entries);
+  var seed1Lye = calcLye(seed1Entries, 5, 33);
+  var seed1Cost = calcCostPerBar(seed1Entries, 0.5, 1.20, 12);
+
+  var seed2Oils = [
+    { name:"Coconut Oil (76\u00b0)", weightOz:12 },
+    { name:"Olive Oil", weightOz:10 },
+    { name:"Palm Oil", weightOz:6 },
+    { name:"Castor Oil", weightOz:2 }
+  ];
+  var seed2Entries = seed2Oils.map(function(s) {
+    return { oil: SOAP_OIL_DB.find(function(o) { return o.name === s.name; }), weightOz: s.weightOz };
+  });
+  var seed2Props = calcSoapProperties(seed2Entries);
+  var seed2Lye = calcLye(seed2Entries, 3, 33);
+  var seed2Cost = calcCostPerBar(seed2Entries, 0, 0, 14);
+
+  var seed3Oils = [
+    { name:"Olive Oil", weightOz:12 },
+    { name:"Coconut Oil (76\u00b0)", weightOz:6 },
+    { name:"Shea Butter", weightOz:4 },
+    { name:"Castor Oil", weightOz:2 },
+    { name:"Avocado Oil", weightOz:4 }
+  ];
+  var seed3Entries = seed3Oils.map(function(s) {
+    return { oil: SOAP_OIL_DB.find(function(o) { return o.name === s.name; }), weightOz: s.weightOz };
+  });
+  var seed3Props = calcSoapProperties(seed3Entries);
+  var seed3Lye = calcLye(seed3Entries, 8, 33);
+  var seed3Cost = calcCostPerBar(seed3Entries, 0.3, 0.80, 10);
+
+  soapBatches = [
+    {
+      id: "sb_seed_1",
+      name: "Lavender Dream Bar",
+      date: "2026-01-15",
+      oils: seed1Oils,
+      superfat: 5,
+      lyeConcentration: 33,
+      fragrance: "Lavender Essential Oil",
+      fragranceOz: 0.5,
+      fragranceCostPerOz: 1.20,
+      colorant: "Purple mica 1/2 tsp",
+      notes: "Classic lavender bar, gentle and moisturizing",
+      properties: seed1Props,
+      lyeCalc: seed1Lye,
+      qualityScore: seed1Props.qualityScore,
+      status: "complete",
+      barsProduced: 12,
+      costPerBar: seed1Cost.costPerBar
+    },
+    {
+      id: "sb_seed_2",
+      name: "Charcoal Detox Bar",
+      date: "2026-02-03",
+      oils: seed2Oils,
+      superfat: 3,
+      lyeConcentration: 33,
+      fragrance: "Tea Tree EO",
+      fragranceOz: 0.4,
+      fragranceCostPerOz: 0.90,
+      colorant: "Activated Charcoal 1 tbsp",
+      notes: "Deep cleansing detox bar with charcoal",
+      properties: seed2Props,
+      lyeCalc: seed2Lye,
+      qualityScore: seed2Props.qualityScore,
+      status: "curing",
+      barsProduced: 14,
+      costPerBar: seed2Cost.costPerBar
+    },
+    {
+      id: "sb_seed_3",
+      name: "Oatmeal Honey Gentle",
+      date: "2026-02-20",
+      oils: seed3Oils,
+      superfat: 8,
+      lyeConcentration: 33,
+      fragrance: "Honey FO",
+      fragranceOz: 0.3,
+      fragranceCostPerOz: 0.80,
+      colorant: "Colloidal oatmeal 2 tbsp",
+      notes: "Extra gentle bar with oatmeal and honey",
+      properties: seed3Props,
+      lyeCalc: seed3Lye,
+      qualityScore: seed3Props.qualityScore,
+      status: "planning",
+      barsProduced: 10,
+      costPerBar: seed3Cost.costPerBar
+    }
+  ];
+  formulatorSaveBatches();
+}
+
+// ── Init formulator on first open ──
+var formulatorInitialized = false;
+function formulatorInit() {
+  if (formulatorInitialized) return;
+  formulatorInitialized = true;
+  formulatorPopulateOilSelect();
+  formulatorLoadBatches();
+  formulatorRenderOilList();
+  formulatorRenderProperties({ hardness:0, cleansing:0, conditioning:0, bubbly:0, creamy:0, iodine:0, ins:0 });
+  formulatorRenderBatchTable();
+}
+
 // ── Tools tab navigation ──────────────────────────────────────
 function switchTool(toolId) {
-  fetchDocuments();
+  var panels = ["tools-documents", "tools-formulator"];
+  panels.forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) el.style.display = (id === "tools-" + toolId) ? "" : "none";
+  });
+  // Update subnav tabs
+  var tabs = document.querySelectorAll(".tools-subnav-tab");
+  tabs.forEach(function(t) {
+    if (t.getAttribute("data-tool") === toolId) {
+      t.classList.add("active");
+    } else {
+      t.classList.remove("active");
+    }
+  });
+  // Trigger data loads
+  if (toolId === "documents") {
+    fetchDocuments();
+  } else if (toolId === "formulator") {
+    formulatorInit();
+  }
 }
 
 // Backwards-compat aliases
