@@ -16935,24 +16935,26 @@ function fetchInvoices(force) {
 // ══════════════════════════════════════════════════════════════
 
 var SOAP_OIL_DB = [
-  { name:"Olive Oil", sapNaOH:0.1353, sapKOH:0.19, lauric:0, myristic:0, palmitic:11, stearic:4, ricinoleic:0, oleic:72, linoleic:10, linolenic:1, iodine:85, ins:105, category:"base", costPerOz:0.50 },
-  { name:"Coconut Oil (76\u00b0)", sapNaOH:0.191, sapKOH:0.268, lauric:48, myristic:19, palmitic:9, stearic:3, ricinoleic:0, oleic:8, linoleic:2, linolenic:0, iodine:10, ins:258, category:"base", costPerOz:0.25 },
-  { name:"Palm Oil", sapNaOH:0.1441, sapKOH:0.2024, lauric:0, myristic:1, palmitic:44, stearic:5, ricinoleic:0, oleic:39, linoleic:10, linolenic:0, iodine:53, ins:145, category:"base", costPerOz:0.20 },
-  { name:"Castor Oil", sapNaOH:0.1286, sapKOH:0.1806, lauric:0, myristic:0, palmitic:0, stearic:1, ricinoleic:90, oleic:4, linoleic:4, linolenic:0, iodine:86, ins:95, category:"specialty", costPerOz:0.35 },
-  { name:"Sweet Almond Oil", sapNaOH:0.136, sapKOH:0.191, lauric:0, myristic:0, palmitic:7, stearic:2, ricinoleic:0, oleic:71, linoleic:18, linolenic:0, iodine:99, ins:97, category:"luxury", costPerOz:0.75 },
-  { name:"Avocado Oil", sapNaOH:0.1339, sapKOH:0.1879, lauric:0, myristic:0, palmitic:20, stearic:2, ricinoleic:0, oleic:58, linoleic:12, linolenic:0, iodine:86, ins:99, category:"luxury", costPerOz:0.90 },
-  { name:"Sunflower Oil", sapNaOH:0.136, sapKOH:0.191, lauric:0, myristic:0, palmitic:6, stearic:4, ricinoleic:0, oleic:19, linoleic:68, linolenic:1, iodine:133, ins:63, category:"base", costPerOz:0.20 },
-  { name:"Jojoba Oil", sapNaOH:0.0695, sapKOH:0.0976, lauric:0, myristic:0, palmitic:0, stearic:0, ricinoleic:0, oleic:12, linoleic:0, linolenic:0, iodine:83, ins:11, category:"luxury", costPerOz:1.50 },
-  { name:"Hemp Seed Oil", sapNaOH:0.1357, sapKOH:0.1905, lauric:0, myristic:0, palmitic:6, stearic:2, ricinoleic:0, oleic:12, linoleic:57, linolenic:21, iodine:165, ins:39, category:"specialty", costPerOz:0.85 },
-  { name:"Rice Bran Oil", sapNaOH:0.1284, sapKOH:0.1803, lauric:0, myristic:0, palmitic:17, stearic:2, ricinoleic:0, oleic:47, linoleic:33, linolenic:1, iodine:103, ins:70, category:"base", costPerOz:0.30 },
-  { name:"Babassu Oil", sapNaOH:0.175, sapKOH:0.2457, lauric:50, myristic:20, palmitic:11, stearic:4, ricinoleic:0, oleic:10, linoleic:2, linolenic:0, iodine:15, ins:230, category:"specialty", costPerOz:0.90 },
-  { name:"Apricot Kernel Oil", sapNaOH:0.135, sapKOH:0.1895, lauric:0, myristic:0, palmitic:6, stearic:1, ricinoleic:0, oleic:66, linoleic:25, linolenic:0, iodine:100, ins:91, category:"luxury", costPerOz:1.00 },
-  { name:"Grapeseed Oil", sapNaOH:0.1265, sapKOH:0.1776, lauric:0, myristic:0, palmitic:7, stearic:4, ricinoleic:0, oleic:19, linoleic:69, linolenic:0, iodine:131, ins:66, category:"luxury", costPerOz:0.65 },
-  { name:"Kukui Nut Oil", sapNaOH:0.135, sapKOH:0.1895, lauric:0, myristic:0, palmitic:7, stearic:2, ricinoleic:0, oleic:25, linoleic:40, linolenic:25, iodine:164, ins:24, category:"luxury", costPerOz:1.80 },
-  { name:"Palm Kernel Oil", sapNaOH:0.178, sapKOH:0.2499, lauric:48, myristic:16, palmitic:8, stearic:3, ricinoleic:0, oleic:15, linoleic:2, linolenic:0, iodine:18, ins:227, category:"base", costPerOz:0.22 },
-  { name:"Shea Butter", sapNaOH:0.1282, sapKOH:0.18, lauric:0, myristic:0, palmitic:4, stearic:40, ricinoleic:0, oleic:48, linoleic:6, linolenic:0, iodine:59, ins:116, category:"butter", costPerOz:0.60 },
-  { name:"Cocoa Butter", sapNaOH:0.1378, sapKOH:0.1935, lauric:0, myristic:0, palmitic:26, stearic:34, ricinoleic:0, oleic:35, linoleic:3, linolenic:0, iodine:37, ins:157, category:"butter", costPerOz:0.80 },
-  { name:"Mango Butter", sapNaOH:0.1371, sapKOH:0.1925, lauric:0, myristic:0, palmitic:9, stearic:38, ricinoleic:0, oleic:46, linoleic:5, linolenic:0, iodine:52, ins:146, category:"butter", costPerOz:0.70 }
+  { name:"Olive Oil", nameJa:"\u30AA\u30EA\u30FC\u30D6\u30AA\u30A4\u30EB", sapNaOH:0.1353, sapKOH:0.19, lauric:0, myristic:0, palmitic:11, stearic:4, ricinoleic:0, oleic:72, linoleic:10, linolenic:1, iodine:85, ins:105, category:"base", costPerOz:0.50 },
+  { name:"Coconut Oil (76\u00b0)", nameJa:"\u30B3\u30B3\u30CA\u30C3\u30C4\u30AA\u30A4\u30EB", sapNaOH:0.191, sapKOH:0.268, lauric:48, myristic:19, palmitic:9, stearic:3, ricinoleic:0, oleic:8, linoleic:2, linolenic:0, iodine:10, ins:258, category:"base", costPerOz:0.25 },
+  { name:"Palm Oil", nameJa:"\u30D1\u30FC\u30E0\u30AA\u30A4\u30EB", sapNaOH:0.1441, sapKOH:0.2024, lauric:0, myristic:1, palmitic:44, stearic:5, ricinoleic:0, oleic:39, linoleic:10, linolenic:0, iodine:53, ins:145, category:"base", costPerOz:0.20 },
+  { name:"Castor Oil", nameJa:"\u30D2\u30DE\u30B7\u6CB9", sapNaOH:0.1286, sapKOH:0.1806, lauric:0, myristic:0, palmitic:0, stearic:1, ricinoleic:90, oleic:4, linoleic:4, linolenic:0, iodine:86, ins:95, category:"specialty", costPerOz:0.35 },
+  { name:"Sweet Almond Oil", nameJa:"\u30B9\u30A4\u30FC\u30C8\u30A2\u30FC\u30E2\u30F3\u30C9\u30AA\u30A4\u30EB", sapNaOH:0.136, sapKOH:0.191, lauric:0, myristic:0, palmitic:7, stearic:2, ricinoleic:0, oleic:71, linoleic:18, linolenic:0, iodine:99, ins:97, category:"luxury", costPerOz:0.75 },
+  { name:"Avocado Oil", nameJa:"\u30A2\u30DC\u30AB\u30C9\u30AA\u30A4\u30EB", sapNaOH:0.1339, sapKOH:0.1879, lauric:0, myristic:0, palmitic:20, stearic:2, ricinoleic:0, oleic:58, linoleic:12, linolenic:0, iodine:86, ins:99, category:"luxury", costPerOz:0.90 },
+  { name:"Sunflower Oil", nameJa:"\u30D2\u30DE\u30EF\u30EA\u6CB9", sapNaOH:0.136, sapKOH:0.191, lauric:0, myristic:0, palmitic:6, stearic:4, ricinoleic:0, oleic:19, linoleic:68, linolenic:1, iodine:133, ins:63, category:"base", costPerOz:0.20 },
+  { name:"Jojoba Oil", nameJa:"\u30DB\u30DB\u30D0\u30AA\u30A4\u30EB", sapNaOH:0.0695, sapKOH:0.0976, lauric:0, myristic:0, palmitic:0, stearic:0, ricinoleic:0, oleic:12, linoleic:0, linolenic:0, iodine:83, ins:11, category:"luxury", costPerOz:1.50 },
+  { name:"Hemp Seed Oil", nameJa:"\u30D8\u30F3\u30D7\u30B7\u30FC\u30C9\u30AA\u30A4\u30EB", sapNaOH:0.1357, sapKOH:0.1905, lauric:0, myristic:0, palmitic:6, stearic:2, ricinoleic:0, oleic:12, linoleic:57, linolenic:21, iodine:165, ins:39, category:"specialty", costPerOz:0.85 },
+  { name:"Rice Bran Oil", nameJa:"\u7C73\u306C\u304B\u6CB9", sapNaOH:0.1284, sapKOH:0.1803, lauric:0, myristic:0, palmitic:17, stearic:2, ricinoleic:0, oleic:47, linoleic:33, linolenic:1, iodine:103, ins:70, category:"base", costPerOz:0.30 },
+  { name:"Babassu Oil", nameJa:"\u30D0\u30D0\u30B9\u30AA\u30A4\u30EB", sapNaOH:0.175, sapKOH:0.2457, lauric:50, myristic:20, palmitic:11, stearic:4, ricinoleic:0, oleic:10, linoleic:2, linolenic:0, iodine:15, ins:230, category:"specialty", costPerOz:0.90 },
+  { name:"Apricot Kernel Oil", nameJa:"\u30A2\u30D7\u30EA\u30B3\u30C3\u30C8\u30AB\u30FC\u30CD\u30EB\u30AA\u30A4\u30EB", sapNaOH:0.135, sapKOH:0.1895, lauric:0, myristic:0, palmitic:6, stearic:1, ricinoleic:0, oleic:66, linoleic:25, linolenic:0, iodine:100, ins:91, category:"luxury", costPerOz:1.00 },
+  { name:"Grapeseed Oil", nameJa:"\u30B0\u30EC\u30FC\u30D7\u30B7\u30FC\u30C9\u30AA\u30A4\u30EB", sapNaOH:0.1265, sapKOH:0.1776, lauric:0, myristic:0, palmitic:7, stearic:4, ricinoleic:0, oleic:19, linoleic:69, linolenic:0, iodine:131, ins:66, category:"luxury", costPerOz:0.65 },
+  { name:"Kukui Nut Oil", nameJa:"\u30AF\u30AF\u30A4\u30CA\u30C3\u30C4\u30AA\u30A4\u30EB", sapNaOH:0.135, sapKOH:0.1895, lauric:0, myristic:0, palmitic:7, stearic:2, ricinoleic:0, oleic:25, linoleic:40, linolenic:25, iodine:164, ins:24, category:"luxury", costPerOz:1.80 },
+  { name:"Palm Kernel Oil", nameJa:"\u30D1\u30FC\u30E0\u6838\u6CB9", sapNaOH:0.178, sapKOH:0.2499, lauric:48, myristic:16, palmitic:8, stearic:3, ricinoleic:0, oleic:15, linoleic:2, linolenic:0, iodine:18, ins:227, category:"base", costPerOz:0.22 },
+  { name:"Lard", nameJa:"\u30E9\u30FC\u30C9\uff08\u8C5A\u8102\uff09", sapNaOH:0.1399, sapKOH:0.1964, lauric:0, myristic:1, palmitic:26, stearic:14, ricinoleic:0, oleic:44, linoleic:10, linolenic:1, iodine:58, ins:139, category:"base", costPerOz:0.15 },
+  { name:"Tallow (Beef)", nameJa:"\u30BF\u30ED\u30FC\uff08\u725B\u8102\uff09", sapNaOH:0.1419, sapKOH:0.1993, lauric:0, myristic:3, palmitic:27, stearic:19, ricinoleic:0, oleic:43, linoleic:3, linolenic:1, iodine:42, ins:156, category:"base", costPerOz:0.12 },
+  { name:"Shea Butter", nameJa:"\u30B7\u30A2\u30D0\u30BF\u30FC", sapNaOH:0.1282, sapKOH:0.18, lauric:0, myristic:0, palmitic:4, stearic:40, ricinoleic:0, oleic:48, linoleic:6, linolenic:0, iodine:59, ins:116, category:"butter", costPerOz:0.60 },
+  { name:"Cocoa Butter", nameJa:"\u30AB\u30AB\u30AA\u30D0\u30BF\u30FC", sapNaOH:0.1378, sapKOH:0.1935, lauric:0, myristic:0, palmitic:26, stearic:34, ricinoleic:0, oleic:35, linoleic:3, linolenic:0, iodine:37, ins:157, category:"butter", costPerOz:0.80 },
+  { name:"Mango Butter", nameJa:"\u30DE\u30F3\u30B4\u30FC\u30D0\u30BF\u30FC", sapNaOH:0.1371, sapKOH:0.1925, lauric:0, myristic:0, palmitic:9, stearic:38, ricinoleic:0, oleic:46, linoleic:5, linolenic:0, iodine:52, ins:146, category:"butter", costPerOz:0.70 }
 ];
 
 // Current recipe state
@@ -17063,14 +17065,15 @@ function formulatorPopulateOilSelect() {
   var sel = document.getElementById("formulator-oil-select");
   if (!sel) return;
   while (sel.firstChild) sel.removeChild(sel.firstChild);
+  var catLabels = { base: "\u30D9\u30FC\u30B9 Base", butter: "\u30D0\u30BF\u30FC Butter", specialty: "\u7279\u6B8A Specialty", luxury: "\u9AD8\u7D1A Luxury" };
   var categories = ["base", "butter", "specialty", "luxury"];
   categories.forEach(function(cat) {
     var group = document.createElement("optgroup");
-    group.label = cat.charAt(0).toUpperCase() + cat.slice(1);
+    group.label = catLabels[cat] || cat;
     SOAP_OIL_DB.filter(function(o) { return o.category === cat; }).forEach(function(o) {
       var opt = document.createElement("option");
       opt.value = o.name;
-      opt.textContent = o.name;
+      opt.textContent = (o.nameJa ? o.nameJa + " / " : "") + o.name;
       group.appendChild(opt);
     });
     sel.appendChild(group);
