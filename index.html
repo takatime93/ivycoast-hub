@@ -5792,6 +5792,20 @@ select.contact-edit-input { appearance: auto; cursor: pointer; }
             <input type="text" id="formulator-colorant" placeholder="e.g. Activated Charcoal 1 tsp">
           </div>
 
+          <!-- Batch number -->
+          <div class="formulator-field" style="margin-bottom:12px">
+            <label>Batch Number</label>
+            <input type="text" id="formulator-batch-number" placeholder="e.g. SOAP-2026-001" style="width:180px">
+          </div>
+
+          <!-- Link to product -->
+          <div class="formulator-field" style="margin-bottom:12px">
+            <label>Link to Product</label>
+            <select id="formulator-link-product" style="width:100%">
+              <option value="">-- Not linked --</option>
+            </select>
+          </div>
+
           <!-- Bars produced -->
           <div class="formulator-field" style="margin-bottom:12px">
             <label>Bars Produced</label>
@@ -5801,11 +5815,18 @@ select.contact-edit-input { appearance: auto; cursor: pointer; }
           <!-- Notes -->
           <div class="formulator-field" style="margin-bottom:12px">
             <label>Notes</label>
-            <textarea id="formulator-notes" placeholder="Recipe notes..."></textarea>
+            <textarea id="formulator-notes" placeholder="Recipe notes, tweaks from base formula..."></textarea>
+          </div>
+
+          <!-- Master formula checkbox -->
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+            <input type="checkbox" id="formulator-master-formula" style="width:16px;height:16px">
+            <label for="formulator-master-formula" style="font-size:var(--text-sm);color:var(--color-text-secondary);cursor:pointer">Set as master formula for linked product</label>
           </div>
 
           <!-- Save batch button -->
           <button class="formulator-add-btn" onclick="formulatorSaveBatch()" style="width:100%">Save as Batch</button>
+          <button class="formulator-add-btn" onclick="formulatorSaveMasterFormula()" style="width:100%;background:transparent;color:var(--color-primary);border:1px solid var(--color-primary);margin-top:6px">Update Master Formula</button>
         </div>
 
         <!-- Right: Results -->
@@ -16955,7 +16976,8 @@ var SOAP_OIL_DB = [
   { name:"Shea Butter", nameJa:"\u30B7\u30A2\u30D0\u30BF\u30FC", sapNaOH:0.1282, sapKOH:0.18, lauric:0, myristic:0, palmitic:4, stearic:40, ricinoleic:0, oleic:48, linoleic:6, linolenic:0, iodine:59, ins:116, category:"butter", costPerOz:0.60 },
   { name:"Cocoa Butter", nameJa:"\u30AB\u30AB\u30AA\u30D0\u30BF\u30FC", sapNaOH:0.1378, sapKOH:0.1935, lauric:0, myristic:0, palmitic:26, stearic:34, ricinoleic:0, oleic:35, linoleic:3, linolenic:0, iodine:37, ins:157, category:"butter", costPerOz:0.80 },
   { name:"Mango Butter", nameJa:"\u30DE\u30F3\u30B4\u30FC\u30D0\u30BF\u30FC", sapNaOH:0.1371, sapKOH:0.1925, lauric:0, myristic:0, palmitic:9, stearic:38, ricinoleic:0, oleic:46, linoleic:5, linolenic:0, iodine:52, ins:146, category:"butter", costPerOz:0.70 },
-  { name:"Tsubaki Oil (Camellia)", nameJa:"\u693F\u6CB9\uFF08\u30C4\u30D0\u30AD\u30AA\u30A4\u30EB\uFF09", sapNaOH:0.1362, sapKOH:0.1912, lauric:0, myristic:0, palmitic:8, stearic:2, ricinoleic:0, oleic:82, linoleic:7, linolenic:1, iodine:80, ins:108, category:"luxury", costPerOz:1.20 }
+  { name:"Tsubaki Oil (Camellia)", nameJa:"\u693F\u6CB9\uFF08\u30C4\u30D0\u30AD\u30AA\u30A4\u30EB\uFF09", sapNaOH:0.1362, sapKOH:0.1912, lauric:0, myristic:0, palmitic:8, stearic:2, ricinoleic:0, oleic:82, linoleic:7, linolenic:1, iodine:80, ins:108, category:"luxury", costPerOz:1.20 },
+  { name:"CBD Oil (Hemp-derived)", nameJa:"CBD\u30AA\u30A4\u30EB", sapNaOH:0.1357, sapKOH:0.1905, lauric:0, myristic:0, palmitic:6, stearic:2, ricinoleic:0, oleic:12, linoleic:57, linolenic:21, iodine:165, ins:39, category:"specialty", costPerOz:3.50 }
 ];
 
 // Current recipe state
@@ -17250,75 +17272,145 @@ function formulatorRenderProperties(props) {
   });
 }
 
+// ── Read common form values ──
+function _formulatorReadForm() {
+  return {
+    superfat: parseFloat(document.getElementById("formulator-superfat").value) || 5,
+    lyeConc: parseFloat(document.getElementById("formulator-lye-conc").value) || 33,
+    fragName: document.getElementById("formulator-fragrance-name").value || "",
+    fragOz: parseFloat(document.getElementById("formulator-fragrance-oz").value) || 0,
+    fragCost: parseFloat(document.getElementById("formulator-fragrance-cost").value) || 0,
+    colorant: document.getElementById("formulator-colorant").value || "",
+    bars: parseInt(document.getElementById("formulator-bars").value, 10) || 10,
+    notes: document.getElementById("formulator-notes").value || "",
+    batchNumber: (document.getElementById("formulator-batch-number").value || "").trim(),
+    linkedProductId: document.getElementById("formulator-link-product").value || "",
+    isMasterFormula: document.getElementById("formulator-master-formula").checked
+  };
+}
+
 // ── Save batch ──
 function formulatorSaveBatch() {
   if (formulatorOils.length === 0) return;
-  var superfat = parseFloat(document.getElementById("formulator-superfat").value) || 5;
-  var lyeConc = parseFloat(document.getElementById("formulator-lye-conc").value) || 33;
-  var fragName = document.getElementById("formulator-fragrance-name").value || "";
-  var fragOz = parseFloat(document.getElementById("formulator-fragrance-oz").value) || 0;
-  var fragCost = parseFloat(document.getElementById("formulator-fragrance-cost").value) || 0;
-  var colorant = document.getElementById("formulator-colorant").value || "";
-  var bars = parseInt(document.getElementById("formulator-bars").value, 10) || 10;
-  var notes = document.getElementById("formulator-notes").value || "";
-
+  var f = _formulatorReadForm();
   var props = calcSoapProperties(formulatorOils);
-  var lyeCalc = calcLye(formulatorOils, superfat, lyeConc);
-  var cost = calcCostPerBar(formulatorOils, fragOz, fragCost, bars);
+  var lyeCalc = calcLye(formulatorOils, f.superfat, f.lyeConc);
+  var cost = calcCostPerBar(formulatorOils, f.fragOz, f.fragCost, f.bars);
 
-  var batchName = prompt("Batch name:", fragName ? fragName + " Bar" : "New Soap Batch");
+  var batchName = prompt("Batch name:", f.fragName ? f.fragName + " Bar" : "New Soap Batch");
   if (!batchName) return;
 
   var oilsSnapshot = formulatorOils.map(function(e) { return { name: e.oil.name, weightOz: e.weightOz }; });
+  var linkedProductName = "";
+  if (f.linkedProductId) {
+    var prod = (typeof shopifyProducts !== "undefined" ? shopifyProducts : []).find(function(p) { return p.id === f.linkedProductId; });
+    linkedProductName = prod ? prod.title : "";
+  }
 
   if (formulatorEditingBatchId) {
-    // Update existing batch
     var batch = soapBatches.find(function(b) { return b.id === formulatorEditingBatchId; });
     if (batch) {
-      batch.name = batchName;
-      batch.oils = oilsSnapshot;
-      batch.superfat = superfat;
-      batch.lyeConcentration = lyeConc;
-      batch.fragrance = fragName;
-      batch.fragranceOz = fragOz;
-      batch.fragranceCostPerOz = fragCost;
-      batch.colorant = colorant;
-      batch.notes = notes;
-      batch.properties = props;
-      batch.lyeCalc = lyeCalc;
-      batch.qualityScore = props.qualityScore;
-      batch.barsProduced = bars;
-      batch.costPerBar = cost.costPerBar;
+      batch.name = batchName; batch.batchNumber = f.batchNumber;
+      batch.oils = oilsSnapshot; batch.superfat = f.superfat; batch.lyeConcentration = f.lyeConc;
+      batch.fragrance = f.fragName; batch.fragranceOz = f.fragOz; batch.fragranceCostPerOz = f.fragCost;
+      batch.colorant = f.colorant; batch.notes = f.notes;
+      batch.properties = props; batch.lyeCalc = lyeCalc; batch.qualityScore = props.qualityScore;
+      batch.barsProduced = f.bars; batch.costPerBar = cost.costPerBar;
+      batch.linkedProductId = f.linkedProductId; batch.linkedProductName = linkedProductName;
+      batch.isMasterFormula = f.isMasterFormula;
       batch.updatedAt = new Date().toISOString().slice(0, 10);
     }
     formulatorEditingBatchId = null;
   } else {
-    // New batch
     var newBatch = {
-      id: "sb_" + Date.now(),
-      name: batchName,
+      id: "sb_" + Date.now(), name: batchName, batchNumber: f.batchNumber,
       date: new Date().toISOString().slice(0, 10),
-      oils: oilsSnapshot,
-      superfat: superfat,
-      lyeConcentration: lyeConc,
-      fragrance: fragName,
-      fragranceOz: fragOz,
-      fragranceCostPerOz: fragCost,
-      colorant: colorant,
-      notes: notes,
-      properties: props,
-      lyeCalc: lyeCalc,
-      qualityScore: props.qualityScore,
-      status: "planning",
-      barsProduced: bars,
-      costPerBar: cost.costPerBar
+      oils: oilsSnapshot, superfat: f.superfat, lyeConcentration: f.lyeConc,
+      fragrance: f.fragName, fragranceOz: f.fragOz, fragranceCostPerOz: f.fragCost,
+      colorant: f.colorant, notes: f.notes,
+      properties: props, lyeCalc: lyeCalc, qualityScore: props.qualityScore,
+      status: "planning", barsProduced: f.bars, costPerBar: cost.costPerBar,
+      linkedProductId: f.linkedProductId, linkedProductName: linkedProductName,
+      isMasterFormula: f.isMasterFormula
     };
     soapBatches.push(newBatch);
   }
-
   formulatorSaveBatches(formulatorEditingBatchId ? batch : newBatch);
   formulatorRenderBatchTable();
   formulatorPopulateLoadDropdown();
+}
+
+// ── Save/update master formula for linked product ──
+function formulatorSaveMasterFormula() {
+  if (formulatorOils.length === 0) { alert("Add oils to the recipe first."); return; }
+  var f = _formulatorReadForm();
+  if (!f.linkedProductId) { alert("Select a product to link this formula to."); return; }
+
+  var prod = (typeof shopifyProducts !== "undefined" ? shopifyProducts : []).find(function(p) { return p.id === f.linkedProductId; });
+  var productName = prod ? prod.title : "Unknown Product";
+
+  // Find existing master for this product, or create new
+  var existing = soapBatches.find(function(b) { return b.linkedProductId === f.linkedProductId && b.isMasterFormula; });
+  var oilsSnapshot = formulatorOils.map(function(e) { return { name: e.oil.name, weightOz: e.weightOz }; });
+  var props = calcSoapProperties(formulatorOils);
+  var lyeCalc = calcLye(formulatorOils, f.superfat, f.lyeConc);
+  var cost = calcCostPerBar(formulatorOils, f.fragOz, f.fragCost, f.bars);
+
+  if (existing) {
+    existing.name = productName + " Master Formula";
+    existing.oils = oilsSnapshot; existing.superfat = f.superfat; existing.lyeConcentration = f.lyeConc;
+    existing.fragrance = f.fragName; existing.fragranceOz = f.fragOz; existing.fragranceCostPerOz = f.fragCost;
+    existing.colorant = f.colorant; existing.notes = f.notes;
+    existing.properties = props; existing.lyeCalc = lyeCalc; existing.qualityScore = props.qualityScore;
+    existing.barsProduced = f.bars; existing.costPerBar = cost.costPerBar;
+    existing.updatedAt = new Date().toISOString().slice(0, 10);
+    formulatorSaveBatches(existing);
+    alert("Master formula updated for " + productName);
+  } else {
+    var masterBatch = {
+      id: "sb_master_" + Date.now(), name: productName + " Master Formula",
+      date: new Date().toISOString().slice(0, 10),
+      oils: oilsSnapshot, superfat: f.superfat, lyeConcentration: f.lyeConc,
+      fragrance: f.fragName, fragranceOz: f.fragOz, fragranceCostPerOz: f.fragCost,
+      colorant: f.colorant, notes: f.notes,
+      properties: props, lyeCalc: lyeCalc, qualityScore: props.qualityScore,
+      status: "complete", barsProduced: f.bars, costPerBar: cost.costPerBar,
+      linkedProductId: f.linkedProductId, linkedProductName: productName,
+      isMasterFormula: true
+    };
+    soapBatches.push(masterBatch);
+    formulatorSaveBatches(masterBatch);
+    alert("Master formula saved for " + productName);
+  }
+  formulatorRenderBatchTable();
+  formulatorPopulateLoadDropdown();
+}
+
+// ── Populate product link dropdown ──
+function formulatorPopulateProductLink() {
+  var sel = document.getElementById("formulator-link-product");
+  if (!sel) return;
+  sel.textContent = "";
+  var def = document.createElement("option");
+  def.value = ""; def.textContent = "-- Not linked --";
+  sel.appendChild(def);
+  // Shopify products (soaps only — filter by type or tag if possible)
+  var products = typeof shopifyProducts !== "undefined" ? shopifyProducts : [];
+  products.forEach(function(p) {
+    var opt = document.createElement("option");
+    opt.value = p.id;
+    opt.textContent = p.title + (p.sku ? " (" + p.sku + ")" : "");
+    sel.appendChild(opt);
+  });
+  // Also add preset product names if no Shopify products
+  if (products.length === 0) {
+    SOAP_PRODUCT_PRESETS.forEach(function(pr) {
+      var opt = document.createElement("option");
+      opt.value = "preset_" + pr.name.toLowerCase().replace(/\s+/g, "_");
+      opt.textContent = pr.name;
+      sel.appendChild(opt);
+    });
+  }
 }
 
 // ── New batch (clear form) ──
@@ -17334,6 +17426,11 @@ function formulatorNewBatch() {
   document.getElementById("formulator-colorant").value = "";
   document.getElementById("formulator-bars").value = "10";
   document.getElementById("formulator-notes").value = "";
+  document.getElementById("formulator-batch-number").value = "";
+  var linkProd = document.getElementById("formulator-link-product");
+  if (linkProd) linkProd.value = "";
+  var masterCb = document.getElementById("formulator-master-formula");
+  if (masterCb) masterCb.checked = false;
   var loadSel = document.getElementById("formulator-load-preset");
   if (loadSel) loadSel.value = "";
   formulatorRecalc();
@@ -17392,6 +17489,15 @@ function formulatorLoadPreset(val) {
     var idx = parseInt(val.replace("preset-", ""));
     var preset = SOAP_PRODUCT_PRESETS[idx];
     if (!preset) return;
+    // Check if there's a saved master formula for this product
+    var master = soapBatches.find(function(b) { return b.isMasterFormula && b.linkedProductName === preset.name; });
+    if (master) {
+      // Load from master formula instead of hardcoded preset
+      formulatorLoadBatch(master.id);
+      document.getElementById("formulator-notes").value = "Loaded from master formula: " + preset.name;
+      return;
+    }
+    // Fall back to hardcoded preset
     formulatorEditingBatchId = null;
     formulatorOils = preset.oils.map(function(o) {
       return { oil: SOAP_OIL_DB.find(function(db) { return db.name === o.name; }), weightOz: o.weightOz };
@@ -17402,7 +17508,15 @@ function formulatorLoadPreset(val) {
     document.getElementById("formulator-fragrance-name").value = preset.fragrance || "";
     document.getElementById("formulator-fragrance-oz").value = preset.fragranceOz || "0";
     document.getElementById("formulator-colorant").value = preset.colorant || "";
-    document.getElementById("formulator-notes").value = "Loaded from product: " + preset.name;
+    document.getElementById("formulator-batch-number").value = "";
+    document.getElementById("formulator-notes").value = "Loaded from product preset: " + preset.name;
+    // Auto-select product in link dropdown if possible
+    var linkSel = document.getElementById("formulator-link-product");
+    if (linkSel) {
+      for (var i = 0; i < linkSel.options.length; i++) {
+        if (linkSel.options[i].textContent.indexOf(preset.name) >= 0) { linkSel.value = linkSel.options[i].value; break; }
+      }
+    }
     formulatorRecalc();
   } else if (val.indexOf("batch-") === 0) {
     var batchId = val.replace("batch-", "");
@@ -17429,6 +17543,11 @@ function formulatorLoadBatch(batchId) {
   document.getElementById("formulator-colorant").value = batch.colorant || "";
   document.getElementById("formulator-bars").value = String(batch.barsProduced || 10);
   document.getElementById("formulator-notes").value = batch.notes || "";
+  document.getElementById("formulator-batch-number").value = batch.batchNumber || "";
+  var linkSel = document.getElementById("formulator-link-product");
+  if (linkSel) linkSel.value = batch.linkedProductId || "";
+  var masterCb = document.getElementById("formulator-master-formula");
+  if (masterCb) masterCb.checked = !!batch.isMasterFormula;
   formulatorRecalc();
   // Scroll to top of formulator
   var el = document.getElementById("tools-formulator");
@@ -17630,6 +17749,7 @@ function formulatorInit() {
   formulatorRenderProperties({ hardness:0, cleansing:0, conditioning:0, bubbly:0, creamy:0, iodine:0, ins:0 });
   formulatorRenderBatchTable();
   formulatorPopulateLoadDropdown();
+  formulatorPopulateProductLink();
 }
 
 // ── Tools tab navigation ──────────────────────────────────────
