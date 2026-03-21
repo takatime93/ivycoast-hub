@@ -5725,6 +5725,18 @@ select.contact-edit-input { appearance: auto; cursor: pointer; }
       <h2 class="section-title">Soap Formulator</h2>
       <p class="section-subtitle">Calculate lye, water, and soap properties</p>
 
+      <div style="display:flex;align-items:center;gap:12px;margin:12px 32px 0;flex-wrap:wrap">
+        <label style="font-family:var(--font-display);font-size:var(--text-sm);font-weight:600;color:#062420">Load Recipe:</label>
+        <select id="formulator-load-preset" style="padding:6px 10px;border:1px solid var(--color-border);border-radius:var(--radius-md);font-size:var(--text-md);font-family:inherit;min-width:200px" onchange="formulatorLoadPreset(this.value)">
+          <option value="">— Select a recipe —</option>
+          <optgroup label="Ivycoast Products">
+          </optgroup>
+          <optgroup label="Saved Batches">
+          </optgroup>
+        </select>
+        <button onclick="formulatorNewBatch()" style="padding:6px 12px;border:1px solid var(--color-border);border-radius:var(--radius-md);background:none;font-size:var(--text-sm);cursor:pointer;color:var(--color-text-secondary)">Clear / New</button>
+      </div>
+
       <div class="formulator-container">
         <!-- Left: Recipe Builder -->
         <div class="formulator-panel">
@@ -16944,6 +16956,15 @@ var SOAP_OIL_DB = [
 ];
 
 // Current recipe state
+// Product recipe presets — actual Ivycoast product formulas
+var SOAP_PRODUCT_PRESETS = [
+  { name: "Byron Bay", category: "Soap", oils: [{name:"Olive Oil",weightOz:14},{name:"Coconut Oil (76°)",weightOz:8},{name:"Shea Butter",weightOz:4},{name:"Castor Oil",weightOz:2},{name:"Sweet Almond Oil",weightOz:2}], superfat:5, lyeConcentration:33, fragrance:"Byron Bay Blend (Lemon Myrtle + Eucalyptus)", fragranceOz:1.2, colorant:"Ocean blue mica swirl" },
+  { name: "Sunlight", category: "Soap", oils: [{name:"Olive Oil",weightOz:16},{name:"Coconut Oil (76°)",weightOz:6},{name:"Shea Butter",weightOz:4},{name:"Castor Oil",weightOz:2},{name:"Avocado Oil",weightOz:2}], superfat:6, lyeConcentration:33, fragrance:"Yuzu + Bergamot", fragranceOz:1, colorant:"Yellow oxide + turmeric" },
+  { name: "Moonlight", category: "Soap", oils: [{name:"Olive Oil",weightOz:15},{name:"Coconut Oil (76°)",weightOz:7},{name:"Cocoa Butter",weightOz:4},{name:"Castor Oil",weightOz:2},{name:"Avocado Oil",weightOz:2}], superfat:5, lyeConcentration:33, fragrance:"Lavender + Chamomile", fragranceOz:1.2, colorant:"Purple mica + activated charcoal accent" },
+  { name: "Tsubaki", category: "Soap", oils: [{name:"Olive Oil",weightOz:12},{name:"Coconut Oil (76°)",weightOz:6},{name:"Rice Bran Oil",weightOz:6},{name:"Shea Butter",weightOz:3},{name:"Castor Oil",weightOz:2},{name:"Sweet Almond Oil",weightOz:1}], superfat:7, lyeConcentration:33, fragrance:"Camellia + Hinoki", fragranceOz:1, colorant:"Pink clay" },
+  { name: "Paradise", category: "Soap", oils: [{name:"Coconut Oil (76°)",weightOz:10},{name:"Olive Oil",weightOz:10},{name:"Shea Butter",weightOz:4},{name:"Mango Butter",weightOz:3},{name:"Castor Oil",weightOz:3}], superfat:5, lyeConcentration:33, fragrance:"Tropical Coconut + Plumeria", fragranceOz:1.5, colorant:"Green and white swirl" },
+];
+
 var formulatorOils = [];
 // soapBatches declared earlier with other global arrays
 var formulatorEditingBatchId = null;
@@ -17293,6 +17314,7 @@ function formulatorSaveBatch() {
 
   formulatorSaveBatches(formulatorEditingBatchId ? batch : newBatch);
   formulatorRenderBatchTable();
+  formulatorPopulateLoadDropdown();
 }
 
 // ── New batch (clear form) ──
@@ -17308,7 +17330,80 @@ function formulatorNewBatch() {
   document.getElementById("formulator-colorant").value = "";
   document.getElementById("formulator-bars").value = "10";
   document.getElementById("formulator-notes").value = "";
+  var loadSel = document.getElementById("formulator-load-preset");
+  if (loadSel) loadSel.value = "";
   formulatorRecalc();
+}
+
+function formulatorPopulateLoadDropdown() {
+  var sel = document.getElementById("formulator-load-preset");
+  if (!sel) return;
+  sel.textContent = "";
+  var def = document.createElement("option");
+  def.value = ""; def.textContent = "\u2014 Select a recipe \u2014";
+  sel.appendChild(def);
+  // Product presets
+  var prodGroup = document.createElement("optgroup");
+  prodGroup.label = "Ivycoast Products";
+  SOAP_PRODUCT_PRESETS.forEach(function(p, i) {
+    var opt = document.createElement("option");
+    opt.value = "preset-" + i;
+    opt.textContent = p.name;
+    prodGroup.appendChild(opt);
+  });
+  sel.appendChild(prodGroup);
+  // Saved batches
+  if (soapBatches.length) {
+    var batchGroup = document.createElement("optgroup");
+    batchGroup.label = "Saved Batches";
+    soapBatches.slice().sort(function(a, b) { return (b.date || "").localeCompare(a.date || ""); }).forEach(function(b) {
+      var opt = document.createElement("option");
+      opt.value = "batch-" + b.id;
+      opt.textContent = b.name + (b.batchNumber ? " (" + b.batchNumber + ")" : "") + (b.date ? " \u2014 " + b.date : "");
+      batchGroup.appendChild(opt);
+    });
+    sel.appendChild(batchGroup);
+  }
+  // Shopify products (if any have linked batches)
+  var linkedProducts = soapBatches.filter(function(b) { return b.linkedProductId; });
+  if (linkedProducts.length) {
+    var linkGroup = document.createElement("optgroup");
+    linkGroup.label = "Product-Linked Formulas";
+    var seen = {};
+    linkedProducts.forEach(function(b) {
+      if (seen[b.linkedProductId]) return;
+      seen[b.linkedProductId] = true;
+      var opt = document.createElement("option");
+      opt.value = "batch-" + b.id;
+      opt.textContent = (b.linkedProductName || b.name) + " (current formula)";
+      linkGroup.appendChild(opt);
+    });
+    sel.appendChild(linkGroup);
+  }
+}
+
+function formulatorLoadPreset(val) {
+  if (!val) return;
+  if (val.indexOf("preset-") === 0) {
+    var idx = parseInt(val.replace("preset-", ""));
+    var preset = SOAP_PRODUCT_PRESETS[idx];
+    if (!preset) return;
+    formulatorEditingBatchId = null;
+    formulatorOils = preset.oils.map(function(o) {
+      return { oil: SOAP_OIL_DB.find(function(db) { return db.name === o.name; }), weightOz: o.weightOz };
+    }).filter(function(e) { return e.oil; });
+    formulatorRenderOilList();
+    document.getElementById("formulator-superfat").value = preset.superfat || "5";
+    document.getElementById("formulator-lye-conc").value = preset.lyeConcentration || "33";
+    document.getElementById("formulator-fragrance-name").value = preset.fragrance || "";
+    document.getElementById("formulator-fragrance-oz").value = preset.fragranceOz || "0";
+    document.getElementById("formulator-colorant").value = preset.colorant || "";
+    document.getElementById("formulator-notes").value = "Loaded from product: " + preset.name;
+    formulatorRecalc();
+  } else if (val.indexOf("batch-") === 0) {
+    var batchId = val.replace("batch-", "");
+    formulatorLoadBatch(batchId);
+  }
 }
 
 // ── Load batch into calculator ──
@@ -17530,6 +17625,7 @@ function formulatorInit() {
   formulatorRenderOilList();
   formulatorRenderProperties({ hardness:0, cleansing:0, conditioning:0, bubbly:0, creamy:0, iodine:0, ins:0 });
   formulatorRenderBatchTable();
+  formulatorPopulateLoadDropdown();
 }
 
 // ── Tools tab navigation ──────────────────────────────────────
