@@ -13093,6 +13093,87 @@ function renderCrmOverviewTab(c, panel, contactId, tabsBar) {
   }
   rightCol.appendChild(contactsSection);
 
+  // --- RIGHT: Orders ---
+  var ordersSection = document.createElement("div");
+  ordersSection.className = "crm-overview-col-section";
+  var ordersHdr = document.createElement("div");
+  ordersHdr.className = "crm-overview-col-header";
+  var ordersTitle = document.createElement("span");
+  ordersTitle.className = "crm-overview-col-title";
+  var ordersLabel = document.createElement("span");
+  ordersLabel.className = "sec-label";
+  ordersLabel.textContent = "Orders";
+  ordersTitle.appendChild(ordersLabel);
+  var _emailLo2 = (c.email || "").toLowerCase();
+  var _nameLo2 = (c.name || "").toLowerCase();
+  var vendorOrders = shopifyOrders.filter(function(o) {
+    if (_emailLo2 && (o.email || "").toLowerCase() === _emailLo2) return true;
+    if (_nameLo2 && (o.customerName || "").toLowerCase() === _nameLo2) return true;
+    return false;
+  });
+  vendorOrders.sort(function(a, b) { return (b.createdAt || "").localeCompare(a.createdAt || ""); });
+  if (vendorOrders.length) {
+    var ordersCount = document.createElement("span");
+    ordersCount.className = "sec-count";
+    ordersCount.textContent = "(" + vendorOrders.length + ")";
+    ordersTitle.appendChild(ordersCount);
+  }
+  ordersHdr.appendChild(ordersTitle);
+  var addOrderAction = document.createElement("button");
+  addOrderAction.className = "crm-overview-col-action";
+  addOrderAction.appendChild(_crmFa6Icon("\uf067", 11, 300));
+  var addOrderActionText = document.createElement("span");
+  addOrderActionText.textContent = "Add Order";
+  addOrderAction.appendChild(addOrderActionText);
+  addOrderAction.onclick = function() { openCrmManualOrderModal(contactId); };
+  ordersHdr.appendChild(addOrderAction);
+  ordersSection.appendChild(ordersHdr);
+  if (vendorOrders.length) {
+    var ordersList = document.createElement("div");
+    ordersList.style.cssText = "display:flex;flex-direction:column;gap:4px";
+    vendorOrders.slice(0, 3).forEach(function(o) {
+      var row = document.createElement("div");
+      row.style.cssText = "display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--color-border-separator);cursor:pointer";
+      row.onclick = function() { var ordersTab = tabsBar.querySelectorAll(".crm-detail-tab")[2]; if (ordersTab) ordersTab.click(); };
+      var leftDiv = document.createElement("div");
+      leftDiv.style.cssText = "display:flex;align-items:center;gap:8px";
+      var orderNum = document.createElement("span");
+      orderNum.style.cssText = "font-family:var(--font-mono);font-size:var(--text-xs);color:var(--color-primary);letter-spacing:var(--ls-mono)";
+      orderNum.textContent = "#" + (o.orderNumber || o.id || "?");
+      leftDiv.appendChild(orderNum);
+      if (o.source === "manual" || (o.orderNumber || "").indexOf("MO-") === 0) {
+        var mBadge = document.createElement("span");
+        mBadge.className = "crm-manual-badge";
+        mBadge.textContent = "Manual";
+        leftDiv.appendChild(mBadge);
+      }
+      var dateSpan = document.createElement("span");
+      dateSpan.style.cssText = "font-family:var(--font-mono);font-size:var(--text-xs);color:var(--color-text-tertiary);letter-spacing:var(--ls-mono)";
+      dateSpan.textContent = o.createdAt ? formatDate(o.createdAt) : "";
+      leftDiv.appendChild(dateSpan);
+      row.appendChild(leftDiv);
+      var priceSpan = document.createElement("span");
+      priceSpan.style.cssText = "font-family:var(--font-text);font-size:var(--text-md);font-weight:600;color:#000";
+      priceSpan.textContent = "\u00A5" + Number(o.totalPrice || 0).toLocaleString();
+      row.appendChild(priceSpan);
+      ordersList.appendChild(row);
+    });
+    if (vendorOrders.length > 3) {
+      var viewAll = document.createElement("div");
+      viewAll.style.cssText = "font-family:var(--font-mono);font-size:var(--text-xs);color:var(--color-primary);letter-spacing:var(--ls-mono);cursor:pointer;padding:6px 0;text-align:center";
+      viewAll.textContent = "View all " + vendorOrders.length + " orders \u203A";
+      viewAll.onclick = function() { var ordersTab = tabsBar.querySelectorAll(".crm-detail-tab")[2]; if (ordersTab) ordersTab.click(); };
+      ordersList.appendChild(viewAll);
+    }
+    ordersSection.appendChild(ordersList);
+  } else {
+    var ordersEmpty = document.createElement("div");
+    ordersEmpty.className = "crm-overview-empty";
+    ordersEmpty.textContent = "No orders yet";
+    ordersSection.appendChild(ordersEmpty);
+  }
+  rightCol.appendChild(ordersSection);
+
   // --- RIGHT: Tasks ---
   var tasksSection = document.createElement("div");
   tasksSection.className = "crm-overview-col-section";
