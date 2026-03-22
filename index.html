@@ -4497,6 +4497,170 @@ select.contact-edit-input { appearance: auto; cursor: pointer; }
 .crm-order-date { color: var(--color-text-secondary); font-size: var(--text-tab); min-width: 90px; }
 .crm-order-total { font-weight: 500; color: var(--color-text-heading); min-width: 80px; text-align: right; }
 .crm-order-items-preview { color: var(--color-text-secondary); font-size: var(--text-tab); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.crm-order-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  margin-bottom: 12px;
+}
+.crm-order-add-btn {
+  margin-left: auto;
+  padding: 5px 14px;
+  font-size: var(--text-tab);
+  font-weight: 500;
+  border-radius: 16px;
+  border: 1px solid var(--color-primary);
+  background: var(--color-primary);
+  color: #fff;
+  cursor: pointer;
+  font-family: inherit;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.crm-order-add-btn:hover { background: var(--color-primary-hover); }
+.crm-manual-badge {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 400;
+  letter-spacing: var(--ls-mono);
+  color: var(--color-text-secondary);
+  background: var(--color-surface-tertiary);
+  border-radius: 2px;
+  padding: 1px 4px;
+  margin-left: 4px;
+  vertical-align: middle;
+}
+.crm-mo-modal {
+  width: 580px;
+  max-width: 95vw;
+}
+.crm-mo-vendor-info {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 14px;
+  padding: 10px 12px;
+  background: var(--color-surface-secondary);
+  border-radius: var(--radius-md);
+}
+.crm-mo-vendor-field {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+.crm-mo-vendor-label {
+  font-size: var(--text-xs);
+  color: var(--color-text-tertiary);
+  font-family: var(--font-mono);
+  letter-spacing: var(--ls-mono);
+}
+.crm-mo-vendor-value {
+  font-size: var(--text-md);
+  color: var(--color-text-heading);
+  font-weight: 500;
+}
+.crm-mo-field-row {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.crm-mo-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+}
+.crm-mo-section-title {
+  font-family: var(--font-display);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--color-text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+  margin-top: 4px;
+}
+.crm-mo-line-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 8px;
+}
+.crm-mo-line-table th {
+  text-align: left;
+  padding: 8px;
+  font-size: var(--text-sm);
+  color: var(--color-text-tertiary);
+  font-weight: 400;
+  border-bottom: 1px solid var(--color-border);
+}
+.crm-mo-line-table td {
+  padding: 8px;
+  border-bottom: 1px solid var(--color-border-separator);
+}
+.crm-mo-line-table input,
+.crm-mo-line-table select {
+  background: var(--color-surface-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 6px 8px;
+  font-size: var(--text-tab);
+  font-family: inherit;
+  color: var(--color-text);
+  width: 100%;
+  box-sizing: border-box;
+}
+.crm-mo-line-table input:focus,
+.crm-mo-line-table select:focus {
+  border-color: var(--color-primary);
+  box-shadow: var(--shadow-focus);
+  outline: none;
+}
+.crm-mo-add-item {
+  font-size: var(--text-sm);
+  color: var(--color-primary);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px 0;
+  font-family: inherit;
+}
+.crm-mo-add-item:hover { text-decoration: underline; }
+.crm-mo-totals {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  margin: 12px 0;
+  padding: 12px 0;
+  border-top: 1px solid var(--color-border-separator);
+}
+.crm-mo-total-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: var(--text-md);
+}
+.crm-mo-total-label {
+  color: var(--color-text-secondary);
+  min-width: 80px;
+  text-align: right;
+}
+.crm-mo-total-value {
+  font-weight: 500;
+  color: var(--color-text-heading);
+  min-width: 100px;
+  text-align: right;
+}
+.crm-mo-total-row.crm-mo-grand-total .crm-mo-total-label {
+  font-weight: 600;
+  color: var(--color-text-heading);
+}
+.crm-mo-total-row.crm-mo-grand-total .crm-mo-total-value {
+  font-weight: 600;
+  font-size: 16px;
+}
 
 /* ── Stock tab ──────────────────────────────────────────────── */
 .crm-stock-toolbar {
@@ -16127,6 +16291,18 @@ function renderCrmOrdersTab(c, panel, contactId) {
   });
   matched.sort(function(a, b) { return (b.createdAt || "").localeCompare(a.createdAt || ""); });
 
+  // Toolbar with Add Order button
+  var toolbar = document.createElement("div");
+  toolbar.className = "crm-order-toolbar";
+  var addOrderBtn = document.createElement("button");
+  addOrderBtn.className = "crm-order-add-btn";
+  addOrderBtn.appendChild(_crmFa6Icon("\uf067", 11, 300));
+  var addOrderText = document.createTextNode(" \u6CE8\u6587\u8FFD\u52A0");
+  addOrderBtn.appendChild(addOrderText);
+  addOrderBtn.onclick = function() { openCrmManualOrderModal(contactId); };
+  toolbar.appendChild(addOrderBtn);
+  panel.appendChild(toolbar);
+
   // Stat cards
   var totalSpent = 0;
   matched.forEach(function(o) { totalSpent += Number(o.totalPrice || 0); });
@@ -16159,6 +16335,15 @@ function renderCrmOrdersTab(c, panel, contactId) {
     num.textContent = "#" + (order.orderNumber || order.shopifyOrderId || "");
     row.appendChild(num);
 
+    // Manual badge
+    var orderNum = String(order.orderNumber || "");
+    if (order.source === "manual" || orderNum.indexOf("MO-") === 0 || orderNum.indexOf("M-") === 0) {
+      var badge = document.createElement("span");
+      badge.className = "crm-manual-badge";
+      badge.textContent = "\u624B\u52D5";
+      num.appendChild(badge);
+    }
+
     var date = document.createElement("span");
     date.className = "crm-order-date";
     date.textContent = order.createdAt ? formatDate(order.createdAt) : "";
@@ -16176,6 +16361,585 @@ function renderCrmOrdersTab(c, panel, contactId) {
 
     panel.appendChild(row);
   });
+}
+
+// ── CRM Manual Order Modal ────────────────────────────────────────────────
+
+function generateCrmManualOrderNumber() {
+  var year = new Date().getFullYear();
+  var maxSeq = 0;
+  shopifyOrders.forEach(function(o) {
+    var num = String(o.orderNumber || "");
+    if (num.indexOf("MO-" + year + "-") === 0) {
+      var parts = num.split("-");
+      var seq = parseInt(parts[2], 10) || 0;
+      if (seq > maxSeq) maxSeq = seq;
+    }
+  });
+  return "MO-" + year + "-" + String(maxSeq + 1).padStart(3, "0");
+}
+
+function openCrmManualOrderModal(contactId) {
+  var c = crmContacts.find(function(x) { return x.id === contactId; });
+  if (!c) return;
+  if (!shopifyProducts || !shopifyProducts.length) fetchShopifyProducts();
+
+  var overlay = document.createElement("div");
+  overlay.className = "crm-quick-edit-overlay";
+  overlay.onclick = function(e) { if (e.target === overlay) overlay.remove(); };
+
+  var modal = document.createElement("div");
+  modal.className = "crm-quick-edit-modal crm-mo-modal";
+
+  // Header
+  var titleRow = document.createElement("div");
+  titleRow.style.cssText = "display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;";
+  var titleEl = document.createElement("div");
+  titleEl.className = "crm-quick-edit-title";
+  titleEl.style.marginBottom = "0";
+  titleEl.textContent = "\u65B0\u898F\u6CE8\u6587 (New Order)";
+  titleRow.appendChild(titleEl);
+  var closeBtn = document.createElement("button");
+  closeBtn.style.cssText = "background:none;border:none;font-size:20px;cursor:pointer;color:var(--color-text-secondary);padding:0 4px;";
+  closeBtn.textContent = "\u00D7";
+  closeBtn.onclick = function() { overlay.remove(); };
+  titleRow.appendChild(closeBtn);
+  modal.appendChild(titleRow);
+
+  // Vendor info (read-only)
+  var vendorInfo = document.createElement("div");
+  vendorInfo.className = "crm-mo-vendor-info";
+  var vendorNameField = document.createElement("div");
+  vendorNameField.className = "crm-mo-vendor-field";
+  var vendorNameLabel = document.createElement("div");
+  vendorNameLabel.className = "crm-mo-vendor-label";
+  vendorNameLabel.textContent = "Contact";
+  vendorNameField.appendChild(vendorNameLabel);
+  var vendorNameValue = document.createElement("div");
+  vendorNameValue.className = "crm-mo-vendor-value";
+  vendorNameValue.textContent = c.company || c.name || "";
+  vendorNameField.appendChild(vendorNameValue);
+  vendorInfo.appendChild(vendorNameField);
+  var vendorEmailField = document.createElement("div");
+  vendorEmailField.className = "crm-mo-vendor-field";
+  var vendorEmailLabel = document.createElement("div");
+  vendorEmailLabel.className = "crm-mo-vendor-label";
+  vendorEmailLabel.textContent = "Email";
+  vendorEmailField.appendChild(vendorEmailLabel);
+  var vendorEmailValue = document.createElement("div");
+  vendorEmailValue.className = "crm-mo-vendor-value";
+  vendorEmailValue.style.fontWeight = "400";
+  vendorEmailValue.textContent = c.email || "\u2014";
+  vendorEmailField.appendChild(vendorEmailValue);
+  vendorInfo.appendChild(vendorEmailField);
+  modal.appendChild(vendorInfo);
+
+  // Order details row
+  var orderNumGenerated = generateCrmManualOrderNumber();
+  var today = new Date().toISOString().split("T")[0];
+  var dueDateObj = new Date();
+  dueDateObj.setDate(dueDateObj.getDate() + 30);
+  var dueDate = dueDateObj.toISOString().split("T")[0];
+
+  var detailsRow = document.createElement("div");
+  detailsRow.className = "crm-mo-field-row";
+
+  // Order number (read-only)
+  var orderNumField = document.createElement("div");
+  orderNumField.className = "crm-mo-field";
+  var orderNumLabel = document.createElement("label");
+  orderNumLabel.className = "crm-quick-edit-label";
+  orderNumLabel.textContent = "Order Number";
+  orderNumField.appendChild(orderNumLabel);
+  var orderNumInput = document.createElement("input");
+  orderNumInput.className = "crm-quick-edit-input";
+  orderNumInput.type = "text";
+  orderNumInput.value = orderNumGenerated;
+  orderNumInput.readOnly = true;
+  orderNumInput.style.background = "var(--color-surface-secondary)";
+  orderNumField.appendChild(orderNumInput);
+  detailsRow.appendChild(orderNumField);
+
+  // Order date
+  var orderDateField = document.createElement("div");
+  orderDateField.className = "crm-mo-field";
+  var orderDateLabel = document.createElement("label");
+  orderDateLabel.className = "crm-quick-edit-label";
+  orderDateLabel.textContent = "Order Date";
+  orderDateField.appendChild(orderDateLabel);
+  var orderDateInput = document.createElement("input");
+  orderDateInput.className = "crm-quick-edit-input";
+  orderDateInput.type = "date";
+  orderDateInput.value = today;
+  orderDateField.appendChild(orderDateInput);
+  detailsRow.appendChild(orderDateField);
+
+  // Due date
+  var dueDateField = document.createElement("div");
+  dueDateField.className = "crm-mo-field";
+  var dueDateLabel = document.createElement("label");
+  dueDateLabel.className = "crm-quick-edit-label";
+  dueDateLabel.textContent = "Payment Due";
+  dueDateField.appendChild(dueDateLabel);
+  var dueDateInput = document.createElement("input");
+  dueDateInput.className = "crm-quick-edit-input";
+  dueDateInput.type = "date";
+  dueDateInput.value = dueDate;
+  dueDateField.appendChild(dueDateInput);
+  detailsRow.appendChild(dueDateField);
+
+  modal.appendChild(detailsRow);
+
+  // Line items section
+  var lineSection = document.createElement("div");
+  lineSection.style.marginBottom = "4px";
+  var lineSectionTitle = document.createElement("div");
+  lineSectionTitle.className = "crm-mo-section-title";
+  lineSectionTitle.textContent = "Line Items";
+  lineSection.appendChild(lineSectionTitle);
+
+  var lineTable = document.createElement("table");
+  lineTable.className = "crm-mo-line-table";
+  var thead = document.createElement("thead");
+  var headRow = document.createElement("tr");
+  var cols = [
+    { text: "Product", width: "" },
+    { text: "Qty", width: "55px" },
+    { text: "Unit Price", width: "90px" },
+    { text: "Amount", width: "85px" },
+    { text: "", width: "30px" }
+  ];
+  cols.forEach(function(col) {
+    var th = document.createElement("th");
+    th.textContent = col.text;
+    if (col.width) th.style.width = col.width;
+    headRow.appendChild(th);
+  });
+  thead.appendChild(headRow);
+  lineTable.appendChild(thead);
+
+  var lineBody = document.createElement("tbody");
+  lineTable.appendChild(lineBody);
+  lineSection.appendChild(lineTable);
+
+  // + Add item button
+  var addItemBtn = document.createElement("button");
+  addItemBtn.className = "crm-mo-add-item";
+  addItemBtn.textContent = "+ Add Item";
+  addItemBtn.onclick = function() { addCrmMoLineItem(lineBody, recalcTotals); };
+  lineSection.appendChild(addItemBtn);
+  modal.appendChild(lineSection);
+
+  // Totals section
+  var totalsDiv = document.createElement("div");
+  totalsDiv.className = "crm-mo-totals";
+
+  var subtotalRow = document.createElement("div");
+  subtotalRow.className = "crm-mo-total-row";
+  var subtotalLabel = document.createElement("span");
+  subtotalLabel.className = "crm-mo-total-label";
+  subtotalLabel.textContent = "Subtotal";
+  subtotalRow.appendChild(subtotalLabel);
+  var subtotalValue = document.createElement("span");
+  subtotalValue.className = "crm-mo-total-value";
+  subtotalValue.textContent = "\u00A50";
+  subtotalRow.appendChild(subtotalValue);
+  totalsDiv.appendChild(subtotalRow);
+
+  // Tax type row
+  var taxRow = document.createElement("div");
+  taxRow.className = "crm-mo-total-row";
+  var taxLabel = document.createElement("span");
+  taxLabel.className = "crm-mo-total-label";
+  taxLabel.textContent = "Tax";
+  taxRow.appendChild(taxLabel);
+  var taxSelect = document.createElement("select");
+  taxSelect.className = "crm-quick-edit-input";
+  taxSelect.style.cssText = "width:auto;padding:4px 8px;font-size:var(--text-sm);";
+  var taxOpts = [
+    { value: "included", label: "\u7A0E\u8FBC (included)" },
+    { value: "10", label: "10%" }
+  ];
+  taxOpts.forEach(function(o) {
+    var opt = document.createElement("option");
+    opt.value = o.value;
+    opt.textContent = o.label;
+    taxSelect.appendChild(opt);
+  });
+  taxSelect.onchange = recalcTotals;
+  taxRow.appendChild(taxSelect);
+  var taxValue = document.createElement("span");
+  taxValue.className = "crm-mo-total-value";
+  taxValue.textContent = "\u00A50";
+  taxRow.appendChild(taxValue);
+  totalsDiv.appendChild(taxRow);
+
+  // Grand total row
+  var grandRow = document.createElement("div");
+  grandRow.className = "crm-mo-total-row crm-mo-grand-total";
+  var grandLabel = document.createElement("span");
+  grandLabel.className = "crm-mo-total-label";
+  grandLabel.textContent = "Total";
+  grandRow.appendChild(grandLabel);
+  var grandValue = document.createElement("span");
+  grandValue.className = "crm-mo-total-value";
+  grandValue.textContent = "\u00A50";
+  grandRow.appendChild(grandValue);
+  totalsDiv.appendChild(grandRow);
+  modal.appendChild(totalsDiv);
+
+  // Financial status
+  var statusRow = document.createElement("div");
+  statusRow.className = "crm-mo-field-row";
+  var statusField = document.createElement("div");
+  statusField.className = "crm-mo-field";
+  var statusLabel = document.createElement("label");
+  statusLabel.className = "crm-quick-edit-label";
+  statusLabel.textContent = "Payment Status";
+  statusField.appendChild(statusLabel);
+  var statusSelect = document.createElement("select");
+  statusSelect.className = "crm-quick-edit-input";
+  var statusOpts = [
+    { value: "unfulfilled", label: "Unfulfilled" },
+    { value: "paid", label: "Paid" }
+  ];
+  statusOpts.forEach(function(o) {
+    var opt = document.createElement("option");
+    opt.value = o.value;
+    opt.textContent = o.label;
+    statusSelect.appendChild(opt);
+  });
+  statusField.appendChild(statusSelect);
+  statusRow.appendChild(statusField);
+
+  // Notes
+  var notesField = document.createElement("div");
+  notesField.className = "crm-mo-field";
+  notesField.style.flex = "2";
+  var notesLabel = document.createElement("label");
+  notesLabel.className = "crm-quick-edit-label";
+  notesLabel.textContent = "Notes";
+  notesField.appendChild(notesLabel);
+  var notesInput = document.createElement("textarea");
+  notesInput.className = "crm-quick-edit-input";
+  notesInput.rows = 2;
+  notesInput.style.resize = "vertical";
+  notesInput.placeholder = "Order notes...";
+  notesField.appendChild(notesInput);
+  statusRow.appendChild(notesField);
+  modal.appendChild(statusRow);
+
+  // Actions
+  var actions = document.createElement("div");
+  actions.className = "crm-quick-edit-actions";
+  var cancelBtn = document.createElement("button");
+  cancelBtn.className = "crm-quick-edit-cancel";
+  cancelBtn.textContent = "Cancel";
+  cancelBtn.onclick = function() { overlay.remove(); };
+  actions.appendChild(cancelBtn);
+  var saveBtn = document.createElement("button");
+  saveBtn.className = "crm-quick-edit-save";
+  saveBtn.textContent = "Save Order";
+  saveBtn.onclick = function() { saveCrmManualOrder(overlay, c, contactId, orderNumInput, orderDateInput, dueDateInput, lineBody, taxSelect, statusSelect, notesInput, subtotalValue, taxValue, grandValue); };
+  actions.appendChild(saveBtn);
+  modal.appendChild(actions);
+
+  overlay.appendChild(modal);
+  document.body.appendChild(overlay);
+
+  // Add first line item
+  addCrmMoLineItem(lineBody, recalcTotals);
+
+  // Focus first product input
+  setTimeout(function() {
+    var firstInput = lineBody.querySelector("input[type='text']");
+    if (firstInput) firstInput.focus();
+  }, 50);
+
+  function recalcTotals() {
+    var rows = lineBody.querySelectorAll("tr");
+    var subtotal = 0;
+    rows.forEach(function(tr) {
+      var inputs = tr.querySelectorAll("input");
+      if (inputs.length < 3) return;
+      var qty = parseFloat(inputs[1].value) || 0;
+      var price = parseFloat(inputs[2].value) || 0;
+      var amt = qty * price;
+      var amtCell = tr.querySelector(".crm-mo-line-amt");
+      if (amtCell) amtCell.textContent = "\u00A5" + Math.round(amt).toLocaleString();
+      subtotal += amt;
+    });
+    subtotalValue.textContent = "\u00A5" + Math.round(subtotal).toLocaleString();
+    var taxType = taxSelect.value;
+    var tax = taxType === "10" ? Math.round(subtotal * 0.1) : 0;
+    taxValue.textContent = "\u00A5" + tax.toLocaleString();
+    var total = subtotal + tax;
+    grandValue.textContent = "\u00A5" + Math.round(total).toLocaleString();
+  }
+}
+
+function addCrmMoLineItem(lineBody, recalcFn) {
+  var tr = document.createElement("tr");
+
+  // Product cell with autocomplete
+  var tdProduct = document.createElement("td");
+  tdProduct.style.position = "relative";
+  var wrapper = document.createElement("div");
+  wrapper.className = "inv-product-wrapper";
+  var descInput = document.createElement("input");
+  descInput.type = "text";
+  descInput.placeholder = "Search products\u2026";
+  var dropdown = document.createElement("div");
+  dropdown.className = "inv-product-dropdown";
+  var ddIndex = -1;
+
+  // Reference to price input (created below)
+  var priceInputRef = null;
+
+  function showProductDropdown(query) {
+    var products = typeof shopifyProducts !== "undefined" ? shopifyProducts : [];
+    if (!products.length) { dropdown.classList.remove("open"); return; }
+    var matches;
+    if (!query) {
+      matches = products.slice(0, 20);
+    } else {
+      var q = query.toLowerCase();
+      matches = products.filter(function(p) {
+        return (p.title && p.title.toLowerCase().indexOf(q) !== -1) ||
+               (p.variantTitle && p.variantTitle.toLowerCase().indexOf(q) !== -1) ||
+               (p.sku && p.sku.toLowerCase().indexOf(q) !== -1);
+      }).slice(0, 20);
+    }
+    if (!matches.length) { dropdown.classList.remove("open"); return; }
+    dropdown.textContent = "";
+    ddIndex = -1;
+    matches.forEach(function(p, i) {
+      var opt = document.createElement("div");
+      opt.className = "inv-product-option";
+      opt.dataset.index = i;
+      var nameSpan = document.createElement("span");
+      nameSpan.className = "inv-prod-name";
+      nameSpan.textContent = p.title + (p.variantTitle ? " \u2014 " + p.variantTitle : "");
+      opt.appendChild(nameSpan);
+      var priceSpan = document.createElement("span");
+      priceSpan.className = "inv-prod-price";
+      priceSpan.textContent = "\u00A5" + Number(p.price || 0).toLocaleString();
+      opt.appendChild(priceSpan);
+      opt.addEventListener("mousedown", function(e) {
+        e.preventDefault();
+        descInput.value = p.title + (p.variantTitle ? " \u2014 " + p.variantTitle : "");
+        if (priceInputRef) priceInputRef.value = p.price || "";
+        dropdown.classList.remove("open");
+        if (recalcFn) recalcFn();
+      });
+      dropdown.appendChild(opt);
+    });
+    dropdown.classList.add("open");
+  }
+
+  descInput.addEventListener("input", function() { showProductDropdown(descInput.value.trim()); });
+  descInput.addEventListener("focus", function() { showProductDropdown(descInput.value.trim()); });
+  descInput.addEventListener("blur", function() { setTimeout(function() { dropdown.classList.remove("open"); }, 150); });
+  descInput.addEventListener("keydown", function(e) {
+    var opts = dropdown.querySelectorAll(".inv-product-option");
+    if (!opts.length || !dropdown.classList.contains("open")) return;
+    if (e.key === "ArrowDown") { e.preventDefault(); ddIndex = Math.min(ddIndex + 1, opts.length - 1); opts.forEach(function(o, i) { o.classList.toggle("active", i === ddIndex); }); }
+    else if (e.key === "ArrowUp") { e.preventDefault(); ddIndex = Math.max(ddIndex - 1, 0); opts.forEach(function(o, i) { o.classList.toggle("active", i === ddIndex); }); }
+    else if (e.key === "Enter" && ddIndex >= 0) { e.preventDefault(); opts[ddIndex].dispatchEvent(new Event("mousedown")); }
+    else if (e.key === "Escape") { dropdown.classList.remove("open"); }
+  });
+
+  wrapper.appendChild(descInput);
+  wrapper.appendChild(dropdown);
+  tdProduct.appendChild(wrapper);
+  tr.appendChild(tdProduct);
+
+  // Qty cell
+  var tdQty = document.createElement("td");
+  var qtyInput = document.createElement("input");
+  qtyInput.type = "number";
+  qtyInput.value = "1";
+  qtyInput.min = "1";
+  qtyInput.style.textAlign = "center";
+  qtyInput.addEventListener("input", function() { if (recalcFn) recalcFn(); });
+  tdQty.appendChild(qtyInput);
+  tr.appendChild(tdQty);
+
+  // Unit Price cell
+  var tdPrice = document.createElement("td");
+  var priceInput = document.createElement("input");
+  priceInput.type = "number";
+  priceInput.value = "0";
+  priceInput.min = "0";
+  priceInput.style.textAlign = "right";
+  priceInput.addEventListener("input", function() { if (recalcFn) recalcFn(); });
+  priceInputRef = priceInput;
+  tdPrice.appendChild(priceInput);
+  tr.appendChild(tdPrice);
+
+  // Amount cell
+  var tdAmt = document.createElement("td");
+  tdAmt.className = "crm-mo-line-amt";
+  tdAmt.style.cssText = "text-align:right;font-size:var(--text-tab);font-weight:500;";
+  tdAmt.textContent = "\u00A50";
+  tr.appendChild(tdAmt);
+
+  // Delete cell
+  var tdDel = document.createElement("td");
+  var delBtn = document.createElement("button");
+  delBtn.textContent = "\u00D7";
+  delBtn.style.cssText = "background:none;border:none;font-size:16px;cursor:pointer;color:var(--color-text-secondary);padding:2px 6px;";
+  delBtn.onclick = function() { tr.remove(); if (recalcFn) recalcFn(); };
+  tdDel.appendChild(delBtn);
+  tr.appendChild(tdDel);
+
+  lineBody.appendChild(tr);
+  if (recalcFn) recalcFn();
+}
+
+function saveCrmManualOrder(overlay, vendor, contactId, orderNumInput, orderDateInput, dueDateInput, lineBody, taxSelect, statusSelect, notesInput, subtotalEl, taxEl, grandEl) {
+  var rows = lineBody.querySelectorAll("tr");
+  var lineItems = [];
+  var itemsForInvoice = [];
+  var totalPrice = 0;
+
+  rows.forEach(function(tr) {
+    var inputs = tr.querySelectorAll("input");
+    if (inputs.length < 3) return;
+    var desc = inputs[0].value.trim();
+    var qty = parseFloat(inputs[1].value) || 0;
+    var price = parseFloat(inputs[2].value) || 0;
+    if (desc && qty > 0) {
+      var amt = qty * price;
+      lineItems.push(qty + "x " + desc);
+      itemsForInvoice.push({ description: desc, qty: qty, unitPrice: price, amount: amt });
+      totalPrice += amt;
+    }
+  });
+
+  if (!lineItems.length) {
+    alert("Please add at least one line item.");
+    return;
+  }
+
+  var taxType = taxSelect.value;
+  var tax = taxType === "10" ? Math.round(totalPrice * 0.1) : 0;
+  var grandTotal = totalPrice + tax;
+  var orderDate = orderDateInput.value || new Date().toISOString().split("T")[0];
+  var financialStatus = statusSelect.value;
+  var orderNumber = orderNumInput.value;
+
+  var orderId = "mo-" + Date.now();
+  var order = {
+    id: orderId,
+    shopifyOrderId: null,
+    orderNumber: orderNumber,
+    email: vendor.email || "",
+    totalPrice: String(grandTotal),
+    currency: "JPY",
+    financialStatus: financialStatus,
+    fulfillmentStatus: null,
+    lineItems: lineItems.join("; "),
+    customerName: vendor.company || vendor.name || "",
+    createdAt: orderDate + "T00:00:00Z",
+    shippingAddress: vendor.location || "",
+    note: notesInput.value.trim(),
+    lastSynced: null,
+    source: "manual"
+  };
+
+  // Push to local array and save cache
+  shopifyOrders.unshift(order);
+  saveDataCache();
+
+  // Save to server
+  fetch(SCRIPT_URL, {
+    method: "POST",
+    headers: { "Content-Type": "text/plain" },
+    body: JSON.stringify({ action: "create", sheet: "Orders", order: order, userId: getCurrentUserEmail(), userName: getCurrentUserName() })
+  })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data.order) {
+        shopifyOrders = shopifyOrders.map(function(o) { return o.id === orderId ? data.order : o; });
+      }
+    })
+    .catch(function() { fetchShopifyOrders(true); });
+
+  // Auto-create invoice
+  createInvoiceFromManualOrder(order, vendor, itemsForInvoice, taxType, tax, grandTotal, dueDateInput.value);
+
+  // If paid, auto-create receipt after invoice
+  if (financialStatus === "paid") {
+    setTimeout(function() {
+      var inv = invoices.find(function(i) { return i.orderId === orderId || i.orderNumber === orderNumber; });
+      if (inv) {
+        autoCreateReceiptFromInvoice(inv);
+      }
+    }, 500);
+  }
+
+  // Close modal and refresh view
+  overlay.remove();
+  openCrmDetailView(contactId);
+}
+
+function createInvoiceFromManualOrder(order, vendor, items, taxType, tax, total, dueDate) {
+  if (!SCRIPT_URL) return;
+
+  var subtotal = items.reduce(function(s, it) { return s + it.amount; }, 0);
+  var pricingType = "";
+  var pricingPercent = "";
+  if (vendor.consignmentPercent) {
+    pricingType = "consignment";
+    pricingPercent = vendor.consignmentPercent;
+  } else if (vendor.wholesalePercent) {
+    pricingType = "wholesale";
+    pricingPercent = vendor.wholesalePercent;
+  }
+
+  var invoiceNumber = generateInvoiceNumber();
+  var invoice = {
+    invoiceNumber: invoiceNumber,
+    contactId: vendor.id || "",
+    contactName: vendor.name || "",
+    contactCompany: vendor.company || "",
+    contactEmail: vendor.email || "",
+    contactAddress: vendor.location || "",
+    invoiceDate: order.createdAt ? order.createdAt.split("T")[0] : new Date().toISOString().split("T")[0],
+    dueDate: dueDate || "",
+    poReference: "Order #" + (order.orderNumber || ""),
+    items: JSON.stringify(items),
+    subtotal: String(subtotal),
+    discount: "0",
+    shipping: "0",
+    taxType: taxType || "included",
+    tax: String(tax || 0),
+    total: String(total || subtotal),
+    pricingType: pricingType,
+    pricingPercent: pricingPercent,
+    pricingParties: "",
+    status: order.financialStatus === "paid" ? "paid" : "draft",
+    workspace: "IVYCOAST",
+    notes: "",
+    orderId: order.id || "",
+    orderNumber: order.orderNumber || ""
+  };
+
+  // Optimistic local add
+  var tempId = "temp-inv-" + Date.now();
+  invoice.id = tempId;
+  invoices.push(invoice);
+  renderDocuments();
+
+  invApiPost({ action: "create", invoice: invoice })
+    .then(function(data) {
+      if (data.invoice) {
+        invoices = invoices.map(function(i) { return i.id === tempId ? data.invoice : i; });
+        renderDocuments();
+      }
+    })
+    .catch(function() { fetchInvoices(true); });
 }
 
 // ── Stock Tab ──────────────────────────────────────────────────────────────
