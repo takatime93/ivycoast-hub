@@ -16969,6 +16969,40 @@ function saveCrmManualOrder(overlay, vendor, contactId, orderNumInput, orderDate
     }, 500);
   }
 
+  // Auto-create stock entries from order items
+  itemsForInvoice.forEach(function(item) {
+    var existingStock = partnerStock.find(function(s) {
+      return s.contactId === contactId && s.productName === item.description && (s.status || "").toLowerCase() === "active";
+    });
+    if (existingStock) {
+      // Update existing stock quantity
+      existingStock.quantity = String(Number(existingStock.quantity || 0) + item.qty);
+      existingStock.updatedAt = new Date().toISOString();
+      stockApiPost({ action: "update", stock: { id: existingStock.id, quantity: existingStock.quantity, updatedAt: existingStock.updatedAt } }).catch(function() {});
+    } else {
+      // Create new stock entry
+      var stockId = "stk-" + Date.now() + "-" + Math.floor(Math.random() * 1000);
+      var newStock = {
+        id: stockId,
+        contactId: contactId,
+        contactName: vendor.company || vendor.name || "",
+        productName: item.description,
+        sku: "",
+        quantity: String(item.qty),
+        unitPrice: String(item.unitPrice),
+        pricingType: vendor.consignmentPercent ? "consignment" : vendor.wholesalePercent ? "wholesale" : "",
+        status: "active",
+        dateDelivered: orderDate,
+        notes: "From order " + orderNumber,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+      partnerStock.push(newStock);
+      stockApiPost({ action: "create", stock: newStock }).catch(function() {});
+    }
+  });
+  saveDataCache();
+
   // Close modal and refresh view
   overlay.remove();
   openCrmDetailView(contactId);
@@ -24326,7 +24360,14 @@ function openOrderDetailModal(order) {
     docsDiv.style.display = "none";
   }
 
-  document.getElementById("order-detail-overlay").classList.add("open");
+  var orderOverlay = document.getElementById("order-detail-overlay");
+  // Boost z-index when CRM panel is open so order detail appears on top
+  if (document.getElementById("crm-modal-overlay") && document.getElementById("crm-modal-overlay").classList.contains("open")) {
+    orderOverlay.style.zIndex = "300";
+  } else {
+    orderOverlay.style.zIndex = "";
+  }
+  orderOverlay.classList.add("open");
 }
 
 function closeOrderDetailModal() {
