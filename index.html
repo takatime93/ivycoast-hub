@@ -5265,8 +5265,8 @@ select.contact-edit-input { appearance: auto; cursor: pointer; }
 .formulator-oil-row { display:flex; align-items:center; gap:10px; padding:8px 0; border-bottom:1px solid var(--color-border-separator); }
 .formulator-oil-row:last-child { border-bottom:none; }
 .formulator-oil-name { flex:1; font-family:var(--font-text); font-size:var(--text-md); color:var(--color-text); font-weight:500; }
-.formulator-oil-weight { width:70px; font-family:var(--font-mono); font-size:var(--text-xs); color:var(--color-text-secondary); text-align:right; }
-.formulator-oil-pct { width:50px; font-family:var(--font-mono); font-size:var(--text-xs); color:var(--color-text-tertiary); text-align:right; }
+.formulator-oil-weight { min-width:120px; font-family:var(--font-mono); font-size:var(--text-xs); color:var(--color-text-secondary); text-align:right; display:flex; align-items:center; justify-content:flex-end; gap:2px; }
+.formulator-oil-pct { min-width:50px; font-family:var(--font-mono); font-size:var(--text-xs); color:var(--color-text-tertiary); text-align:right; }
 .formulator-oil-remove { width:28px; height:28px; border:none; background:none; color:var(--color-text-disabled); cursor:pointer; border-radius:var(--radius-sm); display:flex; align-items:center; justify-content:center; font-size:14px; transition:color var(--transition-fast),background var(--transition-fast); }
 .formulator-oil-remove:hover { color:var(--color-error-text); background:var(--color-error-bg); }
 .formulator-add-row { display:flex; gap:8px; align-items:center; margin-bottom:20px; }
@@ -5893,15 +5893,15 @@ select.contact-edit-input { appearance: auto; cursor: pointer; }
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
               <label style="font-family:var(--font-display);font-size:var(--text-sm);font-weight:600;color:#062420">その他の材料 (Additives)</label>
             </div>
-            <div class="formulator-add-row" style="margin-bottom:8px">
-              <div class="formulator-field" style="flex:1">
-                <input type="text" id="formulator-additive-name" placeholder="材料名 (e.g. CBD Oil, Blue Clay...)" style="width:100%">
+            <div class="formulator-add-row" style="margin-bottom:8px;flex-wrap:wrap">
+              <div class="formulator-field" style="flex:1;min-width:140px">
+                <input type="text" id="formulator-additive-name" placeholder="材料名 (e.g. CBD Oil...)" style="width:100%">
               </div>
-              <div class="formulator-field" style="width:70px">
-                <input type="number" id="formulator-additive-amount" min="0" step="0.1" value="0" style="width:100%">
+              <div class="formulator-field" style="width:60px">
+                <input type="number" id="formulator-additive-amount" min="0" step="0.1" value="0" style="width:100%;text-align:right">
               </div>
-              <div class="formulator-field" style="width:70px">
-                <select id="formulator-additive-unit" style="width:100%">
+              <div class="formulator-field" style="width:55px">
+                <select id="formulator-additive-unit" style="width:100%;font-size:var(--text-xs)">
                   <option value="g">g</option>
                   <option value="drops">drops</option>
                   <option value="ml">ml</option>
@@ -5909,7 +5909,7 @@ select.contact-edit-input { appearance: auto; cursor: pointer; }
                   <option value="tsp">tsp</option>
                 </select>
               </div>
-              <div class="formulator-field" style="width:70px">
+              <div class="formulator-field" style="width:60px">
                 <input type="number" id="formulator-additive-cost" min="0" step="0.01" value="0" placeholder="¥" style="width:100%">
               </div>
               <button class="formulator-add-btn" onclick="formulatorAddAdditive()" style="font-size:var(--text-sm)">追加</button>
@@ -18478,23 +18478,23 @@ function formulatorRenderAdditiveList() {
   formulatorAdditives.forEach(function(a, idx) {
     var row = document.createElement("div");
     row.className = "formulator-oil-row";
+    // Name
     var nameSpan = document.createElement("span");
     nameSpan.className = "formulator-oil-name";
-    nameSpan.style.fontSize = "var(--text-sm)";
     nameSpan.textContent = a.name;
     row.appendChild(nameSpan);
-    // Editable amount
+    // Amount + unit on same line, matching oil row layout
     var amountWrap = document.createElement("span");
     amountWrap.className = "formulator-oil-weight";
+    amountWrap.style.cssText = "display:flex;align-items:center;gap:2px";
     var amountInput = document.createElement("input");
     amountInput.type = "number"; amountInput.min = "0"; amountInput.step = "0.1";
     amountInput.value = a.amount;
-    amountInput.style.cssText = "width:50px;padding:2px 4px;border:1px solid var(--color-border);border-radius:3px;font-size:var(--text-sm);text-align:right;font-family:inherit";
+    amountInput.style.cssText = "width:60px;padding:2px 4px;border:1px solid var(--color-border);border-radius:3px;font-size:var(--text-sm);text-align:right;font-family:inherit";
     amountInput.onchange = (function(i) { return function() { formulatorAdditives[i].amount = parseFloat(this.value) || 0; formulatorRecalc(); }; })(idx);
     amountWrap.appendChild(amountInput);
-    // Unit selector
     var unitSel = document.createElement("select");
-    unitSel.style.cssText = "font-size:var(--text-xs);border:1px solid var(--color-border);border-radius:3px;padding:1px 2px;margin-left:2px";
+    unitSel.style.cssText = "font-size:var(--text-xs);border:1px solid var(--color-border);border-radius:3px;padding:2px 2px;width:50px";
     ["g","drops","ml","tbsp","tsp"].forEach(function(u) {
       var opt = document.createElement("option");
       opt.value = u; opt.textContent = u;
@@ -18504,10 +18504,10 @@ function formulatorRenderAdditiveList() {
     unitSel.onchange = (function(i) { return function() { formulatorAdditives[i].unit = this.value; }; })(idx);
     amountWrap.appendChild(unitSel);
     row.appendChild(amountWrap);
-    // Cost display
+    // Cost — right aligned, same width as oil percentage column
     var costSpan = document.createElement("span");
     costSpan.className = "formulator-oil-pct";
-    costSpan.textContent = a.costPerUnit > 0 ? "\u00A5" + (a.amount * a.costPerUnit).toFixed(0) : "";
+    costSpan.textContent = a.costPerUnit > 0 ? "\u00A5" + (a.amount * a.costPerUnit).toFixed(0) : "\u2014";
     row.appendChild(costSpan);
     // Remove
     var removeBtn = document.createElement("button");
