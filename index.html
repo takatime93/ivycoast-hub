@@ -13141,7 +13141,7 @@ function renderCrmOverviewTab(c, panel, contactId, tabsBar) {
       orderNum.style.cssText = "font-family:var(--font-mono);font-size:var(--text-xs);color:var(--color-primary);letter-spacing:var(--ls-mono)";
       orderNum.textContent = "#" + (o.orderNumber || o.id || "?");
       leftDiv.appendChild(orderNum);
-      if (o.source === "manual" || (o.orderNumber || "").indexOf("MO-") === 0) {
+      if (o.source === "manual" || String(o.orderNumber || "").indexOf("MO-") === 0) {
         var mBadge = document.createElement("span");
         mBadge.className = "crm-manual-badge";
         mBadge.textContent = "Manual";
