@@ -11415,6 +11415,13 @@ function openCrmDetailView(contactId) {
   editItem.onclick = function() { moreMenu.classList.remove("open"); switchToCrmEditMode(contactId); };
   moreMenu.appendChild(editItem);
 
+  // Add Order item
+  var addOrderItem = document.createElement("button");
+  addOrderItem.className = "crm-detail-more-menu-item";
+  addOrderItem.textContent = "Add Order";
+  addOrderItem.onclick = function() { moreMenu.classList.remove("open"); openCrmManualOrderModal(contactId); };
+  moreMenu.appendChild(addOrderItem);
+
   // Divider before stage
   var editDivider = document.createElement("div");
   editDivider.className = "ivh-divider";
@@ -12448,7 +12455,8 @@ function _renderAnalyticsSection(panel, c, contactId, matchedOrders, totalSpent,
     c4Top.appendChild(c4Val);
     if (lastOrder) {
       var c4Detail = document.createElement("div"); c4Detail.className = "stat-sub";
-      c4Detail.textContent = "\u00A5" + Number(lastOrder.totalPrice || 0).toLocaleString() + " \u00B7 " + (lastOrder.lineItems || "?") + " items";
+      var liCount = (lastOrder.lineItems || "").split(";").length || "?";
+      c4Detail.textContent = "\u00A5" + Number(lastOrder.totalPrice || 0).toLocaleString() + " \u00B7 " + liCount + " items";
       c4Top.appendChild(c4Detail);
     } else {
       var c4Empty = document.createElement("div"); c4Empty.className = "stat-sub"; c4Empty.textContent = "No history"; c4Top.appendChild(c4Empty);
@@ -12462,7 +12470,8 @@ function _renderAnalyticsSection(panel, c, contactId, matchedOrders, totalSpent,
       restock.style.cursor = "pointer";
       var rLabel = document.createElement("span"); rLabel.textContent = "Automatic Restock"; restock.appendChild(rLabel);
       var rDate = document.createElement("div"); rDate.className = "stat-restock-date";
-      rDate.textContent = formatDate(restockDate.toISOString()) + " \u00B7 " + (lastOrder.lineItems || "?") + " items";
+      var rLiCount = (lastOrder.lineItems || "").split(";").length || "?";
+      rDate.textContent = formatDate(restockDate.toISOString()) + " \u00B7 " + rLiCount + " items";
       restock.appendChild(rDate);
       restock.onclick = function() { _goToStock(); };
       card4.appendChild(restock);
@@ -16297,7 +16306,7 @@ function renderCrmOrdersTab(c, panel, contactId) {
   var addOrderBtn = document.createElement("button");
   addOrderBtn.className = "crm-order-add-btn";
   addOrderBtn.appendChild(_crmFa6Icon("\uf067", 11, 300));
-  var addOrderText = document.createTextNode(" \u6CE8\u6587\u8FFD\u52A0");
+  var addOrderText = document.createTextNode(" Add Order");
   addOrderBtn.appendChild(addOrderText);
   addOrderBtn.onclick = function() { openCrmManualOrderModal(contactId); };
   toolbar.appendChild(addOrderBtn);
@@ -16340,7 +16349,7 @@ function renderCrmOrdersTab(c, panel, contactId) {
     if (order.source === "manual" || orderNum.indexOf("MO-") === 0 || orderNum.indexOf("M-") === 0) {
       var badge = document.createElement("span");
       badge.className = "crm-manual-badge";
-      badge.textContent = "\u624B\u52D5";
+      badge.textContent = "Manual";
       num.appendChild(badge);
     }
 
@@ -16397,7 +16406,7 @@ function openCrmManualOrderModal(contactId) {
   var titleEl = document.createElement("div");
   titleEl.className = "crm-quick-edit-title";
   titleEl.style.marginBottom = "0";
-  titleEl.textContent = "\u65B0\u898F\u6CE8\u6587 (New Order)";
+  titleEl.textContent = "New Order";
   titleRow.appendChild(titleEl);
   var closeBtn = document.createElement("button");
   closeBtn.style.cssText = "background:none;border:none;font-size:20px;cursor:pointer;color:var(--color-text-secondary);padding:0 4px;";
@@ -16557,7 +16566,7 @@ function openCrmManualOrderModal(contactId) {
   taxSelect.className = "crm-quick-edit-input";
   taxSelect.style.cssText = "width:auto;padding:4px 8px;font-size:var(--text-sm);";
   var taxOpts = [
-    { value: "included", label: "\u7A0E\u8FBC (included)" },
+    { value: "included", label: "Tax included" },
     { value: "10", label: "10%" }
   ];
   taxOpts.forEach(function(o) {
