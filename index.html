@@ -6881,6 +6881,7 @@ select.contact-edit-input { appearance: auto; cursor: pointer; }
 <!-- Receipt Modal -->
 <div class="board-modal-overlay" id="rec-modal-overlay" onclick="if(event.target===this)closeReceiptModal()">
   <div class="board-modal inv-modal">
+   <div class="inv-split-editor" id="rec-split-editor">
     <h2 id="rec-modal-title">New Receipt</h2>
     <input type="hidden" id="rec-modal-id">
     <input type="hidden" id="rec-modal-invoice-id">
@@ -7037,10 +7038,16 @@ select.contact-edit-input { appearance: auto; cursor: pointer; }
 
     <div class="board-modal-actions">
       <button class="btn-delete" id="rec-modal-delete-btn" style="display:none" onclick="deleteReceiptConfirm()">Delete</button>
-      <button type="button" onclick="previewReceipt()" style="color:#0e413b;border-color:#0e413b">Preview</button>
+      <button type="button" id="rec-preview-toggle-btn" onclick="toggleRecSplitPreview()" style="color:#0e413b;border-color:#0e413b">Preview</button>
       <button onclick="closeReceiptModal()">Cancel</button>
       <button class="btn-save" onclick="saveReceipt()">Save</button>
     </div>
+   </div>
+   <div class="inv-split-preview" id="rec-split-preview" style="display:none">
+     <div class="inv-split-preview-inner" id="rec-split-preview-inner">
+       <div class="inv-preview-page" id="rec-split-preview-page"></div>
+     </div>
+   </div>
   </div>
 </div>
 
@@ -7759,6 +7766,15 @@ function fetchAllData() {
       if (data.activities) { activityLog = data.activities; updateNotifBell(); updateTabDots(); }
       // Demo mode: ?demo=true injects test vendors — remove after partner review
       if (new URLSearchParams(location.search).get("demo") === "true" && typeof _injectDemoVendors === "function") _injectDemoVendors();
+      // One-time backfill: create stock entries from existing orders that predate auto-stock
+      if (!localStorage.getItem("ivh_stockBackfillDone")) {
+        var backfillTotal = 0;
+        crmContacts.forEach(function(ct) {
+          backfillTotal += backfillStockFromOrders(ct.id) || 0;
+        });
+        if (backfillTotal > 0) console.log("[IVH] Backfilled " + backfillTotal + " stock entries from existing orders");
+        localStorage.setItem("ivh_stockBackfillDone", "1");
+      }
       // Re-render all views
       renderBoard(); renderHomeActiveTasks(); renderHomeKeyStats(); renderHomeRecentlyUpdated();
       renderHomeCrmStats(); renderHomeShopifyStats();
@@ -16470,9 +16486,15 @@ function generateCrmManualOrderNumber() {
 }
 
 function openCrmManualOrderModal(contactId) {
-  var c = crmContacts.find(function(x) { return x.id === contactId; });
-  if (!c) return;
+  var c = contactId ? crmContacts.find(function(x) { return x.id === contactId; }) : null;
+  if (contactId && !c) return;
   if (!shopifyProducts || !shopifyProducts.length) fetchShopifyProducts();
+
+  // Resolve vendor's people for contact picker
+  function getVendorPeople(vendor) {
+    if (!vendor) return [];
+    return contactPeople.filter(function(p) { return p.vendorId === vendor.id; });
+  }
 
   var overlay = document.createElement("div");
   overlay.className = "crm-quick-edit-overlay";
@@ -16496,20 +16518,69 @@ function openCrmManualOrderModal(contactId) {
   titleRow.appendChild(closeBtn);
   modal.appendChild(titleRow);
 
-  // Vendor info (read-only)
+  // Vendor info section
   var vendorInfo = document.createElement("div");
   vendorInfo.className = "crm-mo-vendor-info";
-  var vendorNameField = document.createElement("div");
-  vendorNameField.className = "crm-mo-vendor-field";
-  var vendorNameLabel = document.createElement("div");
-  vendorNameLabel.className = "crm-mo-vendor-label";
-  vendorNameLabel.textContent = "Contact";
-  vendorNameField.appendChild(vendorNameLabel);
-  var vendorNameValue = document.createElement("div");
-  vendorNameValue.className = "crm-mo-vendor-value";
-  vendorNameValue.textContent = c.company || c.name || "";
-  vendorNameField.appendChild(vendorNameValue);
-  vendorInfo.appendChild(vendorNameField);
+
+  // If no contactId, show vendor picker
+  var vendorSelect = null;
+  var contactSelect = null;
+  if (!c) {
+    var vendorPickerField = document.createElement("div");
+    vendorPickerField.className = "crm-mo-vendor-field";
+    vendorPickerField.style.flex = "1";
+    var vendorPickerLabel = document.createElement("div");
+    vendorPickerLabel.className = "crm-mo-vendor-label";
+    vendorPickerLabel.textContent = "Vendor";
+    vendorPickerField.appendChild(vendorPickerLabel);
+    vendorSelect = document.createElement("select");
+    vendorSelect.className = "crm-quick-edit-input";
+    var emptyOpt = document.createElement("option");
+    emptyOpt.value = "";
+    emptyOpt.textContent = "Select vendor\u2026";
+    vendorSelect.appendChild(emptyOpt);
+    crmContacts.filter(function(x) { return !x.archived; }).sort(function(a, b) { return (a.company || a.name || "").localeCompare(b.company || b.name || ""); }).forEach(function(v) {
+      var opt = document.createElement("option");
+      opt.value = v.id;
+      opt.textContent = v.company || v.name || v.email;
+      vendorSelect.appendChild(opt);
+    });
+    vendorSelect.onchange = function() {
+      c = crmContacts.find(function(x) { return x.id === vendorSelect.value; }) || null;
+      contactId = c ? c.id : null;
+      updateContactPicker();
+      updatePricingFromVendor();
+    };
+    vendorPickerField.appendChild(vendorSelect);
+    vendorInfo.appendChild(vendorPickerField);
+  } else {
+    var vendorNameField = document.createElement("div");
+    vendorNameField.className = "crm-mo-vendor-field";
+    var vendorNameLabel = document.createElement("div");
+    vendorNameLabel.className = "crm-mo-vendor-label";
+    vendorNameLabel.textContent = "Vendor";
+    vendorNameField.appendChild(vendorNameLabel);
+    var vendorNameValue = document.createElement("div");
+    vendorNameValue.className = "crm-mo-vendor-value";
+    vendorNameValue.textContent = c.company || c.name || "";
+    vendorNameField.appendChild(vendorNameValue);
+    vendorInfo.appendChild(vendorNameField);
+  }
+
+  // Contact person picker
+  var contactPickerField = document.createElement("div");
+  contactPickerField.className = "crm-mo-vendor-field";
+  contactPickerField.style.flex = "1";
+  var contactPickerLabel = document.createElement("div");
+  contactPickerLabel.className = "crm-mo-vendor-label";
+  contactPickerLabel.textContent = "Contact Person";
+  contactPickerField.appendChild(contactPickerLabel);
+  contactSelect = document.createElement("select");
+  contactSelect.className = "crm-quick-edit-input";
+  contactPickerField.appendChild(contactSelect);
+  vendorInfo.appendChild(contactPickerField);
+
+  // Email display
   var vendorEmailField = document.createElement("div");
   vendorEmailField.className = "crm-mo-vendor-field";
   var vendorEmailLabel = document.createElement("div");
@@ -16519,10 +16590,37 @@ function openCrmManualOrderModal(contactId) {
   var vendorEmailValue = document.createElement("div");
   vendorEmailValue.className = "crm-mo-vendor-value";
   vendorEmailValue.style.fontWeight = "400";
-  vendorEmailValue.textContent = c.email || "\u2014";
+  vendorEmailValue.textContent = c ? (c.email || "\u2014") : "\u2014";
   vendorEmailField.appendChild(vendorEmailValue);
   vendorInfo.appendChild(vendorEmailField);
   modal.appendChild(vendorInfo);
+
+  function updateContactPicker() {
+    contactSelect.textContent = "";
+    var people = c ? getVendorPeople(c) : [];
+    if (!people.length) {
+      var noneOpt = document.createElement("option");
+      noneOpt.value = "";
+      noneOpt.textContent = c ? (c.name || c.company || "No contacts") : "Select vendor first";
+      contactSelect.appendChild(noneOpt);
+    } else if (people.length === 1) {
+      var soloOpt = document.createElement("option");
+      soloOpt.value = people[0].id;
+      soloOpt.textContent = (people[0].nameEn || people[0].nameJa || "") + (people[0].title ? " \u2014 " + people[0].title : "");
+      contactSelect.appendChild(soloOpt);
+    } else {
+      people.forEach(function(p) {
+        var opt = document.createElement("option");
+        opt.value = p.id;
+        opt.textContent = (p.nameEn || p.nameJa || "") + (p.title ? " \u2014 " + p.title : "");
+        if (p.isPrimary) opt.selected = true;
+        contactSelect.appendChild(opt);
+      });
+    }
+    // Update email display
+    vendorEmailValue.textContent = c ? (c.email || "\u2014") : "\u2014";
+  }
+  updateContactPicker();
 
   // Order details row
   var orderNumGenerated = generateCrmManualOrderNumber();
@@ -16580,6 +16678,60 @@ function openCrmManualOrderModal(contactId) {
 
   modal.appendChild(detailsRow);
 
+  // Pricing / Deal section
+  var pricingRow = document.createElement("div");
+  pricingRow.className = "crm-mo-field-row";
+  pricingRow.style.marginBottom = "8px";
+
+  var pricingTypeField = document.createElement("div");
+  pricingTypeField.className = "crm-mo-field";
+  var pricingTypeLabel = document.createElement("label");
+  pricingTypeLabel.className = "crm-quick-edit-label";
+  pricingTypeLabel.textContent = "Deal Type";
+  pricingTypeField.appendChild(pricingTypeLabel);
+  var pricingTypeSelect = document.createElement("select");
+  pricingTypeSelect.className = "crm-quick-edit-input";
+  [{ value: "", label: "None" }, { value: "consignment", label: "Consignment" }, { value: "wholesale", label: "Wholesale" }].forEach(function(o) {
+    var opt = document.createElement("option");
+    opt.value = o.value;
+    opt.textContent = o.label;
+    pricingTypeSelect.appendChild(opt);
+  });
+  pricingTypeField.appendChild(pricingTypeSelect);
+  pricingRow.appendChild(pricingTypeField);
+
+  var pricingPctField = document.createElement("div");
+  pricingPctField.className = "crm-mo-field";
+  var pricingPctLabel = document.createElement("label");
+  pricingPctLabel.className = "crm-quick-edit-label";
+  pricingPctLabel.textContent = "Their Share (%)";
+  pricingPctField.appendChild(pricingPctLabel);
+  var pricingPctInput = document.createElement("input");
+  pricingPctInput.className = "crm-quick-edit-input";
+  pricingPctInput.type = "number";
+  pricingPctInput.min = "0";
+  pricingPctInput.max = "100";
+  pricingPctInput.placeholder = "e.g. 30";
+  pricingPctField.appendChild(pricingPctInput);
+  pricingRow.appendChild(pricingPctField);
+
+  modal.appendChild(pricingRow);
+
+  function updatePricingFromVendor() {
+    if (!c) { pricingTypeSelect.value = ""; pricingPctInput.value = ""; return; }
+    if (c.consignmentPercent) {
+      pricingTypeSelect.value = "consignment";
+      pricingPctInput.value = c.consignmentPercent;
+    } else if (c.wholesalePercent) {
+      pricingTypeSelect.value = "wholesale";
+      pricingPctInput.value = c.wholesalePercent;
+    } else {
+      pricingTypeSelect.value = "";
+      pricingPctInput.value = "";
+    }
+  }
+  updatePricingFromVendor();
+
   // Line items section
   var lineSection = document.createElement("div");
   lineSection.style.marginBottom = "4px";
@@ -16635,6 +16787,24 @@ function openCrmManualOrderModal(contactId) {
   subtotalValue.textContent = "\u00A50";
   subtotalRow.appendChild(subtotalValue);
   totalsDiv.appendChild(subtotalRow);
+
+  // Shipping row
+  var shippingRow = document.createElement("div");
+  shippingRow.className = "crm-mo-total-row";
+  var shippingLabel = document.createElement("span");
+  shippingLabel.className = "crm-mo-total-label";
+  shippingLabel.textContent = "Shipping";
+  shippingRow.appendChild(shippingLabel);
+  var shippingInput = document.createElement("input");
+  shippingInput.type = "number";
+  shippingInput.className = "crm-quick-edit-input";
+  shippingInput.style.cssText = "width:100px;padding:4px 8px;font-size:var(--text-sm);text-align:right;";
+  shippingInput.value = "0";
+  shippingInput.min = "0";
+  shippingInput.placeholder = "0";
+  shippingInput.addEventListener("input", recalcTotals);
+  shippingRow.appendChild(shippingInput);
+  totalsDiv.appendChild(shippingRow);
 
   // Tax type row
   var taxRow = document.createElement("div");
@@ -16730,7 +16900,10 @@ function openCrmManualOrderModal(contactId) {
   var saveBtn = document.createElement("button");
   saveBtn.className = "crm-quick-edit-save";
   saveBtn.textContent = "Save Order";
-  saveBtn.onclick = function() { saveCrmManualOrder(overlay, c, contactId, orderNumInput, orderDateInput, dueDateInput, lineBody, taxSelect, statusSelect, notesInput, subtotalValue, taxValue, grandValue); };
+  saveBtn.onclick = function() {
+    if (!c) { alert("Please select a vendor."); return; }
+    saveCrmManualOrder(overlay, c, c.id, orderNumInput, orderDateInput, dueDateInput, lineBody, taxSelect, statusSelect, notesInput, subtotalValue, taxValue, grandValue, shippingInput, pricingTypeSelect, pricingPctInput);
+  };
   actions.appendChild(saveBtn);
   modal.appendChild(actions);
 
@@ -16760,10 +16933,12 @@ function openCrmManualOrderModal(contactId) {
       subtotal += amt;
     });
     subtotalValue.textContent = "\u00A5" + Math.round(subtotal).toLocaleString();
+    var shipping = parseFloat(shippingInput.value) || 0;
     var taxType = taxSelect.value;
-    var tax = taxType === "10" ? Math.round(subtotal * 0.1) : 0;
+    var taxable = subtotal + shipping;
+    var tax = taxType === "10" ? Math.round(taxable * 0.1) : 0;
     taxValue.textContent = "\u00A5" + tax.toLocaleString();
-    var total = subtotal + tax;
+    var total = taxable + tax;
     grandValue.textContent = "\u00A5" + Math.round(total).toLocaleString();
   }
 }
@@ -16887,7 +17062,7 @@ function addCrmMoLineItem(lineBody, recalcFn) {
   if (recalcFn) recalcFn();
 }
 
-function saveCrmManualOrder(overlay, vendor, contactId, orderNumInput, orderDateInput, dueDateInput, lineBody, taxSelect, statusSelect, notesInput, subtotalEl, taxEl, grandEl) {
+function saveCrmManualOrder(overlay, vendor, contactId, orderNumInput, orderDateInput, dueDateInput, lineBody, taxSelect, statusSelect, notesInput, subtotalEl, taxEl, grandEl, shippingInput, pricingTypeSelect, pricingPctInput) {
   var rows = lineBody.querySelectorAll("tr");
   var lineItems = [];
   var itemsForInvoice = [];
@@ -16901,7 +17076,7 @@ function saveCrmManualOrder(overlay, vendor, contactId, orderNumInput, orderDate
     var price = parseFloat(inputs[2].value) || 0;
     if (desc && qty > 0) {
       var amt = qty * price;
-      lineItems.push(qty + "x " + desc);
+      lineItems.push(qty + "x " + desc + (price > 0 ? " @ \u00A5" + price : ""));
       itemsForInvoice.push({ description: desc, qty: qty, unitPrice: price, amount: amt });
       totalPrice += amt;
     }
@@ -16912,12 +17087,18 @@ function saveCrmManualOrder(overlay, vendor, contactId, orderNumInput, orderDate
     return;
   }
 
+  var shipping = shippingInput ? (parseFloat(shippingInput.value) || 0) : 0;
   var taxType = taxSelect.value;
-  var tax = taxType === "10" ? Math.round(totalPrice * 0.1) : 0;
-  var grandTotal = totalPrice + tax;
+  var taxable = totalPrice + shipping;
+  var tax = taxType === "10" ? Math.round(taxable * 0.1) : 0;
+  var grandTotal = taxable + tax;
   var orderDate = orderDateInput.value || new Date().toISOString().split("T")[0];
   var financialStatus = statusSelect.value;
   var orderNumber = orderNumInput.value;
+
+  // Get pricing override values
+  var orderPricingType = pricingTypeSelect ? pricingTypeSelect.value : (vendor.consignmentPercent ? "consignment" : vendor.wholesalePercent ? "wholesale" : "");
+  var orderPricingPct = pricingPctInput ? (pricingPctInput.value || "") : (vendor.consignmentPercent || vendor.wholesalePercent || "");
 
   var orderId = "mo-" + Date.now();
   var order = {
@@ -16934,6 +17115,8 @@ function saveCrmManualOrder(overlay, vendor, contactId, orderNumInput, orderDate
     createdAt: orderDate + "T00:00:00Z",
     shippingAddress: vendor.location || "",
     note: notesInput.value.trim(),
+    shipping: String(shipping),
+    taxType: taxType,
     lastSynced: null,
     source: "manual"
   };
@@ -16956,8 +17139,8 @@ function saveCrmManualOrder(overlay, vendor, contactId, orderNumInput, orderDate
     })
     .catch(function() { fetchShopifyOrders(true); });
 
-  // Auto-create invoice
-  createInvoiceFromManualOrder(order, vendor, itemsForInvoice, taxType, tax, grandTotal, dueDateInput.value);
+  // Auto-create invoice with shipping and pricing override
+  createInvoiceFromManualOrder(order, vendor, itemsForInvoice, taxType, tax, grandTotal, dueDateInput.value, shipping, orderPricingType, orderPricingPct);
 
   // If paid, auto-create receipt after invoice
   if (financialStatus === "paid") {
@@ -16990,7 +17173,7 @@ function saveCrmManualOrder(overlay, vendor, contactId, orderNumInput, orderDate
         sku: "",
         quantity: String(item.qty),
         unitPrice: String(item.unitPrice),
-        pricingType: vendor.consignmentPercent ? "consignment" : vendor.wholesalePercent ? "wholesale" : "",
+        pricingType: orderPricingType || "",
         status: "active",
         dateDelivered: orderDate,
         notes: "From order " + orderNumber,
@@ -17008,19 +17191,78 @@ function saveCrmManualOrder(overlay, vendor, contactId, orderNumInput, orderDate
   openCrmDetailView(contactId);
 }
 
-function createInvoiceFromManualOrder(order, vendor, items, taxType, tax, total, dueDate) {
+// Backfill stock entries from existing orders that didn't auto-create stock
+function backfillStockFromOrders(contactId) {
+  var vendor = crmContacts.find(function(x) { return x.id === contactId; });
+  if (!vendor) return;
+  var vendorEmail = (vendor.email || "").toLowerCase();
+  var vendorName = (vendor.company || vendor.name || "").toLowerCase();
+  var orders = shopifyOrders.filter(function(o) {
+    if ((o.email || "").toLowerCase() === vendorEmail && vendorEmail) return true;
+    if ((o.customerName || "").toLowerCase() === vendorName && vendorName) return true;
+    return false;
+  });
+  if (!orders.length) return;
+
+  var pricingType = vendor.consignmentPercent ? "consignment" : vendor.wholesalePercent ? "wholesale" : "";
+  var created = 0;
+
+  orders.forEach(function(order) {
+    var lineItemsStr = order.lineItems || "";
+    // Parse "2x Byron Bay; 3x Sunlight" format
+    var parts = lineItemsStr.split(";").map(function(s) { return s.trim(); }).filter(Boolean);
+    parts.forEach(function(part) {
+      var match = part.match(/^(\d+)\s*x\s+(.+)$/i);
+      if (!match) return; // skip unparseable items (e.g. just "8")
+      var qty = parseInt(match[1], 10) || 0;
+      var productName = match[2].trim();
+      if (!qty || !productName) return;
+
+      // Check if stock already exists for this product at this vendor
+      var exists = partnerStock.find(function(s) {
+        return s.contactId === contactId && s.productName === productName;
+      });
+      if (exists) return; // already tracked
+
+      var stockId = "stk-bf-" + Date.now() + "-" + Math.floor(Math.random() * 10000);
+      var orderDate = order.createdAt ? order.createdAt.split("T")[0] : "";
+      // Try to find product price from shopifyProducts
+      var product = (shopifyProducts || []).find(function(p) {
+        return (p.title || "").toLowerCase() === productName.toLowerCase();
+      });
+      var unitPrice = product ? (product.price || "0") : "0";
+
+      var newStock = {
+        id: stockId,
+        contactId: contactId,
+        contactName: vendor.company || vendor.name || "",
+        productName: productName,
+        sku: product ? (product.sku || "") : "",
+        quantity: String(qty),
+        unitPrice: String(unitPrice),
+        pricingType: pricingType,
+        status: "active",
+        dateDelivered: orderDate,
+        notes: "From order #" + (order.orderNumber || ""),
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+      partnerStock.push(newStock);
+      stockApiPost({ action: "create", stock: newStock }).catch(function() {});
+      created++;
+    });
+  });
+
+  if (created > 0) saveDataCache();
+  return created;
+}
+
+function createInvoiceFromManualOrder(order, vendor, items, taxType, tax, total, dueDate, shipping, overridePricingType, overridePricingPct) {
   if (!SCRIPT_URL) return;
 
   var subtotal = items.reduce(function(s, it) { return s + it.amount; }, 0);
-  var pricingType = "";
-  var pricingPercent = "";
-  if (vendor.consignmentPercent) {
-    pricingType = "consignment";
-    pricingPercent = vendor.consignmentPercent;
-  } else if (vendor.wholesalePercent) {
-    pricingType = "wholesale";
-    pricingPercent = vendor.wholesalePercent;
-  }
+  var pricingType = overridePricingType || "";
+  var pricingPercent = overridePricingPct || "";
 
   var invoiceNumber = generateInvoiceNumber();
   var invoice = {
@@ -17036,7 +17278,7 @@ function createInvoiceFromManualOrder(order, vendor, items, taxType, tax, total,
     items: JSON.stringify(items),
     subtotal: String(subtotal),
     discount: "0",
-    shipping: "0",
+    shipping: String(shipping || 0),
     taxType: taxType || "included",
     tax: String(tax || 0),
     total: String(total || subtotal),
@@ -20684,6 +20926,7 @@ function openInvoiceEditModal(invId) {
   });
   recalcInvoiceTotals();
   document.getElementById("inv-modal-overlay").classList.add("open");
+  if (!invSplitActive) toggleInvSplitPreview();
 }
 
 function closeInvoiceModal() {
@@ -21421,7 +21664,92 @@ function scaleInvSplitPreview() {
 }
 window.addEventListener("resize", function() {
   if (invSplitActive) scaleInvSplitPreview();
+  if (recSplitActive) scaleRecSplitPreview();
 });
+
+// ── Receipt Split-Pane Live Preview ─────────────────────────────
+var recSplitActive = false;
+var recLiveTimer = null;
+
+function toggleRecSplitPreview() {
+  var modal = document.getElementById("rec-modal-overlay").querySelector(".board-modal.inv-modal");
+  var pane = document.getElementById("rec-split-preview");
+  var btn = document.getElementById("rec-preview-toggle-btn");
+  if (recSplitActive) {
+    modal.classList.remove("inv-split-mode");
+    pane.style.display = "none";
+    btn.textContent = "Preview";
+    recSplitActive = false;
+    detachRecLiveUpdate();
+  } else {
+    modal.classList.add("inv-split-mode");
+    pane.style.display = "";
+    btn.textContent = "Close Preview";
+    recSplitActive = true;
+    updateRecSplitPreview();
+    attachRecLiveUpdate();
+    requestAnimationFrame(scaleRecSplitPreview);
+  }
+}
+
+function updateRecSplitPreview() {
+  if (!recSplitActive) return;
+  var items = getReceiptLineItems();
+  var subtotal = items.reduce(function(s, it) { return s + it.amount; }, 0);
+  var discount = parseFloat(document.getElementById("rec-modal-discount").value) || 0;
+  var shipping = parseFloat(document.getElementById("rec-modal-shipping").value) || 0;
+  var taxType = document.getElementById("rec-modal-tax-type").value;
+  var afterDiscount = subtotal - discount;
+  var tax = taxType === "10" ? Math.round(afterDiscount * 0.1) : 0;
+  var total = afterDiscount + tax + shipping;
+  var addrLines = formatInvAddress(getRecAddressJSON());
+
+  buildReceiptPreviewTo(document.getElementById("rec-split-preview-page"), {
+    number: document.getElementById("rec-modal-number").value || "",
+    date: document.getElementById("rec-modal-date").value || "",
+    company: document.getElementById("rec-modal-company").value || "",
+    invoiceNumber: document.getElementById("rec-modal-invoice-number").value || "",
+    addrLines: addrLines,
+    items: items,
+    subtotal: subtotal,
+    discount: discount,
+    shipping: shipping,
+    taxType: taxType,
+    tax: tax,
+    total: total,
+    pricingParties: getRecPricingParties()
+  });
+}
+
+function recLiveHandler() {
+  clearTimeout(recLiveTimer);
+  recLiveTimer = setTimeout(updateRecSplitPreview, 150);
+}
+
+function attachRecLiveUpdate() {
+  var ed = document.getElementById("rec-split-editor");
+  if (!ed) return;
+  ed.addEventListener("input", recLiveHandler, true);
+  ed.addEventListener("change", recLiveHandler, true);
+}
+
+function detachRecLiveUpdate() {
+  var ed = document.getElementById("rec-split-editor");
+  if (!ed) return;
+  ed.removeEventListener("input", recLiveHandler, true);
+  ed.removeEventListener("change", recLiveHandler, true);
+}
+
+function scaleRecSplitPreview() {
+  var container = document.getElementById("rec-split-preview");
+  var inner = document.getElementById("rec-split-preview-inner");
+  if (!container || !inner) return;
+  var availW = container.clientWidth - 48;
+  var scaleW = availW / 794;
+  var scale = Math.min(scaleW, 0.7);
+  if (scale < 0.2) scale = 0.2;
+  inner.style.transform = "scale(" + scale + ")";
+}
 
 // ── Auto-Invoice from Shopify Orders ──────────────────────────
 
@@ -21431,6 +21759,7 @@ function parseOrderLineItems(lineItemsStr, totalPrice) {
   var items = [];
   var totalQty = 0;
   parts.forEach(function(part) {
+    // Format 1: "2x Description" or "2x Description @ ¥5000" (standard format)
     var match = part.match(/^(\d+)\s*x\s+(.+?)(?:\s*@\s*[¥\\]?([\d,]+))?$/i);
     if (match) {
       var qty = parseInt(match[1], 10) || 1;
@@ -21439,8 +21768,18 @@ function parseOrderLineItems(lineItemsStr, totalPrice) {
       items.push({ description: desc, qty: qty, unitPrice: price });
       totalQty += qty;
     } else {
-      items.push({ description: part, qty: 1, unitPrice: 0 });
-      totalQty += 1;
+      // Format 2: "Description x2 @¥5,000" or "Description x2 @¥5,000 -10%" (old orders-tab format)
+      var match2 = part.match(/^(.+?)\s+x\s*(\d+)\s*@\s*[¥\\]?([\d,]+)(?:\s*-[\d%.¥,]+)?$/i);
+      if (match2) {
+        var desc2 = match2[1].trim();
+        var qty2 = parseInt(match2[2], 10) || 1;
+        var price2 = parseInt(match2[3].replace(/,/g, ""), 10) || 0;
+        items.push({ description: desc2, qty: qty2, unitPrice: price2 });
+        totalQty += qty2;
+      } else {
+        items.push({ description: part, qty: 1, unitPrice: 0 });
+        totalQty += 1;
+      }
     }
   });
   // Try shopifyProducts lookup if no prices found
@@ -21491,31 +21830,56 @@ function parseOrderShippingAddress(addrStr) {
 }
 
 function populateInvFromOrder(order) {
-  document.getElementById("inv-modal-order-id").value = order.shopifyOrderId || "";
+  document.getElementById("inv-modal-order-id").value = order.id || order.shopifyOrderId || "";
   document.getElementById("inv-modal-order-number").value = order.orderNumber || "";
   document.getElementById("inv-modal-po").value = "Order #" + (order.orderNumber || order.shopifyOrderId || "");
-  document.getElementById("inv-modal-company").value = order.customerName || "";
   document.getElementById("inv-modal-email").value = order.email || "";
   document.getElementById("inv-modal-status").value = order.financialStatus === "paid" ? "paid" : "draft";
 
-  // Try CRM contact match by email
+  // Try CRM contact match by email or customerName
+  var contact = null;
   if (order.email) {
     var emailLower = order.email.toLowerCase();
-    var contact = (typeof crmContacts !== "undefined" ? crmContacts : []).find(function(c) {
+    contact = (typeof crmContacts !== "undefined" ? crmContacts : []).find(function(c) {
       return c.email && c.email.toLowerCase() === emailLower;
     });
-    if (contact) {
-      document.getElementById("inv-modal-contact").value = contact.id;
-      var _searchInput = document.getElementById("inv-contact-search");
-      if (_searchInput) {
-        _searchInput.value = contact.name + (contact.company ? " (" + contact.company + ")" : "");
-        document.getElementById("inv-contact-search-clear").classList.add("visible");
-      }
-      onInvoiceContactChange();
+  }
+  if (!contact && order.customerName) {
+    var nameLower = order.customerName.toLowerCase();
+    contact = (typeof crmContacts !== "undefined" ? crmContacts : []).find(function(c) {
+      return (c.company && c.company.toLowerCase() === nameLower) ||
+             (c.name && c.name.toLowerCase() === nameLower);
+    });
+  }
+
+  // Fill company from CRM contact or order
+  document.getElementById("inv-modal-company").value = (contact && contact.company) ? contact.company : (order.customerName || "");
+
+  if (contact) {
+    document.getElementById("inv-modal-contact").value = contact.id;
+    var _searchInput = document.getElementById("inv-contact-search");
+    if (_searchInput) {
+      _searchInput.value = contact.name + (contact.company ? " (" + contact.company + ")" : "");
+      document.getElementById("inv-contact-search-clear").classList.add("visible");
+    }
+    onInvoiceContactChange();
+
+    // Fill pricing parties from vendor
+    clearInvPricingParties();
+    if (contact.consignmentPercent) {
+      addInvPricingParty(contact.name || contact.company || "", contact.id, "consignment", contact.consignmentPercent);
+    } else if (contact.wholesalePercent) {
+      addInvPricingParty(contact.name || contact.company || "", contact.id, "wholesale", contact.wholesalePercent);
+    }
+
+    // Fill address from CRM contact if order has no address
+    if (contact.location && !order.shippingAddress) {
+      var addrJson = parseOrderShippingAddress(contact.location);
+      if (addrJson) populateInvAddressFields(addrJson);
     }
   }
 
-  // Parse and fill shipping address
+  // Parse and fill shipping address from order
   if (order.shippingAddress) {
     var addrJson = parseOrderShippingAddress(order.shippingAddress);
     if (addrJson) populateInvAddressFields(addrJson);
@@ -21536,7 +21900,14 @@ function populateInvFromOrder(order) {
   if (order.createdAt) {
     document.getElementById("inv-modal-date").value = order.createdAt.split("T")[0];
   }
-  document.getElementById("inv-modal-tax-type").value = "included";
+  // Set due date to 30 days from order date
+  if (order.createdAt) {
+    var dueDateObj = new Date(order.createdAt);
+    dueDateObj.setDate(dueDateObj.getDate() + 30);
+    document.getElementById("inv-modal-due").value = dueDateObj.toISOString().split("T")[0];
+  }
+  document.getElementById("inv-modal-shipping").value = order.shipping ? String(parseFloat(order.shipping) || 0) : "0";
+  document.getElementById("inv-modal-tax-type").value = order.taxType || "included";
   recalcInvoiceTotals();
 }
 
@@ -21549,8 +21920,8 @@ function populateInvOrderDropdown() {
   sel.appendChild(opt0);
   shopifyOrders.forEach(function(o) {
     var opt = document.createElement("option");
-    opt.value = o.shopifyOrderId;
-    var label = "#" + (o.orderNumber || o.shopifyOrderId);
+    opt.value = o.id || o.shopifyOrderId || "";
+    var label = "#" + (o.orderNumber || o.shopifyOrderId || o.id);
     if (o.customerName) label += " \u2014 " + o.customerName;
     if (o.totalPrice) label += " (\u00A5" + Number(o.totalPrice).toLocaleString() + ")";
     if (o.financialStatus) label += " [" + o.financialStatus + "]";
@@ -21562,7 +21933,7 @@ function populateInvOrderDropdown() {
 function onInvFromOrderChange() {
   var orderId = document.getElementById("inv-from-order").value;
   if (!orderId) return;
-  var order = shopifyOrders.find(function(o) { return o.shopifyOrderId === orderId; });
+  var order = shopifyOrders.find(function(o) { return o.id === orderId || o.shopifyOrderId === orderId; });
   if (!order) return;
   populateInvFromOrder(order);
   if (invSplitActive) updateInvSplitPreview();
@@ -21575,8 +21946,8 @@ function createInvoiceFromOrder() {
   closeOrderDetailModal();
   openInvoiceCreateModal();
   populateInvFromOrder(order);
-  // Select the order in the dropdown
-  document.getElementById("inv-from-order").value = order.shopifyOrderId || "";
+  // Select the order in the dropdown (use id for both manual and Shopify orders)
+  document.getElementById("inv-from-order").value = order.id || order.shopifyOrderId || "";
 }
 
 // ── PDF Generation (LongForme template style) ─────────────────
@@ -22117,8 +22488,8 @@ function populateRecSourceDropdowns() {
   oSel.appendChild(oOpt0);
   shopifyOrders.forEach(function(o) {
     var opt = document.createElement("option");
-    opt.value = o.shopifyOrderId;
-    var label = "#" + (o.orderNumber || o.shopifyOrderId);
+    opt.value = o.id || o.shopifyOrderId || "";
+    var label = "#" + (o.orderNumber || o.shopifyOrderId || o.id);
     if (o.customerName) label += " \u2014 " + o.customerName;
     if (o.totalPrice) label += " (\u00A5" + Number(o.totalPrice).toLocaleString() + ")";
     if (o.financialStatus) label += " [" + o.financialStatus + "]";
@@ -22214,27 +22585,84 @@ function onRecFromContactChange() {
 function onRecFromOrderChange() {
   var orderId = document.getElementById("rec-from-order").value;
   if (!orderId) return;
-  var order = shopifyOrders.find(function(o) { return o.shopifyOrderId === orderId; });
+  var order = shopifyOrders.find(function(o) { return o.id === orderId || o.shopifyOrderId === orderId; });
   if (!order) return;
+  populateRecFromOrder(order);
+}
+
+function populateRecFromOrder(order) {
   // Reset other source dropdowns
-  document.getElementById("rec-from-invoice").value = "";
-  document.getElementById("rec-from-contact").value = "";
+  var recFromInv = document.getElementById("rec-from-invoice");
+  if (recFromInv) recFromInv.value = "";
+  var recFromContact = document.getElementById("rec-from-contact");
+  if (recFromContact) recFromContact.value = "";
   var _rcs = document.getElementById("rec-contact-search"); if (_rcs) _rcs.value = "";
   document.getElementById("rec-linked-invoice-row").style.display = "none";
   document.getElementById("rec-modal-invoice-id").value = "";
   document.getElementById("rec-modal-invoice-number").value = "";
-  // Fill fields from order
-  document.getElementById("rec-modal-order-id").value = order.shopifyOrderId || "";
+
+  // Fill order IDs
+  document.getElementById("rec-modal-order-id").value = order.id || order.shopifyOrderId || "";
   document.getElementById("rec-modal-order-number").value = order.orderNumber || "";
-  document.getElementById("rec-modal-contact-name").value = order.customerName || "";
-  document.getElementById("rec-modal-company").value = "";
-  document.getElementById("rec-modal-email").value = order.email || "";
-  // Parse address
-  if (order.shippingAddress) {
-    var addr = parseOrderShippingAddress(order.shippingAddress);
+
+  // Try CRM contact match by email or customerName
+  var contact = null;
+  if (order.email) {
+    var emailLower = order.email.toLowerCase();
+    contact = (typeof crmContacts !== "undefined" ? crmContacts : []).find(function(c) {
+      return c.email && c.email.toLowerCase() === emailLower;
+    });
+  }
+  if (!contact && order.customerName) {
+    var nameLower = order.customerName.toLowerCase();
+    contact = (typeof crmContacts !== "undefined" ? crmContacts : []).find(function(c) {
+      return (c.company && c.company.toLowerCase() === nameLower) ||
+             (c.name && c.name.toLowerCase() === nameLower);
+    });
+  }
+
+  // Fill contact fields
+  document.getElementById("rec-modal-contact-name").value = (contact ? contact.name : order.customerName) || "";
+  document.getElementById("rec-modal-company").value = (contact && contact.company) ? contact.company : (order.customerName || "");
+  document.getElementById("rec-modal-email").value = (contact ? contact.email : order.email) || "";
+
+  // Fill pricing parties from vendor
+  clearRecPricingParties();
+  if (contact) {
+    if (contact.consignmentPercent) {
+      addRecPricingParty(contact.name || contact.company || "", contact.id || "", "consignment", contact.consignmentPercent);
+    } else if (contact.wholesalePercent) {
+      addRecPricingParty(contact.name || contact.company || "", contact.id || "", "wholesale", contact.wholesalePercent);
+    }
+  }
+
+  // Parse address — prefer CRM contact location, fallback to order shippingAddress
+  clearRecAddressFields();
+  var addrSource = order.shippingAddress || (contact ? contact.location : "");
+  if (addrSource) {
+    var addr = parseOrderShippingAddress(addrSource);
     if (addr) populateRecAddressFields(addr);
   }
-  // Parse line items
+
+  // Link existing invoice if found
+  var linkedInv = invoices.find(function(inv) {
+    return inv.orderId === (order.id || order.shopifyOrderId) || inv.orderNumber === String(order.orderNumber || "");
+  });
+  if (linkedInv) {
+    document.getElementById("rec-modal-invoice-id").value = linkedInv.id || "";
+    document.getElementById("rec-modal-invoice-number").value = linkedInv.invoiceNumber || "";
+    document.getElementById("rec-linked-invoice-row").style.display = "";
+    document.getElementById("rec-linked-invoice-display").textContent = linkedInv.invoiceNumber || "";
+  }
+
+  // Set receipt date
+  document.getElementById("rec-modal-date").value = new Date().toISOString().split("T")[0];
+
+  // Set shipping and tax type from order
+  document.getElementById("rec-modal-shipping").value = order.shipping ? String(parseFloat(order.shipping) || 0) : "0";
+  document.getElementById("rec-modal-tax-type").value = order.taxType || "included";
+
+  // Parse and fill line items
   document.getElementById("rec-line-items-body").textContent = "";
   var items = parseOrderLineItems(order.lineItems, order.totalPrice);
   if (items.length) {
@@ -22928,9 +23356,8 @@ function createReceiptFromOrder() {
   var order = JSON.parse(orderJson);
   closeOrderDetailModal();
   openReceiptCreateModal();
-  // Select the order in the dropdown and trigger populate
-  document.getElementById("rec-from-order").value = order.shopifyOrderId || "";
-  onRecFromOrderChange();
+  // Populate receipt from order directly (handles both manual and Shopify)
+  populateRecFromOrder(order);
 }
 
 // ── CRM Checklist System ──────────────────────────────────────
@@ -24584,13 +25011,15 @@ function saveManualOrder() {
       var lineAmt = qty * price;
       var discount = discType === "%" ? lineAmt * discVal / 100 : discVal;
       var amt = Math.max(0, lineAmt - discount);
-      var itemStr = desc + " x" + qty + " @\u00A5" + price.toLocaleString();
-      if (discVal > 0) itemStr += " -" + (discType === "%" ? discVal + "%" : "\u00A5" + discVal.toLocaleString());
+      // Store effective per-unit price (post-discount) so invoice/receipt totals match
+      var effectiveUnit = qty > 0 ? Math.round(amt / qty) : 0;
+      var itemStr = qty + "x " + desc + (effectiveUnit > 0 ? " @ \u00A5" + effectiveUnit : "");
       lineItems.push(itemStr);
       totalPrice += amt;
     }
   });
   var shipping = parseFloat(document.getElementById("mo-shipping").value) || 0;
+  var taxTypeMO = document.getElementById("mo-tax-type") ? document.getElementById("mo-tax-type").value : "included";
   totalPrice += shipping;
 
   var orderNumber = generateManualOrderNumber();
@@ -24607,6 +25036,8 @@ function saveManualOrder() {
     fulfillmentStatus: document.getElementById("mo-fulfillment-status").value,
     shippingAddress: document.getElementById("mo-address").value.trim(),
     note: document.getElementById("mo-notes").value.trim(),
+    shipping: String(shipping),
+    taxType: taxTypeMO,
     workspace: document.getElementById("mo-workspace").value
   };
 
@@ -24783,22 +25214,22 @@ window._injectDemoVendors = function() {
     ])
   });
   shopifyOrders.push(
-    { id: "do1", orderNumber: "4001", email: "contact@kamakuragoods.jp", customerName: "Kamakura Goods", totalPrice: "171200", currency: "JPY", financialStatus: "paid", createdAt: "2026-03-08T10:00:00Z", lineItems: "8" },
-    { id: "do2", orderNumber: "4002", email: "contact@kamakuragoods.jp", customerName: "Kamakura Goods", totalPrice: "128400", currency: "JPY", financialStatus: "paid", createdAt: "2026-02-12T10:00:00Z", lineItems: "6" },
-    { id: "do3", orderNumber: "4003", email: "contact@kamakuragoods.jp", customerName: "Kamakura Goods", totalPrice: "85600", currency: "JPY", financialStatus: "paid", createdAt: "2026-01-18T10:00:00Z", lineItems: "4" },
-    { id: "do4", orderNumber: "4004", email: "contact@kamakuragoods.jp", customerName: "Kamakura Goods", totalPrice: "214000", currency: "JPY", financialStatus: "paid", createdAt: "2025-12-20T10:00:00Z", lineItems: "10" },
-    { id: "do5", orderNumber: "4005", email: "contact@kamakuragoods.jp", customerName: "Kamakura Goods", totalPrice: "42800", currency: "JPY", financialStatus: "paid", createdAt: "2025-10-01T10:00:00Z", lineItems: "2" },
-    { id: "do6", orderNumber: "4006", email: "contact@kamakuragoods.jp", customerName: "Kamakura Goods", totalPrice: "192600", currency: "JPY", financialStatus: "paid", createdAt: "2025-11-15T10:00:00Z", lineItems: "9" }
+    { id: "do1", orderNumber: "4001", email: "contact@kamakuragoods.jp", customerName: "Kamakura Goods", totalPrice: "171200", currency: "JPY", financialStatus: "paid", createdAt: "2026-03-08T10:00:00Z", lineItems: "8x Byron Bay; 3x Sunlight", source: "manual" },
+    { id: "do2", orderNumber: "4002", email: "contact@kamakuragoods.jp", customerName: "Kamakura Goods", totalPrice: "128400", currency: "JPY", financialStatus: "paid", createdAt: "2026-02-12T10:00:00Z", lineItems: "12x Paradise", source: "manual" },
+    { id: "do3", orderNumber: "4003", email: "contact@kamakuragoods.jp", customerName: "Kamakura Goods", totalPrice: "85600", currency: "JPY", financialStatus: "paid", createdAt: "2026-01-18T10:00:00Z", lineItems: "5x Tsubaki; 2x Moonlight", source: "manual" },
+    { id: "do4", orderNumber: "4004", email: "contact@kamakuragoods.jp", customerName: "Kamakura Goods", totalPrice: "214000", currency: "JPY", financialStatus: "paid", createdAt: "2025-12-20T10:00:00Z", lineItems: "6x Lemon Fields Forever; 9x Golden Bushland", source: "manual" },
+    { id: "do5", orderNumber: "4005", email: "contact@kamakuragoods.jp", customerName: "Kamakura Goods", totalPrice: "42800", currency: "JPY", financialStatus: "paid", createdAt: "2025-10-01T10:00:00Z", lineItems: "2x Byron Bay", source: "manual" },
+    { id: "do6", orderNumber: "4006", email: "contact@kamakuragoods.jp", customerName: "Kamakura Goods", totalPrice: "192600", currency: "JPY", financialStatus: "paid", createdAt: "2025-11-15T10:00:00Z", lineItems: "4x Tasmanian Citrus; 5x Paradise", source: "manual" }
   );
   partnerStock.push(
-    { id: "ds1", contactId: "demo-direct-1", contactName: "Kamakura Goods", productName: "Byron Bay", sku: "SOP-BB", quantity: "8", unitPrice: "42800", pricingType: "consignment", status: "active" },
-    { id: "ds2", contactId: "demo-direct-1", contactName: "Kamakura Goods", productName: "Sunlight", sku: "SOP-SL", quantity: "3", unitPrice: "42800", pricingType: "consignment", status: "active" },
-    { id: "ds3", contactId: "demo-direct-1", contactName: "Kamakura Goods", productName: "Paradise", sku: "SOP-PR", quantity: "12", unitPrice: "42800", pricingType: "consignment", status: "active" },
-    { id: "ds4", contactId: "demo-direct-1", contactName: "Kamakura Goods", productName: "Tsubaki", sku: "SOP-TS", quantity: "5", unitPrice: "42800", pricingType: "consignment", status: "active" },
-    { id: "ds5", contactId: "demo-direct-1", contactName: "Kamakura Goods", productName: "Moonlight", sku: "SOP-ML", quantity: "2", unitPrice: "42800", pricingType: "consignment", status: "active" },
-    { id: "ds6", contactId: "demo-direct-1", contactName: "Kamakura Goods", productName: "Lemon Fields Forever", sku: "CND-LF", quantity: "6", unitPrice: "42800", pricingType: "consignment", status: "active" },
-    { id: "ds7", contactId: "demo-direct-1", contactName: "Kamakura Goods", productName: "Tasmanian Citrus", sku: "CND-TC", quantity: "4", unitPrice: "42800", pricingType: "consignment", status: "active" },
-    { id: "ds8", contactId: "demo-direct-1", contactName: "Kamakura Goods", productName: "Golden Bushland", sku: "CND-GB", quantity: "9", unitPrice: "42800", pricingType: "consignment", status: "active" }
+    { id: "ds1", contactId: "demo-direct-1", contactName: "Kamakura Goods", productName: "Byron Bay", sku: "SOP-BB", quantity: "8", unitPrice: "2140", pricingType: "consignment", status: "active", dateDelivered: "2026-03-08", notes: "From order #4001" },
+    { id: "ds2", contactId: "demo-direct-1", contactName: "Kamakura Goods", productName: "Sunlight", sku: "SOP-SL", quantity: "3", unitPrice: "2140", pricingType: "consignment", status: "active", dateDelivered: "2026-03-08", notes: "From order #4001" },
+    { id: "ds3", contactId: "demo-direct-1", contactName: "Kamakura Goods", productName: "Paradise", sku: "SOP-PR", quantity: "12", unitPrice: "2140", pricingType: "consignment", status: "active", dateDelivered: "2026-02-12", notes: "From order #4002" },
+    { id: "ds4", contactId: "demo-direct-1", contactName: "Kamakura Goods", productName: "Tsubaki", sku: "SOP-TS", quantity: "5", unitPrice: "2140", pricingType: "consignment", status: "active", dateDelivered: "2026-01-18", notes: "From order #4003" },
+    { id: "ds5", contactId: "demo-direct-1", contactName: "Kamakura Goods", productName: "Moonlight", sku: "SOP-ML", quantity: "2", unitPrice: "2140", pricingType: "consignment", status: "active", dateDelivered: "2026-01-18", notes: "From order #4003" },
+    { id: "ds6", contactId: "demo-direct-1", contactName: "Kamakura Goods", productName: "Lemon Fields Forever", sku: "CND-LF", quantity: "6", unitPrice: "4280", pricingType: "consignment", status: "active", dateDelivered: "2025-12-20", notes: "From order #4004" },
+    { id: "ds7", contactId: "demo-direct-1", contactName: "Kamakura Goods", productName: "Tasmanian Citrus", sku: "CND-TC", quantity: "4", unitPrice: "4280", pricingType: "consignment", status: "active", dateDelivered: "2025-11-15", notes: "From order #4006" },
+    { id: "ds8", contactId: "demo-direct-1", contactName: "Kamakura Goods", productName: "Golden Bushland", sku: "CND-GB", quantity: "9", unitPrice: "4280", pricingType: "consignment", status: "active", dateDelivered: "2025-12-20", notes: "From order #4004" }
   );
   [
     { id: "da1", userId: "taka@ivycoast.co", userName: "Taka", action: "received order", itemType: "order", itemId: "demo-direct-1", itemName: "Kamakura Goods", detail: "Order #4001 — \u00A5171,200 (8 items)", timestamp: "2026-03-08T10:00:00Z" },
@@ -24876,16 +25307,16 @@ window._injectDemoVendors = function() {
     ])
   });
   shopifyOrders.push(
-    { id: "no1", orderNumber: "2001", email: "hello@northshorecafe.jp", customerName: "Northshore Cafe", totalPrice: "85000", currency: "JPY", financialStatus: "paid", createdAt: "2026-03-10T10:00:00Z", lineItems: "6" },
-    { id: "no2", orderNumber: "2002", email: "hello@northshorecafe.jp", customerName: "Northshore Cafe", totalPrice: "120000", currency: "JPY", financialStatus: "paid", createdAt: "2026-02-18T10:00:00Z", lineItems: "10" },
-    { id: "no3", orderNumber: "2003", email: "hello@northshorecafe.jp", customerName: "Northshore Cafe", totalPrice: "45000", currency: "JPY", financialStatus: "paid", createdAt: "2026-01-05T10:00:00Z", lineItems: "4" },
-    { id: "no4", orderNumber: "2004", email: "hello@northshorecafe.jp", customerName: "Northshore Cafe", totalPrice: "64200", currency: "JPY", financialStatus: "paid", createdAt: "2025-12-15T10:00:00Z", lineItems: "3" }
+    { id: "no1", orderNumber: "2001", email: "hello@northshorecafe.jp", customerName: "Northshore Cafe", totalPrice: "85000", currency: "JPY", financialStatus: "paid", createdAt: "2026-03-10T10:00:00Z", lineItems: "12x Byron Bay", source: "manual" },
+    { id: "no2", orderNumber: "2002", email: "hello@northshorecafe.jp", customerName: "Northshore Cafe", totalPrice: "120000", currency: "JPY", financialStatus: "paid", createdAt: "2026-02-18T10:00:00Z", lineItems: "2x Sunlight; 10x Paradise", source: "manual" },
+    { id: "no3", orderNumber: "2003", email: "hello@northshorecafe.jp", customerName: "Northshore Cafe", totalPrice: "45000", currency: "JPY", financialStatus: "paid", createdAt: "2026-01-05T10:00:00Z", lineItems: "8x Moonlight", source: "manual" },
+    { id: "no4", orderNumber: "2004", email: "hello@northshorecafe.jp", customerName: "Northshore Cafe", totalPrice: "64200", currency: "JPY", financialStatus: "paid", createdAt: "2025-12-15T10:00:00Z", lineItems: "3x Byron Bay", source: "manual" }
   );
   partnerStock.push(
-    { id: "ns1", contactId: "demo-via-1", contactName: "Northshore Cafe", productName: "Byron Bay", sku: "SOP-BB", quantity: "12", unitPrice: "42800", pricingType: "consignment", status: "active" },
-    { id: "ns2", contactId: "demo-via-1", contactName: "Northshore Cafe", productName: "Sunlight", sku: "SOP-SL", quantity: "2", unitPrice: "42800", pricingType: "consignment", status: "active" },
-    { id: "ns3", contactId: "demo-via-1", contactName: "Northshore Cafe", productName: "Paradise", sku: "SOP-PR", quantity: "10", unitPrice: "42800", pricingType: "consignment", status: "active" },
-    { id: "ns4", contactId: "demo-via-1", contactName: "Northshore Cafe", productName: "Moonlight", sku: "SOP-ML", quantity: "8", unitPrice: "42800", pricingType: "consignment", status: "active" }
+    { id: "ns1", contactId: "demo-via-1", contactName: "Northshore Cafe", productName: "Byron Bay", sku: "SOP-BB", quantity: "12", unitPrice: "2140", pricingType: "consignment", status: "active", dateDelivered: "2026-03-10", notes: "From order #2001" },
+    { id: "ns2", contactId: "demo-via-1", contactName: "Northshore Cafe", productName: "Sunlight", sku: "SOP-SL", quantity: "2", unitPrice: "2140", pricingType: "consignment", status: "active", dateDelivered: "2026-02-18", notes: "From order #2002" },
+    { id: "ns3", contactId: "demo-via-1", contactName: "Northshore Cafe", productName: "Paradise", sku: "SOP-PR", quantity: "10", unitPrice: "2140", pricingType: "consignment", status: "active", dateDelivered: "2026-02-18", notes: "From order #2002" },
+    { id: "ns4", contactId: "demo-via-1", contactName: "Northshore Cafe", productName: "Moonlight", sku: "SOP-ML", quantity: "8", unitPrice: "2140", pricingType: "consignment", status: "active", dateDelivered: "2026-01-05", notes: "From order #2003" }
   );
   [
     { id: "na1", userId: "taka@ivycoast.co", userName: "Taka", action: "received order", itemType: "order", itemId: "demo-via-1", itemName: "Northshore Cafe", detail: "Order #2001 \u2014 \u00A585,000 (6 items)", timestamp: "2026-03-10T10:00:00Z" },
@@ -24923,18 +25354,18 @@ window._injectDemoVendors = function() {
     ])
   });
   shopifyOrders.push(
-    { id: "dso1", orderNumber: "3001", email: "info@daikanyama-select.jp", customerName: "Daikanyama Select", totalPrice: "198000", currency: "JPY", financialStatus: "paid", createdAt: "2026-03-12T10:00:00Z", lineItems: "14" },
-    { id: "dso2", orderNumber: "3002", email: "info@daikanyama-select.jp", customerName: "Daikanyama Select", totalPrice: "76000", currency: "JPY", financialStatus: "paid", createdAt: "2026-02-05T10:00:00Z", lineItems: "5" },
-    { id: "dso3", orderNumber: "3003", email: "info@daikanyama-select.jp", customerName: "Daikanyama Select", totalPrice: "128400", currency: "JPY", financialStatus: "paid", createdAt: "2025-12-22T10:00:00Z", lineItems: "6" },
-    { id: "dso4", orderNumber: "3004", email: "info@daikanyama-select.jp", customerName: "Daikanyama Select", totalPrice: "256000", currency: "JPY", financialStatus: "paid", createdAt: "2026-01-28T10:00:00Z", lineItems: "12" }
+    { id: "dso1", orderNumber: "3001", email: "info@daikanyama-select.jp", customerName: "Daikanyama Select", totalPrice: "198000", currency: "JPY", financialStatus: "paid", createdAt: "2026-03-12T10:00:00Z", lineItems: "8x Tasmanian Citrus; 10x Moonlight", source: "manual" },
+    { id: "dso2", orderNumber: "3002", email: "info@daikanyama-select.jp", customerName: "Daikanyama Select", totalPrice: "76000", currency: "JPY", financialStatus: "paid", createdAt: "2026-02-05T10:00:00Z", lineItems: "3x Lemon Fields Forever; 2x Golden Bushland", source: "manual" },
+    { id: "dso3", orderNumber: "3003", email: "info@daikanyama-select.jp", customerName: "Daikanyama Select", totalPrice: "128400", currency: "JPY", financialStatus: "paid", createdAt: "2025-12-22T10:00:00Z", lineItems: "6x Sunlight", source: "manual" },
+    { id: "dso4", orderNumber: "3004", email: "info@daikanyama-select.jp", customerName: "Daikanyama Select", totalPrice: "256000", currency: "JPY", financialStatus: "paid", createdAt: "2026-01-28T10:00:00Z", lineItems: "5x Byron Bay; 5x Golden Bushland", source: "manual" }
   );
   partnerStock.push(
-    { id: "dss1", contactId: "demo-via-2", contactName: "Daikanyama Select", productName: "Tasmanian Citrus", sku: "CND-TC", quantity: "8", unitPrice: "42800", pricingType: "consignment", status: "active" },
-    { id: "dss2", contactId: "demo-via-2", contactName: "Daikanyama Select", productName: "Moonlight", sku: "SOP-ML", quantity: "10", unitPrice: "42800", pricingType: "consignment", status: "active" },
-    { id: "dss3", contactId: "demo-via-2", contactName: "Daikanyama Select", productName: "Lemon Fields Forever", sku: "CND-LF", quantity: "3", unitPrice: "42800", pricingType: "consignment", status: "active" },
-    { id: "dss4", contactId: "demo-via-2", contactName: "Daikanyama Select", productName: "Golden Bushland", sku: "CND-GB", quantity: "7", unitPrice: "42800", pricingType: "consignment", status: "active" },
-    { id: "dss5", contactId: "demo-via-2", contactName: "Daikanyama Select", productName: "Byron Bay", sku: "SOP-BB", quantity: "5", unitPrice: "42800", pricingType: "consignment", status: "active" },
-    { id: "dss6", contactId: "demo-via-2", contactName: "Daikanyama Select", productName: "Sunlight", sku: "SOP-SL", quantity: "6", unitPrice: "42800", pricingType: "consignment", status: "active" }
+    { id: "dss1", contactId: "demo-via-2", contactName: "Daikanyama Select", productName: "Tasmanian Citrus", sku: "CND-TC", quantity: "8", unitPrice: "4280", pricingType: "consignment", status: "active", dateDelivered: "2026-03-12", notes: "From order #3001" },
+    { id: "dss2", contactId: "demo-via-2", contactName: "Daikanyama Select", productName: "Moonlight", sku: "SOP-ML", quantity: "10", unitPrice: "2140", pricingType: "consignment", status: "active", dateDelivered: "2026-03-12", notes: "From order #3001" },
+    { id: "dss3", contactId: "demo-via-2", contactName: "Daikanyama Select", productName: "Lemon Fields Forever", sku: "CND-LF", quantity: "3", unitPrice: "4280", pricingType: "consignment", status: "active", dateDelivered: "2026-02-05", notes: "From order #3002" },
+    { id: "dss4", contactId: "demo-via-2", contactName: "Daikanyama Select", productName: "Golden Bushland", sku: "CND-GB", quantity: "7", unitPrice: "4280", pricingType: "consignment", status: "active", dateDelivered: "2026-01-28", notes: "From order #3004" },
+    { id: "dss5", contactId: "demo-via-2", contactName: "Daikanyama Select", productName: "Byron Bay", sku: "SOP-BB", quantity: "5", unitPrice: "2140", pricingType: "consignment", status: "active", dateDelivered: "2026-01-28", notes: "From order #3004" },
+    { id: "dss6", contactId: "demo-via-2", contactName: "Daikanyama Select", productName: "Sunlight", sku: "SOP-SL", quantity: "6", unitPrice: "2140", pricingType: "consignment", status: "active", dateDelivered: "2025-12-22", notes: "From order #3003" }
   );
   [
     { id: "dsa1", userId: "taka@ivycoast.co", userName: "Taka", action: "received order", itemType: "order", itemId: "demo-via-2", itemName: "Daikanyama Select", detail: "Order #3001 \u2014 \u00A5198,000 (14 items)", timestamp: "2026-03-12T10:00:00Z" },
