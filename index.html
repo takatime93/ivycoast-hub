@@ -17310,6 +17310,17 @@ function createInvoiceFromManualOrder(order, vendor, items, taxType, tax, total,
   var pricingType = overridePricingType || "";
   var pricingPercent = overridePricingPct || "";
 
+  // Build proper pricingParties array from vendor's CRM pricing
+  var pricingPartiesArr = [];
+  if (pricingType && pricingPercent) {
+    pricingPartiesArr.push({
+      name: vendor.name || vendor.company || "",
+      contactId: vendor.id || "",
+      type: pricingType,
+      percent: Number(pricingPercent)
+    });
+  }
+
   var invoiceNumber = generateInvoiceNumber();
   var invoice = {
     invoiceNumber: invoiceNumber,
@@ -17329,8 +17340,8 @@ function createInvoiceFromManualOrder(order, vendor, items, taxType, tax, total,
     tax: String(tax || 0),
     total: String(total || subtotal),
     pricingType: pricingType,
-    pricingPercent: pricingPercent,
-    pricingParties: "",
+    pricingPercent: String(pricingPercent),
+    pricingParties: JSON.stringify(pricingPartiesArr),
     status: order.financialStatus === "paid" ? "paid" : "draft",
     workspace: "IVYCOAST",
     notes: "",
@@ -20933,10 +20944,24 @@ function openInvoiceEditModal(invId) {
   document.getElementById("inv-modal-delete-btn").style.display = "inline-block";
   // Load pricing parties
   clearInvPricingParties();
+  var _invParsedParties = [];
   if (inv.pricingParties) {
-    try { JSON.parse(inv.pricingParties).forEach(function(p) { addInvPricingParty(p.name, p.contactId, p.type, p.percent); }); } catch(e) {}
+    try { _invParsedParties = JSON.parse(inv.pricingParties); } catch(e) {}
+  }
+  if (_invParsedParties.length) {
+    _invParsedParties.forEach(function(p) { addInvPricingParty(p.name, p.contactId, p.type, p.percent); });
   } else if (inv.pricingType && inv.pricingPercent) {
     addInvPricingParty(inv.contactName || "", inv.contactId || "", inv.pricingType, inv.pricingPercent);
+  } else if (inv.contactId) {
+    // No pricing saved — auto-apply from CRM contact if they have a rate set
+    var _invCrmC = (typeof crmContacts !== "undefined" ? crmContacts : []).find(function(x) { return x.id === inv.contactId; });
+    if (_invCrmC) {
+      if (_invCrmC.wholesalePercent) {
+        addInvPricingParty(_invCrmC.name || _invCrmC.company || "", _invCrmC.id, "wholesale", _invCrmC.wholesalePercent);
+      } else if (_invCrmC.consignmentPercent) {
+        addInvPricingParty(_invCrmC.name || _invCrmC.company || "", _invCrmC.id, "consignment", _invCrmC.consignmentPercent);
+      }
+    }
   }
   initInvContactSearch();
   // If invoice has no contactId but has a contactName, it was a new contact entry
