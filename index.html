@@ -4497,6 +4497,13 @@ select.contact-edit-input { appearance: auto; cursor: pointer; }
 .crm-order-date { color: var(--color-text-secondary); font-size: var(--text-tab); min-width: 90px; }
 .crm-order-total { font-weight: 500; color: var(--color-text-heading); min-width: 80px; text-align: right; }
 .crm-order-items-preview { color: var(--color-text-secondary); font-size: var(--text-tab); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.crm-order-actions { display: none; gap: 6px; margin-left: auto; flex-shrink: 0; }
+.crm-order-item:hover .crm-order-actions { display: flex; }
+.crm-order-item:hover .crm-order-total { display: none; }
+.crm-order-action-btn { font-size: 11px; padding: 3px 8px; border: 1px solid var(--color-border); border-radius: 4px; background: var(--color-surface); color: var(--color-text-secondary); cursor: pointer; }
+.crm-order-action-btn:hover { background: var(--color-surface-tertiary); color: var(--color-text); }
+.crm-order-action-delete { color: var(--color-error-text) !important; border-color: var(--color-error-text) !important; }
+.crm-order-action-delete:hover { background: var(--color-error-bg) !important; }
 .crm-order-toolbar {
   display: flex;
   align-items: center;
@@ -6398,6 +6405,8 @@ select.contact-edit-input { appearance: auto; cursor: pointer; }
     <div class="board-modal-actions" style="margin-top:20px">
       <button id="order-create-invoice-btn" onclick="createInvoiceFromOrder()" style="color:#0e413b;border-color:#0e413b;display:none">Create Invoice</button>
       <button id="order-create-receipt-btn" onclick="createReceiptFromOrder()" style="color:#0e413b;border-color:#0e413b;display:none">Create Receipt</button>
+      <button id="order-archive-btn" onclick="archiveOrderFromModal()" style="display:none">Archive</button>
+      <button id="order-delete-btn" class="btn-delete" onclick="deleteOrderFromModal()" style="display:none">Delete</button>
       <button onclick="closeOrderDetailModal()">Close</button>
     </div>
   </div>
@@ -16391,6 +16400,8 @@ function renderCrmOrdersTab(c, panel, contactId) {
   var emailLower = (c.email || "").toLowerCase();
   var nameLower = (c.name || "").toLowerCase();
   var matched = shopifyOrders.filter(function(o) {
+    var oid = o.id || o.shopifyOrderId || "";
+    if (_archivedOrderIds.has(oid)) return false;
     if (emailLower && (o.email || "").toLowerCase() === emailLower) return true;
     if (nameLower && (o.customerName || "").toLowerCase() === nameLower) return true;
     return false;
@@ -16464,6 +16475,41 @@ function renderCrmOrdersTab(c, panel, contactId) {
     total.className = "crm-order-total";
     total.textContent = "\u00A5" + Number(order.totalPrice || 0).toLocaleString();
     row.appendChild(total);
+
+    // Actions menu
+    var actions = document.createElement("span");
+    actions.className = "crm-order-actions";
+    actions.onclick = function(e) { e.stopPropagation(); };
+    var archiveLi = document.createElement("button");
+    archiveLi.className = "crm-order-action-btn";
+    archiveLi.textContent = "Archive";
+    archiveLi.onclick = function(e) {
+      e.stopPropagation();
+      var oid = order.id || order.shopifyOrderId || "";
+      _archivedOrderIds.add(oid);
+      localStorage.setItem("ivh_archived_orders", JSON.stringify(Array.from(_archivedOrderIds)));
+      row.remove();
+    };
+    actions.appendChild(archiveLi);
+    var isManualOrder = order.source === "manual" || String(order.orderNumber || "").indexOf("MO-") === 0 || String(order.orderNumber || "").indexOf("M-") === 0;
+    if (isManualOrder) {
+      var deleteLi = document.createElement("button");
+      deleteLi.className = "crm-order-action-btn crm-order-action-delete";
+      deleteLi.textContent = "Delete";
+      deleteLi.onclick = function(e) {
+        e.stopPropagation();
+        if (!confirm("Permanently delete order #" + (order.orderNumber || "") + "? This cannot be undone.")) return;
+        var oid = order.id || order.shopifyOrderId || "";
+        shopifyOrders = shopifyOrders.filter(function(o) { return (o.id || o.shopifyOrderId) !== oid; });
+        _archivedOrderIds.delete(oid);
+        localStorage.setItem("ivh_archived_orders", JSON.stringify(Array.from(_archivedOrderIds)));
+        saveDataCache();
+        row.remove();
+        if (SCRIPT_URL) ordersApiPost({ action: "delete", id: oid }).catch(function() {});
+      };
+      actions.appendChild(deleteLi);
+    }
+    row.appendChild(actions);
 
     panel.appendChild(row);
   });
@@ -23798,6 +23844,7 @@ function openCustomerDrawer(email) {
       item.className = "customer-order-item";
       item.addEventListener("click", function(e) {
         if (e.target.classList.contains("customer-order-doc-chip")) return;
+        _returnToDrawerEmail = email;
         closeCustomerDrawer();
         openOrderDetailModal(o);
       });
@@ -24365,6 +24412,8 @@ function stopProductsRefresh() {
 
 var shopifyOrders = [];
 var ordersSubFilter = localStorage.getItem("ivyhub_vs_ordersSubFilter") || "all";
+var _returnToDrawerEmail = "";
+var _archivedOrderIds = new Set(JSON.parse(localStorage.getItem("ivh_archived_orders") || "[]"));
 var ordersRefreshTimer = null;
 
 function ordersApiPost(body) {
@@ -24473,6 +24522,8 @@ function renderOrders() {
   tbody.textContent = "";
 
   var filtered = shopifyOrders.filter(function(o) {
+    var oid = o.id || o.shopifyOrderId || "";
+    if (_archivedOrderIds.has(oid)) return false;
     if (paymentFilter && o.financialStatus !== paymentFilter) return false;
     if (fulfillmentFilter && o.fulfillmentStatus !== fulfillmentFilter) return false;
     if (query) {
@@ -24787,6 +24838,16 @@ function openOrderDetailModal(order) {
     docsDiv.style.display = "none";
   }
 
+  // Archive / Delete buttons
+  var orderId = order.id || order.shopifyOrderId || "";
+  var isManual = order.source === "manual" || String(order.orderNumber || "").indexOf("MO-") === 0 || String(order.orderNumber || "").indexOf("M-") === 0;
+  var isArchived = _archivedOrderIds.has(orderId);
+  var archiveBtn = document.getElementById("order-archive-btn");
+  archiveBtn.style.display = "";
+  archiveBtn.textContent = isArchived ? "Unarchive" : "Archive";
+  var deleteBtn = document.getElementById("order-delete-btn");
+  deleteBtn.style.display = isManual ? "" : "none";
+
   var orderOverlay = document.getElementById("order-detail-overlay");
   // Boost z-index when CRM panel is open so order detail appears on top
   if (document.getElementById("crm-modal-overlay") && document.getElementById("crm-modal-overlay").classList.contains("open")) {
@@ -24800,6 +24861,45 @@ function openOrderDetailModal(order) {
 function closeOrderDetailModal() {
   _clearViewState("ordersOpenOrder");
   document.getElementById("order-detail-overlay").classList.remove("open");
+  if (_returnToDrawerEmail) {
+    var _email = _returnToDrawerEmail;
+    _returnToDrawerEmail = "";
+    openCustomerDrawer(_email);
+  }
+}
+
+function archiveOrderFromModal() {
+  var orderJson = document.getElementById("order-detail-overlay").dataset.orderJson;
+  if (!orderJson) return;
+  var order = JSON.parse(orderJson);
+  var orderId = order.id || order.shopifyOrderId || "";
+  if (!orderId) return;
+  if (_archivedOrderIds.has(orderId)) {
+    _archivedOrderIds.delete(orderId);
+  } else {
+    _archivedOrderIds.add(orderId);
+  }
+  localStorage.setItem("ivh_archived_orders", JSON.stringify(Array.from(_archivedOrderIds)));
+  closeOrderDetailModal();
+  renderOrders();
+}
+
+function deleteOrderFromModal() {
+  var orderJson = document.getElementById("order-detail-overlay").dataset.orderJson;
+  if (!orderJson) return;
+  var order = JSON.parse(orderJson);
+  var label = "#" + (order.orderNumber || order.shopifyOrderId || "this order");
+  if (!confirm("Permanently delete " + label + "? This cannot be undone.")) return;
+  var orderId = order.id || order.shopifyOrderId || "";
+  shopifyOrders = shopifyOrders.filter(function(o) { return (o.id || o.shopifyOrderId) !== orderId; });
+  _archivedOrderIds.delete(orderId);
+  localStorage.setItem("ivh_archived_orders", JSON.stringify(Array.from(_archivedOrderIds)));
+  saveDataCache();
+  closeOrderDetailModal();
+  renderOrders();
+  if (SCRIPT_URL) {
+    ordersApiPost({ action: "delete", id: orderId }).catch(function() {});
+  }
 }
 
 // ── Manual Order Creation ────────────────────────────────────
