@@ -21389,11 +21389,11 @@ function saveInvoice() {
     renderDocuments();
     invApiPost({ action: "update", invoice: invoice })
       .then(function(data) {
-        if (data && data.error) { setInvSyncStatus("Save failed"); alert("Save failed: " + data.error); return; }
-        setInvSyncStatus("Saved"); fetchInvoices(true);
+        if (data && data.error) { setInvSyncStatus("Save failed"); showFormulatorToast("Save failed: " + data.error, 5000); return; }
+        setInvSyncStatus("Saved"); showFormulatorToast("Invoice saved"); fetchInvoices(true);
         if (invoice.status === "paid") autoCreateReceiptFromInvoice(invoice);
       })
-      .catch(function(err) { setInvSyncStatus("Save failed"); alert("Save failed — check your connection and try again."); });
+      .catch(function(err) { setInvSyncStatus("Save failed"); showFormulatorToast("Save failed — check your connection and try again.", 5000); });
   } else {
     var tempId = "temp-" + Date.now();
     invoice.id = tempId;
@@ -21401,14 +21401,14 @@ function saveInvoice() {
     renderDocuments();
     invApiPost({ action: "create", invoice: invoice })
       .then(function(data) {
-        setInvSyncStatus("Invoice created");
+        setInvSyncStatus("Invoice created"); showFormulatorToast("Invoice created");
         if (data.invoice) {
           invoices = invoices.map(function(inv) { return inv.id === tempId ? data.invoice : inv; });
           renderDocuments();
           if (data.invoice.status === "paid") autoCreateReceiptFromInvoice(data.invoice);
         }
       })
-      .catch(function() { setInvSyncStatus("Create failed"); alert("Create failed — check your connection and try again."); fetchInvoices(true); });
+      .catch(function() { setInvSyncStatus("Create failed"); showFormulatorToast("Create failed — check your connection and try again.", 5000); fetchInvoices(true); });
   }
 }
 
