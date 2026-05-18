@@ -6888,6 +6888,7 @@ select.contact-edit-input { appearance: auto; cursor: pointer; }
       <button class="btn-delete" id="inv-modal-delete-btn" style="display:none" onclick="deleteInvoiceConfirm()">Delete</button>
       <button type="button" id="inv-preview-toggle-btn" onclick="toggleInvSplitPreview()" style="color:#0e413b;border-color:#0e413b">Preview</button>
       <button onclick="closeInvoiceModal()">Cancel</button>
+      <button type="button" onclick="exportInvoicePdf()" style="color:#0e413b;border-color:#0e413b">Export PDF</button>
       <button class="btn-save" onclick="saveInvoice()">Save</button>
     </div>
    </div>
@@ -20929,8 +20930,8 @@ function openInvoiceCreateModal() {
   document.getElementById("inv-modal-status").value = "draft";
   document.getElementById("inv-modal-notes").value = "";
   document.getElementById("inv-modal-workspace").value = "IVYCOAST";
-  document.getElementById("inv-modal-pay-bank").value = "Boldoath 株式会社\n三井住友銀行　名古屋\n普通　(481) 8089351";
-  document.getElementById("inv-modal-pay-note").value = "";
+  document.getElementById("inv-modal-pay-bank").value = "三井住友銀行\n名古屋支店（481）\n口座番号：8089351\n口座名義：BOLDOATH株式会社\nボールドオース（ｶ";
+  document.getElementById("inv-modal-pay-note").value = "銀行振込　（お支払い手数料はお客様のご負担でお願いします。）";
   document.getElementById("inv-modal-margin-note").value = "";
   document.getElementById("inv-modal-delete-btn").style.display = "none";
   document.getElementById("inv-line-items-body").textContent = "";
@@ -20975,8 +20976,8 @@ function openInvoiceEditModal(invId) {
   document.getElementById("inv-modal-status").value = inv.status || "draft";
   document.getElementById("inv-modal-notes").value = "";
   document.getElementById("inv-modal-workspace").value = inv.workspace || "IVYCOAST";
-  document.getElementById("inv-modal-pay-bank").value = inv.paymentBank || "Boldoath 株式会社\n三井住友銀行　名古屋\n普通　(481) 8089351";
-  document.getElementById("inv-modal-pay-note").value = inv.paymentNote || "";
+  document.getElementById("inv-modal-pay-bank").value = inv.paymentBank || "三井住友銀行\n名古屋支店（481）\n口座番号：8089351\n口座名義：BOLDOATH株式会社\nボールドオース（ｶ";
+  document.getElementById("inv-modal-pay-note").value = inv.paymentNote !== undefined ? inv.paymentNote : "銀行振込　（お支払い手数料はお客様のご負担でお願いします。）";
   document.getElementById("inv-modal-margin-note").value = inv.marginNote || "";
   document.getElementById("inv-modal-delete-btn").style.display = "inline-block";
   // Load pricing parties
@@ -21347,7 +21348,10 @@ function saveInvoice() {
     workspace: document.getElementById("inv-modal-workspace").value,
     notes: document.getElementById("inv-modal-notes").value.trim(),
     orderId: document.getElementById("inv-modal-order-id").value,
-    orderNumber: document.getElementById("inv-modal-order-number").value
+    orderNumber: document.getElementById("inv-modal-order-number").value,
+    paymentBank: document.getElementById("inv-modal-pay-bank").value.trim(),
+    paymentNote: document.getElementById("inv-modal-pay-note").value.trim(),
+    marginNote: document.getElementById("inv-modal-margin-note").value.trim()
   };
 
   if (!invoice.invoiceNumber) { alert("Invoice number is required."); return; }
@@ -21384,11 +21388,12 @@ function saveInvoice() {
     invoices = invoices.map(function(inv) { return inv.id === id ? Object.assign({}, inv, invoice) : inv; });
     renderDocuments();
     invApiPost({ action: "update", invoice: invoice })
-      .then(function() {
+      .then(function(data) {
+        if (data && data.error) { setInvSyncStatus("Save failed"); alert("Save failed: " + data.error); return; }
         setInvSyncStatus("Saved"); fetchInvoices(true);
         if (invoice.status === "paid") autoCreateReceiptFromInvoice(invoice);
       })
-      .catch(function() { setInvSyncStatus("Save failed"); });
+      .catch(function(err) { setInvSyncStatus("Save failed"); alert("Save failed — check your connection and try again."); });
   } else {
     var tempId = "temp-" + Date.now();
     invoice.id = tempId;
@@ -21403,8 +21408,43 @@ function saveInvoice() {
           if (data.invoice.status === "paid") autoCreateReceiptFromInvoice(data.invoice);
         }
       })
-      .catch(function() { setInvSyncStatus("Create failed"); fetchInvoices(true); });
+      .catch(function() { setInvSyncStatus("Create failed"); alert("Create failed — check your connection and try again."); fetchInvoices(true); });
   }
+}
+
+function exportInvoicePdf() {
+  var items = getInvoiceLineItems();
+  var hasPartyPricing = items.length > 0 && items[0].partyUnitPrice !== items[0].unitPrice;
+  var subtotal = items.reduce(function(s, it) { return s + (hasPartyPricing ? it.partyAmount : it.amount); }, 0);
+  var discount = parseFloat(document.getElementById("inv-modal-discount").value) || 0;
+  var shipping = parseFloat(document.getElementById("inv-modal-shipping").value) || 0;
+  var taxType = document.getElementById("inv-modal-tax-type").value;
+  var afterDiscount = subtotal - discount;
+  var tax = taxType === "10" ? Math.round(afterDiscount * 0.1) : 0;
+  var total = afterDiscount + tax + shipping;
+  var invData = {
+    invoiceNumber: document.getElementById("inv-modal-number").value.trim(),
+    invoiceDate: document.getElementById("inv-modal-date").value,
+    contactCompany: document.getElementById("inv-modal-company").value.trim(),
+    contactAddress: getInvAddressJSON(),
+    contactEmail: document.getElementById("inv-modal-email").value.trim(),
+    poReference: document.getElementById("inv-modal-po").value.trim(),
+    items: JSON.stringify(items),
+    subtotal: String(subtotal),
+    discount: String(discount),
+    shipping: String(shipping),
+    taxType: taxType,
+    tax: String(tax),
+    total: String(total),
+    notes: document.getElementById("inv-modal-notes").value.trim(),
+    workspace: document.getElementById("inv-modal-workspace").value,
+    paymentBank: document.getElementById("inv-modal-pay-bank").value.trim(),
+    paymentNote: document.getElementById("inv-modal-pay-note").value.trim(),
+    marginNote: document.getElementById("inv-modal-margin-note").value.trim(),
+    pricingParties: JSON.stringify(getInvPricingParties())
+  };
+  saveInvoice();
+  downloadInvoicePdf(invData);
 }
 
 function deleteInvoiceConfirm() {
@@ -21486,7 +21526,7 @@ function buildInvoicePreviewTo(page, data) {
     left.appendChild(poDiv);
   }
   // Payment Direction \u2014 uses editor fields (with fallback to defaults)
-  var _defaultBank = "Boldoath \u682A\u5F0F\u4F1A\u793E\n\u4E09\u4E95\u4F4F\u53CB\u9280\u884C\u3000\u540D\u53E4\u5C4B\n\u666E\u901A\u3000(481) 8089351";
+  var _defaultBank = "\u4E09\u4E95\u4F4F\u53CB\u9280\u884C\n\u540D\u53E4\u5C4B\u652F\u5E97\uFF08481\uFF09\n\u53E3\u5EA7\u756A\u53F7\uFF1A8089351\n\u53E3\u5EA7\u540D\u7FA9\uFF1ABOLDOATH\u682A\u5F0F\u4F1A\u793E\n\u30DC\u30FC\u30EB\u30C9\u30AA\u30FC\u30B9\uFF08\uFF76";
   var paySection = document.createElement("div");
   paySection.className = "inv-prev-payment";
   var payH4 = document.createElement("h4");
@@ -22245,19 +22285,19 @@ function downloadInvoicePdf(invData) {
   doc.setFont("helvetica", "normal");
   doc.setFontSize(9);
   doc.setTextColor.apply(doc, textMuted);
-  var bankLines = [
-    "Boldoath \u682A\u5F0F\u4F1A\u793E",
-    "\u4E09\u4E95\u4F4F\u53CB\u9280\u884C\u3000\u540D\u53E4\u5C4B",
-    "\u666E\u901A\u3000(481) 8089351",
-    "",
-    "Please make a direct deposit",
-    "to the listed Mitsui Sumitomo",
-    "account on the left."
-  ];
-  bankLines.forEach(function(line) {
+  var bankText = inv.paymentBank || "\u4E09\u4E95\u4F4F\u53CB\u9280\u884C\n\u540D\u53E4\u5C4B\u652F\u5E97\uFF08481\uFF09\n\u53E3\u5EA7\u756A\u53F7\uFF1A8089351\n\u53E3\u5EA7\u540D\u7FA9\uFF1ABOLDOATH\u682A\u5F0F\u4F1A\u793E\n\u30DC\u30FC\u30EB\u30C9\u30AA\u30FC\u30B9\uFF08\uFF76";
+  bankText.split("\n").forEach(function(line) {
     doc.text(line, marginL, payY);
     payY += 4.5;
   });
+  if (inv.paymentNote) {
+    payY += 3;
+    doc.setFontSize(8);
+    inv.paymentNote.split("\n").forEach(function(line) {
+      doc.text(line, marginL, payY);
+      payY += 4;
+    });
+  }
 
   // Totals (right side, below table)
   var totalsY = (doc.autoTable.previous ? doc.autoTable.previous.finalY : 120) + 15;
