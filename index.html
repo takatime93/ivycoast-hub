@@ -7274,6 +7274,19 @@ function formatDate(d) {
   return months[parseInt(parts[1], 10) - 1] + " " + parseInt(parts[2], 10) + ", " + parts[0];
 }
 
+// Normalize any date value to YYYY-MM-DD for <input type="date">
+// Handles ISO strings ("2026-05-18T00:00:00.000Z"), plain strings, and Date objects
+function toDateInput(val) {
+  if (!val) return "";
+  if (val instanceof Date) return val.toISOString().slice(0, 10);
+  var s = String(val);
+  // Already YYYY-MM-DD
+  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+  // ISO with time component
+  if (s.length > 10 && s[10] === "T") return s.slice(0, 10);
+  return s;
+}
+
 // ── Home tab rendering ─────────────────────────────────────────
 function getDocPreviewUrl(name) {
   var url = links[name];
@@ -20964,8 +20977,8 @@ function openInvoiceEditModal(invId) {
   document.getElementById("inv-modal-order-id").value = inv.orderId || "";
   document.getElementById("inv-modal-order-number").value = inv.orderNumber || "";
   document.getElementById("inv-modal-number").value = inv.invoiceNumber || "";
-  document.getElementById("inv-modal-date").value = inv.invoiceDate || "";
-  document.getElementById("inv-modal-due").value = inv.dueDate || "";
+  document.getElementById("inv-modal-date").value = toDateInput(inv.invoiceDate);
+  document.getElementById("inv-modal-due").value = toDateInput(inv.dueDate);
   document.getElementById("inv-modal-company").value = inv.contactCompany || "";
   document.getElementById("inv-modal-email").value = inv.contactEmail || "";
   populateInvAddressFields(inv.contactAddress);
@@ -22920,7 +22933,7 @@ function openReceiptEditModal(recId) {
   document.getElementById("rec-modal-email").value = rec.contactEmail || "";
   populateRecAddressFields(rec.contactAddress);
   document.getElementById("rec-modal-number").value = rec.receiptNumber || "";
-  document.getElementById("rec-modal-date").value = rec.receiptDate || "";
+  document.getElementById("rec-modal-date").value = toDateInput(rec.receiptDate);
   document.getElementById("rec-modal-discount").value = rec.discount || "0";
   document.getElementById("rec-modal-shipping").value = rec.shipping || "0";
   document.getElementById("rec-modal-tax-type").value = rec.taxType || "included";
