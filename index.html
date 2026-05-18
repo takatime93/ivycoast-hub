@@ -20974,7 +20974,7 @@ function openInvoiceEditModal(invId) {
   document.getElementById("inv-modal-shipping").value = inv.shipping || "0";
   document.getElementById("inv-modal-tax-type").value = inv.taxType || "included";
   document.getElementById("inv-modal-status").value = inv.status || "draft";
-  document.getElementById("inv-modal-notes").value = "";
+  document.getElementById("inv-modal-notes").value = inv.notes || "";
   document.getElementById("inv-modal-workspace").value = inv.workspace || "IVYCOAST";
   document.getElementById("inv-modal-pay-bank").value = inv.paymentBank || "三井住友銀行\n名古屋支店（481）\n口座番号：8089351\n口座名義：BOLDOATH株式会社\nボールドオース（ｶ";
   document.getElementById("inv-modal-pay-note").value = inv.paymentNote !== undefined ? inv.paymentNote : "銀行振込　（お支払い手数料はお客様のご負担でお願いします。）";
@@ -21401,6 +21401,7 @@ function saveInvoice() {
     renderDocuments();
     invApiPost({ action: "create", invoice: invoice })
       .then(function(data) {
+        if (data && data.error) { setInvSyncStatus("Create failed"); showFormulatorToast("Create failed: " + data.error, 5000); fetchInvoices(true); return; }
         setInvSyncStatus("Invoice created"); showFormulatorToast("Invoice created");
         if (data.invoice) {
           invoices = invoices.map(function(inv) { return inv.id === tempId ? data.invoice : inv; });
@@ -21766,7 +21767,10 @@ function previewInvoiceFromData(inv) {
       if (inv.pricingParties) { try { return JSON.parse(inv.pricingParties); } catch(e) {} }
       if (inv.pricingType && inv.pricingPercent) return [{ name: inv.contactName || "", contactId: inv.contactId || "", type: inv.pricingType, percent: inv.pricingPercent }];
       return [];
-    })()
+    })(),
+    paymentBank: inv.paymentBank || "",
+    paymentNote: inv.paymentNote || "",
+    marginNote: inv.marginNote || ""
   });
 }
 
@@ -22135,6 +22139,7 @@ function createInvoiceFromOrder() {
 
 // ── PDF Generation (LongForme template style) ─────────────────
 function downloadInvoicePdf(invData) {
+  // marginNote intentionally excluded — internal pricing info, not shown to customers
   var inv = invData;
   if (!inv) {
     // Build from modal fields
@@ -22997,8 +23002,8 @@ function saveReceipt() {
     receipts = receipts.map(function(r) { return r.id === id ? Object.assign({}, r, receipt) : r; });
     renderDocuments();
     recApiPost({ action: "update", receipt: receipt })
-      .then(function() { setRecSyncStatus("Saved"); fetchReceipts(true); })
-      .catch(function() { setRecSyncStatus("Save failed"); });
+      .then(function() { setRecSyncStatus("Saved"); showFormulatorToast("Receipt saved"); fetchReceipts(true); })
+      .catch(function() { setRecSyncStatus("Save failed"); showFormulatorToast("Save failed — check your connection and try again.", 5000); });
   } else {
     var tempId = "temp-" + Date.now();
     receipt.id = tempId;
@@ -23006,13 +23011,13 @@ function saveReceipt() {
     renderDocuments();
     recApiPost({ action: "create", receipt: receipt })
       .then(function(data) {
-        setRecSyncStatus("Receipt created");
+        setRecSyncStatus("Receipt created"); showFormulatorToast("Receipt created");
         if (data.receipt) {
           receipts = receipts.map(function(r) { return r.id === tempId ? data.receipt : r; });
           renderDocuments();
         }
       })
-      .catch(function() { setRecSyncStatus("Create failed"); fetchReceipts(true); });
+      .catch(function() { setRecSyncStatus("Create failed"); showFormulatorToast("Create failed — check your connection and try again.", 5000); fetchReceipts(true); });
   }
 }
 
