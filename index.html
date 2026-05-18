@@ -2055,7 +2055,9 @@ body.crm-panel-open { overflow: hidden; }
   gap: 6px;
   align-items: center;
   margin-bottom: 6px;
+  flex-wrap: nowrap;
 }
+.inv-party-summary-text { flex-shrink: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 .inv-pricing-party-row select {
   flex: 1;
   min-width: 0;
@@ -2379,30 +2381,35 @@ body.crm-panel-open { overflow: hidden; }
   align-items: flex-start;
   padding-bottom: 120px;
 }
-.inv-prev-invnum { font-size: var(--text-lg); font-weight: 600; color: var(--color-text-heading); text-align: right; font-style: italic; }
-.inv-prev-date { font-size: var(--text-tab); color: var(--color-text-secondary); text-align: right; margin-top: 3px; }
+.inv-prev-invnum { font-size: 10px; font-weight: 600; color: var(--color-text-heading); text-align: right; font-style: italic; }
+.inv-prev-date { font-size: 6px; color: var(--color-text-secondary); text-align: right; margin-top: 2px; }
 /* Body: 2-column layout — fixed proportions matching LongForme */
 .inv-prev-body {
   display: grid;
-  grid-template-columns: 38% 1fr;
+  grid-template-columns: 32% 1fr;
   gap: 0 24px;
 }
 /* Left column: bill-to + payment */
 .inv-prev-left {}
-.inv-prev-company { font-size: 17px; font-weight: 700; margin-bottom: 2px; }
-.inv-prev-event { font-size: var(--text-tab); color: var(--color-text-secondary); margin-bottom: 8px; }
-.inv-prev-addr { font-size: var(--text-tab); color: var(--color-text-secondary); line-height: 1.7; white-space: pre-line; margin-bottom: 12px; }
-.inv-prev-poref { font-size: var(--text-tab); color: var(--color-text-secondary); margin-bottom: 0; }
-.inv-prev-payment { margin-top: 64px; }
+.inv-prev-left.hidden { display: none; }
+.inv-prev-company { font-size: 11px; font-weight: 700; margin-bottom: 2px; }
+.inv-prev-event { font-size: 10px; color: var(--color-text-secondary); margin-bottom: 6px; }
+.inv-prev-addr { font-size: 10px; color: var(--color-text-secondary); line-height: 1.7; white-space: pre-line; margin-bottom: 10px; }
+.inv-prev-poref { font-size: 10px; color: var(--color-text-secondary); margin-bottom: 0; }
+.inv-prev-payment { margin-top: 48px; }
 .inv-prev-payment h4 { font-size: var(--text-tab); font-weight: 700; text-decoration: underline; margin: 0 0 10px 0; color: var(--color-text-heading); }
 .inv-prev-payment .inv-prev-bank { font-size: var(--text-sm); color: var(--color-text-heading); line-height: 1.8; margin: 0 0 12px 0; white-space: pre-line; }
 .inv-prev-payment .inv-prev-bank-note { font-size: var(--text-sm); color: var(--color-text-secondary); line-height: 1.6; margin: 0; }
 /* Cost breakdown (consignment/wholesale) */
-.inv-prev-costbreak { margin-top: 32px; }
-.inv-prev-costbreak h4 { font-size: var(--text-md); font-weight: 700; color: var(--color-primary); margin: 0 0 10px 0; }
-.inv-prev-costbreak .inv-prev-costbreak-desc { font-size: var(--text-sm); color: var(--color-text-secondary); margin: 0 0 12px 0; line-height: 1.6; }
-.inv-prev-costbreak .inv-prev-costbreak-lines { font-size: var(--text-sm); color: var(--color-text-heading); line-height: 1.8; margin: 0 0 10px 0; white-space: pre-line; }
-.inv-prev-costbreak .inv-prev-costbreak-note { font-size: var(--text-sm); color: var(--color-text-secondary); margin: 0; }
+.inv-prev-costbreak { margin-top: 24px; }
+.inv-prev-costbreak h4 { font-size: 11px; font-weight: 700; color: var(--color-primary); margin: 0 0 8px 0; }
+.inv-prev-costbreak .inv-prev-costbreak-desc { font-size: 10px; color: var(--color-text-secondary); margin: 0 0 8px 0; line-height: 1.5; }
+.inv-prev-costbreak .inv-prev-costbreak-lines { font-size: 10px; color: var(--color-text-heading); line-height: 1.7; margin: 0 0 8px 0; white-space: pre-line; }
+.inv-prev-costbreak .inv-prev-costbreak-note { font-size: 10px; color: var(--color-text-secondary); margin: 0; }
+/* Left panel toggle button in split preview */
+.inv-preview-panel-controls { display: flex; justify-content: flex-end; padding: 6px 8px 2px 0; }
+.inv-preview-panel-controls button { font-size: 11px; padding: 3px 8px; border: 1px solid #c0c0c0; border-radius: 4px; background: #fff; cursor: pointer; color: #555; }
+.inv-preview-panel-controls button:hover { background: #f5f5f5; }
 /* Right column: items table + totals */
 .inv-prev-right {}
 .inv-prev-items { width: 100%; border-collapse: collapse; font-size: var(--text-md); }
@@ -2414,11 +2421,13 @@ body.crm-panel-open { overflow: hidden; }
   padding: 0 8px 8px 8px;
   border-bottom: 1px solid #c0c0c0;
 }
-.inv-prev-items th.col-count { text-align: center; width: 55px; }
-.inv-prev-items th.col-price { text-align: right; width: 80px; }
-.inv-prev-items td { padding: 10px 8px; font-size: var(--text-md); color: var(--color-text-heading); }
+.inv-prev-items th.col-count { text-align: center; width: 40px; }
+.inv-prev-items th.col-price { text-align: right; width: 70px; }
+.inv-prev-items th.col-company { text-align: right; width: 80px; color: var(--color-primary); }
+.inv-prev-items td { padding: 8px 8px; font-size: var(--text-md); color: var(--color-text-heading); }
 .inv-prev-items td.col-count { text-align: center; }
-.inv-prev-items td.col-price { text-align: right; }
+.inv-prev-items td.col-price { text-align: right; color: var(--color-text-secondary); }
+.inv-prev-items td.col-company { text-align: right; color: var(--color-text-heading); font-weight: 600; }
 .inv-prev-totals { margin-top: 40px; display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
 .inv-prev-totals-row { display: flex; gap: 20px; font-size: var(--text-md); }
 .inv-prev-totals-row .label { color: var(--color-text-secondary); min-width: 80px; text-align: right; font-weight: 500; }
@@ -6861,6 +6870,16 @@ select.contact-edit-input { appearance: auto; cursor: pointer; }
       </div>
     </div>
 
+    <div class="inv-field-row" style="margin-top:16px">
+      <div style="grid-column:1/-1">
+        <label>Payment Direction</label>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <textarea id="inv-modal-pay-bank" rows="3" placeholder="Bank name, account number..." style="font-size:13px;font-family:inherit;padding:8px;border:1px solid #dadce0;border-radius:6px;resize:vertical;line-height:1.6" oninput="if(typeof invSplitActive!=='undefined'&&invSplitActive)invLiveHandler()"></textarea>
+          <textarea id="inv-modal-pay-note" rows="3" placeholder="Payment instructions..." style="font-size:13px;font-family:inherit;padding:8px;border:1px solid #dadce0;border-radius:6px;resize:vertical;line-height:1.6" oninput="if(typeof invSplitActive!=='undefined'&&invSplitActive)invLiveHandler()"></textarea>
+        </div>
+      </div>
+    </div>
+
     <div class="board-modal-actions">
       <button class="btn-delete" id="inv-modal-delete-btn" style="display:none" onclick="deleteInvoiceConfirm()">Delete</button>
       <button type="button" id="inv-preview-toggle-btn" onclick="toggleInvSplitPreview()" style="color:#0e413b;border-color:#0e413b">Preview</button>
@@ -6869,6 +6888,9 @@ select.contact-edit-input { appearance: auto; cursor: pointer; }
     </div>
    </div>
    <div class="inv-split-preview" id="inv-split-preview" style="display:none">
+     <div class="inv-preview-panel-controls">
+       <button type="button" id="inv-preview-left-toggle-btn" onclick="toggleInvPreviewLeft()">Hide Left Panel</button>
+     </div>
      <div class="inv-split-preview-inner" id="inv-split-preview-inner">
        <div class="inv-preview-page" id="inv-split-preview-page"></div>
      </div>
@@ -20830,10 +20852,15 @@ function addInvPricingParty(name, contactId, type, percent) {
     if (invSplitActive) updateInvSplitPreview();
   });
 
+  var summarySpan = document.createElement("span");
+  summarySpan.className = "inv-party-summary-text";
+  summarySpan.style.cssText = "font-size:11px;color:var(--color-primary);margin-left:6px;align-self:center;white-space:nowrap;flex:1";
+
   row.appendChild(sel);
   row.appendChild(nameInput);
   row.appendChild(toggle);
   row.appendChild(pctInput);
+  row.appendChild(summarySpan);
   row.appendChild(removeBtn);
   container.appendChild(row);
 
@@ -20898,6 +20925,8 @@ function openInvoiceCreateModal() {
   document.getElementById("inv-modal-status").value = "draft";
   document.getElementById("inv-modal-notes").value = "";
   document.getElementById("inv-modal-workspace").value = "IVYCOAST";
+  document.getElementById("inv-modal-pay-bank").value = "Boldoath 株式会社\n三井住友銀行　名古屋\n普通　(481) 8089351";
+  document.getElementById("inv-modal-pay-note").value = "Please make a direct deposit to the listed Mitsui Sumitomo account on the left.";
   document.getElementById("inv-modal-delete-btn").style.display = "none";
   document.getElementById("inv-line-items-body").textContent = "";
   initInvContactSearch();
@@ -20941,6 +20970,8 @@ function openInvoiceEditModal(invId) {
   document.getElementById("inv-modal-status").value = inv.status || "draft";
   document.getElementById("inv-modal-notes").value = inv.notes || "";
   document.getElementById("inv-modal-workspace").value = inv.workspace || "IVYCOAST";
+  document.getElementById("inv-modal-pay-bank").value = inv.paymentBank || "Boldoath 株式会社\n三井住友銀行　名古屋\n普通　(481) 8089351";
+  document.getElementById("inv-modal-pay-note").value = inv.paymentNote || "Please make a direct deposit to the listed Mitsui Sumitomo account on the left.";
   document.getElementById("inv-modal-delete-btn").style.display = "inline-block";
   // Load pricing parties
   clearInvPricingParties();
@@ -21187,6 +21218,8 @@ function addInvoiceLineItem(desc, qty, price) {
 }
 
 function getInvoiceLineItems() {
+  var parties = getInvPricingParties();
+  var firstPartyPct = parties.length > 0 ? (parseFloat(parties[0].percent) || 0) : 0;
   var rows = document.getElementById("inv-line-items-body").querySelectorAll("tr");
   var items = [];
   rows.forEach(function(tr) {
@@ -21194,7 +21227,10 @@ function getInvoiceLineItems() {
     var qty = parseFloat(tr.querySelector(".inv-qty").value) || 0;
     var unitPrice = parseFloat(tr.querySelector(".inv-price").value) || 0;
     if (desc || qty || unitPrice) {
-      items.push({ description: desc, qty: qty, unitPrice: unitPrice, amount: qty * unitPrice });
+      var amount = qty * unitPrice;
+      var partyUnitPrice = firstPartyPct > 0 ? Math.round(unitPrice * firstPartyPct / 100) : unitPrice;
+      var partyAmount = qty * partyUnitPrice;
+      items.push({ description: desc, qty: qty, unitPrice: unitPrice, amount: amount, partyUnitPrice: partyUnitPrice, partyAmount: partyAmount });
     }
   });
   return items;
@@ -21203,27 +21239,46 @@ function getInvoiceLineItems() {
 function recalcInvoiceTotals() {
   var parties = getInvPricingParties();
   var hasParties = parties.length > 0;
+  var firstPartyPct = hasParties ? (parseFloat(parties[0].percent) || 0) : 0;
   var rows = document.getElementById("inv-line-items-body").querySelectorAll("tr");
-  var subtotal = 0;
+  var retailSubtotal = 0;
+  var invoiceSubtotal = 0;
   rows.forEach(function(tr) {
     var qty = parseFloat(tr.querySelector(".inv-qty").value) || 0;
     var price = parseFloat(tr.querySelector(".inv-price").value) || 0;
     var amt = qty * price;
+    retailSubtotal += amt;
     tr.querySelector(".inv-amount").textContent = "\u00a5" + amt.toLocaleString();
     var appliedCell = tr.querySelector(".inv-applied-price");
     var netCell = tr.querySelector(".inv-applied-amount");
     if (appliedCell && netCell) {
-      if (hasParties) {
-        var s = calcPricingSummary(price, parties);
-        appliedCell.textContent = "\u00a5" + s.appliedPrice.toLocaleString();
-        netCell.textContent = "\u00a5" + (qty * s.appliedPrice).toLocaleString();
+      if (hasParties && firstPartyPct > 0) {
+        var partyUnitPrice = Math.round(price * firstPartyPct / 100);
+        var partyAmt = qty * partyUnitPrice;
+        appliedCell.textContent = "\u00a5" + partyUnitPrice.toLocaleString();
+        netCell.textContent = "\u00a5" + partyAmt.toLocaleString();
+        invoiceSubtotal += partyAmt;
       } else {
         appliedCell.textContent = "\u2014";
         netCell.textContent = "\u2014";
+        invoiceSubtotal += amt;
       }
+    } else {
+      invoiceSubtotal += amt;
     }
-    subtotal += amt;
   });
+  // Update pricing party summaries
+  document.querySelectorAll("#inv-pricing-parties .inv-pricing-party-row").forEach(function(pRow) {
+    var pct = parseFloat((pRow.querySelector("input[type='number']") || {}).value) || 0;
+    var summaryEl = pRow.querySelector(".inv-party-summary-text");
+    if (summaryEl && pct > 0 && retailSubtotal > 0) {
+      var partyTotal = Math.round(retailSubtotal * pct / 100);
+      summaryEl.textContent = pct + "% \u2192 \u00a5" + partyTotal.toLocaleString() + " of \u00a5" + retailSubtotal.toLocaleString();
+    } else if (summaryEl) {
+      summaryEl.textContent = "";
+    }
+  });
+  var subtotal = invoiceSubtotal;
 
   var discount = parseFloat(document.getElementById("inv-modal-discount").value) || 0;
   var shipping = parseFloat(document.getElementById("inv-modal-shipping").value) || 0;
@@ -21242,7 +21297,8 @@ function saveInvoice() {
   if (!SCRIPT_URL) return;
   var id = document.getElementById("inv-modal-id").value;
   var items = getInvoiceLineItems();
-  var subtotal = items.reduce(function(s, it) { return s + it.amount; }, 0);
+  var hasPartyPricing = items.length > 0 && items[0].partyUnitPrice !== items[0].unitPrice;
+  var subtotal = items.reduce(function(s, it) { return s + (hasPartyPricing ? it.partyAmount : it.amount); }, 0);
   var discount = parseFloat(document.getElementById("inv-modal-discount").value) || 0;
   var shipping = parseFloat(document.getElementById("inv-modal-shipping").value) || 0;
   var taxType = document.getElementById("inv-modal-tax-type").value;
@@ -21423,7 +21479,9 @@ function buildInvoicePreviewTo(page, data) {
     poDiv.textContent = "Invoice for " + data.poRef;
     left.appendChild(poDiv);
   }
-  // Payment Direction
+  // Payment Direction \u2014 uses editor fields (with fallback to defaults)
+  var _defaultBank = "Boldoath \u682A\u5F0F\u4F1A\u793E\n\u4E09\u4E95\u4F4F\u53CB\u9280\u884C\u3000\u540D\u53E4\u5C4B\n\u666E\u901A\u3000(481) 8089351";
+  var _defaultNote = "Please make a direct deposit to the listed Mitsui Sumitomo account on the left.";
   var paySection = document.createElement("div");
   paySection.className = "inv-prev-payment";
   var payH4 = document.createElement("h4");
@@ -21431,16 +21489,17 @@ function buildInvoicePreviewTo(page, data) {
   paySection.appendChild(payH4);
   var bankP = document.createElement("p");
   bankP.className = "inv-prev-bank";
-  bankP.textContent = "Boldoath \u682A\u5F0F\u4F1A\u793E\n\u4E09\u4E95\u4F4F\u53CB\u9280\u884C\u3000\u540D\u53E4\u5C4B\n\u666E\u901A\u3000(481) 8089351";
+  bankP.textContent = (data.paymentBank || _defaultBank);
   paySection.appendChild(bankP);
   var noteP = document.createElement("p");
   noteP.className = "inv-prev-bank-note";
-  noteP.textContent = "Please make a direct deposit\nto the listed Mitsui Sumitomo\naccount on the left.";
+  noteP.textContent = (data.paymentNote || _defaultNote);
   paySection.appendChild(noteP);
   left.appendChild(paySection);
 
   // Cost breakdown section (multi-party)
   var parties = data.pricingParties || [];
+  var firstPartyPct = parties.length > 0 ? (parseFloat(parties[0].percent) || 0) : 0;
   if (parties.length > 0) {
     var costBreak = document.createElement("div");
     costBreak.className = "inv-prev-costbreak";
@@ -21451,7 +21510,7 @@ function buildInvoicePreviewTo(page, data) {
     parties.forEach(function(party) {
       var pctNum = parseFloat(party.percent) || 0;
       var partyDiv = document.createElement("div");
-      partyDiv.style.marginBottom = "10px";
+      partyDiv.style.marginBottom = "8px";
       var partyTitle = document.createElement("p");
       partyTitle.className = "inv-prev-costbreak-desc";
       var typeLabel = party.type === "consignment"
@@ -21483,6 +21542,9 @@ function buildInvoicePreviewTo(page, data) {
     left.appendChild(costBreak);
   }
 
+  if (typeof invPreviewLeftHidden !== "undefined" && invPreviewLeftHidden) {
+    left.classList.add("hidden");
+  }
   body.appendChild(left);
 
   // Right column: items table + totals
@@ -21492,11 +21554,16 @@ function buildInvoicePreviewTo(page, data) {
   table.className = "inv-prev-items";
   var thead = document.createElement("thead");
   var headTr = document.createElement("tr");
-  ["Description", "Count", "Price"].forEach(function(txt, i) {
+  var showCompanyCol = firstPartyPct > 0;
+  var colHeaders = showCompanyCol
+    ? ["Description", "Count", "Retail", parties[0].name ? parties[0].name.split(" ")[0] + " Price" : "Company Price"]
+    : ["Description", "Count", "Price"];
+  colHeaders.forEach(function(txt, i) {
     var th = document.createElement("th");
     th.textContent = txt;
     if (i === 1) th.className = "col-count";
     if (i === 2) th.className = "col-price";
+    if (i === 3) th.className = "col-company";
     headTr.appendChild(th);
   });
   thead.appendChild(headTr);
@@ -21515,6 +21582,13 @@ function buildInvoicePreviewTo(page, data) {
     td3.className = "col-price";
     td3.textContent = "\u00a5" + Number(it.amount || 0).toLocaleString();
     row.appendChild(td3);
+    if (showCompanyCol) {
+      var partyAmt = it.partyAmount !== undefined ? it.partyAmount : Math.round((it.unitPrice || 0) * firstPartyPct / 100) * (it.qty || 0);
+      var td4 = document.createElement("td");
+      td4.className = "col-company";
+      td4.textContent = "\u00a5" + Number(partyAmt).toLocaleString();
+      row.appendChild(td4);
+    }
     tbod.appendChild(row);
   });
   table.appendChild(tbod);
@@ -21579,11 +21653,11 @@ function buildInvoicePreviewTo(page, data) {
 
 var invPreviewingId = "";
 
-// Preview from modal (current form fields)
-function previewInvoice() {
-  invPreviewingId = "";
+function _invBuildPreviewData() {
   var items = getInvoiceLineItems();
-  var subtotal = items.reduce(function(s, it) { return s + it.amount; }, 0);
+  var parties = getInvPricingParties();
+  var hasPartyPricing = parties.length > 0 && parseFloat((parties[0] || {}).percent) > 0;
+  var subtotal = items.reduce(function(s, it) { return s + (hasPartyPricing ? it.partyAmount : it.amount); }, 0);
   var discount = parseFloat(document.getElementById("inv-modal-discount").value) || 0;
   var shipping = parseFloat(document.getElementById("inv-modal-shipping").value) || 0;
   var taxType = document.getElementById("inv-modal-tax-type").value;
@@ -21591,14 +21665,12 @@ function previewInvoice() {
   var tax = taxType === "10" ? Math.round(afterDiscount * 0.1) : 0;
   var total = afterDiscount + tax + shipping;
   var addrLines = formatInvAddress(getInvAddressJSON());
-  var poRaw = document.getElementById("inv-modal-po").value || "";
-
-  buildInvoicePreview({
+  return {
     number: document.getElementById("inv-modal-number").value || "",
     date: document.getElementById("inv-modal-date").value || "",
     company: document.getElementById("inv-modal-company").value || "",
     event: "",
-    poRef: poRaw,
+    poRef: document.getElementById("inv-modal-po").value || "",
     addrLines: addrLines,
     items: items,
     subtotal: subtotal,
@@ -21607,8 +21679,16 @@ function previewInvoice() {
     taxType: taxType,
     tax: tax,
     total: total,
-    pricingParties: getInvPricingParties()
-  });
+    pricingParties: parties,
+    paymentBank: document.getElementById("inv-modal-pay-bank").value || "",
+    paymentNote: document.getElementById("inv-modal-pay-note").value || ""
+  };
+}
+
+// Preview from modal (current form fields)
+function previewInvoice() {
+  invPreviewingId = "";
+  buildInvoicePreview(_invBuildPreviewData());
 }
 
 // Preview from saved invoice data
@@ -21652,6 +21732,14 @@ function closeInvoicePreview() {
 // ── Split-Pane Live Preview ─────────────────────────────────────
 var invSplitActive = false;
 var invLiveTimer = null;
+var invPreviewLeftHidden = false;
+
+function toggleInvPreviewLeft() {
+  invPreviewLeftHidden = !invPreviewLeftHidden;
+  var btn = document.getElementById("inv-preview-left-toggle-btn");
+  if (btn) btn.textContent = invPreviewLeftHidden ? "Show Left Panel" : "Hide Left Panel";
+  updateInvSplitPreview();
+}
 
 function toggleInvSplitPreview() {
   var modal = document.querySelector(".board-modal.inv-modal");
@@ -21676,33 +21764,7 @@ function toggleInvSplitPreview() {
 
 function updateInvSplitPreview() {
   if (!invSplitActive) return;
-  var items = getInvoiceLineItems();
-  var subtotal = items.reduce(function(s, it) { return s + it.amount; }, 0);
-  var discount = parseFloat(document.getElementById("inv-modal-discount").value) || 0;
-  var shipping = parseFloat(document.getElementById("inv-modal-shipping").value) || 0;
-  var taxType = document.getElementById("inv-modal-tax-type").value;
-  var afterDiscount = subtotal - discount;
-  var tax = taxType === "10" ? Math.round(afterDiscount * 0.1) : 0;
-  var total = afterDiscount + tax + shipping;
-  var addrLines = formatInvAddress(getInvAddressJSON());
-  var poRaw = document.getElementById("inv-modal-po").value || "";
-
-  buildInvoicePreviewTo(document.getElementById("inv-split-preview-page"), {
-    number: document.getElementById("inv-modal-number").value || "",
-    date: document.getElementById("inv-modal-date").value || "",
-    company: document.getElementById("inv-modal-company").value || "",
-    event: "",
-    poRef: poRaw,
-    addrLines: addrLines,
-    items: items,
-    subtotal: subtotal,
-    discount: discount,
-    shipping: shipping,
-    taxType: taxType,
-    tax: tax,
-    total: total,
-    pricingParties: getInvPricingParties()
-  });
+  buildInvoicePreviewTo(document.getElementById("inv-split-preview-page"), _invBuildPreviewData());
 }
 
 function invLiveHandler() {
