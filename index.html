@@ -20971,7 +20971,7 @@ function openInvoiceEditModal(invId) {
   document.getElementById("inv-modal-notes").value = "";
   document.getElementById("inv-modal-workspace").value = inv.workspace || "IVYCOAST";
   document.getElementById("inv-modal-pay-bank").value = inv.paymentBank || "Boldoath 株式会社\n三井住友銀行　名古屋\n普通　(481) 8089351";
-  document.getElementById("inv-modal-pay-note").value = inv.paymentNote || "Please make a direct deposit to the listed Mitsui Sumitomo account on the left.";
+  document.getElementById("inv-modal-pay-note").value = inv.paymentNote || "";
   document.getElementById("inv-modal-delete-btn").style.display = "inline-block";
   // Load pricing parties
   clearInvPricingParties();
