@@ -2397,7 +2397,7 @@ body.crm-panel-open { overflow: hidden; }
 .inv-prev-addr { font-size: 10px; color: var(--color-text-secondary); line-height: 1.7; white-space: pre-line; margin-bottom: 10px; }
 .inv-prev-poref { font-size: 10px; color: var(--color-text-secondary); margin-bottom: 0; }
 .inv-prev-payment { margin-top: 48px; }
-.inv-prev-payment h4 { font-size: var(--text-tab); font-weight: 700; text-decoration: underline; margin: 0 0 10px 0; color: var(--color-text-heading); }
+.inv-prev-payment h4 { font-size: 11px; font-weight: 700; margin: 0 0 8px 0; color: var(--color-primary); }
 .inv-prev-payment .inv-prev-bank { font-size: var(--text-sm); color: var(--color-text-heading); line-height: 1.8; margin: 0 0 12px 0; white-space: pre-line; }
 .inv-prev-payment .inv-prev-bank-note { font-size: 7.8px; color: var(--color-text-secondary); line-height: 1.3; margin: 0; }
 /* Cost breakdown (consignment/wholesale) */
@@ -2429,11 +2429,11 @@ body.crm-panel-open { overflow: hidden; }
 .inv-prev-items td.col-price { text-align: right; color: var(--color-text-secondary); }
 .inv-prev-items td.col-company { text-align: right; color: var(--color-text-heading); font-weight: 600; }
 .inv-prev-totals { margin-top: 40px; display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
-.inv-prev-totals-row { display: flex; gap: 20px; font-size: var(--text-md); }
+.inv-prev-totals-row { display: flex; gap: 20px; font-size: 10px; }
 .inv-prev-totals-row .label { color: var(--color-text-secondary); min-width: 80px; text-align: right; font-weight: 500; }
 .inv-prev-totals-row .value { min-width: 100px; text-align: right; color: var(--color-text-heading); }
 .inv-prev-total-final {
-  font-size: var(--text-md);
+  font-size: 10px;
   font-weight: 700;
   border-top: 2px solid #202124;
   padding-top: 10px;
@@ -6804,6 +6804,10 @@ select.contact-edit-input { appearance: auto; cursor: pointer; }
         <label>Pricing Parties</label>
         <div id="inv-pricing-parties" class="inv-pricing-parties"></div>
         <button type="button" class="inv-add-party-btn" onclick="addInvPricingParty()">+ Add Party</button>
+        <div style="margin-top:8px">
+          <label for="inv-modal-margin-note" style="font-size:12px;color:var(--color-text-secondary)">Margin / Cost Note (shown in preview)</label>
+          <input type="text" id="inv-modal-margin-note" placeholder="e.g. IVYCOAST margin: 40% · 内税" style="width:100%;padding:6px 8px;border:1px solid #dadce0;border-radius:6px;font-size:13px;font-family:inherit" oninput="if(typeof invSplitActive!=='undefined'&&invSplitActive)invLiveHandler()">
+        </div>
       </div>
     </div>
 
@@ -20927,6 +20931,7 @@ function openInvoiceCreateModal() {
   document.getElementById("inv-modal-workspace").value = "IVYCOAST";
   document.getElementById("inv-modal-pay-bank").value = "Boldoath 株式会社\n三井住友銀行　名古屋\n普通　(481) 8089351";
   document.getElementById("inv-modal-pay-note").value = "";
+  document.getElementById("inv-modal-margin-note").value = "";
   document.getElementById("inv-modal-delete-btn").style.display = "none";
   document.getElementById("inv-line-items-body").textContent = "";
   initInvContactSearch();
@@ -20972,6 +20977,7 @@ function openInvoiceEditModal(invId) {
   document.getElementById("inv-modal-workspace").value = inv.workspace || "IVYCOAST";
   document.getElementById("inv-modal-pay-bank").value = inv.paymentBank || "Boldoath 株式会社\n三井住友銀行　名古屋\n普通　(481) 8089351";
   document.getElementById("inv-modal-pay-note").value = inv.paymentNote || "";
+  document.getElementById("inv-modal-margin-note").value = inv.marginNote || "";
   document.getElementById("inv-modal-delete-btn").style.display = "inline-block";
   // Load pricing parties
   clearInvPricingParties();
@@ -21536,10 +21542,12 @@ function buildInvoicePreviewTo(page, data) {
     });
 
     var totalPct = parties.reduce(function(s, p) { return s + (parseFloat(p.percent) || 0); }, 0);
-    var cbNote = document.createElement("p");
-    cbNote.className = "inv-prev-costbreak-note";
-    cbNote.textContent = "IVYCOAST margin: " + (100 - totalPct) + "% \u00B7 Tax included in product cost";
-    costBreak.appendChild(cbNote);
+    if (data.marginNote) {
+      var cbNote = document.createElement("p");
+      cbNote.className = "inv-prev-costbreak-note";
+      cbNote.textContent = data.marginNote;
+      costBreak.appendChild(cbNote);
+    }
     left.appendChild(costBreak);
   }
 
@@ -21682,7 +21690,8 @@ function _invBuildPreviewData() {
     total: total,
     pricingParties: parties,
     paymentBank: document.getElementById("inv-modal-pay-bank").value || "",
-    paymentNote: document.getElementById("inv-modal-pay-note").value || ""
+    paymentNote: document.getElementById("inv-modal-pay-note").value || "",
+    marginNote: document.getElementById("inv-modal-margin-note").value || ""
   };
 }
 
