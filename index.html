@@ -7269,7 +7269,9 @@ function createBadgeEl(type) {
 
 function formatDate(d) {
   if (!d) return "\u2014";
-  var parts = d.split("-");
+  var s = String(d);
+  if (s.length > 10 && s[10] === "T") s = s.slice(0, 10);
+  var parts = s.split("-");
   var months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
   return months[parseInt(parts[1], 10) - 1] + " " + parseInt(parts[2], 10) + ", " + parts[0];
 }
@@ -8778,7 +8780,10 @@ function saveTask() {
     });
     renderBoard();
     apiPost({ action: "update", task: task })
-      .then(function() { setSyncStatus("Saved"); fetchBoardTasks(); })
+      .then(function(data) {
+        if (data && data.error) { setSyncStatus("Save failed"); fetchBoardTasks(); return; }
+        setSyncStatus("Saved"); fetchBoardTasks();
+      })
       .catch(function() { setSyncStatus("Save failed"); fetchBoardTasks(); });
   } else {
     // Create — optimistic with temp id
@@ -8788,6 +8793,7 @@ function saveTask() {
     renderBoard();
     apiPost({ action: "create", task: task })
       .then(function(data) {
+        if (data && data.error) { setSyncStatus("Create failed"); fetchBoardTasks(); return; }
         setSyncStatus("Task created");
         if (data.task) {
           boardTasks = boardTasks.map(function(t) {
@@ -11069,8 +11075,8 @@ function openCrmEditModal(contactId) {
   document.getElementById("crm-modal-website").value = c.website || "";
   document.getElementById("crm-modal-instagram").value = c.instagram || "";
   document.getElementById("crm-modal-socialmedia").value = c.socialMedia || "";
-  document.getElementById("crm-modal-connected").value = c.connectedDate || "";
-  document.getElementById("crm-modal-lastcontact").value = c.lastContactDate || "";
+  document.getElementById("crm-modal-connected").value = toDateInput(c.connectedDate);
+  document.getElementById("crm-modal-lastcontact").value = toDateInput(c.lastContactDate);
   document.getElementById("crm-modal-delete-btn").style.display = "none";
   document.getElementById("crm-modal-wholesale").value = c.wholesalePercent || "";
   document.getElementById("crm-modal-consignment").value = c.consignmentPercent || "";
@@ -11172,13 +11178,7 @@ function openQuickEditRules(contactId) {
     { key: "pricingType", label: "Pricing type", type: "select", value: c.consignmentPercent ? "consignment" : c.wholesalePercent ? "wholesale" : "", options: [
       { value: "", label: "Select..." }, { value: "consignment", label: "Consignment" }, { value: "wholesale", label: "Wholesale" }
     ]},
-    { key: "pricingPercent", label: "Their share (%)", type: "number", placeholder: "e.g. 30", value: c.consignmentPercent || c.wholesalePercent || "" },
-    { key: "invoiceFreq", label: "We invoice", type: "select", value: "monthly", options: [
-      { value: "monthly", label: "Monthly" }, { value: "per-order", label: "Per order" }, { value: "quarterly", label: "Quarterly" }
-    ]},
-    { key: "paymentTerms", label: "They pay within", type: "select", value: "30", options: [
-      { value: "30", label: "30 days" }, { value: "60", label: "60 days" }, { value: "14", label: "14 days" }, { value: "0", label: "Immediate" }
-    ]}
+    { key: "pricingPercent", label: "Their share (%)", type: "number", placeholder: "e.g. 30", value: c.consignmentPercent || c.wholesalePercent || "" }
   ], function(values) {
     var update = {};
     if (values.pricingType === "consignment") {
@@ -13206,7 +13206,7 @@ function renderCrmOverviewTab(c, panel, contactId, tabsBar) {
       orderNum.style.cssText = "font-family:var(--font-mono);font-size:var(--text-xs);color:var(--color-primary);letter-spacing:var(--ls-mono)";
       orderNum.textContent = "#" + (o.orderNumber || o.id || "?");
       leftDiv.appendChild(orderNum);
-      if (o.source === "manual" || String(o.orderNumber || "").indexOf("MO-") === 0) {
+      if (o.source === "manual" || String(o.orderNumber || "").indexOf("MO-") === 0 || String(o.orderNumber || "").indexOf("M-") === 0) {
         var mBadge = document.createElement("span");
         mBadge.className = "crm-manual-badge";
         mBadge.textContent = "Manual";
@@ -17267,7 +17267,15 @@ function saveCrmManualOrder(overlay, vendor, contactId, orderNumInput, orderDate
         updatedAt: new Date().toISOString()
       };
       partnerStock.push(newStock);
-      stockApiPost({ action: "create", stock: newStock }).catch(function() {});
+      (function(tmpId) {
+        stockApiPost({ action: "create", stock: newStock })
+          .then(function(data) {
+            if (data && data.stock) {
+              partnerStock = partnerStock.map(function(s) { return s.id === tmpId ? data.stock : s; });
+            }
+          })
+          .catch(function() {});
+      })(stockId);
     }
   });
   saveDataCache();
@@ -17334,7 +17342,15 @@ function backfillStockFromOrders(contactId) {
         updatedAt: new Date().toISOString()
       };
       partnerStock.push(newStock);
-      stockApiPost({ action: "create", stock: newStock }).catch(function() {});
+      (function(tmpId) {
+        stockApiPost({ action: "create", stock: newStock })
+          .then(function(data) {
+            if (data && data.stock) {
+              partnerStock = partnerStock.map(function(s) { return s.id === tmpId ? data.stock : s; });
+            }
+          })
+          .catch(function() {});
+      })(stockId);
       created++;
     });
   });
@@ -17805,10 +17821,21 @@ function renderCrmDocumentsTab(c, panel, contactId) {
   panel.appendChild(invSec);
 
   // --- LINKED RECEIPTS ---
-  var contactReceipts = receipts.filter(function(r) { return r.contactId === contactId; });
+  // Receipts don't save contactId — cross-reference via invoice IDs for this contact
+  var _contactInvIds = invoices
+    .filter(function(inv) { return inv.contactId === contactId; })
+    .map(function(inv) { return inv.id; });
+  var _contactObj = crmContacts.find(function(x) { return x.id === contactId; }) || {};
+  var _contactEmail = (_contactObj.email || "").toLowerCase();
+  var contactReceipts = receipts.filter(function(r) {
+    if (r.contactId === contactId) return true;
+    if (r.invoiceId && _contactInvIds.indexOf(r.invoiceId) !== -1) return true;
+    if (_contactEmail && (r.contactEmail || "").toLowerCase() === _contactEmail) return true;
+    return false;
+  });
   if (contactReceipts.length) {
     var recSec = _crmMakeSection("Receipts");
-    contactReceipts.sort(function(a, b) { return (b.date || "").localeCompare(a.date || ""); });
+    contactReceipts.sort(function(a, b) { return (b.receiptDate || "").localeCompare(a.receiptDate || ""); });
     contactReceipts.forEach(function(rec) {
       var row = document.createElement("div");
       row.className = "crm-invoice-row";
@@ -17820,7 +17847,7 @@ function renderCrmDocumentsTab(c, panel, contactId) {
       row.appendChild(rNum);
       var rDate = document.createElement("span");
       rDate.className = "crm-invoice-date";
-      rDate.textContent = rec.date ? formatDate(rec.date) : "";
+      rDate.textContent = rec.receiptDate ? formatDate(rec.receiptDate) : "";
       row.appendChild(rDate);
       var rTotal = document.createElement("span");
       rTotal.className = "crm-invoice-total";
@@ -18014,8 +18041,8 @@ function switchToCrmEditMode(contactId) {
   document.getElementById("crm-modal-website").value = c.website || "";
   document.getElementById("crm-modal-instagram").value = c.instagram || "";
   document.getElementById("crm-modal-socialmedia").value = c.socialMedia || "";
-  document.getElementById("crm-modal-connected").value = c.connectedDate || "";
-  document.getElementById("crm-modal-lastcontact").value = c.lastContactDate || "";
+  document.getElementById("crm-modal-connected").value = toDateInput(c.connectedDate);
+  document.getElementById("crm-modal-lastcontact").value = toDateInput(c.lastContactDate);
   document.getElementById("crm-modal-delete-btn").style.display = "none";
   document.getElementById("crm-modal-wholesale").value = c.wholesalePercent || "";
   document.getElementById("crm-modal-consignment").value = c.consignmentPercent || "";
@@ -18148,6 +18175,7 @@ function saveCrmContact() {
         openDetailAfterSave(id);
         crmApiPost({ action: "update", contact: contact })
           .then(function(data) {
+            if (data && data.error) { setCrmSyncStatus("Save failed"); showFormulatorToast("Save failed: " + data.error, 5000); fetchCrmContacts(); return; }
             setCrmSyncStatus("Saved");
             // Re-open detail with server data to ensure images are current
             if (data.contact) {
@@ -18166,6 +18194,7 @@ function saveCrmContact() {
         openDetailAfterSave(tempId);
         crmApiPost({ action: "create", contact: contact })
           .then(function(data) {
+            if (data && data.error) { setCrmSyncStatus("Create failed"); showFormulatorToast("Create failed: " + data.error, 5000); fetchCrmContacts(); return; }
             setCrmSyncStatus("Contact created");
             if (data.contact) {
               var newId = data.contact.id;
@@ -22396,7 +22425,7 @@ function setRecSyncStatus(msg) { setDocsSyncStatus(msg); }
 function fetchReceipts(force) {
   if (!SCRIPT_URL) return;
   var now = Date.now();
-  if (!force && receipts.length && (now - lastFetched.receipts < 120000)) { renderDocuments(); return; }
+  if (!force && receipts.length && (now - lastFetched.receipts < CACHE_TTL)) { renderDocuments(); return; }
   setRecSyncStatus("Loading\u2026");
   fetch(SCRIPT_URL + "?action=list&sheet=Receipts")
     .then(function(r) { return r.json(); })
@@ -23015,7 +23044,10 @@ function saveReceipt() {
     receipts = receipts.map(function(r) { return r.id === id ? Object.assign({}, r, receipt) : r; });
     renderDocuments();
     recApiPost({ action: "update", receipt: receipt })
-      .then(function() { setRecSyncStatus("Saved"); showFormulatorToast("Receipt saved"); fetchReceipts(true); })
+      .then(function(data) {
+        if (data && data.error) { setRecSyncStatus("Save failed"); showFormulatorToast("Save failed: " + data.error, 5000); fetchReceipts(true); return; }
+        setRecSyncStatus("Saved"); showFormulatorToast("Receipt saved"); fetchReceipts(true);
+      })
       .catch(function() { setRecSyncStatus("Save failed"); showFormulatorToast("Save failed — check your connection and try again.", 5000); });
   } else {
     var tempId = "temp-" + Date.now();
@@ -23024,6 +23056,7 @@ function saveReceipt() {
     renderDocuments();
     recApiPost({ action: "create", receipt: receipt })
       .then(function(data) {
+        if (data && data.error) { setRecSyncStatus("Create failed"); showFormulatorToast("Create failed: " + data.error, 5000); fetchReceipts(true); return; }
         setRecSyncStatus("Receipt created"); showFormulatorToast("Receipt created");
         if (data.receipt) {
           receipts = receipts.map(function(r) { return r.id === tempId ? data.receipt : r; });
@@ -24952,8 +24985,8 @@ function openOrderDetailModal(order) {
       var invMeta = document.createElement("div");
       invMeta.className = "ivh-doc-meta";
       var invParts = [];
-      if (linkedInv.date) invParts.push(linkedInv.date);
-      if (linkedInv.grandTotal) invParts.push("\u00A5" + Number(linkedInv.grandTotal).toLocaleString());
+      if (linkedInv.invoiceDate) invParts.push(formatDate(linkedInv.invoiceDate));
+      if (linkedInv.total) invParts.push("\u00A5" + Number(linkedInv.total).toLocaleString());
       invMeta.textContent = invParts.join(" \u00B7 ");
       invLeft.appendChild(invMeta);
       invCard.appendChild(invLeft);
@@ -24978,8 +25011,8 @@ function openOrderDetailModal(order) {
       var recMeta = document.createElement("div");
       recMeta.className = "ivh-doc-meta";
       var recParts = [];
-      if (linkedRec.date) recParts.push(linkedRec.date);
-      if (linkedRec.grandTotal) recParts.push("\u00A5" + Number(linkedRec.grandTotal).toLocaleString());
+      if (linkedRec.receiptDate) recParts.push(formatDate(linkedRec.receiptDate));
+      if (linkedRec.total) recParts.push("\u00A5" + Number(linkedRec.total).toLocaleString());
       recMeta.textContent = recParts.join(" \u00B7 ");
       recLeft.appendChild(recMeta);
       recCard.appendChild(recLeft);
@@ -25293,7 +25326,8 @@ function saveManualOrder() {
     note: document.getElementById("mo-notes").value.trim(),
     shipping: String(shipping),
     taxType: taxTypeMO,
-    workspace: document.getElementById("mo-workspace").value
+    workspace: document.getElementById("mo-workspace").value,
+    source: "manual"
   };
 
   closeManualOrderModal();
