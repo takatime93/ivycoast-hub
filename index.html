@@ -63,6 +63,8 @@
   --color-border-subtle: #e3e3e3;
   --color-border-light: #ebebeb;
   --color-border-separator: #f0f0f0;
+  /* Neutral hover wash for clickable rows/tiles (unified from 0.02/0.04). */
+  --color-hover-tint: rgba(0,0,0,0.04);
 
   /* ── Status: Success ── */
   --color-success-bg: #e6f4ea;
@@ -217,7 +219,7 @@
 .ivh-img-cover { width: 100%; height: 100%; object-fit: cover; }
 
 /* ── Menu divider ── */
-.ivh-divider { height: 1px; background: #e0e0e0; margin: 4px 0; }
+.ivh-divider { height: 1px; background: var(--color-border-separator); margin: 4px 0; }
 
 /* ── Form input base ── */
 .ivh-form-input { width: 100%; padding: 6px 8px; border: 1px solid #dadce0; border-radius: 6px; font-size: 13px; font-family: inherit; }
@@ -437,7 +439,7 @@ a.pill, .pill {
   text-decoration: none;
   font-size: var(--text-tab);
   font-weight: 500;
-  transition: opacity 0.15s;
+  transition: opacity var(--motion-fast) var(--ease-out);
 }
 a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none; }
 .pill:hover { opacity: 0.85; }
@@ -493,13 +495,13 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
 .info-card-scroll {
   max-height: 280px;
   overflow-y: auto;
-  border-top: 1px solid #e0e0e0;
+  border-top: 1px solid var(--color-border-separator);
   padding-top: 8px;
 }
 .doc-embed {
   width: 100%;
   height: 500px;
-  border: 1px solid #e0e0e0;
+  border: 1px solid var(--color-border-separator);
   border-radius: 8px;
   margin-bottom: 12px;
 }
@@ -518,7 +520,7 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
   border-radius: 20px;
   cursor: pointer;
   color: var(--color-text-secondary);
-  transition: background 0.15s, color 0.15s;
+  transition: background var(--motion-fast) var(--ease-out), color var(--motion-fast) var(--ease-out);
 }
 .doc-embed-tab:hover { background: var(--color-neutral-bg); }
 .doc-embed-tab.active { background: var(--color-primary); color: #fff; border-color: var(--color-primary); }
@@ -542,16 +544,16 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
   padding: 10px 0;
   border-bottom: 1px solid var(--color-border-separator);
   cursor: pointer;
-  transition: background 0.1s;
+  transition: background var(--motion-fast) var(--ease-out);
 }
-.home-task-row:hover { background: rgba(0,0,0,0.02); }
+.home-task-row:hover { background: var(--color-hover-tint); }
 .home-task-row:last-child { border-bottom: none; }
-.home-task-name { flex: 1; font-size: var(--text-md); }
+.home-task-name { flex: 1; min-width: 0; font-size: var(--text-md); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .home-task-name a { color: var(--color-primary); text-decoration: none; }
 .home-task-name a:hover { text-decoration: underline; }
 .home-task-meta { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
 .info-card-footer {
-  border-top: 1px solid #e0e0e0;
+  border-top: 1px solid var(--color-border-separator);
   padding-top: 12px;
   margin-top: 8px;
   text-align: right;
@@ -680,7 +682,7 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
 .ivh-table th {
   text-align: left;
   padding: 10px 12px;
-  border-bottom: 2px solid #e0e0e0;
+  border-bottom: 2px solid var(--color-border-separator);
   font-weight: 500;
   color: var(--color-text-secondary);
   font-size: var(--text-tab);
@@ -703,6 +705,15 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
 }
 .doc-table th:hover { color: var(--color-primary); }
 .no-results { text-align: center; padding: 40px; color: var(--color-text-secondary); }
+.grid-empty-state { text-align: center; padding: 40px; color: var(--color-text-secondary); font-size: var(--text-md); }
+
+/* Table cell truncation */
+.cell-ellipsis {
+  max-width: 260px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 
 /* Board */
 .board-toolbar {
@@ -793,6 +804,11 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
   color: var(--color-text-heading);
   margin-bottom: 6px;
   line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  overflow-wrap: anywhere;
 }
 .task-card-name a { color: var(--color-primary); text-decoration: none; }
 .task-card-name a:hover { text-decoration: underline; }
@@ -826,10 +842,10 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
   font-size: var(--text-md);
   cursor: pointer;
   border-radius: 6px;
-  transition: background 0.15s, color 0.15s;
+  transition: background var(--motion-fast) var(--ease-out), color var(--motion-fast) var(--ease-out);
 }
 .add-card-link:hover {
-  background: rgba(0,0,0,0.04);
+  background: var(--color-hover-tint);
   color: var(--color-text-heading);
 }
 .card-composer {
@@ -888,7 +904,7 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
   line-height: 1;
   transition: color var(--transition-fast), background var(--transition-fast);
 }
-.btn-cancel-card:hover { color: var(--color-text-heading); background: rgba(0,0,0,0.04); }
+.btn-cancel-card:hover { color: var(--color-text-heading); background: var(--color-hover-tint); }
 
 /* @Mention Dropdown */
 .mention-dropdown {
@@ -1061,6 +1077,16 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
 .status-picker button:hover { background: var(--color-surface-secondary); }
 .status-picker button.current { background: var(--color-primary-tint); border-color: var(--color-primary); }
 
+.kanban-col-empty {
+  padding: 16px 12px;
+  text-align: center;
+  color: var(--color-text-secondary);
+  font-size: var(--text-tab);
+  border: 1px dashed var(--color-neutral-bg);
+  border-radius: 8px;
+  opacity: 0.7;
+}
+
 /* Done column de-emphasis */
 .kanban-col[data-status="done"] .task-card { opacity: 0.65; }
 .kanban-col[data-status="done"] .task-card-name { text-decoration: line-through; color: var(--color-text-secondary); }
@@ -1101,7 +1127,7 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
   display: flex;
   gap: 0;
   margin-bottom: 20px;
-  border-bottom: 1px solid #e0e0e0;
+  border-bottom: 1px solid var(--color-border-separator);
 }
 .crm-subtab {
   padding: 12px 16px;
@@ -1353,6 +1379,10 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
 
 /* CRM Vendor Table Wrapper */
 .crm-vendor-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+/* Generic wide-table mobile scroll wrapper */
+.table-scroll-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.num-cell { text-align: right; font-variant-numeric: tabular-nums; }
 
 /* CRM Pipeline (5-col kanban) */
 .crm-kanban {
@@ -1827,7 +1857,7 @@ body.crm-panel-open { overflow: hidden; }
   display: flex;
   gap: 0;
   margin-bottom: 16px;
-  border-bottom: 1px solid #e0e0e0;
+  border-bottom: 1px solid var(--color-border-separator);
 }
 .orders-subtab {
   padding: 8px 18px;
@@ -1864,7 +1894,7 @@ body.crm-panel-open { overflow: hidden; }
   margin-top: 2px;
 }
 .order-items-list {
-  border-top: 1px solid #e0e0e0;
+  border-top: 1px solid var(--color-border-separator);
   padding-top: 12px;
   margin-top: 8px;
 }
@@ -1910,7 +1940,7 @@ body.crm-panel-open { overflow: hidden; }
   align-items: center;
   justify-content: space-between;
   padding: 20px 24px;
-  border-bottom: 1px solid #e0e0e0;
+  border-bottom: 1px solid var(--color-border-separator);
 }
 .customer-drawer-header h3 { font-size: var(--text-lg); font-weight: 500; color: var(--color-text-heading); }
 .customer-drawer-header button {
@@ -2005,7 +2035,7 @@ body.crm-panel-open { overflow: hidden; }
   color: var(--color-text-heading);
   margin: 20px 0 8px;
   padding-top: 16px;
-  border-top: 1px solid #e0e0e0;
+  border-top: 1px solid var(--color-border-separator);
 }
 .customer-orders-list { max-height: 300px; overflow-y: auto; }
 .customer-order-item {
@@ -2078,7 +2108,7 @@ body.crm-panel-open { overflow: hidden; }
   align-items: center;
   justify-content: space-between;
   padding: 20px 24px;
-  border-bottom: 1px solid #e0e0e0;
+  border-bottom: 1px solid var(--color-border-separator);
 }
 .score-drawer-header h3 { font-size: var(--text-lg); font-weight: 500; color: var(--color-text-heading); }
 .score-drawer-header button {
@@ -2093,7 +2123,7 @@ body.crm-panel-open { overflow: hidden; }
 .score-drawer-header button:hover { color: var(--color-text-heading); }
 .score-drawer-tabs {
   display: flex;
-  border-bottom: 1px solid #e0e0e0;
+  border-bottom: 1px solid var(--color-border-separator);
 }
 .score-tab-btn {
   flex: 1;
@@ -2278,7 +2308,7 @@ body.crm-panel-open { overflow: hidden; }
   font-weight: 500;
   color: var(--color-text-secondary);
   text-transform: uppercase;
-  border-bottom: 1px solid #e0e0e0;
+  border-bottom: 1px solid var(--color-border-separator);
 }
 .inv-line-items td { padding: 4px 4px; }
 .inv-line-items input {
@@ -2321,7 +2351,7 @@ body.crm-panel-open { overflow: hidden; }
   gap: 6px;
   margin-top: 12px;
   padding-top: 12px;
-  border-top: 1px solid #e0e0e0;
+  border-top: 1px solid var(--color-border-separator);
 }
 .inv-totals-row {
   display: flex;
@@ -2649,7 +2679,7 @@ body.crm-panel-open { overflow: hidden; }
   display: flex;
   gap: 10px;
   justify-content: flex-end;
-  border-bottom: 1px solid #e0e0e0;
+  border-bottom: 1px solid var(--color-border-separator);
   z-index: 1;
 }
 .inv-preview-actions button {
@@ -2773,7 +2803,7 @@ body.crm-panel-open { overflow: hidden; }
   flex: 0 0 620px; max-width: 620px;
   overflow-y: auto; padding: 28px;
   max-height: 90vh;
-  border-right: 1px solid #e0e0e0;
+  border-right: 1px solid var(--color-border-separator);
 }
 .board-modal.inv-modal:not(.inv-split-mode) .inv-split-editor {
   max-width: 100%; flex: none;
@@ -3545,7 +3575,7 @@ h2.crm-detail-name {
   margin-top: 4px;
   min-width: 180px;
   background: var(--color-surface);
-  border: 1px solid #e0e0e0;
+  border: 1px solid var(--color-border-separator);
   border-radius: 10px;
   box-shadow: 0 4px 16px rgba(0,0,0,0.12);
   z-index: 20;
@@ -3597,7 +3627,7 @@ h2.crm-detail-name {
   top: 0;
   min-width: 180px;
   background: var(--color-surface);
-  border: 1px solid #e0e0e0;
+  border: 1px solid var(--color-border-separator);
   border-radius: 10px;
   box-shadow: 0 4px 16px rgba(0,0,0,0.12);
   z-index: 50;
@@ -4238,7 +4268,7 @@ select.contact-edit-input { appearance: auto; cursor: pointer; }
 .contact-edit-save-bar { display: flex; justify-content: flex-end; gap: 8px; border-top: 1px solid #f0f0f0; padding-top: 14px; margin-top: 16px; }
 .contact-edit-save-btn { background: #0e413b; color: #fff; font-family: var(--font-text); font-size: 12px; border-radius: 6px; padding: 7px 18px; border: none; cursor: pointer; }
 .contact-edit-save-btn:hover { background: #1a5c50; }
-.contact-edit-cancel-btn { border: 1px solid #dadce0; background: transparent; color: #5f6368; font-family: var(--font-text); font-size: 12px; border-radius: 6px; padding: 7px 18px; cursor: pointer; }
+.contact-edit-cancel-btn { border: 1px solid #dadce0; background: transparent; color: var(--color-text-secondary); font-family: var(--font-text); font-size: 12px; border-radius: 6px; padding: 7px 18px; cursor: pointer; }
 
 /* ── Notes timeline ────────────────────────────────────────── */
 .crm-notes-container {
@@ -4995,7 +5025,7 @@ select.contact-edit-input { appearance: auto; cursor: pointer; }
   font-size: var(--text-tab);
   font-weight: 500;
   border-radius: 16px;
-  border: 1px solid #e0e0e0;
+  border: 1px solid var(--color-border-separator);
   background: var(--color-surface);
   color: var(--color-text-secondary);
   cursor: pointer;
@@ -5056,7 +5086,7 @@ select.contact-edit-input { appearance: auto; cursor: pointer; }
 .crm-stock-actions button {
   width: 28px; height: 28px;
   border-radius: 6px;
-  border: 1px solid #e0e0e0;
+  border: 1px solid var(--color-border-separator);
   background: var(--color-surface);
   cursor: pointer;
   display: flex;
@@ -5152,7 +5182,7 @@ select.contact-edit-input { appearance: auto; cursor: pointer; }
 .crm-doc-actions button {
   width: 28px; height: 28px;
   border-radius: 6px;
-  border: 1px solid #e0e0e0;
+  border: 1px solid var(--color-border-separator);
   background: var(--color-surface);
   cursor: pointer;
   display: flex;
@@ -5251,6 +5281,10 @@ select.contact-edit-input { appearance: auto; cursor: pointer; }
   .crm-vendor-grid { grid-template-columns: 1fr; }
   .crm-vendor-table-wrap { margin: 0 -8px; }
   .crm-vendor-table-wrap .crm-table { min-width: 640px; }
+  .table-scroll-wrap { margin: 0 -8px; }
+  .table-scroll-wrap .orders-table { min-width: 720px; }
+  .table-scroll-wrap .crm-table { min-width: 640px; }
+  .table-scroll-wrap .formulator-batch-table { min-width: 640px; }
   .crm-kanban {
     grid-template-columns: repeat(5, 80vw);
     overflow-x: auto;
@@ -5295,7 +5329,7 @@ select.contact-edit-input { appearance: auto; cursor: pointer; }
   .order-detail-grid { grid-template-columns: 1fr; }
   .board-modal.inv-modal { width: 100%; max-width: 100vw; border-radius: 0; max-height: 100vh; }
   .board-modal.inv-modal.inv-split-mode { flex-direction: column; width: 100%; }
-  .inv-split-editor { max-width: 100% !important; flex: none !important; max-height: 55vh; border-right: none; border-bottom: 1px solid #e0e0e0; }
+  .inv-split-editor { max-width: 100% !important; flex: none !important; max-height: 55vh; border-right: none; border-bottom: 1px solid var(--color-border-separator); }
   /* Below 600px the shrunken split preview is illegible: hide it and the split
      toggles, and expose a full-screen preview button instead. */
   .inv-split-preview { display: none !important; }
@@ -5671,9 +5705,9 @@ select.contact-edit-input { appearance: auto; cursor: pointer; }
   cursor: pointer;
   border-radius: 8px;
   padding: 8px;
-  transition: background 0.15s;
+  transition: background var(--motion-fast) var(--ease-out);
 }
-.stat-link:hover { background: rgba(0,0,0,0.04); }
+.stat-link:hover { background: var(--color-hover-tint); }
 
 /* Board tab badge */
 .tab-badge {
@@ -6242,6 +6276,11 @@ select.contact-edit-input { appearance: auto; cursor: pointer; }
   font-size: var(--text-md);
   font-weight: 600;
   color: var(--color-text);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  overflow-wrap: anywhere;
 }
 .dev-pipeline-card-nameja {
   font-size: var(--text-tab);
@@ -6298,10 +6337,10 @@ select.contact-edit-input { appearance: auto; cursor: pointer; }
   overflow: hidden;
   background: var(--color-surface, #fff);
   cursor: pointer;
-  transition: box-shadow 0.15s, transform 0.15s;
-}
-.product-card {
   box-shadow: var(--shadow-card);
+  /* Motion is defined once in the tokenized card block above
+     (.task-card/.crm-vendor-card/.product-card). Do not re-declare
+     transition here — it would override the motion tokens. */
 }
 .product-card:hover {
   box-shadow: var(--shadow-md);
@@ -6337,6 +6376,11 @@ select.contact-edit-input { appearance: auto; cursor: pointer; }
   font-weight: 600;
   color: var(--color-text-primary);
   line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  overflow-wrap: anywhere;
 }
 .product-card-sku {
   font-family: monospace;
@@ -6440,7 +6484,7 @@ select.contact-edit-input { appearance: auto; cursor: pointer; }
       <div id="meeting-embed-tabs" class="doc-embed-tabs"></div>
       <iframe id="meeting-embed" class="doc-embed" frameborder="0"></iframe>
       <details style="margin-top:8px">
-        <summary style="font-size:13px;color:#5f6368;cursor:pointer" data-i18n="home.allMeetingDocs">All meeting documents</summary>
+        <summary style="font-size:13px;color:var(--color-text-secondary);cursor:pointer" data-i18n="home.allMeetingDocs">All meeting documents</summary>
         <div class="info-card-scroll" id="meeting-notes-list" style="margin-top:8px"></div>
       </details>
     </div>
@@ -6659,7 +6703,7 @@ select.contact-edit-input { appearance: auto; cursor: pointer; }
     <!-- Contacts sub-tab -->
     <div id="crm-contacts" class="crm-subview">
       <div class="crm-vendor-table-wrap" id="crm-contacts-table-wrap"></div>
-      <p id="crm-contacts-empty" style="display:none;text-align:center;padding:32px;color:#5f6368;font-size:14px;" data-i18n="crm.noContacts">No contacts found.</p>
+      <p id="crm-contacts-empty" style="display:none;text-align:center;padding:32px;color:var(--color-text-secondary);font-size:14px;" data-i18n="crm.noContacts">No contacts found.</p>
     </div>
 
     <!-- Vendors sub-tab -->
@@ -6669,7 +6713,7 @@ select.contact-edit-input { appearance: auto; cursor: pointer; }
         <div class="skel skel-vendor"></div><div class="skel skel-vendor"></div><div class="skel skel-vendor"></div>
       </div>
       <div class="crm-vendor-grid" id="crm-vendor-grid"></div>
-      <p id="crm-vendors-empty" style="display:none;text-align:center;padding:32px;color:#5f6368;font-size:14px;" data-i18n="crm.noVendors">No vendors found. Add one with + Add Contact.</p>
+      <p id="crm-vendors-empty" style="display:none;text-align:center;padding:32px;color:var(--color-text-secondary);font-size:14px;" data-i18n="crm.noVendors">No vendors found. Add one with + Add Contact.</p>
     </div>
 
     <!-- Pipeline sub-tab -->
@@ -6756,7 +6800,7 @@ select.contact-edit-input { appearance: auto; cursor: pointer; }
         <div class="skel-table-row"><div class="skel skel-table-cell skel-table-cell-sm"></div><div class="skel skel-table-cell"></div><div class="skel skel-table-cell skel-table-cell-sm"></div><div class="skel skel-table-cell skel-table-cell-sm"></div><div class="skel skel-table-cell skel-table-cell-sm"></div></div>
         <div class="skel-table-row"><div class="skel skel-table-cell skel-table-cell-sm"></div><div class="skel skel-table-cell"></div><div class="skel skel-table-cell skel-table-cell-sm"></div><div class="skel skel-table-cell skel-table-cell-sm"></div><div class="skel skel-table-cell skel-table-cell-sm"></div></div>
       </div>
-      <p id="documents-no-results" style="display:none;text-align:center;padding:32px;color:#5f6368;font-size:14px;" data-i18n="tools.noDocuments">No documents found.</p>
+      <p id="documents-no-results" style="display:none;text-align:center;padding:32px;color:var(--color-text-secondary);font-size:14px;" data-i18n="tools.noDocuments">No documents found.</p>
     </div>
 
     <!-- SOAP FORMULATOR -->
@@ -6764,7 +6808,7 @@ select.contact-edit-input { appearance: auto; cursor: pointer; }
       <h2 class="section-title">石けんフォーミュレーター</h2>
       <p class="section-subtitle">苛性ソーダ・水・石けんの特性を計算</p>
 
-      <div style="display:flex;align-items:center;gap:12px;margin:12px 32px 0;flex-wrap:wrap">
+      <div style="display:flex;align-items:center;gap:12px;margin:12px 0 0;flex-wrap:wrap">
         <label style="font-family:var(--font-display);font-size:var(--text-sm);font-weight:600;color:#062420">レシピ読込:</label>
         <select id="formulator-load-preset" style="padding:6px 10px;border:1px solid var(--color-border);border-radius:var(--radius-md);font-size:var(--text-md);font-family:inherit;min-width:200px" onchange="formulatorLoadPreset(this.value)">
           <option value="">— レシピを選択 —</option>
@@ -6986,6 +7030,7 @@ select.contact-edit-input { appearance: auto; cursor: pointer; }
           <div class="formulator-batch-title">バッチ履歴 (Batch History)</div>
           <button class="formulator-add-btn" onclick="formulatorNewBatch()">+ 新規バッチ</button>
         </div>
+        <div class="table-scroll-wrap">
         <table class="ivh-table formulator-batch-table">
           <thead>
             <tr>
@@ -6999,6 +7044,7 @@ select.contact-edit-input { appearance: auto; cursor: pointer; }
           </thead>
           <tbody id="formulator-batch-body"></tbody>
         </table>
+        </div>
         <p class="formulator-empty" id="formulator-batch-empty" style="display:none">バッチがありません。上のレシピを保存してください。</p>
       </div>
     </div>
@@ -7018,25 +7064,27 @@ select.contact-edit-input { appearance: auto; cursor: pointer; }
       </div>
     </div>
 
+    <div class="table-scroll-wrap">
     <table class="ivh-table crm-table">
       <thead>
         <tr>
           <th data-i18n="customersTbl.name">Name</th>
           <th data-i18n="customersTbl.email">Email</th>
           <th data-i18n="customersTbl.orders">Orders</th>
-          <th data-i18n="customer.totalSpent">Total Spent</th>
+          <th class="num-cell" data-i18n="customer.totalSpent">Total Spent</th>
           <th data-i18n="customer.lastOrder">Last Order</th>
           <th data-i18n="customer.tags">Tags</th>
         </tr>
       </thead>
       <tbody id="crm-customers-body"></tbody>
     </table>
+    </div>
     <div id="customers-skeleton" class="skel-table">
       <div class="skel-table-row"><div class="skel skel-table-cell"></div><div class="skel skel-table-cell"></div><div class="skel skel-table-cell skel-table-cell-sm"></div><div class="skel skel-table-cell skel-table-cell-sm"></div><div class="skel skel-table-cell skel-table-cell-sm"></div></div>
       <div class="skel-table-row"><div class="skel skel-table-cell"></div><div class="skel skel-table-cell"></div><div class="skel skel-table-cell skel-table-cell-sm"></div><div class="skel skel-table-cell skel-table-cell-sm"></div><div class="skel skel-table-cell skel-table-cell-sm"></div></div>
       <div class="skel-table-row"><div class="skel skel-table-cell"></div><div class="skel skel-table-cell"></div><div class="skel skel-table-cell skel-table-cell-sm"></div><div class="skel skel-table-cell skel-table-cell-sm"></div><div class="skel skel-table-cell skel-table-cell-sm"></div></div>
     </div>
-    <p id="crm-customers-empty" style="display:none;text-align:center;padding:32px;color:#5f6368;font-size:14px;" data-i18n="customers.empty">No customers found. Sync from Shopify orders to populate.</p>
+    <p id="crm-customers-empty" style="display:none;text-align:center;padding:32px;color:var(--color-text-secondary);font-size:14px;" data-i18n="customers.empty">No customers found. Sync from Shopify orders to populate.</p>
   </div>
 
   <!-- PRODUCTS -->
@@ -7174,6 +7222,7 @@ select.contact-edit-input { appearance: auto; cursor: pointer; }
       </div>
     </div>
 
+    <div class="table-scroll-wrap">
     <table class="ivh-table orders-table">
       <thead>
         <tr>
@@ -7181,7 +7230,7 @@ select.contact-edit-input { appearance: auto; cursor: pointer; }
           <th data-i18n="docs.colDate">Date</th>
           <th data-i18n="nav.customers">Customer</th>
           <th data-i18n="ordersTbl.items">Items</th>
-          <th data-i18n="docs.colTotal">Total</th>
+          <th class="num-cell" data-i18n="docs.colTotal">Total</th>
           <th data-i18n="ordersTbl.payment">Payment</th>
           <th data-i18n="manualOrder.fulfillment">Fulfillment</th>
           <th data-i18n="ordersTbl.docs">Docs</th>
@@ -7189,6 +7238,7 @@ select.contact-edit-input { appearance: auto; cursor: pointer; }
       </thead>
       <tbody id="orders-body"></tbody>
     </table>
+    </div>
     <div id="orders-skeleton" class="skel-table">
       <div class="skel-table-row"><div class="skel skel-table-cell skel-table-cell-sm"></div><div class="skel skel-table-cell"></div><div class="skel skel-table-cell"></div><div class="skel skel-table-cell skel-table-cell-sm"></div><div class="skel skel-table-cell skel-table-cell-sm"></div></div>
       <div class="skel-table-row"><div class="skel skel-table-cell skel-table-cell-sm"></div><div class="skel skel-table-cell"></div><div class="skel skel-table-cell"></div><div class="skel skel-table-cell skel-table-cell-sm"></div><div class="skel skel-table-cell skel-table-cell-sm"></div></div>
@@ -7364,7 +7414,7 @@ select.contact-edit-input { appearance: auto; cursor: pointer; }
           <input type="text" id="crm-modal-company" placeholder="Brand / Display Name" oninput="updateCrmAvatar(this.value)" style="flex:1;font-size:15px;font-weight:500;">
         </div>
         <div class="crm-modal-header-row">
-          <input type="text" id="crm-modal-name" data-field="name" placeholder="Registered Company Name (e.g. 株式会社...)" style="flex:1;font-size:12px;color:#5f6368;">
+          <input type="text" id="crm-modal-name" data-field="name" placeholder="Registered Company Name (e.g. 株式会社...)" style="flex:1;font-size:12px;color:var(--color-text-secondary);">
         </div>
       </div>
     </div>
@@ -7505,7 +7555,7 @@ select.contact-edit-input { appearance: auto; cursor: pointer; }
     <div class="crm-modal-section" id="crm-modal-invoices-section" style="display:none">
       <div class="crm-section-title" data-i18n="crmModal.invoices">Invoices</div>
       <div class="crm-invoices-list" id="crm-modal-invoices-list"></div>
-      <p id="crm-modal-invoices-empty" style="font-size:13px;color:#5f6368;display:none" data-i18n="crmModal.noInvoices">No invoices for this contact.</p>
+      <p id="crm-modal-invoices-empty" style="font-size:13px;color:var(--color-text-secondary);display:none" data-i18n="crmModal.noInvoices">No invoices for this contact.</p>
     </div>
     </div><!-- end crm-modal-body -->
 
@@ -7977,6 +8027,13 @@ select.contact-edit-input { appearance: auto; cursor: pointer; }
 </div>
 
 <script>
+// Currency helper: deterministic ja-JP yen formatting.
+// null/undefined/"" -> "—"; a numeric 0 renders "¥0".
+function _yen(v) {
+  if (v === null || v === undefined || v === "") return "—";
+  return "¥" + Number(v || 0).toLocaleString("ja-JP");
+}
+
 // Document data
 const DOCS = [
   { name: "Soap Line Up", category: "Strategy & Brand", type: "Doc", workspace: "IVYCOAST", updated: "2025-11-10", desc: "Current soap product lineup and specifications" },
@@ -8443,7 +8500,25 @@ var I18N = {
     // crm overview tab — safe standalone section labels
     "crmOv.productsInStock": "Products in Stock",
     "crmOv.setWorkingRules": "Set working rules",
-    "crmOv.noShopsConnected": "No shops connected yet"
+    "crmOv.noShopsConnected": "No shops connected yet",
+    // sweep 2 — empty/error states + tooltips
+    "board.columnEmpty": "Drop cards here",
+    "docs.gridEmpty": "No documents in this workspace yet.",
+    "home.viewStat": "View {label}",
+    "home.noMeetingNotes": "No meeting notes found.",
+    "home.noActiveTasks": "No active or overdue tasks.",
+    "home.connectBoard": "Connect your Board to see tasks here.",
+    "home.noActiveTasksNice": "No active or overdue tasks. Nice work!",
+    "home.noRecentDocs": "No recently updated documents.",
+    "crm.detail.noOrdersYet": "No orders yet",
+    "crm.detail.noNotesYet": "No notes yet",
+    "crm.detail.noActivity": "No activity recorded yet",
+    "crm.detail.noStockItems": "No stock items",
+    "crm.detail.noDocuments": "No documents yet",
+    "crm.detail.noReferences": "No references found",
+    "crm.detail.noOrdersFound": "No orders found for this contact",
+    "customer.noOrders": "No orders found.",
+    "data.loadError": "Couldn't load data. Please refresh."
   },
   ja: {
     // nav
@@ -8855,7 +8930,25 @@ var I18N = {
     // crm overview tab — safe standalone section labels
     "crmOv.productsInStock": "在庫商品",
     "crmOv.setWorkingRules": "取引条件を設定",
-    "crmOv.noShopsConnected": "接続された店舗はまだありません"
+    "crmOv.noShopsConnected": "接続された店舗はまだありません",
+    // sweep 2 — empty/error states + tooltips
+    "board.columnEmpty": "ここにドロップ",
+    "docs.gridEmpty": "このワークスペースにはまだドキュメントがありません。",
+    "home.viewStat": "{label}を表示",
+    "home.noMeetingNotes": "議事録が見つかりません。",
+    "home.noActiveTasks": "進行中または期限切れのタスクはありません。",
+    "home.connectBoard": "ボードを接続するとタスクがここに表示されます。",
+    "home.noActiveTasksNice": "進行中または期限切れのタスクはありません。お疲れさまです！",
+    "home.noRecentDocs": "最近更新されたドキュメントはありません。",
+    "crm.detail.noOrdersYet": "注文はまだありません",
+    "crm.detail.noNotesYet": "メモはまだありません",
+    "crm.detail.noActivity": "記録されたアクティビティはありません",
+    "crm.detail.noStockItems": "在庫アイテムはありません",
+    "crm.detail.noDocuments": "ドキュメントはまだありません",
+    "crm.detail.noReferences": "参照が見つかりません",
+    "crm.detail.noOrdersFound": "この取引先の注文は見つかりません",
+    "customer.noOrders": "注文が見つかりません。",
+    "data.loadError": "データを読み込めませんでした。再読み込みしてください。"
   }
 };
 
@@ -8874,6 +8967,18 @@ function tf(key, params) {
   params = params || {};
   return t(key).replace(/\{(\w+)\}/g, function(_, k) {
     return params[k] != null ? params[k] : "";
+  });
+}
+// Keyboard-accessibility helper: makes a clickable non-button element (div/tr)
+// operable via keyboard. ADDS tabindex/role/aria + Enter/Space keydown that reuses
+// the same handler as the element's existing onclick — it does NOT remove or replace
+// the click handler, so there is no double-fire on mouse.
+function _makeActivatable(el, handler, label) {
+  el.setAttribute("tabindex", "0");
+  el.setAttribute("role", "button");
+  if (label) el.setAttribute("aria-label", label);
+  el.addEventListener("keydown", function(e) {
+    if (e.key === "Enter" || e.key === " ") { e.preventDefault(); handler.call(el, e); }
   });
 }
 // Localized CRM stage label from a stageKey (prospect|outreach|negotiation|active_partner|inactive).
@@ -9003,10 +9108,12 @@ function createDocLinkEl(name) {
     a.target = "_blank";
     a.rel = "noopener";
     a.textContent = name;
+    if (name) a.title = name;
     return a;
   }
   var span = document.createElement("span");
   span.textContent = name;
+  if (name) span.title = name;
   return span;
 }
 
@@ -9093,7 +9200,7 @@ function renderHomeMeetingNotes() {
   if (meetingDocs.length === 0) {
     var p = document.createElement("p");
     p.className = "home-placeholder";
-    p.textContent = "No meeting notes found.";
+    p.textContent = t("home.noMeetingNotes");
     container.appendChild(p);
     return;
   }
@@ -9150,14 +9257,14 @@ function renderHomeActiveTasks() {
   if (boardTasks.length === 0) {
     var p = document.createElement("p");
     p.className = "home-placeholder";
-    p.textContent = typeof SCRIPT_URL !== "undefined" && SCRIPT_URL ? "No active or overdue tasks." : "Connect your Board to see tasks here.";
+    p.textContent = typeof SCRIPT_URL !== "undefined" && SCRIPT_URL ? t("home.noActiveTasks") : t("home.connectBoard");
     container.appendChild(p);
     return;
   }
   if (activeTasks.length === 0) {
     var p2 = document.createElement("p");
     p2.className = "home-placeholder";
-    p2.textContent = "No active or overdue tasks. Nice work!";
+    p2.textContent = t("home.noActiveTasksNice");
     container.appendChild(p2);
     return;
   }
@@ -9165,6 +9272,7 @@ function renderHomeActiveTasks() {
     var row = document.createElement("div");
     row.className = "home-task-row";
     row.onclick = function() { navigateTo("board", "", t.status); };
+    _makeActivatable(row, row.onclick, t.name);
     var nameSpan = document.createElement("span");
     nameSpan.className = "home-task-name";
     if (t.docLink && isValidURL(t.docLink)) {
@@ -9217,13 +9325,14 @@ function renderHomeKeyStats() {
   var stats = [
     { num: productCount, label: "Products", color: "#0e413b", action: "navigateTo('library','Products')" },
     { num: activeCount, label: "In Progress", color: "#34a853", action: "navigateTo('board','','in_progress')" },
-    { num: overdueCount, label: "Overdue", color: overdueCount > 0 ? "#d93025" : "#5f6368", action: "navigateTo('board')" }
+    { num: overdueCount, label: "Overdue", color: overdueCount > 0 ? "#d93025" : "var(--color-text-secondary)", action: "navigateTo('board')" }
   ];
   stats.forEach(function(s) {
     var div = document.createElement("div");
     div.className = "stat-link";
     div.setAttribute("onclick", s.action);
-    div.title = "View " + s.label.toLowerCase();
+    div.title = tf("home.viewStat", { label: s.label.toLowerCase() });
+    _makeActivatable(div, function() { if (div.onclick) div.onclick(); }, tf("home.viewStat", { label: s.label.toLowerCase() }));
     var numDiv = document.createElement("div");
     numDiv.className = "stat-num";
     numDiv.style.color = s.color;
@@ -9245,7 +9354,7 @@ function renderHomeRecentlyUpdated() {
     .sort(function(a, b) { return b.updated.localeCompare(a.updated); })
     .slice(0, 5);
   if (recentDocs.length === 0) {
-    container.textContent = "No recently updated documents.";
+    container.textContent = t("home.noRecentDocs");
     return;
   }
   recentDocs.forEach(function(doc) {
@@ -9316,6 +9425,13 @@ function renderCategoryGrid(workspace, containerId) {
 
     container.appendChild(card);
   });
+
+  if (categoryOrder.length === 0) {
+    var gridEmpty = document.createElement("p");
+    gridEmpty.className = "grid-empty-state";
+    gridEmpty.textContent = t("docs.gridEmpty");
+    container.appendChild(gridEmpty);
+  }
 }
 
 // Document Library
@@ -9372,6 +9488,7 @@ function renderLibrary() {
     var tr = document.createElement("tr");
 
     var tdName = document.createElement("td");
+    tdName.className = "cell-ellipsis";
     tdName.appendChild(createDocLinkEl(d.name));
     tr.appendChild(tdName);
 
@@ -9612,6 +9729,21 @@ function fetchAllData() {
       console.error("Batch fetch error:", err);
       if (typeof setSyncStatus === "function") setSyncStatus("接続エラー / Connection error — data may be stale");
       if (typeof showFormulatorToast === "function") showFormulatorToast("接続エラー / Connection error — data may be stale", 5000);
+      // Best-effort inline error affordance on the active view's empty container.
+      try {
+        var _errCandidates = [
+          "home-placeholder", "no-results", "grid-empty-state",
+          "orders-no-results", "crm-customers-empty", "crm-empty-state"
+        ];
+        var _errMsg = (typeof t === "function") ? t("data.loadError") : "Couldn't load data. Please refresh.";
+        _errCandidates.forEach(function(cls) {
+          var els = document.getElementsByClassName(cls);
+          for (var i = 0; i < els.length; i++) {
+            var el = els[i];
+            if (el && el.offsetParent !== null) { el.textContent = _errMsg; }
+          }
+        });
+      } catch (_e) { /* never throw from error handler */ }
     });
 }
 
@@ -10134,6 +10266,7 @@ function renderBoard() {
       card.className = "task-card";
       card.setAttribute("data-id", t.id);
       card.setAttribute("tabindex", "0");
+      if (t.name) card.title = t.name;
       card.draggable = true;
 
       // Name
@@ -10281,6 +10414,12 @@ function renderBoard() {
 
       frag.appendChild(card);
     });
+    if (cols[status].length === 0) {
+      var colEmpty = document.createElement("div");
+      colEmpty.className = "kanban-col-empty";
+      colEmpty.textContent = tr("board.columnEmpty");
+      frag.appendChild(colEmpty);
+    }
     container.appendChild(frag);
   });
 
@@ -11016,7 +11155,7 @@ renderBoard = function() {
       badge.appendChild(document.createTextNode(boardAssigneeFilter));
       var clearBtn = document.createElement("button");
       clearBtn.textContent = "\u2715";
-      clearBtn.style.cssText = "border:none;background:none;cursor:pointer;font-size:12px;color:#5f6368;padding:0 2px;";
+      clearBtn.style.cssText = "border:none;background:none;cursor:pointer;font-size:12px;color:var(--color-text-secondary);padding:0 2px;";
       clearBtn.onclick = function() { filterBoardByAssignee(boardAssigneeFilter); };
       badge.appendChild(clearBtn);
       toolbar.appendChild(badge);
@@ -12080,10 +12219,11 @@ function renderCrmPipeline() {
       var nameDiv = document.createElement("div");
       nameDiv.className = "task-card-name";
       nameDiv.textContent = c.name || c.nameEn || "Unnamed";
+      card.title = nameDiv.textContent;
       card.appendChild(nameDiv);
       if (c.nameEn && c.name) {
         var nameEnSmall = document.createElement("div");
-        nameEnSmall.style.cssText = "font-size:11px;color:#5f6368;margin-top:1px;";
+        nameEnSmall.style.cssText = "font-size:11px;color:var(--color-text-secondary);margin-top:1px;";
         nameEnSmall.textContent = c.nameEn;
         card.appendChild(nameEnSmall);
       }
@@ -13581,6 +13721,21 @@ function openCrmDetailView(contactId) {
     _refCount > 0 ? [_refCount, "gray"] : null
   ];
   var panels = [];
+  // Lazy render: only the Overview (default) tab renders on open; every other tab
+  // renders on its FIRST activation, guarded so re-clicking never re-renders.
+  var _tabRendered = {};
+  function _renderCrmTab(idx) {
+    if (_tabRendered[idx]) return;
+    _tabRendered[idx] = true;
+    switch (idx) {
+      case 0: renderCrmOverviewTab(c, panels[0], contactId, tabsBar); break;
+      case 1: renderCrmTeamTab(c, panels[1], contactId); break;
+      case 2: renderCrmOrdersTab(c, panels[2], contactId); break;
+      case 3: renderCrmStockTab(c, panels[3], contactId); break;
+      case 4: renderCrmDocumentsTab(c, panels[4], contactId); break;
+      case 5: renderCrmReferencesTab(c, panels[5], contactId, _refsData); break;
+    }
+  }
   tabNames.forEach(function(name, idx) {
     var btn = document.createElement("button");
     btn.className = "crm-detail-tab" + (idx === 0 ? " active" : "");
@@ -13604,6 +13759,7 @@ function openCrmDetailView(contactId) {
     body.appendChild(panel);
 
     btn.onclick = function() {
+      _renderCrmTab(idx); // render-once on first activation (also covers programmatic .click())
       tabsBar.querySelectorAll(".crm-detail-tab").forEach(function(t) { t.classList.remove("active"); });
       btn.classList.add("active");
       panels.forEach(function(p) { p.classList.remove("active"); });
@@ -13611,13 +13767,8 @@ function openCrmDetailView(contactId) {
     };
   });
 
-  // Render each tab
-  renderCrmOverviewTab(c, panels[0], contactId, tabsBar);
-  renderCrmTeamTab(c, panels[1], contactId);
-  renderCrmOrdersTab(c, panels[2], contactId);
-  renderCrmStockTab(c, panels[3], contactId);
-  renderCrmDocumentsTab(c, panels[4], contactId);
-  renderCrmReferencesTab(c, panels[5], contactId, _refsData);
+  // Render the default (Overview) tab eagerly; the rest render on first activation.
+  _renderCrmTab(0);
 
   // Collapsible header on scroll (with dead zone to prevent jitter)
   detailView.classList.remove("header-collapsed");
@@ -15050,7 +15201,7 @@ function renderCrmOverviewTab(c, panel, contactId, tabsBar) {
   } else {
     var ordersEmpty = document.createElement("div");
     ordersEmpty.className = "crm-overview-empty";
-    ordersEmpty.textContent = "No orders yet";
+    ordersEmpty.textContent = t("crm.detail.noOrdersYet");
     ordersSection.appendChild(ordersEmpty);
   }
   rightCol.appendChild(ordersSection);
@@ -15491,7 +15642,7 @@ function renderCrmNotesSection(c, panel, contactId) {
     if (!notes.length) {
       var empty = document.createElement("p");
       empty.className = "ivh-empty"; empty.style.padding = "20px 0"; empty.style.textAlign = "center";
-      empty.textContent = "No notes yet";
+      empty.textContent = t("crm.detail.noNotesYet");
       timeline.appendChild(empty);
       return;
     }
@@ -15748,7 +15899,7 @@ function renderCrmActivitySection(c, panel, contactId) {
   if (!filtered.length) {
     var empty = document.createElement("p");
     empty.className = "ivh-empty";
-    empty.textContent = "No activity recorded yet";
+    empty.textContent = t("crm.detail.noActivity");
     timeline.appendChild(empty);
   } else {
     filtered.forEach(function(a) {
@@ -16376,7 +16527,7 @@ function renderContactNotesTab(contact, panel, bodyEl, contactId, tabsBar, vendo
   if (notes.length === 0) {
     var empty = document.createElement("div");
     empty.className = "ivh-empty-sm";
-    empty.textContent = "No notes yet";
+    empty.textContent = t("crm.detail.noNotesYet");
     panel.appendChild(empty);
   }
 }
@@ -18103,7 +18254,7 @@ function renderCrmTeamTab(c, panel, contactId) {
       var cardSection = document.createElement("div");
       cardSection.style.cssText = "margin-top:10px;";
       var cardLabel = document.createElement("div");
-      cardLabel.style.cssText = "font-size:12px;color:#5f6368;margin-bottom:4px;";
+      cardLabel.style.cssText = "font-size:12px;color:var(--color-text-secondary);margin-bottom:4px;";
       cardLabel.textContent = "Business Cards";
       cardSection.appendChild(cardLabel);
 
@@ -18291,7 +18442,7 @@ function renderCrmOrdersTab(c, panel, contactId) {
   if (!matched.length) {
     var empty = document.createElement("div");
     empty.className = "crm-empty-state";
-    empty.textContent = "No orders found for this contact";
+    empty.textContent = t("crm.detail.noOrdersFound");
     panel.appendChild(empty);
     return;
   }
@@ -19380,7 +19531,7 @@ function renderCrmStockTab(c, panel, contactId) {
     if (!filtered.length) {
       var empty = document.createElement("div");
       empty.className = "crm-empty-state";
-      empty.textContent = "No stock items";
+      empty.textContent = t("crm.detail.noStockItems");
       tableWrap.appendChild(empty);
       return;
     }
@@ -19582,7 +19733,7 @@ function renderCrmDocumentsTab(c, panel, contactId) {
   } else {
     var emptyDoc = document.createElement("div");
     emptyDoc.className = "crm-empty-state";
-    emptyDoc.textContent = "No documents yet";
+    emptyDoc.textContent = t("crm.detail.noDocuments");
     panel.appendChild(emptyDoc);
   }
 
@@ -19760,7 +19911,7 @@ function renderCrmReferencesTab(c, panel, contactId, refsData) {
   if (!refs.length) {
     var empty = document.createElement("div");
     empty.className = "crm-empty-state";
-    empty.textContent = "No references found";
+    empty.textContent = t("crm.detail.noReferences");
     panel.appendChild(empty);
     return;
   }
@@ -20072,14 +20223,15 @@ function renderHomeCrmStats() {
   var stats = [
     { num: inPipeline, label: "In Pipeline", color: "#0e413b", action: "navigateTo('crm');switchCrmSubView('crm-pipeline')" },
     { num: active, label: "Active", color: "#34a853", action: "navigateTo('crm');switchCrmSubView('crm-pipeline')" },
-    { num: total, label: "Total", color: "#5f6368", action: "navigateTo('crm');switchCrmSubView('crm-contacts')" },
+    { num: total, label: "Total", color: "var(--color-text-secondary)", action: "navigateTo('crm');switchCrmSubView('crm-contacts')" },
     { num: shopifyCustomers.length, label: "Customers", color: "#e8710a", action: "navigateTo('customers')" }
   ];
   stats.forEach(function(s) {
     var div = document.createElement("div");
     div.className = "stat-link";
     div.setAttribute("onclick", s.action);
-    div.title = "View " + s.label.toLowerCase();
+    div.title = tf("home.viewStat", { label: s.label.toLowerCase() });
+    _makeActivatable(div, function() { if (div.onclick) div.onclick(); }, tf("home.viewStat", { label: s.label.toLowerCase() }));
     var numDiv = document.createElement("div");
     numDiv.className = "stat-num";
     numDiv.style.color = s.color;
@@ -25820,14 +25972,19 @@ function renderCrmCustomers() {
     var tr = document.createElement("tr");
     tr.style.cursor = "pointer";
     tr.onclick = function() { openCustomerDrawer(c.email); };
+    _makeActivatable(tr, tr.onclick, c.name || c.email || "Customer");
 
     var tdName = document.createElement("td");
+    tdName.className = "cell-ellipsis";
     tdName.textContent = c.name || "\u2014";
+    if (c.name) tdName.title = c.name;
     tdName.style.fontWeight = "500";
     tr.appendChild(tdName);
 
     var tdEmail = document.createElement("td");
+    tdEmail.className = "cell-ellipsis";
     tdEmail.textContent = c.email || "\u2014";
+    if (c.email) tdEmail.title = c.email;
     tdEmail.style.color = "var(--color-text-secondary)";
     tr.appendChild(tdEmail);
 
@@ -25836,7 +25993,8 @@ function renderCrmCustomers() {
     tr.appendChild(tdOrders);
 
     var tdSpent = document.createElement("td");
-    tdSpent.textContent = c.totalSpent ? "\u00A5" + Number(c.totalSpent).toLocaleString() : "\u00A50";
+    tdSpent.className = "num-cell";
+    tdSpent.textContent = _yen(c.totalSpent);
     tdSpent.style.fontWeight = "500";
     tr.appendChild(tdSpent);
 
@@ -25907,7 +26065,7 @@ function openCustomerDrawer(email) {
   if (drawerCrmLink) drawerCrm.appendChild(drawerCrmLink);
   document.getElementById("customer-drawer-phone").textContent = (customer && customer.phone) ? customer.phone : "";
   document.getElementById("customer-drawer-orders").textContent = totalOrders;
-  document.getElementById("customer-drawer-spent").textContent = "\u00A5" + Math.round(totalSpent).toLocaleString();
+  document.getElementById("customer-drawer-spent").textContent = _yen(Math.round(totalSpent));
 
   var firstEl = document.getElementById("customer-drawer-first");
   var lastEl = document.getElementById("customer-drawer-last");
@@ -25994,7 +26152,7 @@ function openCustomerDrawer(email) {
   var ordersList = document.getElementById("customer-drawer-orders-list");
   ordersList.textContent = "";
   if (customerOrders.length === 0) {
-    ordersList.textContent = "No orders found.";
+    ordersList.textContent = t("customer.noOrders");
     ordersList.style.color = "var(--color-text-secondary)";
     ordersList.style.fontSize = "13px";
   } else {
@@ -26017,7 +26175,7 @@ function openCustomerDrawer(email) {
       numSpan.textContent = prefix + (o.orderNumber || "");
       topRow.appendChild(numSpan);
       var dateSpan = document.createElement("span");
-      dateSpan.style.cssText = "color:#5f6368;font-size:12px;";
+      dateSpan.style.cssText = "color:var(--color-text-secondary);font-size:12px;";
       dateSpan.textContent = o.createdAt ? new Date(o.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "";
       topRow.appendChild(dateSpan);
       var totalSpn = document.createElement("span");
@@ -26829,6 +26987,7 @@ function renderProductsGrid(filtered) {
     var title = document.createElement("div");
     title.className = "product-card-title";
     title.textContent = p.title || "";
+    if (p.title) title.title = p.title;
     body.appendChild(title);
 
     var sku = document.createElement("div");
@@ -26874,9 +27033,11 @@ function renderProductsGrid(filtered) {
 
     card.appendChild(body);
 
-    card.addEventListener("click", (function(product) {
+    var _openThis = (function(product) {
       return function() { openProductDetailModal(product); };
-    })(p));
+    })(p);
+    card.addEventListener("click", _openThis);
+    _makeActivatable(card, _openThis, p.title || "");
 
     frag.appendChild(card);
   });
@@ -26962,6 +27123,7 @@ function _buildDevCard(pm) {
   var nameEn = document.createElement("div");
   nameEn.className = "dev-pipeline-card-name";
   nameEn.textContent = pm.nameEn || pm.marketingName || pm.nameJa || t("products.dev.untitled");
+  nameEn.title = nameEn.textContent;
   card.appendChild(nameEn);
 
   if (pm.nameJa) {
@@ -27254,12 +27416,14 @@ function openProductDetailModal(product) {
       thumb.src = url;
       thumb.alt = product.title || "";
       thumb.loading = "lazy";
-      thumb.addEventListener("click", function() {
+      var _selectThumb = function() {
         hero.src = url;
         var all = thumbs.querySelectorAll(".pd-thumb");
         for (var i = 0; i < all.length; i++) all[i].classList.remove("pd-thumb-active");
         thumb.classList.add("pd-thumb-active");
-      });
+      };
+      thumb.addEventListener("click", _selectThumb);
+      _makeActivatable(thumb, _selectThumb, "View image " + (idx + 1));
       thumbs.appendChild(thumb);
     });
     media.appendChild(thumbs);
@@ -27769,7 +27933,9 @@ function renderOrders() {
 
   filtered.forEach(function(o) {
     var tr = document.createElement("tr");
-    tr.addEventListener("click", function() { openOrderDetailModal(o); });
+    var _openOrder = function() { openOrderDetailModal(o); };
+    tr.addEventListener("click", _openOrder);
+    _makeActivatable(tr, _openOrder, "Order " + (o.orderNumber || o.shopifyOrderId || ""));
 
     // Order #
     var tdNum = document.createElement("td");
@@ -27790,10 +27956,12 @@ function renderOrders() {
 
     // Customer (clickable → opens drawer)
     var tdCustomer = document.createElement("td");
+    tdCustomer.className = "cell-ellipsis";
     if (o.email) {
       var custLink = document.createElement("a");
       custLink.className = "customer-link";
       custLink.textContent = o.customerName || o.email;
+      custLink.title = o.customerName ? (o.customerName + " (" + o.email + ")") : o.email;
       custLink.href = "#";
       custLink.onclick = (function(email) { return function(e) { e.preventDefault(); e.stopPropagation(); openCustomerDrawer(email); }; })(o.email);
       tdCustomer.appendChild(custLink);
@@ -27811,17 +27979,19 @@ function renderOrders() {
 
     // Items (truncated)
     var tdItems = document.createElement("td");
-    var itemsText = o.lineItems || "";
+    var fullItems = o.lineItems || "";
+    var itemsText = fullItems;
     if (itemsText.length > 40) itemsText = itemsText.substring(0, 40) + "\u2026";
     tdItems.textContent = itemsText || "\u2014";
+    if (fullItems) tdItems.title = fullItems;
     tdItems.style.color = "var(--color-text-secondary)";
     tdItems.style.fontSize = "var(--text-tab)";
     tr.appendChild(tdItems);
 
     // Total
     var tdTotal = document.createElement("td");
-    var total = o.totalPrice ? "\u00A5" + Number(o.totalPrice).toLocaleString() : "\u2014";
-    tdTotal.textContent = total;
+    tdTotal.className = "num-cell";
+    tdTotal.textContent = _yen(o.totalPrice);
     tdTotal.style.fontWeight = "500";
     tr.appendChild(tdTotal);
 
@@ -27891,13 +28061,36 @@ function openOrderDetailModal(order) {
   var grid = document.getElementById("order-detail-grid");
   grid.textContent = "";
 
+  var _orderTotalStr = order.totalPrice ? _yen(order.totalPrice) + " " + (order.currency || "JPY") : "\u2014";
+
   var fields = [
     { label: "Date", value: order.createdAt ? new Date(order.createdAt).toLocaleString() : "\u2014" },
-    { label: "Total", value: order.totalPrice ? "\u00A5" + Number(order.totalPrice).toLocaleString() + " " + (order.currency || "JPY") : "\u2014" },
+    { label: "Total", value: _orderTotalStr },
     { label: "Customer", value: order.customerName || "\u2014" },
-    { label: "Email", value: order.email || "\u2014" },
-    { label: "Payment", value: order.financialStatus || "\u2014" },
-    { label: "Fulfillment", value: (order.fulfillmentStatus || "unfulfilled").replace("_", " ") },
+    { label: "Email", value: order.email || "\u2014", render: function(p) {
+        p.textContent = order.email || "\u2014";
+        // "View in CRM" \u2014 only when a CRM contact matches this order's email.
+        if (order.email) {
+          var crmLink = _makeViewInCrmLink(order.email);
+          if (crmLink) {
+            var crmWrap = document.createElement("div");
+            crmWrap.appendChild(crmLink);
+            p.appendChild(crmWrap);
+          }
+        }
+      } },
+    { label: "Payment", value: order.financialStatus || "\u2014", render: function(p) {
+        var finBadge = document.createElement("span");
+        finBadge.className = "fin-badge fin-" + (order.financialStatus || "pending");
+        finBadge.textContent = order.financialStatus || "pending";
+        p.appendChild(finBadge);
+      } },
+    { label: "Fulfillment", value: (order.fulfillmentStatus || "unfulfilled").replace("_", " "), render: function(p) {
+        var fulBadge = document.createElement("span");
+        fulBadge.className = "ful-badge ful-" + (order.fulfillmentStatus || "unfulfilled");
+        fulBadge.textContent = (order.fulfillmentStatus || "unfulfilled").replace("_", " ");
+        p.appendChild(fulBadge);
+      } },
     { label: "Shipping Address", value: order.shippingAddress || "\u2014" },
     { label: "Note", value: order.note || "\u2014" }
   ];
@@ -27908,7 +28101,7 @@ function openOrderDetailModal(order) {
     var lbl = document.createElement("label");
     lbl.textContent = f.label;
     var p = document.createElement("p");
-    p.textContent = f.value;
+    if (f.render) { f.render(p); } else { p.textContent = f.value; }
     div.appendChild(lbl);
     div.appendChild(p);
     grid.appendChild(div);
@@ -28022,7 +28215,7 @@ function openOrderDetailModal(order) {
       invMeta.className = "ivh-doc-meta";
       var invParts = [];
       if (linkedInv.invoiceDate) invParts.push(formatDate(linkedInv.invoiceDate));
-      if (linkedInv.total) invParts.push("\u00A5" + Number(linkedInv.total).toLocaleString());
+      if (linkedInv.total) invParts.push(_yen(linkedInv.total));
       invMeta.textContent = invParts.join(" \u00B7 ");
       invLeft.appendChild(invMeta);
       invCard.appendChild(invLeft);
@@ -28422,14 +28615,15 @@ function renderHomeShopifyStats() {
 
   var stats = [
     { num: inStock, label: "In Stock", color: "#34a853", action: "navigateTo('products')" },
-    { num: lowStock, label: "Low Stock", color: lowStock > 0 ? "#b06000" : "#5f6368", action: "navigateTo('products')" },
+    { num: lowStock, label: "Low Stock", color: lowStock > 0 ? "#b06000" : "var(--color-text-secondary)", action: "navigateTo('products')" },
     { num: ordersToday, label: "Orders Today", color: "#0e413b", action: "navigateTo('orders')" }
   ];
   stats.forEach(function(s) {
     var div = document.createElement("div");
     div.className = "stat-link";
     div.setAttribute("onclick", s.action);
-    div.title = "View " + s.label.toLowerCase();
+    div.title = tf("home.viewStat", { label: s.label.toLowerCase() });
+    _makeActivatable(div, function() { if (div.onclick) div.onclick(); }, tf("home.viewStat", { label: s.label.toLowerCase() }));
     var numDiv = document.createElement("div");
     numDiv.className = "stat-num";
     numDiv.style.color = s.color;
