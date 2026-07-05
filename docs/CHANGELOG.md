@@ -5,7 +5,42 @@ See `plans/` for the design reasoning behind each change.
 
 ---
 
+## 2026-07-05
+
+### ✅ FIXED — product images not showing (root cause: missing sheet column)
+**Where:** backend Google Sheet (`Products` tab), not code.
+**Diagnosis:** queried the live Apps Script API directly — products returned 15 fields with NO `imageUrl`
+(and no `lastSynced`). The sync computes `images[0].src` but writes rows by matching the sheet's header
+columns; the `imageUrl` column was absent from the Products header, so the image was silently dropped every
+sync. (SKU column exists but is empty — likely genuinely blank in Shopify; separate/minor.)
+**Fix:** Taka added `imageUrl` + `lastSynced` header columns to the Products sheet, then Sync Now → primary
+product photos now populate on the live app. No deploy needed.
+**Follow-up:** the `ensureSheet` self-heal (in the undeployed backend) prevents this recurring. Full multi-image
+gallery + rich fields still pending the backend/frontend deploy (Plan 05).
+
 ## 2026-07-04
+
+### ✅ Shopify data expansion (richer sync) + catalogue fixes
+**Files:** `apps-script.js` + `index.html`. **Plan:** `plans/05-shopify-data-expansion.md`.
+
+- **Duplicate Soap/Candle sub-tabs fixed** — `classifyProduct` now normalizes soap/candle from SKU prefix OR
+  `productType` (EN/JA); sub-tabs deduped by canonical category. (Was showing dead `Soap 0`/`Candle 0` next to
+  real `Soap 10`/`Candle 6`.)
+- **Expanded Shopify sync** — now pulls, per the schema contract, 10 new fields: `description` (body_html),
+  `handle` (storefront link), `imageUrls` (full gallery), `productOptions`, `barcode`, `weight`, `weightUnit`,
+  `variantOptions`, `inventoryPolicy`, and per-product `metafields` (throttled, try/catch, best-effort).
+- **Products sheet extended** (append-only) with those 10 columns; **`ensureSheet` now self-heals** — appends
+  missing header columns to an *existing* sheet (runs via `doGet`/`doPost`), so the schema addition lands on
+  deploy without manual sheet edits.
+- **Frontend surfacing** — cards use the gallery's first image (fallback to `imageUrl`); product detail gains
+  Description (HTML→plain text, no innerHTML), image gallery, variant specs, metafields, and a "View on Shopify"
+  link. Every new field optional/defensive.
+
+**Verified:** both files node-check clean; 0 innerHTML; all i18n keys symmetric/resolve; ensureSheet append path
+confirmed in the request flow.
+⚠️ **Activation:** needs Apps Script **redeploy + a "Sync Now"** to populate. This is also the likely fix for the
+empty product images (stale/old sync). **Confirm the storefront domain** — frontend guessed `https://ivycoast.co`
+(`SHOPIFY_STORE_URL`); set it to the real public domain (or `""` to hide the link).
 
 ### ✅ Product Catalogue — Phase 3b (ProductMeta overlay + dev pipeline)
 **Files:** `apps-script.js` (new `ProductMeta` sheet) + `index.html` (frontend). **Plan:** `plans/03-product-catalogue.md`.

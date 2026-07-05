@@ -8276,6 +8276,15 @@ var I18N = {
     "products.new.nameRequired": "A name (EN or JA) is required.",
     "products.new.created": "Product created.",
     "products.save.failed": "Save failed — please try again.",
+    "products.detail.description": "Description",
+    "products.detail.gallery": "Gallery",
+    "products.detail.specs": "Specs",
+    "products.detail.barcode": "Barcode",
+    "products.detail.weight": "Weight",
+    "products.detail.options": "Options",
+    "products.detail.inventoryPolicy": "Inventory policy",
+    "products.detail.metafields": "Metafields",
+    "products.detail.viewOnShopify": "View on Shopify",
     // orders
     "orders.title": "Orders",
     "orders.subtitle": "Shopify orders (last 30 days) — synced via Google Sheets",
@@ -8668,6 +8677,15 @@ var I18N = {
     "products.new.nameRequired": "名称（英語または日本語）が必要です。",
     "products.new.created": "商品を作成しました。",
     "products.save.failed": "保存に失敗しました — もう一度お試しください。",
+    "products.detail.description": "説明",
+    "products.detail.gallery": "ギャラリー",
+    "products.detail.specs": "仕様",
+    "products.detail.barcode": "バーコード",
+    "products.detail.weight": "重量",
+    "products.detail.options": "オプション",
+    "products.detail.inventoryPolicy": "在庫ポリシー",
+    "products.detail.metafields": "メタフィールド",
+    "products.detail.viewOnShopify": "Shopifyで表示",
     // orders
     "orders.title": "注文",
     "orders.subtitle": "Shopify注文（過去30日）— Googleスプレッドシート経由で同期",
@@ -9329,6 +9347,10 @@ document.querySelectorAll(".doc-table th").forEach(function(th) {
 
 var APP_VERSION = "20260313-1";
 var SCRIPT_URL = localStorage.getItem("boardScriptUrl") || "https://script.google.com/macros/s/AKfycbwC0gPe5EQRbk6ld99DMMg5UgmfjTrqE0UpRnBJqLRtqHWfHb_M4DSxt5ZWlg8KOrj2Dw/exec";
+// Public Shopify storefront root — used to build "View on Shopify" product links
+// from a product `handle` (URL = SHOPIFY_STORE_URL + "/products/" + handle).
+// If the store's public domain is wrong/unknown, set this to "" to hide the link.
+var SHOPIFY_STORE_URL = "https://ivycoast.co";
 var CACHE_TTL = 300000; // 5 minutes — skip re-fetch if data is fresher than this
 var lastFetched = { board: 0, crm: 0, products: 0, orders: 0, customers: 0, invoices: 0, receipts: 0 };
 var boardTasks = [];
@@ -26376,9 +26398,12 @@ function populateProductVendorFilter() {
 // Returns a category key: "soap" | "candle" | any productType string.
 function classifyProduct(p) {
   var sku = (p.sku || "").toUpperCase();
-  if (sku.indexOf("SOP-") === 0) return "soap";
-  if (sku.indexOf("CND-") === 0) return "candle";
-  return p.productType || "";
+  var pt = (p.productType || "").trim();
+  // Normalize soap/candle from EITHER the SKU prefix OR the Shopify product type
+  // (EN or JA), so we never get duplicate "Soap"/"Candle" tabs.
+  if (sku.indexOf("SOP-") === 0 || /soap/i.test(pt) || /石けん|石鹸|せっけん|ソープ/.test(pt)) return "Soap";
+  if (sku.indexOf("CND-") === 0 || /candle/i.test(pt) || /キャンドル|蝋燭|ロウソク/.test(pt)) return "Candle";
+  return pt; // other product types pass through as-is
 }
 
 // Current selected category sub-tab ("" = All, "__dev" = In Development).
@@ -26390,22 +26415,20 @@ function buildProductSubtabs() {
   if (!wrap) return;
   wrap.textContent = "";
 
-  // Count per category. Soap/Candle are fixed leaders; other types follow.
+  // Count per canonical category (deduped). Soap/Candle lead if present; other types follow.
   var counts = {};
-  var otherTypes = {};
   shopifyProducts.forEach(function(p) {
     var cat = classifyProduct(p);
     if (!cat) return;
     counts[cat] = (counts[cat] || 0) + 1;
-    if (cat !== "soap" && cat !== "candle") otherTypes[cat] = true;
   });
 
   var tabs = [];
   tabs.push({ key: "", label: t("products.cat.all"), count: shopifyProducts.length });
-  tabs.push({ key: "soap", label: t("products.cat.soap"), count: counts.soap || 0 });
-  tabs.push({ key: "candle", label: t("products.cat.candle"), count: counts.candle || 0 });
-  Object.keys(otherTypes).sort().forEach(function(ty) {
-    tabs.push({ key: ty, label: ty, count: counts[ty] || 0 }); // productType = data, not translated
+  if (counts["Soap"] != null) tabs.push({ key: "Soap", label: t("products.cat.soap"), count: counts["Soap"] });
+  if (counts["Candle"] != null) tabs.push({ key: "Candle", label: t("products.cat.candle"), count: counts["Candle"] });
+  Object.keys(counts).filter(function(c) { return c !== "Soap" && c !== "Candle"; }).sort().forEach(function(ty) {
+    tabs.push({ key: ty, label: ty, count: counts[ty] }); // productType = data, not translated
   });
   var devCount = (productMeta || []).filter(function(pm) { return pm && pm.source === "hub"; }).length;
   tabs.push({ key: "__dev", label: t("products.cat.inDevelopment"), count: devCount });
@@ -26534,10 +26557,11 @@ function renderProducts() {
     // Image
     var tdImg = document.createElement("td");
     tdImg.style.width = "50px";
-    if (p.imageUrl) {
+    var tImgs = _productImages(p);
+    if (tImgs.length) {
       var img = document.createElement("img");
       img.className = "product-img";
-      img.src = p.imageUrl;
+      img.src = tImgs[0];
       img.alt = p.title;
       img.loading = "lazy";
       tdImg.appendChild(img);
@@ -26612,6 +26636,23 @@ function renderProducts() {
   tbody.appendChild(frag);
 }
 
+// Return an array of image URLs for a product.
+// Prefers the full gallery (`imageUrls` JSON array), falls back to the single
+// `imageUrl`, else an empty array. Never throws on malformed JSON.
+function _productImages(p) {
+  if (p && p.imageUrls) {
+    try {
+      var arr = JSON.parse(p.imageUrls);
+      if (Array.isArray(arr)) {
+        var clean = arr.filter(function(u) { return typeof u === "string" && u; });
+        if (clean.length) return clean;
+      }
+    } catch (e) { /* malformed — fall through */ }
+  }
+  if (p && p.imageUrl) return [p.imageUrl];
+  return [];
+}
+
 // ── Grid-of-cards renderer (default catalogue view) ──
 function renderProductsGrid(filtered) {
   var grid = document.getElementById("products-grid");
@@ -26624,9 +26665,10 @@ function renderProductsGrid(filtered) {
     // Media
     var media = document.createElement("div");
     media.className = "product-card-media";
-    if (p.imageUrl) {
+    var cardImgs = _productImages(p);
+    if (cardImgs.length) {
       var img = document.createElement("img");
-      img.src = p.imageUrl;
+      img.src = cardImgs[0];
       img.alt = p.title || "";
       img.loading = "lazy";
       media.appendChild(img);
@@ -26947,12 +26989,14 @@ function openProductDetailModal(product) {
   // Header: image + title + variant
   var header = document.createElement("div");
   header.className = "product-detail-header";
-  if (product.imageUrl) {
-    var img = document.createElement("img");
-    img.src = product.imageUrl;
-    img.alt = product.title || "";
-    img.loading = "lazy";
-    header.appendChild(img);
+  var galleryImgs = _productImages(product);
+  var mainImg = null;
+  if (galleryImgs.length) {
+    mainImg = document.createElement("img");
+    mainImg.src = galleryImgs[0];
+    mainImg.alt = product.title || "";
+    mainImg.loading = "lazy";
+    header.appendChild(mainImg);
   }
   var headerInfo = document.createElement("div");
   headerInfo.className = "product-detail-header-info";
@@ -26994,6 +27038,157 @@ function openProductDetailModal(product) {
     infoGrid.appendChild(el);
   });
   modal.appendChild(infoGrid);
+
+  // Helper: build a titled section with a heading; returns the section element.
+  function _detailSection(titleText) {
+    var sec = document.createElement("div");
+    sec.className = "product-detail-section";
+    var h = document.createElement("div");
+    h.className = "product-detail-section-title";
+    h.textContent = titleText;
+    sec.appendChild(h);
+    return sec;
+  }
+
+  // ── Description (HTML → plain text via tag-strip + textContent) ──
+  if (product.description) {
+    var descText = String(product.description)
+      .replace(/<[^>]*>/g, " ")     // strip tags
+      .replace(/&nbsp;/gi, " ")
+      .replace(/&amp;/gi, "&")
+      .replace(/&lt;/gi, "<")
+      .replace(/&gt;/gi, ">")
+      .replace(/\s+/g, " ")          // collapse whitespace
+      .trim();
+    if (descText) {
+      var descSec = _detailSection(t("products.detail.description"));
+      var descBody = document.createElement("div");
+      descBody.className = "product-detail-value";
+      descBody.style.whiteSpace = "pre-wrap";
+      descBody.textContent = descText;
+      descSec.appendChild(descBody);
+      modal.appendChild(descSec);
+    }
+  }
+
+  // ── Image gallery (thumbnails; click swaps main image) ──
+  if (galleryImgs.length > 1) {
+    var gallerySec = _detailSection(t("products.detail.gallery"));
+    var thumbs = document.createElement("div");
+    thumbs.className = "product-detail-gallery";
+    thumbs.style.cssText = "display:flex;flex-wrap:wrap;gap:8px;";
+    galleryImgs.forEach(function(url) {
+      var thumb = document.createElement("img");
+      thumb.src = url;
+      thumb.alt = product.title || "";
+      thumb.loading = "lazy";
+      thumb.style.cssText = "width:56px;height:56px;object-fit:cover;border-radius:6px;cursor:pointer;border:1px solid var(--color-border,#e0e0e0);";
+      thumb.addEventListener("click", function() {
+        if (mainImg) { mainImg.src = url; }
+      });
+      thumbs.appendChild(thumb);
+    });
+    gallerySec.appendChild(thumbs);
+    modal.appendChild(gallerySec);
+  }
+
+  // ── Variant specs (barcode, weight, options, inventory policy) ──
+  var specItems = [];
+  if (product.barcode) {
+    specItems.push({ label: t("products.detail.barcode"), value: String(product.barcode) });
+  }
+  if (product.weight) {
+    var wStr = String(product.weight);
+    if (product.weightUnit) wStr += " " + String(product.weightUnit);
+    specItems.push({ label: t("products.detail.weight"), value: wStr });
+  }
+  // Option axes: names from productOptions, values from variantOptions (best-effort).
+  var optionNames = [];
+  if (product.productOptions) {
+    try {
+      var pnames = JSON.parse(product.productOptions);
+      if (Array.isArray(pnames)) {
+        optionNames = pnames.filter(function(n) { return typeof n === "string" && n; });
+      }
+    } catch (e) { /* ignore */ }
+  }
+  var optionVals = null;
+  if (product.variantOptions) {
+    try {
+      var vparsed = JSON.parse(product.variantOptions);
+      if (vparsed && typeof vparsed === "object") optionVals = vparsed;
+    } catch (e) { /* ignore */ }
+  }
+  if (optionVals) {
+    // variantOptions is { option1, option2, option3 } — pair with names by index.
+    var vkeys = ["option1", "option2", "option3"];
+    vkeys.forEach(function(vk, idx) {
+      var val = optionVals[vk];
+      if (val != null && String(val).trim() !== "") {
+        var label = optionNames[idx] || t("products.detail.options");
+        specItems.push({ label: label, value: String(val) });
+      }
+    });
+  } else if (optionNames.length) {
+    specItems.push({ label: t("products.detail.options"), value: optionNames.join(", ") });
+  }
+  if (product.inventoryPolicy) {
+    specItems.push({ label: t("products.detail.inventoryPolicy"), value: String(product.inventoryPolicy) });
+  }
+  if (specItems.length) {
+    var specSec = _detailSection(t("products.detail.specs"));
+    var specGrid = document.createElement("div");
+    specGrid.className = "product-detail-info";
+    specItems.forEach(function(item) {
+      var el = document.createElement("div");
+      el.className = "product-detail-item";
+      var lbl = document.createElement("span");
+      lbl.className = "product-detail-label";
+      lbl.textContent = item.label;
+      el.appendChild(lbl);
+      var val = document.createElement("span");
+      val.className = "product-detail-value";
+      val.textContent = item.value;
+      el.appendChild(val);
+      specGrid.appendChild(el);
+    });
+    specSec.appendChild(specGrid);
+    modal.appendChild(specSec);
+  }
+
+  // ── Metafields (JSON object → key/value rows) ──
+  if (product.metafields) {
+    var mfObj = null;
+    try {
+      var mfParsed = JSON.parse(product.metafields);
+      if (mfParsed && typeof mfParsed === "object" && !Array.isArray(mfParsed)) mfObj = mfParsed;
+    } catch (e) { /* malformed — hide section */ }
+    if (mfObj) {
+      var mfKeys = Object.keys(mfObj).filter(function(k) {
+        return mfObj[k] != null && String(mfObj[k]).trim() !== "";
+      });
+      if (mfKeys.length) {
+        var mfSec = _detailSection(t("products.detail.metafields"));
+        var mfGrid = document.createElement("div");
+        mfGrid.className = "product-detail-info";
+        mfKeys.forEach(function(k) {
+          var el = document.createElement("div");
+          el.className = "product-detail-item";
+          var lbl = document.createElement("span");
+          lbl.className = "product-detail-label";
+          lbl.textContent = k;
+          el.appendChild(lbl);
+          var val = document.createElement("span");
+          val.className = "product-detail-value";
+          val.textContent = String(mfObj[k]);
+          el.appendChild(val);
+          mfGrid.appendChild(el);
+        });
+        mfSec.appendChild(mfGrid);
+        modal.appendChild(mfSec);
+      }
+    }
+  }
 
   // Soap Batches section
   var batchSection = document.createElement("div");
@@ -27085,6 +27280,19 @@ function openProductDetailModal(product) {
   // Footer
   var footer = document.createElement("div");
   footer.className = "formula-footer";
+
+  // "View on Shopify" storefront link (only when handle + store URL are known).
+  if (product.handle && SHOPIFY_STORE_URL) {
+    var shopLink = document.createElement("a");
+    shopLink.className = "btn-save";
+    shopLink.textContent = t("products.detail.viewOnShopify");
+    shopLink.href = SHOPIFY_STORE_URL.replace(/\/+$/, "") + "/products/" + encodeURIComponent(product.handle);
+    shopLink.target = "_blank";
+    shopLink.rel = "noopener noreferrer";
+    shopLink.style.textDecoration = "none";
+    footer.appendChild(shopLink);
+  }
+
   var closeBtn = document.createElement("button");
   closeBtn.className = "crm-quick-edit-cancel";
   closeBtn.textContent = "Close";

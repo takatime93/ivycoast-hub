@@ -12,7 +12,7 @@
 // 1. Create a Google Sheet with sheets named "Tasks", "Contacts", "Products", "Orders"
 // 2. Tasks headers:    id | name | status | priority | assignee | due | workspace | category | description | docLink | createdAt | updatedAt
 // 3. Contacts headers: id | name | nameEn | type | company | role | email | phone | products | location | stage | notes | connectedDate | lastContactDate | workspace | wholesalePercent | consignmentPercent | profileImageUrl | businessCardFrontUrl | businessCardBackUrl | checklist | website | instagram | socialMedia | vendorRelation | connectorFeePercent | connectorId | businessCardUrl | people | createdAt | updatedAt
-// 4. Products headers: id | shopifyProductId | shopifyVariantId | title | variantTitle | sku | price | compareAtPrice | inventoryQuantity | inventoryItemId | locationId | status | productType | vendor | tags | imageUrl | lastSynced
+// 4. Products headers: id | shopifyProductId | shopifyVariantId | title | variantTitle | sku | price | compareAtPrice | inventoryQuantity | inventoryItemId | locationId | status | productType | vendor | tags | imageUrl | lastSynced | description | handle | imageUrls | productOptions | barcode | weight | weightUnit | variantOptions | inventoryPolicy | metafields
 // 5. Orders headers:   id | shopifyOrderId | orderNumber | email | totalPrice | currency | financialStatus | fulfillmentStatus | lineItems | customerName | createdAt | shippingAddress | note | lastSynced
 // 6. Customers headers: id | shopifyCustomerId | name | email | phone | totalOrders | totalSpent | firstOrderDate | lastOrderDate | tags | notes | createdAt | updatedAt
 // 7. Invoices headers:  id | invoiceNumber | contactId | contactName | contactCompany | contactEmail | contactAddress | invoiceDate | dueDate | poReference | items | subtotal | discount | shipping | taxType | tax | total | pricingType | pricingPercent | pricingParties | status | workspace | notes | orderId | orderNumber | paymentBank | paymentNote | marginNote | createdAt | updatedAt
@@ -145,6 +145,18 @@ function ensureSheet(name, headers) {
   if (!sheet) {
     sheet = ss.insertSheet(name);
     sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
+    return sheet;
+  }
+  // Existing sheet: APPEND any missing header columns at the end (append-only — never
+  // reorder or rename existing columns). This lets schema additions (e.g. new Shopify
+  // fields on Products) self-heal on deploy so createRow/updateRow/getAllRows can use them.
+  var lastCol = sheet.getLastColumn();
+  var existing = lastCol > 0 ? sheet.getRange(1, 1, 1, lastCol).getValues()[0] : [];
+  var have = {};
+  existing.forEach(function (h) { if (h !== "" && h != null) have[h] = true; });
+  var toAdd = headers.filter(function (h) { return !have[h]; });
+  if (toAdd.length > 0) {
+    sheet.getRange(1, lastCol + 1, 1, toAdd.length).setValues([toAdd]);
   }
   return sheet;
 }
@@ -161,6 +173,7 @@ function ensureActivityAndPresenceSheets() {
   ensureSheet("ContactActivityLog", ["id","contactId","eventType","title","detail","relatedId","occurredAt"]);
   ensureSheet("SoapBatches", ["id","name","batchNumber","date","status","oils","superfat","lyeConcentration","fragrance","fragranceOz","colorant","notes","properties","lyeCalc","qualityScore","cureStartDate","cureEndDate","actualResults","barsProduced","costPerBar","linkedProductId","linkedProductName","createdAt","updatedAt"]);
   ensureSheet("ProductMeta", ["id","shopifyProductId","source","category","devStatus","line","nameEn","nameJa","marketingName","ingredientLabelJa","linkedFormulaId","costPerBar","finishedCostPerBar","targetLaunch","heroImageUrl","internalNotes","versions","createdAt","updatedAt"]);
+  ensureSheet("Products", ["id","shopifyProductId","shopifyVariantId","title","variantTitle","sku","price","compareAtPrice","inventoryQuantity","inventoryItemId","locationId","status","productType","vendor","tags","imageUrl","lastSynced","description","handle","imageUrls","productOptions","barcode","weight","weightUnit","variantOptions","inventoryPolicy","metafields"]);
 }
 
 function logActivity(action, itemType, itemId, itemName, detail, userId, userName) {
@@ -583,12 +596,32 @@ function syncShopifyProducts() {
 
   // Paginate through all products
   while (hasMore) {
-    var data = shopifyGet("products.json", { limit: "250", since_id: sinceId, fields: "id,title,variants,status,product_type,vendor,tags,images" });
+    var data = shopifyGet("products.json", { limit: "250", since_id: sinceId, fields: "id,title,variants,status,product_type,vendor,tags,images,body_html,handle,options" });
     var products = data.products || [];
     if (products.length === 0) { hasMore = false; break; }
 
     products.forEach(function(p) {
       var imageUrl = (p.images && p.images.length > 0) ? p.images[0].src : "";
+      // Product-level expansion fields (denormalized onto each variant row)
+      var description = p.body_html || "";
+      var handle = p.handle || "";
+      var imageUrls = JSON.stringify((p.images || []).map(function(im) { return im.src; }));
+      var productOptions = JSON.stringify((p.options || []).map(function(o) { return o.name; }));
+
+      // Metafields (best-effort, per product, throttled, never breaks sync)
+      var metafields = "{}";
+      try {
+        var mfData = shopifyGet("products/" + p.id + "/metafields.json", {});
+        var mfMap = {};
+        (mfData.metafields || []).forEach(function(mf) {
+          mfMap[mf.namespace + "." + mf.key] = mf.value;
+        });
+        metafields = JSON.stringify(mfMap);
+        Utilities.sleep(200); // gentle throttle against rate limits
+      } catch (e) {
+        metafields = "{}";
+      }
+
       (p.variants || []).forEach(function(v) {
         allVariants.push({
           shopifyProductId: String(p.id),
@@ -605,7 +638,17 @@ function syncShopifyProducts() {
           productType: p.product_type || "",
           vendor: p.vendor || "",
           tags: p.tags || "",
-          imageUrl: imageUrl
+          imageUrl: imageUrl,
+          description: description,
+          handle: handle,
+          imageUrls: imageUrls,
+          productOptions: productOptions,
+          barcode: v.barcode || "",
+          weight: String(v.weight || ""),
+          weightUnit: v.weight_unit || "",
+          variantOptions: JSON.stringify({ option1: v.option1 || "", option2: v.option2 || "", option3: v.option3 || "" }),
+          inventoryPolicy: v.inventory_policy || "",
+          metafields: metafields
         });
       });
     });
