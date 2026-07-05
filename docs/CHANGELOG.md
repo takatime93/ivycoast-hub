@@ -5,6 +5,25 @@ See `plans/` for the design reasoning behind each change.
 
 ---
 
+## 2026-07-06
+
+### ✅ App-wide "refine all pages" (3 sweeps) + adversarial QA
+**Files:** `index.html`, `sw.js`. **Plan/audit:** `docs/qa/refine-all-pages-20260705.md`.
+
+- Driven by a 5-page parallel read-only audit. Shipped safe, code-verifiable fixes in 3 sweeps:
+  keyboard a11y on cards/rows/tiles/thumbs; long-text clamp/truncate; empty/error states + i18n of
+  hardcoded English (17 keys); mobile scroll-wrappers for wide tables; `_yen()` ja-JP currency +
+  right-align + ¥0 fix; fixed a duplicate `.product-card` block that was killing card motion;
+  token cleanup; formulator alignment; order-detail badge parity; CRM tab lazy-render.
+- Each sweep independently re-verified (syntax, innerHTML=0, i18n symmetry, brace balance, render targets).
+- **Adversarial QA (Halle)** on the shipped diff: 7 highest-risk areas verified clean (incl. the CRM
+  lazy-render control-flow change); found **1 real regression** — `_makeActivatable` keyboard handler
+  double-fired when a nested link (e.g. View-in-CRM inside a row) was focused and Enter pressed.
+  **Fixed** with a target guard (`if (e.target !== el) return`). SW cache v7→v9.
+
+**Still NOT done: browser/runtime QA.** Static + adversarial code review are complete; nobody has
+clicked through the deployed changes in a browser. Design-judgment items remain in the audit doc.
+
 ## 2026-07-05
 
 ### ✅ FIXED — product images not showing (root cause: missing sheet column)
