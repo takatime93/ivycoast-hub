@@ -6070,6 +6070,55 @@ select.contact-edit-input { appearance: auto; cursor: pointer; }
 .product-detail-header-info { flex:1; }
 .product-detail-title { font-family:var(--font-display); font-size:var(--text-h3); font-weight:600; color:var(--color-text-heading); }
 .product-detail-variant { font-size:var(--text-sm); color:var(--color-text-secondary); }
+
+/* Full-page product detail (in-view panel) */
+.pd-page { animation: motion-fade-in 0.18s ease; }
+.pd-topbar { display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:20px; }
+.pd-back {
+  display:inline-flex; align-items:center; gap:6px; background:var(--color-surface-secondary);
+  border:1px solid var(--color-border); color:var(--color-text); font-size:var(--text-sm);
+  font-weight:500; padding:7px 14px; border-radius:var(--radius-md); cursor:pointer;
+  transition:background 0.15s ease;
+}
+.pd-back:hover { background:var(--color-border); }
+.pd-topbar-title { font-family:var(--font-display); font-size:var(--text-h3); font-weight:600; color:var(--color-text-heading); }
+.pd-topbar-meta { display:inline-flex; align-items:center; gap:8px; flex-wrap:wrap; }
+.pd-columns { display:flex; flex-wrap:wrap; gap:28px; align-items:flex-start; margin-bottom:24px; }
+.pd-media { flex:1 1 340px; min-width:280px; }
+.pd-hero {
+  width:100%; aspect-ratio:1/1; object-fit:cover; border-radius:var(--radius-lg);
+  border:1px solid var(--color-border); background:var(--color-surface-secondary); display:block;
+}
+.pd-hero-placeholder {
+  width:100%; aspect-ratio:1/1; border-radius:var(--radius-lg); border:1px solid var(--color-border);
+  background:var(--color-surface-secondary); display:flex; align-items:center; justify-content:center;
+  color:var(--color-text-tertiary); font-size:var(--text-sm); gap:6px;
+}
+.pd-thumbs { display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
+.pd-thumb {
+  width:60px; height:60px; object-fit:cover; border-radius:var(--radius-md); cursor:pointer;
+  border:2px solid transparent; transition:border-color 0.15s ease;
+}
+.pd-thumb:hover { border-color:var(--color-border); }
+.pd-thumb.pd-thumb-active { border-color:var(--color-primary); }
+.pd-summary { flex:1 1 320px; min-width:280px; }
+.pd-price { font-family:var(--font-display); font-size:var(--text-h2); font-weight:700; color:var(--color-text-heading); margin-bottom:12px; }
+.pd-summary-row { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:16px; }
+.pd-shopify-btn { margin-top:8px; display:inline-flex; text-decoration:none; }
+.pd-section { margin-bottom:24px; max-width:820px; }
+.pd-desc { font-size:var(--text-md); color:var(--color-text); line-height:1.6; white-space:pre-wrap; }
+.pd-variant-row {
+  display:flex; align-items:center; justify-content:space-between; gap:12px; padding:8px 0;
+  border-bottom:1px solid var(--color-border);
+}
+.pd-variant-row:last-child { border-bottom:none; }
+.pd-variant-name { font-size:var(--text-sm); color:var(--color-text); font-weight:500; }
+.pd-variant-sku { font-family:var(--font-mono); font-size:var(--text-xs); color:var(--color-text-tertiary); }
+.pd-variant-meta { font-size:var(--text-sm); color:var(--color-text-secondary); white-space:nowrap; }
+@media (max-width: 640px) {
+  .pd-columns { gap:20px; }
+  .pd-price { font-size:var(--text-h3); }
+}
 .product-batch-view-all {
   text-align:center; padding:8px; font-size:var(--text-sm); color:var(--color-primary);
   cursor:pointer; font-weight:500;
@@ -7056,6 +7105,9 @@ select.contact-edit-input { appearance: auto; cursor: pointer; }
       </div>
       <div class="products-dev-board" id="products-dev-board"></div>
     </div>
+
+    <!-- FULL-PAGE PRODUCT DETAIL (in-view panel; hidden by default) -->
+    <div id="product-detail-page" style="display:none"></div>
   </div>
 
   <!-- NEW PRODUCT (development concept) MODAL -->
@@ -8287,6 +8339,14 @@ var I18N = {
     "products.detail.viewOnShopify": "View on Shopify",
     "products.detail.variant": "Variant",
     "products.detail.stock": "Stock",
+    "products.detail.backToProducts": "Products",
+    "products.detail.price": "Price",
+    "products.detail.vendor": "Vendor",
+    "products.detail.status": "Status",
+    "products.detail.type": "Type",
+    "products.detail.sku": "SKU",
+    "products.detail.variants": "Variants",
+    "products.detail.imagePlaceholder": "No image",
     "products.variantCount": "{n} variants",
     // orders
     "orders.title": "Orders",
@@ -8691,6 +8751,14 @@ var I18N = {
     "products.detail.viewOnShopify": "Shopifyで表示",
     "products.detail.variant": "バリエーション",
     "products.detail.stock": "在庫",
+    "products.detail.backToProducts": "商品一覧",
+    "products.detail.price": "価格",
+    "products.detail.vendor": "ベンダー",
+    "products.detail.status": "ステータス",
+    "products.detail.type": "タイプ",
+    "products.detail.sku": "SKU",
+    "products.detail.variants": "バリエーション",
+    "products.detail.imagePlaceholder": "画像なし",
     "products.variantCount": "{n}種類",
     // orders
     "orders.title": "注文",
@@ -26551,6 +26619,9 @@ function _productPriceLabel(p) {
 
 function renderProducts() {
   hideSkeleton("products-skeleton");
+  // Always return from the full-page detail to the catalogue on any (re)render,
+  // so sub-tab switches / Sync / nav land cleanly on the grid.
+  if (typeof closeProductDetailPage === "function") closeProductDetailPage();
   buildProductSubtabs(); // rebuild so counts + localized labels stay current
   _saveFilterState("products", ["products-filter-status", "products-filter-type", "products-filter-vendor", "products-search"]);
   _syncProductsViewToggle();
@@ -27054,78 +27125,233 @@ function saveNewProduct() {
 }
 
 // ── Product Detail Modal with Batch Cards ──
+// Strip HTML → plain text: remove tags, decode a few basic entities,
+// collapse whitespace. Never injects HTML — result is used via textContent.
+function _stripHtmlToText(html) {
+  return String(html)
+    .replace(/<[^>]*>/g, " ")
+    .replace(/&nbsp;/gi, " ")
+    .replace(/&amp;/gi, "&")
+    .replace(/&lt;/gi, "<")
+    .replace(/&gt;/gi, ">")
+    .replace(/&quot;/gi, "\"")
+    .replace(/&#39;/gi, "'")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+// Reset the Products view back to the catalogue (grid/table). Called by
+// renderProducts() so any navigation cleanly returns from the detail page.
+function closeProductDetailPage() {
+  var page = document.getElementById("product-detail-page");
+  if (page) { page.style.display = "none"; page.textContent = ""; }
+  var subtabs = document.getElementById("products-subtabs");
+  var toolbar = document.getElementById("products-toolbar");
+  if (subtabs) subtabs.style.display = "";
+  if (toolbar) toolbar.style.display = "";
+  // grid/table visibility is managed by renderProducts(); leave to it.
+}
+
+// Full-page product detail. Populates #product-detail-page (in the Products
+// view) and hides the catalogue chrome. Keeps the old function name so all
+// grid/table callers stay unchanged.
 function openProductDetailModal(product) {
-  var overlay = document.createElement("div");
-  overlay.className = "crm-quick-edit-overlay";
-  overlay.addEventListener("click", function(e) { if (e.target === overlay) overlay.remove(); });
+  var page = document.getElementById("product-detail-page");
+  if (!page) return;
+  page.textContent = "";
 
-  var modal = document.createElement("div");
-  modal.className = "crm-quick-edit-modal product-detail-modal";
+  // Hide catalogue chrome, show the detail panel full-width.
+  var subtabs = document.getElementById("products-subtabs");
+  var toolbar = document.getElementById("products-toolbar");
+  var grid = document.getElementById("products-grid");
+  var table = document.getElementById("products-table");
+  var noResults = document.getElementById("products-no-results");
+  var devEmpty = document.getElementById("products-dev-empty");
+  var devBoardWrap = document.getElementById("products-dev-board-wrap");
+  if (subtabs) subtabs.style.display = "none";
+  if (toolbar) toolbar.style.display = "none";
+  if (grid) grid.style.display = "none";
+  if (table) table.style.display = "none";
+  if (noResults) noResults.style.display = "none";
+  if (devEmpty) devEmpty.style.display = "none";
+  if (devBoardWrap) devBoardWrap.style.display = "none";
+  page.style.display = "block";
 
-  // Header: image + title + variant
-  var header = document.createElement("div");
-  header.className = "product-detail-header";
-  var galleryImgs = _productImages(product);
-  var mainImg = null;
-  if (galleryImgs.length) {
-    mainImg = document.createElement("img");
-    mainImg.src = galleryImgs[0];
-    mainImg.alt = product.title || "";
-    mainImg.loading = "lazy";
-    header.appendChild(mainImg);
-  }
-  var headerInfo = document.createElement("div");
-  headerInfo.className = "product-detail-header-info";
-  var titleEl = document.createElement("div");
-  titleEl.className = "product-detail-title";
-  titleEl.textContent = product.title || "Untitled Product";
-  headerInfo.appendChild(titleEl);
-  if (product.variantTitle) {
-    var varEl = document.createElement("div");
-    varEl.className = "product-detail-variant";
-    varEl.textContent = product.variantTitle;
-    headerInfo.appendChild(varEl);
-  }
-  header.appendChild(headerInfo);
-  modal.appendChild(header);
+  var wrap = document.createElement("div");
+  wrap.className = "pd-page";
 
-  // Product info grid
-  var infoGrid = document.createElement("div");
-  infoGrid.className = "product-detail-info";
   var _isMulti = (product.variantCount != null && product.variantCount > 1);
-  var _priceLabel = (typeof product.priceMin !== "undefined")
-    ? _productPriceLabel(product)
-    : (product.price ? "\u00A5" + Number(product.price).toLocaleString() : "\u2014");
-  var _stockLabel = (typeof product.totalStock !== "undefined")
-    ? String(product.totalStock)
-    : String(parseInt(product.inventoryQuantity, 10) || 0);
-  var infoItems = [
-    { label: "SKU", value: _isMulti ? "\u2014" : (product.sku || "\u2014") },
-    { label: "Price", value: _priceLabel },
-    { label: "Stock", value: _stockLabel },
-    { label: "Status", value: product.status || "draft" },
-    { label: "Type", value: product.productType || "\u2014" },
-    { label: "Vendor", value: product.vendor || "\u2014" }
-  ];
-  infoItems.forEach(function(item) {
-    var el = document.createElement("div");
-    el.className = "product-detail-item";
-    var lbl = document.createElement("span");
-    lbl.className = "product-detail-label";
-    lbl.textContent = item.label;
-    el.appendChild(lbl);
-    var val = document.createElement("span");
-    val.className = "product-detail-value";
-    val.textContent = item.value;
-    el.appendChild(val);
-    infoGrid.appendChild(el);
-  });
-  modal.appendChild(infoGrid);
+  var galleryImgs = _productImages(product);
 
-  // Helper: build a titled section with a heading; returns the section element.
-  function _detailSection(titleText) {
+  // ── Top bar: back button + title + status + type ──
+  var topbar = document.createElement("div");
+  topbar.className = "pd-topbar";
+  var backBtn = document.createElement("button");
+  backBtn.type = "button";
+  backBtn.className = "pd-back";
+  var backArrow = document.createElement("span");
+  backArrow.textContent = "←";
+  backBtn.appendChild(backArrow);
+  var backLbl = document.createElement("span");
+  backLbl.textContent = t("products.detail.backToProducts");
+  backBtn.appendChild(backLbl);
+  backBtn.addEventListener("click", function() { closeProductDetailPage(); renderProducts(); });
+  topbar.appendChild(backBtn);
+
+  var titleEl = document.createElement("span");
+  titleEl.className = "pd-topbar-title";
+  titleEl.textContent = product.title || "Untitled Product";
+  topbar.appendChild(titleEl);
+
+  var topMeta = document.createElement("span");
+  topMeta.className = "pd-topbar-meta";
+  var statusBadge = document.createElement("span");
+  statusBadge.className = "badge status-badge-" + (product.status || "draft");
+  statusBadge.textContent = product.status || "draft";
+  topMeta.appendChild(statusBadge);
+  if (product.productType) {
+    var typeBadge = document.createElement("span");
+    typeBadge.className = "product-detail-value";
+    typeBadge.style.color = "var(--color-text-secondary)";
+    typeBadge.textContent = product.productType;
+    topMeta.appendChild(typeBadge);
+  }
+  topbar.appendChild(topMeta);
+  wrap.appendChild(topbar);
+
+  // ── Two-column: media + summary ──
+  var columns = document.createElement("div");
+  columns.className = "pd-columns";
+
+  // Left — media
+  var media = document.createElement("div");
+  media.className = "pd-media";
+  var hero = null;
+  if (galleryImgs.length) {
+    hero = document.createElement("img");
+    hero.className = "pd-hero";
+    hero.src = galleryImgs[0];
+    hero.alt = product.title || "";
+    hero.loading = "lazy";
+    media.appendChild(hero);
+  } else {
+    var ph = document.createElement("div");
+    ph.className = "pd-hero-placeholder";
+    var phIcon = document.createElement("span");
+    phIcon.textContent = "🖼";
+    ph.appendChild(phIcon);
+    var phText = document.createElement("span");
+    phText.textContent = t("products.detail.imagePlaceholder");
+    ph.appendChild(phText);
+    media.appendChild(ph);
+  }
+  if (galleryImgs.length > 1 && hero) {
+    var thumbs = document.createElement("div");
+    thumbs.className = "pd-thumbs";
+    galleryImgs.forEach(function(url, idx) {
+      var thumb = document.createElement("img");
+      thumb.className = "pd-thumb" + (idx === 0 ? " pd-thumb-active" : "");
+      thumb.src = url;
+      thumb.alt = product.title || "";
+      thumb.loading = "lazy";
+      thumb.addEventListener("click", function() {
+        hero.src = url;
+        var all = thumbs.querySelectorAll(".pd-thumb");
+        for (var i = 0; i < all.length; i++) all[i].classList.remove("pd-thumb-active");
+        thumb.classList.add("pd-thumb-active");
+      });
+      thumbs.appendChild(thumb);
+    });
+    media.appendChild(thumbs);
+  }
+  columns.appendChild(media);
+
+  // Right — summary
+  var summary = document.createElement("div");
+  summary.className = "pd-summary";
+
+  var priceEl = document.createElement("div");
+  priceEl.className = "pd-price";
+  priceEl.textContent = (typeof product.priceMin !== "undefined")
+    ? _productPriceLabel(product)
+    : (product.price ? "¥" + Number(product.price).toLocaleString() : "—");
+  summary.appendChild(priceEl);
+
+  // Stock badge + vendor row
+  var sRow = document.createElement("div");
+  sRow.className = "pd-summary-row";
+  var qty = (typeof product.totalStock !== "undefined")
+    ? product.totalStock
+    : (parseInt(product.inventoryQuantity, 10) || 0);
+  var stockBadge = document.createElement("span");
+  stockBadge.className = "stock-badge " + (qty <= 0 ? "stock-out" : qty <= 5 ? "stock-low" : "stock-ok");
+  stockBadge.textContent = t("products.detail.stock") + " " + qty;
+  sRow.appendChild(stockBadge);
+  if (product.vendor) {
+    var vendEl = document.createElement("span");
+    vendEl.className = "product-detail-value";
+    vendEl.style.color = "var(--color-text-secondary)";
+    vendEl.textContent = t("products.detail.vendor") + ": " + product.vendor;
+    sRow.appendChild(vendEl);
+  }
+  if (!_isMulti && product.sku) {
+    var skuEl = document.createElement("span");
+    skuEl.className = "pd-variant-sku";
+    skuEl.textContent = product.sku;
+    sRow.appendChild(skuEl);
+  }
+  summary.appendChild(sRow);
+
+  // Variants list (multi-variant only)
+  if (_isMulti && Array.isArray(product.variants)) {
+    var varSecTitle = document.createElement("div");
+    varSecTitle.className = "product-detail-section-title";
+    varSecTitle.textContent = t("products.detail.variants") + " (" + product.variantCount + ")";
+    summary.appendChild(varSecTitle);
+    var varList = document.createElement("div");
+    product.variants.forEach(function(v) {
+      var row = document.createElement("div");
+      row.className = "pd-variant-row";
+      var left = document.createElement("div");
+      var name = document.createElement("div");
+      name.className = "pd-variant-name";
+      name.textContent = v.variantTitle || t("products.detail.variant");
+      left.appendChild(name);
+      if (v.sku) {
+        var sk = document.createElement("div");
+        sk.className = "pd-variant-sku";
+        sk.textContent = v.sku;
+        left.appendChild(sk);
+      }
+      row.appendChild(left);
+      var meta = document.createElement("div");
+      meta.className = "pd-variant-meta";
+      var priceStr = (v.price != null && v.price !== "") ? "¥" + Number(v.price).toLocaleString() : "—";
+      var stockStr = String(parseInt(v.inventoryQuantity, 10) || 0);
+      meta.textContent = priceStr + " · " + t("products.detail.stock") + " " + stockStr;
+      row.appendChild(meta);
+      varList.appendChild(row);
+    });
+    summary.appendChild(varList);
+  }
+
+  // View on Shopify
+  if (product.handle && SHOPIFY_STORE_URL) {
+    var shopLink = document.createElement("a");
+    shopLink.className = "btn-save pd-shopify-btn";
+    shopLink.textContent = t("products.detail.viewOnShopify");
+    shopLink.href = SHOPIFY_STORE_URL.replace(/\/+$/, "") + "/products/" + encodeURIComponent(product.handle);
+    shopLink.target = "_blank";
+    shopLink.rel = "noopener noreferrer";
+    summary.appendChild(shopLink);
+  }
+  columns.appendChild(summary);
+  wrap.appendChild(columns);
+
+  // Helper: titled full-width section
+  function _pdSection(titleText) {
     var sec = document.createElement("div");
-    sec.className = "product-detail-section";
+    sec.className = "pd-section";
     var h = document.createElement("div");
     h.className = "product-detail-section-title";
     h.textContent = titleText;
@@ -27133,92 +27359,38 @@ function openProductDetailModal(product) {
     return sec;
   }
 
-  // ── Variants (multi-variant products only) ──
-  if (_isMulti && Array.isArray(product.variants)) {
-    var varSec = _detailSection(tf("products.variantCount", { n: product.variantCount }));
-    var varList = document.createElement("div");
-    varList.className = "product-detail-info";
-    product.variants.forEach(function(v) {
-      var el = document.createElement("div");
-      el.className = "product-detail-item";
-      var lbl = document.createElement("span");
-      lbl.className = "product-detail-label";
-      var lblText = v.variantTitle || t("products.detail.variant");
-      if (v.sku) lblText += " · " + v.sku;
-      lbl.textContent = lblText;
-      el.appendChild(lbl);
-      var val = document.createElement("span");
-      val.className = "product-detail-value";
-      var priceStr = (v.price != null && v.price !== "") ? "¥" + Number(v.price).toLocaleString() : "—";
-      var stockStr = String(parseInt(v.inventoryQuantity, 10) || 0);
-      val.textContent = priceStr + " · " + t("products.detail.stock") + " " + stockStr;
-      el.appendChild(val);
-      varList.appendChild(el);
-    });
-    varSec.appendChild(varList);
-    modal.appendChild(varSec);
-  }
-
-  // ── Description (HTML → plain text via tag-strip + textContent) ──
+  // ── Description (plain text) ──
   if (product.description) {
-    var descText = String(product.description)
-      .replace(/<[^>]*>/g, " ")     // strip tags
-      .replace(/&nbsp;/gi, " ")
-      .replace(/&amp;/gi, "&")
-      .replace(/&lt;/gi, "<")
-      .replace(/&gt;/gi, ">")
-      .replace(/\s+/g, " ")          // collapse whitespace
-      .trim();
+    var descText = _stripHtmlToText(product.description);
     if (descText) {
-      var descSec = _detailSection(t("products.detail.description"));
+      var descSec = _pdSection(t("products.detail.description"));
       var descBody = document.createElement("div");
-      descBody.className = "product-detail-value";
-      descBody.style.whiteSpace = "pre-wrap";
+      descBody.className = "pd-desc";
       descBody.textContent = descText;
       descSec.appendChild(descBody);
-      modal.appendChild(descSec);
+      wrap.appendChild(descSec);
     }
   }
 
-  // ── Image gallery (thumbnails; click swaps main image) ──
-  if (galleryImgs.length > 1) {
-    var gallerySec = _detailSection(t("products.detail.gallery"));
-    var thumbs = document.createElement("div");
-    thumbs.className = "product-detail-gallery";
-    thumbs.style.cssText = "display:flex;flex-wrap:wrap;gap:8px;";
-    galleryImgs.forEach(function(url) {
-      var thumb = document.createElement("img");
-      thumb.src = url;
-      thumb.alt = product.title || "";
-      thumb.loading = "lazy";
-      thumb.style.cssText = "width:56px;height:56px;object-fit:cover;border-radius:6px;cursor:pointer;border:1px solid var(--color-border,#e0e0e0);";
-      thumb.addEventListener("click", function() {
-        if (mainImg) { mainImg.src = url; }
-      });
-      thumbs.appendChild(thumb);
-    });
-    gallerySec.appendChild(thumbs);
-    modal.appendChild(gallerySec);
-  }
-
-  // ── Variant specs (barcode, weight, options, inventory policy) ──
+  // ── Specs (only rows with values) ──
   var specItems = [];
-  if (product.barcode) {
-    specItems.push({ label: t("products.detail.barcode"), value: String(product.barcode) });
-  }
   if (product.weight) {
     var wStr = String(product.weight);
     if (product.weightUnit) wStr += " " + String(product.weightUnit);
     specItems.push({ label: t("products.detail.weight"), value: wStr });
   }
-  // Option axes: names from productOptions, values from variantOptions (best-effort).
+  if (product.barcode) {
+    specItems.push({ label: t("products.detail.barcode"), value: String(product.barcode) });
+  }
+  if (product.inventoryPolicy) {
+    specItems.push({ label: t("products.detail.inventoryPolicy"), value: String(product.inventoryPolicy) });
+  }
+  // Product options (skip "Default Title" / empties).
   var optionNames = [];
   if (product.productOptions) {
     try {
       var pnames = JSON.parse(product.productOptions);
-      if (Array.isArray(pnames)) {
-        optionNames = pnames.filter(function(n) { return typeof n === "string" && n; });
-      }
+      if (Array.isArray(pnames)) optionNames = pnames.filter(function(n) { return typeof n === "string" && n; });
     } catch (e) { /* ignore */ }
   }
   var optionVals = null;
@@ -27229,23 +27401,20 @@ function openProductDetailModal(product) {
     } catch (e) { /* ignore */ }
   }
   if (optionVals) {
-    // variantOptions is { option1, option2, option3 } — pair with names by index.
     var vkeys = ["option1", "option2", "option3"];
     vkeys.forEach(function(vk, idx) {
       var val = optionVals[vk];
-      if (val != null && String(val).trim() !== "") {
-        var label = optionNames[idx] || t("products.detail.options");
-        specItems.push({ label: label, value: String(val) });
-      }
+      if (val == null) return;
+      var sval = String(val).trim();
+      if (sval === "" || sval === "Default Title") return;
+      var label = optionNames[idx] || t("products.detail.options");
+      specItems.push({ label: label, value: sval });
     });
   } else if (optionNames.length) {
     specItems.push({ label: t("products.detail.options"), value: optionNames.join(", ") });
   }
-  if (product.inventoryPolicy) {
-    specItems.push({ label: t("products.detail.inventoryPolicy"), value: String(product.inventoryPolicy) });
-  }
   if (specItems.length) {
-    var specSec = _detailSection(t("products.detail.specs"));
+    var specSec = _pdSection(t("products.detail.specs"));
     var specGrid = document.createElement("div");
     specGrid.className = "product-detail-info";
     specItems.forEach(function(item) {
@@ -27262,90 +27431,82 @@ function openProductDetailModal(product) {
       specGrid.appendChild(el);
     });
     specSec.appendChild(specGrid);
-    modal.appendChild(specSec);
+    wrap.appendChild(specSec);
   }
 
-  // ── Metafields (JSON object → key/value rows) ──
+  // ── Metafields (cleaned) ──
   if (product.metafields) {
     var mfObj = null;
     try {
       var mfParsed = JSON.parse(product.metafields);
       if (mfParsed && typeof mfParsed === "object" && !Array.isArray(mfParsed)) mfObj = mfParsed;
-    } catch (e) { /* malformed — hide section */ }
+    } catch (e) { /* malformed — hide */ }
     if (mfObj) {
-      var mfKeys = Object.keys(mfObj).filter(function(k) {
-        return mfObj[k] != null && String(mfObj[k]).trim() !== "";
+      var mfRows = [];
+      Object.keys(mfObj).forEach(function(k) {
+        var raw = mfObj[k];
+        if (raw == null || String(raw).trim() === "") return;
+        var rawStr = String(raw);
+        var keyLc = String(k).toLowerCase();
+        // Skip embed/widget/blob markup.
+        if (/<div|<style|<script/i.test(rawStr)) return;
+        if (keyLc.indexOf("widget") !== -1 || keyLc.indexOf("judgeme") !== -1 || keyLc.indexOf("jdgm") !== -1) return;
+        var clean = _stripHtmlToText(rawStr);
+        if (!clean) return;
+        if (clean.length > 400) return;
+        if (clean.length > 200) clean = clean.slice(0, 200) + "…";
+        mfRows.push({ label: k, value: clean });
       });
-      if (mfKeys.length) {
-        var mfSec = _detailSection(t("products.detail.metafields"));
+      if (mfRows.length) {
+        var mfSec = _pdSection(t("products.detail.metafields"));
         var mfGrid = document.createElement("div");
         mfGrid.className = "product-detail-info";
-        mfKeys.forEach(function(k) {
+        mfRows.forEach(function(item) {
           var el = document.createElement("div");
           el.className = "product-detail-item";
           var lbl = document.createElement("span");
           lbl.className = "product-detail-label";
-          lbl.textContent = k;
+          lbl.textContent = item.label;
           el.appendChild(lbl);
           var val = document.createElement("span");
           val.className = "product-detail-value";
-          val.textContent = String(mfObj[k]);
+          val.textContent = item.value;
           el.appendChild(val);
           mfGrid.appendChild(el);
         });
         mfSec.appendChild(mfGrid);
-        modal.appendChild(mfSec);
+        wrap.appendChild(mfSec);
       }
     }
   }
 
-  // Soap Batches section
-  var batchSection = document.createElement("div");
-  batchSection.className = "product-detail-section";
-
-  // Find batches linked to this product
+  // ── Soap Batches (linked; navigates to Formulator) ──
   var productBatches = (typeof soapBatches !== "undefined" ? soapBatches : []).filter(function(b) {
     if (b.linkedProductId && b.linkedProductId === product.id) return true;
     if (b.linkedProductName && product.title && b.linkedProductName.toLowerCase() === product.title.toLowerCase()) return true;
     return false;
   });
-  // Sort by date descending
   productBatches.sort(function(a, b) { return (b.date || "").localeCompare(a.date || ""); });
-
-  var batchHeaderRow = document.createElement("div");
-  batchHeaderRow.style.cssText = "display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;";
-  var batchTitle = document.createElement("div");
-  batchTitle.className = "product-detail-section-title";
-  batchTitle.style.marginBottom = "0";
-  batchTitle.textContent = "Soap Batches (" + productBatches.length + ")";
-  batchHeaderRow.appendChild(batchTitle);
-  batchSection.appendChild(batchHeaderRow);
-
+  var batchSec = _pdSection("Soap Batches (" + productBatches.length + ")");
   if (productBatches.length === 0) {
     var emptyEl = document.createElement("div");
     emptyEl.className = "product-batch-empty";
     emptyEl.textContent = "No batches recorded";
-    batchSection.appendChild(emptyEl);
+    batchSec.appendChild(emptyEl);
   } else {
     var cardsContainer = document.createElement("div");
     cardsContainer.className = "product-batch-cards";
-    var showBatches = productBatches.slice(0, 5);
-    showBatches.forEach(function(batch) {
+    productBatches.slice(0, 5).forEach(function(batch) {
       var card = document.createElement("div");
       card.className = "product-batch-card";
       card.addEventListener("click", function(e) {
         e.stopPropagation();
-        overlay.remove();
         openBatchFormulaModal(batch.id);
       });
-
-      // Batch number badge
       var numBadge = document.createElement("span");
       numBadge.className = "product-batch-number";
       numBadge.textContent = batch.batchNumber || batch.id;
       card.appendChild(numBadge);
-
-      // Quality score
       var scoreEl = document.createElement("span");
       scoreEl.className = "product-batch-score";
       var qs = batch.qualityScore;
@@ -27354,63 +27515,30 @@ function openProductDetailModal(product) {
       else if (qs >= 60) scoreEl.style.color = "#b06000";
       else if (qs != null) scoreEl.style.color = "var(--color-error-text)";
       card.appendChild(scoreEl);
-
-      // Date
       var dateEl = document.createElement("span");
       dateEl.className = "product-batch-date";
       dateEl.textContent = batch.date || "";
       card.appendChild(dateEl);
-
-      // Status badge
       var statusEl = document.createElement("span");
       statusEl.className = "formulator-batch-status formulator-status-" + (batch.status || "planning");
       var _bsMap3 = { planning:"計画中", "in-progress":"進行中", curing:"養生中", complete:"完了" };
       statusEl.textContent = _bsMap3[batch.status] || (batch.status || "planning").replace("-", " ");
       card.appendChild(statusEl);
-
       cardsContainer.appendChild(card);
     });
-    batchSection.appendChild(cardsContainer);
-
-    // "View all in Formulator" link if more than 5
+    batchSec.appendChild(cardsContainer);
     if (productBatches.length > 5) {
       var viewAll = document.createElement("div");
       viewAll.className = "product-batch-view-all";
       viewAll.textContent = "View all " + productBatches.length + " batches in Formulator";
-      viewAll.addEventListener("click", function() {
-        overlay.remove();
-        navigateTo("tools/formulator");
-      });
-      batchSection.appendChild(viewAll);
+      viewAll.addEventListener("click", function() { navigateTo("tools/formulator"); });
+      batchSec.appendChild(viewAll);
     }
   }
-  modal.appendChild(batchSection);
+  wrap.appendChild(batchSec);
 
-  // Footer
-  var footer = document.createElement("div");
-  footer.className = "formula-footer";
-
-  // "View on Shopify" storefront link (only when handle + store URL are known).
-  if (product.handle && SHOPIFY_STORE_URL) {
-    var shopLink = document.createElement("a");
-    shopLink.className = "btn-save";
-    shopLink.textContent = t("products.detail.viewOnShopify");
-    shopLink.href = SHOPIFY_STORE_URL.replace(/\/+$/, "") + "/products/" + encodeURIComponent(product.handle);
-    shopLink.target = "_blank";
-    shopLink.rel = "noopener noreferrer";
-    shopLink.style.textDecoration = "none";
-    footer.appendChild(shopLink);
-  }
-
-  var closeBtn = document.createElement("button");
-  closeBtn.className = "crm-quick-edit-cancel";
-  closeBtn.textContent = "Close";
-  closeBtn.addEventListener("click", function() { overlay.remove(); });
-  footer.appendChild(closeBtn);
-  modal.appendChild(footer);
-
-  overlay.appendChild(modal);
-  document.body.appendChild(overlay);
+  page.appendChild(wrap);
+  page.scrollIntoView({ block: "start" });
 }
 
 function openInlineStockEdit(product, cell) {
