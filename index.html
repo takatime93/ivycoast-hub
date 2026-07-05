@@ -8285,6 +8285,9 @@ var I18N = {
     "products.detail.inventoryPolicy": "Inventory policy",
     "products.detail.metafields": "Metafields",
     "products.detail.viewOnShopify": "View on Shopify",
+    "products.detail.variant": "Variant",
+    "products.detail.stock": "Stock",
+    "products.variantCount": "{n} variants",
     // orders
     "orders.title": "Orders",
     "orders.subtitle": "Shopify orders (last 30 days) — synced via Google Sheets",
@@ -8686,6 +8689,9 @@ var I18N = {
     "products.detail.inventoryPolicy": "在庫ポリシー",
     "products.detail.metafields": "メタフィールド",
     "products.detail.viewOnShopify": "Shopifyで表示",
+    "products.detail.variant": "バリエーション",
+    "products.detail.stock": "在庫",
+    "products.variantCount": "{n}種類",
     // orders
     "orders.title": "注文",
     "orders.subtitle": "Shopify注文（過去30日）— Googleスプレッドシート経由で同期",
@@ -26415,16 +26421,19 @@ function buildProductSubtabs() {
   if (!wrap) return;
   wrap.textContent = "";
 
-  // Count per canonical category (deduped). Soap/Candle lead if present; other types follow.
+  // Count per canonical category (deduped) — DISTINCT PRODUCTS, not variant rows.
+  // All variants of a product share the same classification, so classify the
+  // grouped product (its first variant). Soap/Candle lead; other types follow.
+  var groupedProducts = _groupProductRows(shopifyProducts);
   var counts = {};
-  shopifyProducts.forEach(function(p) {
+  groupedProducts.forEach(function(p) {
     var cat = classifyProduct(p);
     if (!cat) return;
     counts[cat] = (counts[cat] || 0) + 1;
   });
 
   var tabs = [];
-  tabs.push({ key: "", label: t("products.cat.all"), count: shopifyProducts.length });
+  tabs.push({ key: "", label: t("products.cat.all"), count: groupedProducts.length });
   if (counts["Soap"] != null) tabs.push({ key: "Soap", label: t("products.cat.soap"), count: counts["Soap"] });
   if (counts["Candle"] != null) tabs.push({ key: "Candle", label: t("products.cat.candle"), count: counts["Candle"] });
   Object.keys(counts).filter(function(c) { return c !== "Soap" && c !== "Candle"; }).sort().forEach(function(ty) {
@@ -26490,6 +26499,56 @@ function _syncProductsViewToggle() {
   }
 }
 
+// ── Group variant-rows into one object per product ──
+// Shopify products sync as one row per variant. This collapses those rows into
+// a single product object (keyed by shopifyProductId), carrying the base fields
+// from the first variant plus aggregate fields (variants, variantCount,
+// priceMin/priceMax, totalStock). Preserves first-occurrence order.
+function _groupProductRows(rows) {
+  var order = [];
+  var byId = {};
+  (rows || []).forEach(function(r) {
+    // Fall back to a per-row unique key so rows without a shopifyProductId
+    // (e.g. hub-side data) still appear once each rather than collapsing.
+    var key = (r && r.shopifyProductId) ? String(r.shopifyProductId) : ("__row_" + (r && r.id));
+    var group = byId[key];
+    if (!group) {
+      // Clone the first variant's fields so existing product-field readers work,
+      // then layer aggregates on top.
+      group = {};
+      for (var k in r) { if (Object.prototype.hasOwnProperty.call(r, k)) group[k] = r[k]; }
+      group.variants = [];
+      byId[key] = group;
+      order.push(key);
+    }
+    group.variants.push(r);
+  });
+  return order.map(function(key) {
+    var g = byId[key];
+    g.variantCount = g.variants.length;
+    var min = null, max = null, total = 0;
+    g.variants.forEach(function(v) {
+      var pr = Number(v.price);
+      if (!isNaN(pr) && v.price !== "" && v.price != null) {
+        if (min === null || pr < min) min = pr;
+        if (max === null || pr > max) max = pr;
+      }
+      total += (parseInt(v.inventoryQuantity, 10) || 0);
+    });
+    g.priceMin = min;
+    g.priceMax = max;
+    g.totalStock = total;
+    return g;
+  });
+}
+
+// Localized price display for a grouped product (single value or min–max range).
+function _productPriceLabel(p) {
+  if (p.priceMin == null && p.priceMax == null) return "—";
+  if (p.priceMin === p.priceMax) return "¥" + Number(p.priceMin).toLocaleString();
+  return "¥" + Number(p.priceMin).toLocaleString() + "–¥" + Number(p.priceMax).toLocaleString();
+}
+
 function renderProducts() {
   hideSkeleton("products-skeleton");
   buildProductSubtabs(); // rebuild so counts + localized labels stay current
@@ -26538,20 +26597,24 @@ function renderProducts() {
     return true;
   });
 
+  // Collapse variant-rows into one object per product. A product appears if
+  // ANY of its variants matched the filter above.
+  var grouped = _groupProductRows(filtered);
+
   var isGrid = (productsView === "grid");
   table.style.display = isGrid ? "none" : "";
   grid.style.display = isGrid ? "" : "none";
 
-  if (filtered.length === 0) {
+  if (grouped.length === 0) {
     noResults.style.display = "block";
     return;
   }
 
-  if (isGrid) { renderProductsGrid(filtered); return; }
+  if (isGrid) { renderProductsGrid(grouped); return; }
 
   var frag = document.createDocumentFragment();
 
-  filtered.forEach(function(p) {
+  grouped.forEach(function(p) {
     var tr = document.createElement("tr");
 
     // Image
@@ -26573,39 +26636,47 @@ function renderProducts() {
     }
     tr.appendChild(tdImg);
 
-    // Product name + variant
+    // Product name (+ variant-count hint when >1)
     var tdName = document.createElement("td");
-    var nameText = p.title || "";
-    if (p.variantTitle) nameText += " \u2014 " + p.variantTitle;
-    tdName.textContent = nameText;
+    tdName.textContent = p.title || "";
+    if (p.variantCount > 1) {
+      var vhint = document.createElement("span");
+      vhint.className = "product-variant-hint";
+      vhint.textContent = " \u00B7 " + tf("products.variantCount", { n: p.variantCount });
+      vhint.style.cssText = "color:var(--color-text-secondary);font-size:12px;";
+      tdName.appendChild(vhint);
+    }
     tr.appendChild(tdName);
 
-    // SKU
+    // SKU (single variant only; "\u2014" for multi-variant)
     var tdSku = document.createElement("td");
-    tdSku.textContent = p.sku || "\u2014";
+    tdSku.textContent = (p.variantCount === 1 ? (p.sku || "\u2014") : "\u2014");
     tdSku.style.fontFamily = "monospace";
     tdSku.style.fontSize = "13px";
     tr.appendChild(tdSku);
 
-    // Price
+    // Price (single value or range)
     var tdPrice = document.createElement("td");
-    var price = p.price ? "\u00A5" + Number(p.price).toLocaleString() : "\u2014";
-    tdPrice.textContent = price;
+    tdPrice.textContent = _productPriceLabel(p);
     tr.appendChild(tdPrice);
 
-    // Stock (clickable for inline edit)
+    // Stock \u2014 total across variants. Inline edit only for single-variant products.
     var tdStock = document.createElement("td");
-    var qty = parseInt(p.inventoryQuantity, 10) || 0;
+    var qty = p.totalStock;
     var stockSpan = document.createElement("span");
     stockSpan.className = "stock-badge " + (qty <= 0 ? "stock-out" : qty <= 5 ? "stock-low" : "stock-ok");
     stockSpan.textContent = qty;
-    stockSpan.title = "Click to edit stock";
-    stockSpan.addEventListener("click", (function(product, cell) {
-      return function(e) {
-        e.stopPropagation();
-        openInlineStockEdit(product, cell);
-      };
-    })(p, tdStock));
+    if (p.variantCount === 1) {
+      stockSpan.title = "Click to edit stock";
+      stockSpan.addEventListener("click", (function(variant, cell) {
+        return function(e) {
+          e.stopPropagation();
+          openInlineStockEdit(variant, cell);
+        };
+      })(p.variants[0], tdStock));
+    } else {
+      stockSpan.style.cursor = "default";
+    }
     tdStock.appendChild(stockSpan);
     tr.appendChild(tdStock);
 
@@ -26686,30 +26757,35 @@ function renderProductsGrid(filtered) {
 
     var title = document.createElement("div");
     title.className = "product-card-title";
-    var nameText = p.title || "";
-    if (p.variantTitle) nameText += " — " + p.variantTitle;
-    title.textContent = nameText;
+    title.textContent = p.title || "";
     body.appendChild(title);
 
     var sku = document.createElement("div");
     sku.className = "product-card-sku";
-    sku.textContent = p.sku || "—";
+    sku.textContent = (p.variantCount === 1 ? (p.sku || "—") : "—");
     body.appendChild(sku);
 
     var price = document.createElement("div");
     price.className = "product-card-price";
-    price.textContent = p.price ? "¥" + Number(p.price).toLocaleString() : "—";
+    price.textContent = _productPriceLabel(p);
     body.appendChild(price);
 
     var badges = document.createElement("div");
     badges.className = "product-card-badges";
 
-    var qty = parseInt(p.inventoryQuantity, 10) || 0;
+    var qty = p.totalStock;
     var stockSpan = document.createElement("span");
     stockSpan.className = "stock-badge " + (qty <= 0 ? "stock-out" : qty <= 5 ? "stock-low" : "stock-ok");
     stockSpan.style.cursor = "default";
     stockSpan.textContent = qty;
     badges.appendChild(stockSpan);
+
+    if (p.variantCount > 1) {
+      var variantPill = document.createElement("span");
+      variantPill.className = "product-card-type";
+      variantPill.textContent = tf("products.variantCount", { n: p.variantCount });
+      badges.appendChild(variantPill);
+    }
 
     var statusBadge = document.createElement("span");
     statusBadge.className = "badge status-badge-" + (p.status || "draft");
@@ -27016,10 +27092,17 @@ function openProductDetailModal(product) {
   // Product info grid
   var infoGrid = document.createElement("div");
   infoGrid.className = "product-detail-info";
+  var _isMulti = (product.variantCount != null && product.variantCount > 1);
+  var _priceLabel = (typeof product.priceMin !== "undefined")
+    ? _productPriceLabel(product)
+    : (product.price ? "\u00A5" + Number(product.price).toLocaleString() : "\u2014");
+  var _stockLabel = (typeof product.totalStock !== "undefined")
+    ? String(product.totalStock)
+    : String(parseInt(product.inventoryQuantity, 10) || 0);
   var infoItems = [
-    { label: "SKU", value: product.sku || "\u2014" },
-    { label: "Price", value: product.price ? "\u00A5" + Number(product.price).toLocaleString() : "\u2014" },
-    { label: "Stock", value: String(parseInt(product.inventoryQuantity, 10) || 0) },
+    { label: "SKU", value: _isMulti ? "\u2014" : (product.sku || "\u2014") },
+    { label: "Price", value: _priceLabel },
+    { label: "Stock", value: _stockLabel },
     { label: "Status", value: product.status || "draft" },
     { label: "Type", value: product.productType || "\u2014" },
     { label: "Vendor", value: product.vendor || "\u2014" }
@@ -27048,6 +27131,32 @@ function openProductDetailModal(product) {
     h.textContent = titleText;
     sec.appendChild(h);
     return sec;
+  }
+
+  // ── Variants (multi-variant products only) ──
+  if (_isMulti && Array.isArray(product.variants)) {
+    var varSec = _detailSection(tf("products.variantCount", { n: product.variantCount }));
+    var varList = document.createElement("div");
+    varList.className = "product-detail-info";
+    product.variants.forEach(function(v) {
+      var el = document.createElement("div");
+      el.className = "product-detail-item";
+      var lbl = document.createElement("span");
+      lbl.className = "product-detail-label";
+      var lblText = v.variantTitle || t("products.detail.variant");
+      if (v.sku) lblText += " · " + v.sku;
+      lbl.textContent = lblText;
+      el.appendChild(lbl);
+      var val = document.createElement("span");
+      val.className = "product-detail-value";
+      var priceStr = (v.price != null && v.price !== "") ? "¥" + Number(v.price).toLocaleString() : "—";
+      var stockStr = String(parseInt(v.inventoryQuantity, 10) || 0);
+      val.textContent = priceStr + " · " + t("products.detail.stock") + " " + stockStr;
+      el.appendChild(val);
+      varList.appendChild(el);
+    });
+    varSec.appendChild(varList);
+    modal.appendChild(varSec);
   }
 
   // ── Description (HTML → plain text via tag-strip + textContent) ──
