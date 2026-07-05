@@ -11,16 +11,17 @@
 //
 // 1. Create a Google Sheet with sheets named "Tasks", "Contacts", "Products", "Orders"
 // 2. Tasks headers:    id | name | status | priority | assignee | due | workspace | category | description | docLink | createdAt | updatedAt
-// 3. Contacts headers: id | name | nameEn | type | company | role | email | phone | products | location | stage | notes | connectedDate | lastContactDate | workspace | wholesalePercent | consignmentPercent | profileImageUrl | businessCardFrontUrl | businessCardBackUrl | checklist | createdAt | updatedAt
-// 4. Products headers: id | shopifyProductId | shopifyVariantId | title | variantTitle | sku | price | compareAtPrice | inventoryQuantity | inventoryItemId | locationId | status | productType | vendor | tags | imageUrl | lastSynced
+// 3. Contacts headers: id | name | nameEn | type | company | role | email | phone | products | location | stage | notes | connectedDate | lastContactDate | workspace | wholesalePercent | consignmentPercent | profileImageUrl | businessCardFrontUrl | businessCardBackUrl | checklist | website | instagram | socialMedia | vendorRelation | connectorFeePercent | connectorId | businessCardUrl | people | createdAt | updatedAt
+// 4. Products headers: id | shopifyProductId | shopifyVariantId | title | variantTitle | sku | price | compareAtPrice | inventoryQuantity | inventoryItemId | locationId | status | productType | vendor | tags | imageUrl | lastSynced | description | handle | imageUrls | productOptions | barcode | weight | weightUnit | variantOptions | inventoryPolicy | metafields
 // 5. Orders headers:   id | shopifyOrderId | orderNumber | email | totalPrice | currency | financialStatus | fulfillmentStatus | lineItems | customerName | createdAt | shippingAddress | note | lastSynced
 // 6. Customers headers: id | shopifyCustomerId | name | email | phone | totalOrders | totalSpent | firstOrderDate | lastOrderDate | tags | notes | createdAt | updatedAt
-// 7. Invoices headers:  id | invoiceNumber | contactId | contactName | contactCompany | contactEmail | contactAddress | invoiceDate | dueDate | poReference | items | subtotal | discount | shipping | taxType | tax | total | pricingType | pricingPercent | pricingParties | status | workspace | notes | orderId | orderNumber | createdAt | updatedAt
+// 7. Invoices headers:  id | invoiceNumber | contactId | contactName | contactCompany | contactEmail | contactAddress | invoiceDate | dueDate | poReference | items | subtotal | discount | shipping | taxType | tax | total | pricingType | pricingPercent | pricingParties | status | workspace | notes | orderId | orderNumber | paymentBank | paymentNote | marginNote | createdAt | updatedAt
 // 8. Receipts headers:  id | receiptNumber | invoiceId | invoiceNumber | contactName | contactCompany | contactEmail | contactAddress | receiptDate | items | subtotal | discount | shipping | taxType | tax | total | pricingType | pricingPercent | pricingParties | workspace | notes | orderId | orderNumber | createdAt | updatedAt
 // 9. PartnerStock headers: id | contactId | contactName | productName | sku | quantity | unitPrice | pricingType | status | dateDelivered | dateSold | dateReturned | notes | createdAt | updatedAt
 // 10. ContactDocuments headers: id | contactId | contactName | docType | docName | sentDate | receivedDate | fileUrl | notes | createdAt | updatedAt
 // 11. People headers: id | nameJa | nameEn | initials | title | avatarImageUrl | email | phone | lineId | instagramHandle | preferredContact | vendorId | vendorRole | isPrimary | languages | communicationPrefs | background | howWeMet | lastContactedAt | lastContactedType | firstMetAt | createdAt | updatedAt
 // 12. SoapBatches headers: id | name | batchNumber | date | status | oils | superfat | lyeConcentration | fragrance | fragranceOz | colorant | notes | properties | lyeCalc | qualityScore | cureStartDate | cureEndDate | actualResults | barsProduced | costPerBar | linkedProductId | linkedProductName | createdAt | updatedAt
+// 13. ProductMeta headers: id | shopifyProductId | source | category | devStatus | line | nameEn | nameJa | marketingName | ingredientLabelJa | linkedFormulaId | costPerBar | finishedCostPerBar | targetLaunch | heroImageUrl | internalNotes | versions | createdAt | updatedAt
 // 11. Open Extensions → Apps Script, paste this code, deploy as web app
 // 7. Set "Execute as: Me" and "Who has access: Anyone"
 // 8. Copy the deployed URL into the dashboard (Board tab config)
@@ -135,7 +136,7 @@ var SHEET_TO_ITEM_TYPE = {
   Orders: "order", Customers: "customer", Invoices: "invoice", Receipts: "receipt",
   PartnerStock: "stock", ContactDocuments: "document", People: "person",
   ContactNotes: "contactNote", ContactInteractions: "contactInteraction", ContactActivityLog: "contactActivity",
-  SoapBatches: "soapBatch"
+  SoapBatches: "soapBatch", ProductMeta: "productMeta"
 };
 
 function ensureSheet(name, headers) {
@@ -144,6 +145,18 @@ function ensureSheet(name, headers) {
   if (!sheet) {
     sheet = ss.insertSheet(name);
     sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
+    return sheet;
+  }
+  // Existing sheet: APPEND any missing header columns at the end (append-only — never
+  // reorder or rename existing columns). This lets schema additions (e.g. new Shopify
+  // fields on Products) self-heal on deploy so createRow/updateRow/getAllRows can use them.
+  var lastCol = sheet.getLastColumn();
+  var existing = lastCol > 0 ? sheet.getRange(1, 1, 1, lastCol).getValues()[0] : [];
+  var have = {};
+  existing.forEach(function (h) { if (h !== "" && h != null) have[h] = true; });
+  var toAdd = headers.filter(function (h) { return !have[h]; });
+  if (toAdd.length > 0) {
+    sheet.getRange(1, lastCol + 1, 1, toAdd.length).setValues([toAdd]);
   }
   return sheet;
 }
@@ -159,6 +172,8 @@ function ensureActivityAndPresenceSheets() {
   ensureSheet("ContactInteractions", ["id","contactId","vendorId","type","summary","occurredAt","createdAt"]);
   ensureSheet("ContactActivityLog", ["id","contactId","eventType","title","detail","relatedId","occurredAt"]);
   ensureSheet("SoapBatches", ["id","name","batchNumber","date","status","oils","superfat","lyeConcentration","fragrance","fragranceOz","colorant","notes","properties","lyeCalc","qualityScore","cureStartDate","cureEndDate","actualResults","barsProduced","costPerBar","linkedProductId","linkedProductName","createdAt","updatedAt"]);
+  ensureSheet("ProductMeta", ["id","shopifyProductId","source","category","devStatus","line","nameEn","nameJa","marketingName","ingredientLabelJa","linkedFormulaId","costPerBar","finishedCostPerBar","targetLaunch","heroImageUrl","internalNotes","versions","createdAt","updatedAt"]);
+  ensureSheet("Products", ["id","shopifyProductId","shopifyVariantId","title","variantTitle","sku","price","compareAtPrice","inventoryQuantity","inventoryItemId","locationId","status","productType","vendor","tags","imageUrl","lastSynced","description","handle","imageUrls","productOptions","barcode","weight","weightUnit","variantOptions","inventoryPolicy","metafields"]);
 }
 
 function logActivity(action, itemType, itemId, itemName, detail, userId, userName) {
@@ -173,8 +188,79 @@ function logActivity(action, itemType, itemId, itemName, detail, userId, userNam
 
 // --- Web App Endpoints ---
 
+// ===================== REQUEST AUTHENTICATION =====================
+// Verifies the caller's Firebase ID token against the email allowlist.
+//
+// ROLLOUT (fail-safe): enforcement is OFF until the Script Property
+// REQUIRE_AUTH === "true". With it off, requests are never blocked — the
+// backend behaves exactly as before — so deploying this code changes nothing
+// until you opt in. Before flipping REQUIRE_AUTH on, also set FIREBASE_API_KEY
+// (the Firebase Web API key) as a Script Property, and re-run/redeploy so the
+// script is authorized for external UrlFetch calls. Test with the live app,
+// confirm both users can still load data, THEN set REQUIRE_AUTH = "true".
+var AUTH_ALLOWED_EMAILS = ["taka@ivycoast.co", "yoko@ivycoast.co"];
+
+function authEnforced_() {
+  return PropertiesService.getScriptProperties().getProperty("REQUIRE_AUTH") === "true";
+}
+
+// Returns { ok: true, email } or { ok: false, reason }. Verifies the token via
+// Google's Identity Toolkit (accounts:lookup), which rejects forged/expired
+// tokens, then checks the email allowlist. Results are cached briefly by token.
+function verifyIdToken_(idToken) {
+  if (!idToken) return { ok: false, reason: "missing token" };
+  var apiKey = PropertiesService.getScriptProperties().getProperty("FIREBASE_API_KEY");
+  if (!apiKey) return { ok: false, reason: "server not configured (FIREBASE_API_KEY)" };
+
+  var cache = CacheService.getScriptCache();
+  var cacheKey;
+  try {
+    cacheKey = "auth:" + Utilities.base64EncodeWebSafe(Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, idToken));
+    var hit = cache.get(cacheKey);
+    if (hit) {
+      if (hit.charAt(0) === "+") return { ok: true, email: hit.substring(1) };
+      return { ok: false, reason: hit.substring(1) };
+    }
+  } catch (e) { cacheKey = null; }
+
+  var result;
+  try {
+    var resp = UrlFetchApp.fetch("https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=" + encodeURIComponent(apiKey), {
+      method: "post",
+      contentType: "application/json",
+      payload: JSON.stringify({ idToken: idToken }),
+      muteHttpExceptions: true
+    });
+    var data = JSON.parse(resp.getContentText());
+    if (resp.getResponseCode() !== 200 || !data.users || !data.users.length) {
+      result = { ok: false, reason: "invalid or expired token" };
+    } else {
+      var email = String(data.users[0].email || "").toLowerCase();
+      if (AUTH_ALLOWED_EMAILS.indexOf(email) === -1) result = { ok: false, reason: "not allowlisted" };
+      else result = { ok: true, email: email };
+    }
+  } catch (err) {
+    return { ok: false, reason: "verification error: " + err.message }; // do not cache transient errors
+  }
+
+  if (cacheKey) {
+    try { cache.put(cacheKey, (result.ok ? "+" + result.email : "-" + result.reason), 300); } catch (e) {}
+  }
+  return result;
+}
+
+// Gate helper: returns a jsonResponse error to short-circuit, or null to proceed.
+function authGate_(idToken) {
+  if (!authEnforced_()) return null;
+  var v = verifyIdToken_(idToken);
+  if (!v.ok) return jsonResponse({ error: "Unauthorized: " + v.reason });
+  return null;
+}
+
 function doGet(e) {
   try { ensureActivityAndPresenceSheets(); } catch (ex) { /* non-fatal */ }
+  var _authErr = authGate_(e && e.parameter ? e.parameter.idToken : "");
+  if (_authErr) return _authErr;
   var action = (e.parameter && e.parameter.action) || "list";
   var sheetName = (e.parameter && e.parameter.sheet) || "Tasks";
   // Batch endpoint: return all data in one request (cached 60s)
@@ -200,6 +286,7 @@ function doGet(e) {
       contactInteractions: getAllRows("ContactInteractions"),
       contactActivityLog: getAllRows("ContactActivityLog"),
       soapBatches: getAllRows("SoapBatches"),
+      productMeta: getAllRows("ProductMeta"),
       activities: actAll.slice(-100).reverse()
     });
     try { cache.put("batchList", payload, 60); } catch(ex) { /* payload too large for cache */ }
@@ -212,7 +299,7 @@ function doGet(e) {
       var last100 = all.slice(-100).reverse();
       return jsonResponse({ activities: last100 });
     }
-    var keyMap = { "Contacts": "contacts", "Products": "products", "Orders": "orders", "Customers": "customers", "Invoices": "invoices", "Receipts": "receipts", "PartnerStock": "partnerStock", "ContactDocuments": "contactDocuments", "People": "people", "ContactNotes": "contactNotes", "ContactInteractions": "contactInteractions", "ContactActivityLog": "contactActivityLog", "SoapBatches": "soapBatches" };
+    var keyMap = { "Contacts": "contacts", "Products": "products", "Orders": "orders", "Customers": "customers", "Invoices": "invoices", "Receipts": "receipts", "PartnerStock": "partnerStock", "ContactDocuments": "contactDocuments", "People": "people", "ContactNotes": "contactNotes", "ContactInteractions": "contactInteractions", "ContactActivityLog": "contactActivityLog", "SoapBatches": "soapBatches", "ProductMeta": "productMeta" };
     var key = keyMap[sheetName] || "tasks";
     var result = {};
     result[key] = getAllRows(sheetName);
@@ -229,14 +316,18 @@ function doPost(e) {
   try { body = JSON.parse(e.postData.contents); }
   catch (err) { return jsonResponse({ error: "Invalid JSON body" }); }
 
-  // Shopify webhook: payload has order_number but no action field
+  // Shopify webhook: payload has order_number but no action field. Exempt from the
+  // auth gate (Shopify can't send a token) — safe because the handler is a no-op.
   if (!body.action && body.order_number !== undefined) {
     return handleShopifyWebhook(body);
   }
 
+  var _authErr = authGate_(body.idToken);
+  if (_authErr) return _authErr;
+
   var action = body.action;
   var sheetName = body.sheet || "Tasks";
-  var itemKeyMap = { "Contacts": "contact", "Products": "product", "Orders": "order", "Customers": "customer", "Invoices": "invoice", "Receipts": "receipt", "PartnerStock": "stock", "ContactDocuments": "document", "People": "person", "ContactNotes": "contactNote", "ContactInteractions": "contactInteraction", "ContactActivityLog": "contactActivity", "SoapBatches": "soapBatch" };
+  var itemKeyMap = { "Contacts": "contact", "Products": "product", "Orders": "order", "Customers": "customer", "Invoices": "invoice", "Receipts": "receipt", "PartnerStock": "stock", "ContactDocuments": "document", "People": "person", "ContactNotes": "contactNote", "ContactInteractions": "contactInteraction", "ContactActivityLog": "contactActivity", "SoapBatches": "soapBatch", "ProductMeta": "productMeta" };
   var itemKey = itemKeyMap[sheetName] || "task";
   var item = body[itemKey] || body.task || body.contact || body.invoice || body.receipt || {};
   var userId = body.userId || "";
@@ -387,99 +478,16 @@ function jsonResponse(obj) {
 
 // ===================== SHOPIFY WEBHOOK HANDLER =====================
 
+// HARD RULE: never auto-create invoices. A Shopify webhook previously generated
+// ~37K duplicate invoice rows, so auto-creation is permanently disabled. This
+// handler only acknowledges the webhook (so Shopify stops retrying) and writes
+// nothing to the Invoices sheet. Do NOT re-enable invoice creation here.
 function handleShopifyWebhook(order) {
-  // Only create invoice for paid orders
-  if (order.financial_status !== "paid") {
-    return jsonResponse({ success: true, skipped: "not paid" });
-  }
-
-  var shopifyOrderId = String(order.id || "");
-  var orderNumber = String(order.order_number || "");
-
-  // Check if invoice already exists for this order
-  var invoiceSheet = getSheet("Invoices");
-  if (invoiceSheet) {
-    var invData = invoiceSheet.getDataRange().getValues();
-    var invHeaders = invData[0];
-    var orderIdCol = invHeaders.indexOf("orderId");
-    var orderNumCol = invHeaders.indexOf("orderNumber");
-    for (var i = 1; i < invData.length; i++) {
-      if ((orderIdCol >= 0 && String(invData[i][orderIdCol]) === shopifyOrderId) ||
-          (orderNumCol >= 0 && String(invData[i][orderNumCol]) === orderNumber)) {
-        return jsonResponse({ success: true, skipped: "invoice already exists" });
-      }
-    }
-  }
-
-  // Build line items string and structured items
-  var lineItems = [];
-  var itemsJson = [];
-  var subtotal = 0;
-  if (order.line_items && order.line_items.length) {
-    order.line_items.forEach(function(li) {
-      var qty = li.quantity || 1;
-      var price = parseFloat(li.price) || 0;
-      var name = li.title || li.name || "";
-      if (li.variant_title) name += " \u2014 " + li.variant_title;
-      lineItems.push(qty + "x " + name);
-      itemsJson.push({
-        description: name,
-        qty: qty,
-        unitPrice: price,
-        amount: qty * price
-      });
-      subtotal += qty * price;
-    });
-  }
-
-  var totalPrice = parseFloat(order.total_price) || subtotal;
-  var customerName = "";
-  if (order.customer) {
-    customerName = ((order.customer.first_name || "") + " " + (order.customer.last_name || "")).trim();
-  }
-
-  // Parse shipping address
-  var addrJson = "";
-  if (order.shipping_address) {
-    var sa = order.shipping_address;
-    addrJson = JSON.stringify({
-      postal: sa.zip || "",
-      prefecture: sa.province || "",
-      city: sa.city || "",
-      line1: (sa.address1 || ""),
-      line2: (sa.address2 || "")
-    });
-  }
-
-  var invoice = {
-    invoiceNumber: generateInvoiceNumber_(),
-    contactId: "",
-    contactName: customerName,
-    contactCompany: customerName,
-    contactEmail: order.email || "",
-    contactAddress: addrJson,
-    invoiceDate: order.created_at ? order.created_at.split("T")[0] : new Date().toISOString().split("T")[0],
-    dueDate: "",
-    poReference: "Order #" + orderNumber,
-    items: JSON.stringify(itemsJson),
-    subtotal: String(subtotal),
-    discount: "0",
-    shipping: String(parseFloat(order.total_shipping_price_set && order.total_shipping_price_set.shop_money ? order.total_shipping_price_set.shop_money.amount : "0") || 0),
-    taxType: "included",
-    tax: "0",
-    total: String(totalPrice),
-    pricingType: "wholesale",
-    pricingPercent: "",
-    status: "draft",
-    workspace: "IVYCOAST",
-    notes: "Auto-generated from Shopify webhook, order #" + orderNumber,
-    orderId: shopifyOrderId,
-    orderNumber: orderNumber
-  };
-
-  var created = createRow("Invoices", invoice);
-  logActivity("created", "invoice", created.id, created.invoiceNumber || "", "Auto-created from Shopify order #" + orderNumber, "system", "Shopify");
-  return jsonResponse({ success: true, invoice: created });
+  // This endpoint is reachable unauthenticated (Shopify can't send a token), so
+  // sanitize the only attacker-controlled value before it touches the log.
+  var orderNumber = String((order && order.order_number) || "").replace(/[^\w\-]/g, "").substring(0, 32);
+  logActivity("received", "order", "", "Shopify order #" + orderNumber, "Webhook received — auto-invoice creation disabled", "system", "Shopify");
+  return jsonResponse({ success: true, skipped: "auto-invoice creation disabled" });
 }
 
 // Generate invoice number server-side
@@ -588,12 +596,32 @@ function syncShopifyProducts() {
 
   // Paginate through all products
   while (hasMore) {
-    var data = shopifyGet("products.json", { limit: "250", since_id: sinceId, fields: "id,title,variants,status,product_type,vendor,tags,images" });
+    var data = shopifyGet("products.json", { limit: "250", since_id: sinceId, fields: "id,title,variants,status,product_type,vendor,tags,images,body_html,handle,options" });
     var products = data.products || [];
     if (products.length === 0) { hasMore = false; break; }
 
     products.forEach(function(p) {
       var imageUrl = (p.images && p.images.length > 0) ? p.images[0].src : "";
+      // Product-level expansion fields (denormalized onto each variant row)
+      var description = p.body_html || "";
+      var handle = p.handle || "";
+      var imageUrls = JSON.stringify((p.images || []).map(function(im) { return im.src; }));
+      var productOptions = JSON.stringify((p.options || []).map(function(o) { return o.name; }));
+
+      // Metafields (best-effort, per product, throttled, never breaks sync)
+      var metafields = "{}";
+      try {
+        var mfData = shopifyGet("products/" + p.id + "/metafields.json", {});
+        var mfMap = {};
+        (mfData.metafields || []).forEach(function(mf) {
+          mfMap[mf.namespace + "." + mf.key] = mf.value;
+        });
+        metafields = JSON.stringify(mfMap);
+        Utilities.sleep(200); // gentle throttle against rate limits
+      } catch (e) {
+        metafields = "{}";
+      }
+
       (p.variants || []).forEach(function(v) {
         allVariants.push({
           shopifyProductId: String(p.id),
@@ -610,7 +638,17 @@ function syncShopifyProducts() {
           productType: p.product_type || "",
           vendor: p.vendor || "",
           tags: p.tags || "",
-          imageUrl: imageUrl
+          imageUrl: imageUrl,
+          description: description,
+          handle: handle,
+          imageUrls: imageUrls,
+          productOptions: productOptions,
+          barcode: v.barcode || "",
+          weight: String(v.weight || ""),
+          weightUnit: v.weight_unit || "",
+          variantOptions: JSON.stringify({ option1: v.option1 || "", option2: v.option2 || "", option3: v.option3 || "" }),
+          inventoryPolicy: v.inventory_policy || "",
+          metafields: metafields
         });
       });
     });
