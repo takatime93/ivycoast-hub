@@ -8978,6 +8978,10 @@ function _makeActivatable(el, handler, label) {
   el.setAttribute("role", "button");
   if (label) el.setAttribute("aria-label", label);
   el.addEventListener("keydown", function(e) {
+    // Only self-activate: ignore Enter/Space bubbling up from a nested focusable
+    // child (e.g. a "View in CRM" link inside a clickable row) so it doesn't
+    // double-fire the row's handler alongside the child's own action.
+    if (e.target !== el) return;
     if (e.key === "Enter" || e.key === " ") { e.preventDefault(); handler.call(el, e); }
   });
 }
