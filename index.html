@@ -1038,6 +1038,29 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
 }
 .board-modal-actions .btn-delete:hover { background: var(--color-error-bg); }
 
+/* Reusable confirm modal */
+#confirm-modal-overlay .board-modal {
+  width: 400px;
+  padding: 24px 28px;
+}
+#confirm-modal-title {
+  font-size: var(--text-lg);
+  font-weight: 500;
+  margin-bottom: 10px;
+}
+#confirm-modal-message {
+  color: var(--color-text-secondary);
+  font-size: var(--text-md);
+  line-height: 1.55;
+  white-space: pre-wrap;
+}
+.board-modal-actions .btn-confirm-danger {
+  background: var(--color-error-text);
+  color: #fff;
+  border-color: var(--color-error-text);
+}
+.board-modal-actions .btn-confirm-danger:hover { background: var(--color-error-bright); border-color: var(--color-error-bright); }
+
 /* Mobile status picker */
 .status-picker-overlay {
   display: none;
@@ -7363,6 +7386,18 @@ select.contact-edit-input { appearance: auto; cursor: pointer; }
   </div>
 </div>
 
+<!-- Reusable Confirm Modal -->
+<div class="board-modal-overlay" id="confirm-modal-overlay">
+  <div class="board-modal" role="dialog" aria-modal="true" aria-labelledby="confirm-modal-title">
+    <h2 id="confirm-modal-title"></h2>
+    <p id="confirm-modal-message"></p>
+    <div class="board-modal-actions">
+      <button type="button" id="confirm-modal-cancel"></button>
+      <button type="button" id="confirm-modal-ok"></button>
+    </div>
+  </div>
+</div>
+
 <!-- Quality Score Drawer -->
 <div class="score-drawer-overlay" id="score-drawer-overlay" onclick="closeScoreDrawer()"></div>
 <div class="score-drawer" id="score-drawer">
@@ -8117,6 +8152,8 @@ var I18N = {
     "common.exportPdf": "Export PDF",
     "common.archive": "Archive",
     "common.saving": "Saving...",
+    "common.confirm": "Confirm",
+    "common.confirmDelete": "Delete?",
     // home / overview
     "home.meetingNotes": "Meeting Notes",
     "home.allMeetingDocs": "All meeting documents",
@@ -8547,6 +8584,8 @@ var I18N = {
     "common.exportPdf": "PDF出力",
     "common.archive": "アーカイブ",
     "common.saving": "保存中...",
+    "common.confirm": "確認",
+    "common.confirmDelete": "削除しますか？",
     // home / overview
     "home.meetingNotes": "議事録",
     "home.allMeetingDocs": "すべての議事録",
@@ -8969,6 +9008,67 @@ function tf(key, params) {
     return params[k] != null ? params[k] : "";
   });
 }
+// Reusable styled confirmation modal. Returns a Promise<boolean>: resolves true on
+// Confirm, false on Cancel / backdrop click / Escape. Replaces native confirm().
+function showConfirm(opts) {
+  opts = opts || {};
+  return new Promise(function(resolve) {
+    var overlay = document.getElementById("confirm-modal-overlay");
+    var titleEl = document.getElementById("confirm-modal-title");
+    var msgEl = document.getElementById("confirm-modal-message");
+    var cancelBtn = document.getElementById("confirm-modal-cancel");
+    var okBtn = document.getElementById("confirm-modal-ok");
+    var destructive = opts.destructive !== false; // default true
+
+    titleEl.textContent = opts.title != null ? opts.title : t("common.confirmDelete");
+    msgEl.textContent = opts.message != null ? opts.message : "";
+    okBtn.textContent = opts.confirmLabel != null ? opts.confirmLabel : t("common.confirm");
+    cancelBtn.textContent = opts.cancelLabel != null ? opts.cancelLabel : t("common.cancel");
+    okBtn.className = destructive ? "btn-confirm-danger" : "btn-save";
+
+    var prevFocus = document.activeElement;
+    var done = false;
+
+    function cleanup(result) {
+      if (done) return;
+      done = true;
+      overlay.classList.remove("open");
+      okBtn.removeEventListener("click", onOk);
+      cancelBtn.removeEventListener("click", onCancel);
+      overlay.removeEventListener("click", onBackdrop);
+      document.removeEventListener("keydown", onKey, true);
+      if (prevFocus && typeof prevFocus.focus === "function") {
+        try { prevFocus.focus(); } catch (e) {}
+      }
+      resolve(result);
+    }
+    function onOk() { cleanup(true); }
+    function onCancel() { cleanup(false); }
+    function onBackdrop(e) { if (e.target === overlay) cleanup(false); }
+    function onKey(e) {
+      if (e.key === "Escape") {
+        // Capture-phase + stopImmediatePropagation so Escape here does NOT also
+        // close a modal sitting underneath via the global keydown handler.
+        e.stopImmediatePropagation();
+        e.preventDefault();
+        cleanup(false);
+      } else if (e.key === "Enter" && document.activeElement === okBtn) {
+        e.preventDefault();
+        cleanup(true);
+      }
+    }
+
+    okBtn.addEventListener("click", onOk);
+    cancelBtn.addEventListener("click", onCancel);
+    overlay.addEventListener("click", onBackdrop);
+    document.addEventListener("keydown", onKey, true);
+
+    overlay.classList.add("open");
+    // Focus Cancel by default — safer for destructive actions.
+    cancelBtn.focus();
+  });
+}
+
 // Keyboard-accessibility helper: makes a clickable non-button element (div/tr)
 // operable via keyboard. ADDS tabindex/role/aria + Enter/Space keydown that reuses
 // the same handler as the element's existing onclick — it does NOT remove or replace
@@ -10730,12 +10830,18 @@ function deleteTaskConfirm() {
   var id = document.getElementById("modal-task-id").value;
   var taskName = document.getElementById("modal-name").value;
   if (!id) return;
-  if (!confirm('Delete "' + taskName + '"? This cannot be undone.')) return;
-  closeModal();
-  boardTasks = boardTasks.filter(function(t) { return t.id !== id; });
-  renderBoard();
-  apiPost({ action: "delete", id: id, itemName: taskName })
-    .catch(function() { fetchBoardTasks(); });
+  showConfirm({
+    title: t("common.confirmDelete"),
+    message: 'Delete "' + taskName + '"? This cannot be undone.',
+    destructive: true
+  }).then(function(ok) {
+    if (!ok) return;
+    closeModal();
+    boardTasks = boardTasks.filter(function(t) { return t.id !== id; });
+    renderBoard();
+    apiPost({ action: "delete", id: id, itemName: taskName })
+      .catch(function() { fetchBoardTasks(); });
+  });
 }
 
 // Auto-refresh when Board tab is active
@@ -11629,20 +11735,33 @@ function renderCrmArchived() {
     restoreBtn.textContent = "Restore";
     restoreBtn.style.cssText = "padding:var(--space-1) var(--space-2-5);border:1px solid var(--color-primary);border-radius:var(--radius-sm);background:none;color:var(--color-primary);cursor:pointer;font-size:var(--text-sm);margin-right:var(--space-2)";
     restoreBtn.onclick = function() {
-      if (!confirm("Restore " + (c.company || c.name) + " to active contacts?")) return;
-      c.stage = "prospect"; c.archivedDate = "";
-      renderCrmActiveView(); saveDataCache();
-      crmApiPost({ action: "update", contact: { id: c.id, stage: "prospect", archivedDate: "" } });
+      showConfirm({
+        title: t("common.confirm"),
+        message: "Restore " + (c.company || c.name) + " to active contacts?",
+        confirmLabel: t("common.confirm"),
+        destructive: false
+      }).then(function(ok) {
+        if (!ok) return;
+        c.stage = "prospect"; c.archivedDate = "";
+        renderCrmActiveView(); saveDataCache();
+        crmApiPost({ action: "update", contact: { id: c.id, stage: "prospect", archivedDate: "" } });
+      });
     };
     tdActions.appendChild(restoreBtn);
     var deleteBtn = document.createElement("button");
     deleteBtn.textContent = "Delete";
     deleteBtn.style.cssText = "padding:var(--space-1) var(--space-2-5);border:1px solid var(--color-error-text);border-radius:var(--radius-sm);background:none;color:var(--color-error-text);cursor:pointer;font-size:var(--text-sm)";
     deleteBtn.onclick = function() {
-      if (!confirm("Permanently delete " + (c.company || c.name) + "? This cannot be undone.")) return;
-      crmContacts = crmContacts.filter(function(x) { return x.id !== c.id; });
-      renderCrmActiveView(); saveDataCache();
-      crmApiPost({ action: "delete", id: c.id, itemName: c.company || c.name });
+      showConfirm({
+        title: t("common.confirmDelete"),
+        message: "Permanently delete " + (c.company || c.name) + "? This cannot be undone.",
+        destructive: true
+      }).then(function(ok) {
+        if (!ok) return;
+        crmContacts = crmContacts.filter(function(x) { return x.id !== c.id; });
+        renderCrmActiveView(); saveDataCache();
+        crmApiPost({ action: "delete", id: c.id, itemName: c.company || c.name });
+      });
     };
     tdActions.appendChild(deleteBtn);
     tr.appendChild(tdActions);
@@ -12735,9 +12854,7 @@ function deleteContactPermanently(id) {
     console.error("deleteContactPermanently: contact not found:", id);
     return false;
   }
-  if (!confirm("Permanently delete " + (contact.nameJa || contact.nameEn) + " and all associated notes, interactions, activity events, attachments, and tasks? This cannot be undone.")) {
-    return false;
-  }
+  // Confirmation is handled by the caller (async showConfirm) before this runs.
   // Cascading delete: remove all associated records
   contactNotes = contactNotes.filter(function(n) { return n.contactId !== id; });
   contactInteractions = contactInteractions.filter(function(i) { return i.contactId !== id; });
@@ -13517,10 +13634,17 @@ function openCrmDetailView(contactId) {
     restoreItem.textContent = t("crmDetail.restoreContact");
     restoreItem.onclick = function() {
       moreMenu.classList.remove("open");
-      if (!confirm(tf("crmDetail.confirmRestore", { name: c.company || c.name }))) return;
-      crmContacts.forEach(function(x) { if (x.id === contactId) { x.stage = "prospect"; x.archivedDate = ""; } });
-      closeCrmModal(); renderCrmActiveView(); saveDataCache();
-      crmApiPost({ action: "update", contact: { id: contactId, stage: "prospect", archivedDate: "" } });
+      showConfirm({
+        title: t("common.confirm"),
+        message: tf("crmDetail.confirmRestore", { name: c.company || c.name }),
+        confirmLabel: t("common.confirm"),
+        destructive: false
+      }).then(function(ok) {
+        if (!ok) return;
+        crmContacts.forEach(function(x) { if (x.id === contactId) { x.stage = "prospect"; x.archivedDate = ""; } });
+        closeCrmModal(); renderCrmActiveView(); saveDataCache();
+        crmApiPost({ action: "update", contact: { id: contactId, stage: "prospect", archivedDate: "" } });
+      });
     };
     moreMenu.appendChild(restoreItem);
     var deleteItem = document.createElement("button");
@@ -13535,10 +13659,17 @@ function openCrmDetailView(contactId) {
     archiveItem.onclick = function() {
       moreMenu.classList.remove("open");
       var name = c.company || c.name || t("crmDetail.thisContact");
-      if (!confirm(tf("crmDetail.confirmArchive", { name: name }))) return;
-      crmContacts.forEach(function(x) { if (x.id === contactId) { x.stage = "archived"; x.archivedDate = new Date().toISOString(); } });
-      closeCrmModal(); renderCrmActiveView(); saveDataCache();
-      crmApiPost({ action: "update", contact: { id: contactId, stage: "archived", archivedDate: new Date().toISOString() } });
+      showConfirm({
+        title: t("common.archive"),
+        message: tf("crmDetail.confirmArchive", { name: name }),
+        confirmLabel: t("common.archive"),
+        destructive: false
+      }).then(function(ok) {
+        if (!ok) return;
+        crmContacts.forEach(function(x) { if (x.id === contactId) { x.stage = "archived"; x.archivedDate = new Date().toISOString(); } });
+        closeCrmModal(); renderCrmActiveView(); saveDataCache();
+        crmApiPost({ action: "update", contact: { id: contactId, stage: "archived", archivedDate: new Date().toISOString() } });
+      });
     };
     moreMenu.appendChild(archiveItem);
   }
@@ -13602,15 +13733,22 @@ function openCrmDetailView(contactId) {
       if (stage === currentStage) return;
       var companyName = c.company || c.name || t("crmDetail.thisContact");
       var newLabel = pipelineLabels[stage] || stage;
-      if (!confirm(tf("crmDetail.confirmMoveStage", { name: companyName, stage: newLabel }))) return;
-      crmContacts.forEach(function(x) { if (x.id === contactId) x.stage = stage; });
-      renderCrmPipeline();
-      renderCrmActiveView();
-      renderHomeCrmStats();
-      saveDataCache();
-      openCrmDetailView(contactId);
-      crmApiPost({ action: "update", contact: { id: contactId, stage: stage } })
-        .catch(function() { fetchCrmContacts(); });
+      showConfirm({
+        title: t("common.confirm"),
+        message: tf("crmDetail.confirmMoveStage", { name: companyName, stage: newLabel }),
+        confirmLabel: t("common.confirm"),
+        destructive: false
+      }).then(function(ok) {
+        if (!ok) return;
+        crmContacts.forEach(function(x) { if (x.id === contactId) x.stage = stage; });
+        renderCrmPipeline();
+        renderCrmActiveView();
+        renderHomeCrmStats();
+        saveDataCache();
+        openCrmDetailView(contactId);
+        crmApiPost({ action: "update", contact: { id: contactId, stage: stage } })
+          .catch(function() { fetchCrmContacts(); });
+      });
     };
     pipelineRow.appendChild(marker);
   });
@@ -15339,11 +15477,17 @@ function renderCrmPeopleSection(c, panel, contactId) {
       delBtn.textContent = "\uD83D\uDDD1";
       delBtn.addEventListener("click", function(e) {
         e.stopPropagation();
-        if (!confirm("Remove " + (((person.firstName || "") + " " + (person.lastName || "")).trim() || "this person") + "?")) return;
-        var spliceIdx = people.findIndex(function(p) { return p.id === person.id; });
-        if (spliceIdx !== -1) people.splice(spliceIdx, 1);
-        savePeople();
-        renderPeopleList();
+        showConfirm({
+          title: t("common.confirmDelete"),
+          message: "Remove " + (((person.firstName || "") + " " + (person.lastName || "")).trim() || "this person") + "?",
+          destructive: true
+        }).then(function(ok) {
+          if (!ok) return;
+          var spliceIdx = people.findIndex(function(p) { return p.id === person.id; });
+          if (spliceIdx !== -1) people.splice(spliceIdx, 1);
+          savePeople();
+          renderPeopleList();
+        });
       });
       actions.appendChild(delBtn);
       hdr.appendChild(actions);
@@ -17169,6 +17313,39 @@ function renderContactEditForm(contact, container, options) {
     // Determine isPrimary
     var isPrimary = vendorRoleVal === "PRIMARY";
 
+    function doSave() {
+      var data = {
+        nameJa: nameJaVal,
+        nameEn: nameEnVal,
+        title: titleVal,
+        email: emailVal,
+        phone: phoneVal,
+        lineId: lineVal,
+        preferredContact: prefVal,
+        instagramHandle: igVal,
+        vendorId: vendorIdVal,
+        vendorRole: vendorRoleVal,
+        isPrimary: isPrimary,
+        languages: languagesArr,
+        communicationPrefs: commPrefsArr,
+        firstMetAt: fmVal,
+        background: bgVal,
+        howWeMet: metVal
+      };
+
+      var savedContact;
+      if (isNew) {
+        savedContact = createContact(data);
+      } else {
+        savedContact = updateContact(contact.id, data);
+      }
+
+      if (savedContact) {
+        overlay.remove();
+        onSave(savedContact);
+      }
+    }
+
     // If setting as primary, check for existing primary at that vendor
     if (isPrimary && vendorIdVal) {
       var existingPrimary = contactPeople.find(function(p) {
@@ -17176,40 +17353,19 @@ function renderContactEditForm(contact, container, options) {
       });
       if (existingPrimary) {
         var confirmMsg = "This will replace " + (existingPrimary.nameJa || existingPrimary.nameEn) + " as primary contact. Continue?";
-        if (!confirm(confirmMsg)) return;
+        showConfirm({
+          title: t("common.confirm"),
+          message: confirmMsg,
+          confirmLabel: t("common.confirm"),
+          destructive: false
+        }).then(function(ok) {
+          if (!ok) return;
+          doSave();
+        });
+        return;
       }
     }
-
-    var data = {
-      nameJa: nameJaVal,
-      nameEn: nameEnVal,
-      title: titleVal,
-      email: emailVal,
-      phone: phoneVal,
-      lineId: lineVal,
-      preferredContact: prefVal,
-      instagramHandle: igVal,
-      vendorId: vendorIdVal,
-      vendorRole: vendorRoleVal,
-      isPrimary: isPrimary,
-      languages: languagesArr,
-      communicationPrefs: commPrefsArr,
-      firstMetAt: fmVal,
-      background: bgVal,
-      howWeMet: metVal
-    };
-
-    var savedContact;
-    if (isNew) {
-      savedContact = createContact(data);
-    } else {
-      savedContact = updateContact(contact.id, data);
-    }
-
-    if (savedContact) {
-      overlay.remove();
-      onSave(savedContact);
-    }
+    doSave();
   };
   saveBar.appendChild(saveBtn);
   form.appendChild(saveBar);
@@ -17326,11 +17482,18 @@ function renderContactProfileStandalone(contact, detailView, headerEl, bodyEl, t
         } },
       { label: "Archive", icon: "\uf187", action: function() { /* archive — future phase */ } },
       { label: "Delete", icon: "\uf2ed", action: function() {
-          var deleted = deleteContactPermanently(contact.id);
-          if (deleted) {
-            closeCrmModal();
-            renderCrmActiveView();
-          }
+          showConfirm({
+            title: t("common.confirmDelete"),
+            message: "Permanently delete " + (contact.nameJa || contact.nameEn) + " and all associated notes, interactions, activity events, attachments, and tasks? This cannot be undone.",
+            destructive: true
+          }).then(function(ok) {
+            if (!ok) return;
+            var deleted = deleteContactPermanently(contact.id);
+            if (deleted) {
+              closeCrmModal();
+              renderCrmActiveView();
+            }
+          });
         }, color: "var(--color-error-text)" }
     ];
     menuItems.forEach(function(item) {
@@ -18106,11 +18269,17 @@ function renderCrmTeamTab(c, panel, contactId) {
       deleteItem.onclick = function() {
         moreMenu.classList.remove("open");
         var pName = ((person.firstName || "") + " " + (person.lastName || "")).trim() || "this person";
-        if (!confirm("Remove " + pName + "?")) return;
-        var spliceIdx = people.findIndex(function(p) { return p.id === person.id; });
-        if (spliceIdx !== -1) people.splice(spliceIdx, 1);
-        savePeople();
-        renderTeamGrid();
+        showConfirm({
+          title: t("common.confirmDelete"),
+          message: "Remove " + pName + "?",
+          destructive: true
+        }).then(function(ok) {
+          if (!ok) return;
+          var spliceIdx = people.findIndex(function(p) { return p.id === person.id; });
+          if (spliceIdx !== -1) people.splice(spliceIdx, 1);
+          savePeople();
+          renderTeamGrid();
+        });
       };
       moreMenu.appendChild(deleteItem);
       moreWrap.appendChild(moreMenu);
@@ -18509,14 +18678,20 @@ function renderCrmOrdersTab(c, panel, contactId) {
       deleteLi.textContent = "Delete";
       deleteLi.onclick = function(e) {
         e.stopPropagation();
-        if (!confirm("Permanently delete order #" + (order.orderNumber || "") + "? This cannot be undone.")) return;
-        var oid = order.id || order.shopifyOrderId || "";
-        shopifyOrders = shopifyOrders.filter(function(o) { return (o.id || o.shopifyOrderId) !== oid; });
-        _archivedOrderIds.delete(oid);
-        localStorage.setItem("ivh_archived_orders", JSON.stringify(Array.from(_archivedOrderIds)));
-        saveDataCache();
-        row.remove();
-        if (SCRIPT_URL) ordersApiPost({ action: "delete", id: oid }).catch(function() {});
+        showConfirm({
+          title: t("common.confirmDelete"),
+          message: "Permanently delete order #" + (order.orderNumber || "") + "? This cannot be undone.",
+          destructive: true
+        }).then(function(ok) {
+          if (!ok) return;
+          var oid = order.id || order.shopifyOrderId || "";
+          shopifyOrders = shopifyOrders.filter(function(o) { return (o.id || o.shopifyOrderId) !== oid; });
+          _archivedOrderIds.delete(oid);
+          localStorage.setItem("ivh_archived_orders", JSON.stringify(Array.from(_archivedOrderIds)));
+          saveDataCache();
+          row.remove();
+          if (SCRIPT_URL) ordersApiPost({ action: "delete", id: oid }).catch(function() {});
+        });
       };
       actions.appendChild(deleteLi);
     }
@@ -19605,10 +19780,16 @@ function renderCrmStockTab(c, panel, contactId) {
       delBtn.textContent = "\u2715";
       delBtn.onclick = function(e) {
         e.stopPropagation();
-        if (!confirm("Delete this stock item?")) return;
-        stockApiPost({ action: "delete", id: s.id }).then(function() {
-          fetchAllData();
-          setTimeout(function() { renderCrmStockTab(crmContacts.find(function(x) { return x.id === contactId; }) || c, panel, contactId); }, 1500);
+        showConfirm({
+          title: t("common.confirmDelete"),
+          message: "Delete this stock item?",
+          destructive: true
+        }).then(function(ok) {
+          if (!ok) return;
+          stockApiPost({ action: "delete", id: s.id }).then(function() {
+            fetchAllData();
+            setTimeout(function() { renderCrmStockTab(crmContacts.find(function(x) { return x.id === contactId; }) || c, panel, contactId); }, 1500);
+          });
         });
       };
       tdActions.appendChild(delBtn);
@@ -19722,10 +19903,16 @@ function renderCrmDocumentsTab(c, panel, contactId) {
       delDocBtn.textContent = "\u2715";
       delDocBtn.onclick = function(e) {
         e.stopPropagation();
-        if (!confirm("Delete this document?")) return;
-        contactDocApiPost({ action: "delete", id: doc.id }).then(function() {
-          fetchAllData();
-          setTimeout(function() { renderCrmDocumentsTab(crmContacts.find(function(x) { return x.id === contactId; }) || c, panel, contactId); }, 1500);
+        showConfirm({
+          title: t("common.confirmDelete"),
+          message: "Delete this document?",
+          destructive: true
+        }).then(function(ok) {
+          if (!ok) return;
+          contactDocApiPost({ action: "delete", id: doc.id }).then(function() {
+            fetchAllData();
+            setTimeout(function() { renderCrmDocumentsTab(crmContacts.find(function(x) { return x.id === contactId; }) || c, panel, contactId); }, 1500);
+          });
         });
       };
       actions.appendChild(delDocBtn);
@@ -20195,13 +20382,19 @@ function deleteCrmContactConfirm() {
   if (!id) return;
   var foundContact = crmContacts.find(function(x) { return x.id === id; });
   var name = foundContact ? (foundContact.name || foundContact.nameEn || "this contact") : document.getElementById("crm-modal-name").value;
-  if (!confirm('Delete "' + name + '"? This cannot be undone.')) return;
-  closeCrmModal();
-  crmContacts = crmContacts.filter(function(c) { return c.id !== id; });
-  renderCrmActiveView();
-  renderHomeCrmStats();
-  crmApiPost({ action: "delete", id: id, itemName: name })
-    .catch(function() { fetchCrmContacts(); });
+  showConfirm({
+    title: t("common.confirmDelete"),
+    message: 'Delete "' + name + '"? This cannot be undone.',
+    destructive: true
+  }).then(function(ok) {
+    if (!ok) return;
+    closeCrmModal();
+    crmContacts = crmContacts.filter(function(c) { return c.id !== id; });
+    renderCrmActiveView();
+    renderHomeCrmStats();
+    crmApiPost({ action: "delete", id: id, itemName: name })
+      .catch(function() { fetchCrmContacts(); });
+  });
 }
 
 // CRM auto-refresh
@@ -21563,43 +21756,49 @@ function openMasterFormulaHistory(batchId) {
     revertBtn.style.marginTop = "12px";
     revertBtn.textContent = "\u5143\u306B\u623B\u3059 (Revert)";
     revertBtn.addEventListener("click", function() {
-      if (!confirm("\u3053\u306E\u30D0\u30FC\u30B8\u30E7\u30F3\u306B\u623B\u3057\u307E\u3059\u304B\uFF1F")) return;
-      var snapData = ver.snapshot;
-      // Push current state as a new version before reverting
-      if (!batch.versionHistory) batch.versionHistory = [];
-      batch.versionHistory.push({
-        date: batch.updatedAt || batch.date,
-        editor: (typeof getCurrentUserName === "function" ? getCurrentUserName() : "") || "Unknown",
-        snapshot: {
-          oils: JSON.parse(JSON.stringify(batch.oils || [])),
-          superfat: batch.superfat,
-          lyeConcentration: batch.lyeConcentration,
-          fragrance: batch.fragrance,
-          fragranceOz: batch.fragranceOz,
-          colorant: batch.colorant,
-          properties: JSON.parse(JSON.stringify(batch.properties || {})),
-          lyeCalc: JSON.parse(JSON.stringify(batch.lyeCalc || {})),
-          qualityScore: batch.qualityScore,
-          notes: batch.notes
-        }
+      showConfirm({
+        title: t("common.confirm"),
+        message: "\u3053\u306E\u30D0\u30FC\u30B8\u30E7\u30F3\u306B\u623B\u3057\u307E\u3059\u304B\uFF1F",
+        destructive: false
+      }).then(function(ok) {
+        if (!ok) return;
+        var snapData = ver.snapshot;
+        // Push current state as a new version before reverting
+        if (!batch.versionHistory) batch.versionHistory = [];
+        batch.versionHistory.push({
+          date: batch.updatedAt || batch.date,
+          editor: (typeof getCurrentUserName === "function" ? getCurrentUserName() : "") || "Unknown",
+          snapshot: {
+            oils: JSON.parse(JSON.stringify(batch.oils || [])),
+            superfat: batch.superfat,
+            lyeConcentration: batch.lyeConcentration,
+            fragrance: batch.fragrance,
+            fragranceOz: batch.fragranceOz,
+            colorant: batch.colorant,
+            properties: JSON.parse(JSON.stringify(batch.properties || {})),
+            lyeCalc: JSON.parse(JSON.stringify(batch.lyeCalc || {})),
+            qualityScore: batch.qualityScore,
+            notes: batch.notes
+          }
+        });
+        // Restore snapshot fields to the batch
+        batch.oils = JSON.parse(JSON.stringify(snapData.oils || []));
+        batch.superfat = snapData.superfat;
+        batch.lyeConcentration = snapData.lyeConcentration;
+        batch.fragrance = snapData.fragrance;
+        batch.fragranceOz = snapData.fragranceOz;
+        batch.colorant = snapData.colorant;
+        batch.properties = JSON.parse(JSON.stringify(snapData.properties || {}));
+        batch.lyeCalc = JSON.parse(JSON.stringify(snapData.lyeCalc || {}));
+        batch.qualityScore = snapData.qualityScore;
+        batch.notes = snapData.notes;
+        batch.updatedAt = new Date().toISOString().slice(0, 10);
+        formulatorSaveBatches(batch);
+        formulatorRenderBatchTable();
+        formulatorPopulateLoadDropdown();
+        overlay.remove();
+        showFormulatorToast("\u30D0\u30FC\u30B8\u30E7\u30F3\u3092\u5FA9\u5143\u3057\u307E\u3057\u305F");
       });
-      // Restore snapshot fields to the batch
-      batch.oils = JSON.parse(JSON.stringify(snapData.oils || []));
-      batch.superfat = snapData.superfat;
-      batch.lyeConcentration = snapData.lyeConcentration;
-      batch.fragrance = snapData.fragrance;
-      batch.fragranceOz = snapData.fragranceOz;
-      batch.colorant = snapData.colorant;
-      batch.properties = JSON.parse(JSON.stringify(snapData.properties || {}));
-      batch.lyeCalc = JSON.parse(JSON.stringify(snapData.lyeCalc || {}));
-      batch.qualityScore = snapData.qualityScore;
-      batch.notes = snapData.notes;
-      batch.updatedAt = new Date().toISOString().slice(0, 10);
-      formulatorSaveBatches(batch);
-      formulatorRenderBatchTable();
-      formulatorPopulateLoadDropdown();
-      overlay.remove();
-      showFormulatorToast("\u30D0\u30FC\u30B8\u30E7\u30F3\u3092\u5FA9\u5143\u3057\u307E\u3057\u305F");
     });
     diffPanel.appendChild(revertBtn);
   }
@@ -23576,11 +23775,17 @@ function deleteInvoiceConfirm() {
   var id = document.getElementById("inv-modal-id").value;
   var num = document.getElementById("inv-modal-number").value;
   if (!id) return;
-  if (!confirm('Delete invoice "' + num + '"? This cannot be undone.')) return;
-  closeInvoiceModal();
-  invoices = invoices.filter(function(inv) { return inv.id !== id; });
-  renderDocuments();
-  invApiPost({ action: "delete", id: id, itemName: num }).catch(function() { fetchInvoices(true); });
+  showConfirm({
+    title: t("common.confirmDelete"),
+    message: 'Delete invoice "' + num + '"? This cannot be undone.',
+    destructive: true
+  }).then(function(ok) {
+    if (!ok) return;
+    closeInvoiceModal();
+    invoices = invoices.filter(function(inv) { return inv.id !== id; });
+    renderDocuments();
+    invApiPost({ action: "delete", id: id, itemName: num }).catch(function() { fetchInvoices(true); });
+  });
 }
 
 // ── Invoice Preview ────────────────────────────────────────────
@@ -25171,12 +25376,19 @@ function saveReceipt() {
 function deleteReceiptConfirm() {
   var id = document.getElementById("rec-modal-id").value;
   var num = document.getElementById("rec-modal-number").value;
-  if (!id || !confirm("Delete receipt " + num + "?")) return;
-  closeReceiptModal();
-  setRecSyncStatus("Deleting\u2026");
-  receipts = receipts.filter(function(r) { return r.id !== id; });
-  renderDocuments();
-  recApiPost({ action: "delete", id: id, itemName: num }).catch(function() { fetchReceipts(true); });
+  if (!id) return;
+  showConfirm({
+    title: t("common.confirmDelete"),
+    message: "Delete receipt " + num + "?",
+    destructive: true
+  }).then(function(ok) {
+    if (!ok) return;
+    closeReceiptModal();
+    setRecSyncStatus("Deleting\u2026");
+    receipts = receipts.filter(function(r) { return r.id !== id; });
+    renderDocuments();
+    recApiPost({ action: "delete", id: id, itemName: num }).catch(function() { fetchReceipts(true); });
+  });
 }
 
 // ── Receipt Preview ───────────────────────────────────────────
@@ -28310,17 +28522,23 @@ function deleteOrderFromModal() {
   if (!orderJson) return;
   var order = JSON.parse(orderJson);
   var label = "#" + (order.orderNumber || order.shopifyOrderId || "this order");
-  if (!confirm("Permanently delete " + label + "? This cannot be undone.")) return;
-  var orderId = order.id || order.shopifyOrderId || "";
-  shopifyOrders = shopifyOrders.filter(function(o) { return (o.id || o.shopifyOrderId) !== orderId; });
-  _archivedOrderIds.delete(orderId);
-  localStorage.setItem("ivh_archived_orders", JSON.stringify(Array.from(_archivedOrderIds)));
-  saveDataCache();
-  closeOrderDetailModal();
-  renderOrders();
-  if (SCRIPT_URL) {
-    ordersApiPost({ action: "delete", id: orderId }).catch(function() {});
-  }
+  showConfirm({
+    title: t("common.confirmDelete"),
+    message: "Permanently delete " + label + "? This cannot be undone.",
+    destructive: true
+  }).then(function(ok) {
+    if (!ok) return;
+    var orderId = order.id || order.shopifyOrderId || "";
+    shopifyOrders = shopifyOrders.filter(function(o) { return (o.id || o.shopifyOrderId) !== orderId; });
+    _archivedOrderIds.delete(orderId);
+    localStorage.setItem("ivh_archived_orders", JSON.stringify(Array.from(_archivedOrderIds)));
+    saveDataCache();
+    closeOrderDetailModal();
+    renderOrders();
+    if (SCRIPT_URL) {
+      ordersApiPost({ action: "delete", id: orderId }).catch(function() {});
+    }
+  });
 }
 
 // ── Manual Order Creation ────────────────────────────────────
