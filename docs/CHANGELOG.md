@@ -5,6 +5,30 @@ See `plans/` for the design reasoning behind each change.
 
 ---
 
+## 2026-07-08
+
+### ✅ Phase 0b — save/discard unsaved-changes guard (Plan 06)
+**Files:** `index.html`, `sw.js`.
+
+- Dirty-tracking system (`_dirtyForms` / `_watchDirty` / `_markFormClean`) on 6 edit modals: invoice,
+  receipt, task, CRM contact, manual order, new product. Closing (X / Escape / backdrop) with unsaved
+  edits now prompts "Unsaved changes — Discard / Keep editing" via `showConfirm`; save + delete paths
+  bypass so they never prompt. Delegated listeners (covers dynamic line-items), attached once per overlay.
+- **Adversarially QA'd by Halle:** all 6 modals verified end-to-end (save / discard / keep-editing / delete);
+  no user-trap, no blocked/lost save, no false dirty-on-open, no listener stacking; shared CRM overlay
+  gated to edit-mode only. Applied the P3 hardening (CRM guard also checks overlay `.open`). SW v10→v11.
+
+### ✅ Phase 0a — reusable confirmation modal (Plan 06)
+**Files:** `index.html`, `sw.js`. **Plan:** `docs/plans/06-app-wide-refinement.md`.
+
+- Built `showConfirm(opts) → Promise<boolean>`: styled, bilingual dialog replacing all **18 native
+  `confirm()`** browser dialogs. Destructive/danger red variant; Escape (capture-phase, won't close an
+  underlying modal) + backdrop + focus-restore; re-entrancy-guarded resolve.
+- All 18 sites converted to the async `.then(ok => { if(!ok) return; … })` pattern, incl. two non-trivial
+  refactors (`deleteContactPermanently` return contract; replace-primary `doSave()` early-return).
+- **Adversarially QA'd by Halle:** all 18 sites verified clean (action gated inside `.then`, no drop /
+  no double-fire / no run-on-cancel); modal resolve/cleanup/Escape/focus verified. SW v9→v10.
+
 ## 2026-07-06
 
 ### ✅ App-wide "refine all pages" (3 sweeps) + adversarial QA
