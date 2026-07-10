@@ -8154,6 +8154,10 @@ var I18N = {
     "common.saving": "Saving...",
     "common.confirm": "Confirm",
     "common.confirmDelete": "Delete?",
+    "common.unsavedTitle": "Unsaved changes",
+    "common.unsavedMsg": "You have unsaved changes. Discard them?",
+    "common.discard": "Discard",
+    "common.keepEditing": "Keep editing",
     // home / overview
     "home.meetingNotes": "Meeting Notes",
     "home.allMeetingDocs": "All meeting documents",
@@ -8586,6 +8590,10 @@ var I18N = {
     "common.saving": "保存中...",
     "common.confirm": "確認",
     "common.confirmDelete": "削除しますか？",
+    "common.unsavedTitle": "未保存の変更",
+    "common.unsavedMsg": "未保存の変更があります。破棄しますか？",
+    "common.discard": "破棄",
+    "common.keepEditing": "編集を続ける",
     // home / overview
     "home.meetingNotes": "議事録",
     "home.allMeetingDocs": "すべての議事録",
@@ -9001,6 +9009,24 @@ function t(key) {
 }
 // Alias for use inside functions that locally shadow `t` (e.g. task/contact loops).
 function tr(key) { return t(key); }
+
+// ── Unsaved-changes dirty tracking for edit modals ──────────────
+// _dirtyForms[overlayId] = true once the user edits any field inside that overlay.
+// Programmatic `.value =` assignment does NOT fire input/change, so populating
+// fields on open never marks a form dirty.
+var _dirtyForms = {};
+function _watchDirty(overlayId) {
+  var overlay = document.getElementById(overlayId);
+  if (!overlay) return;
+  if (overlay.dataset.dirtyWatched === "1") return; // attach listeners once
+  overlay.dataset.dirtyWatched = "1";
+  var mark = function() { _dirtyForms[overlayId] = true; };
+  overlay.addEventListener("input", mark);
+  overlay.addEventListener("change", mark);
+}
+function _markFormClean(overlayId) {
+  _dirtyForms[overlayId] = false;
+}
 // Interpolating lookup: t('key') with {placeholders} replaced from params.
 function tf(key, params) {
   params = params || {};
@@ -10739,6 +10765,7 @@ function openCreateModal() {
   document.getElementById("modal-doclink").value = "";
   document.getElementById("modal-delete-btn").style.display = "none";
   document.getElementById("task-modal-overlay").classList.add("open");
+  _watchDirty("task-modal-overlay"); _markFormClean("task-modal-overlay");
   setTimeout(function() { document.getElementById("modal-name").focus(); }, 50);
 }
 
@@ -10760,16 +10787,24 @@ function openEditModal(taskId) {
   document.getElementById("modal-doclink").value = t.docLink || "";
   document.getElementById("modal-delete-btn").style.display = "inline-block";
   document.getElementById("task-modal-overlay").classList.add("open");
+  _watchDirty("task-modal-overlay"); _markFormClean("task-modal-overlay");
   setTimeout(function() { document.getElementById("modal-name").focus(); }, 50);
 }
 
-function closeModal() {
+function closeModal(skipGuard) {
+  if (!skipGuard && _dirtyForms["task-modal-overlay"]) {
+    showConfirm({ title: t("common.unsavedTitle"), message: t("common.unsavedMsg"),
+                  confirmLabel: t("common.discard"), cancelLabel: t("common.keepEditing"),
+                  destructive: true })
+      .then(function(ok){ if (ok) { _markFormClean("task-modal-overlay"); closeModal(true); } });
+    return;
+  }
   document.getElementById("task-modal-overlay").classList.remove("open");
 }
 
 // Save (create or update)
 function saveTask() {
-  if (!SCRIPT_URL) { checkBoardSetup(); closeModal(); return; }
+  if (!SCRIPT_URL) { checkBoardSetup(); _markFormClean("task-modal-overlay"); closeModal(); return; }
   var id = document.getElementById("modal-task-id").value;
   var task = {
     name: document.getElementById("modal-name").value.trim(),
@@ -10788,6 +10823,7 @@ function saveTask() {
     return;
   }
 
+  _markFormClean("task-modal-overlay");
   closeModal();
   setSyncStatus("Saving\u2026");
 
@@ -10836,6 +10872,7 @@ function deleteTaskConfirm() {
     destructive: true
   }).then(function(ok) {
     if (!ok) return;
+    _markFormClean("task-modal-overlay");
     closeModal();
     boardTasks = boardTasks.filter(function(t) { return t.id !== id; });
     renderBoard();
@@ -13076,6 +13113,7 @@ function openCrmCreateModal(presetType) {
   document.getElementById("crm-modal-invoices-section").style.display = "none";
   updateCrmAvatar("");
   document.getElementById("crm-modal-overlay").classList.add("open");
+  _watchDirty("crm-modal-overlay"); _markFormClean("crm-modal-overlay");
   document.body.classList.add("crm-panel-open");
   setTimeout(function() { document.getElementById("crm-modal-company").focus(); }, 50);
 }
@@ -13131,12 +13169,24 @@ function openCrmEditModal(contactId) {
   updateCrmAvatar(c.company || c.name, crmExistingAvatarUrl || undefined);
 
   document.getElementById("crm-modal-overlay").classList.add("open");
+  _watchDirty("crm-modal-overlay"); _markFormClean("crm-modal-overlay");
   document.body.classList.add("crm-panel-open");
   setTimeout(function() { document.getElementById("crm-modal-company").focus(); }, 50);
 }
 
 function cancelCrmEdit() {
   var id = document.getElementById("crm-modal-id").value;
+  if (_dirtyForms["crm-modal-overlay"]) {
+    showConfirm({ title: t("common.unsavedTitle"), message: t("common.unsavedMsg"),
+                  confirmLabel: t("common.discard"), cancelLabel: t("common.keepEditing"),
+                  destructive: true })
+      .then(function(ok){
+        if (!ok) return;
+        _markFormClean("crm-modal-overlay");
+        if (id) { openCrmDetailView(id); } else { closeCrmModal(true); }
+      });
+    return;
+  }
   if (id) {
     // Editing existing contact — go back to detail view
     openCrmDetailView(id);
@@ -13246,7 +13296,20 @@ function openQuickEditRules(contactId) {
   });
 }
 
-function closeCrmModal() {
+function closeCrmModal(skipGuard) {
+  // Only guard when the editable form is actually showing (not the read-only
+  // detail view, which shares this overlay).
+  var _crmOverlayOpen = document.getElementById("crm-modal-overlay") &&
+                        document.getElementById("crm-modal-overlay").classList.contains("open");
+  var _crmEditVisible = document.getElementById("crm-edit-body") &&
+                        document.getElementById("crm-edit-body").style.display !== "none";
+  if (!skipGuard && _crmOverlayOpen && _crmEditVisible && _dirtyForms["crm-modal-overlay"]) {
+    showConfirm({ title: t("common.unsavedTitle"), message: t("common.unsavedMsg"),
+                  confirmLabel: t("common.discard"), cancelLabel: t("common.keepEditing"),
+                  destructive: true })
+      .then(function(ok){ if (ok) { _markFormClean("crm-modal-overlay"); closeCrmModal(true); } });
+    return;
+  }
   crmCurrentDetailContactId = null;
   localStorage.removeItem("ivyhub_crmOpenContact");
   localStorage.removeItem("ivyhub_crmOpenContactProfile");
@@ -13642,7 +13705,7 @@ function openCrmDetailView(contactId) {
       }).then(function(ok) {
         if (!ok) return;
         crmContacts.forEach(function(x) { if (x.id === contactId) { x.stage = "prospect"; x.archivedDate = ""; } });
-        closeCrmModal(); renderCrmActiveView(); saveDataCache();
+        _markFormClean("crm-modal-overlay"); closeCrmModal(); renderCrmActiveView(); saveDataCache();
         crmApiPost({ action: "update", contact: { id: contactId, stage: "prospect", archivedDate: "" } });
       });
     };
@@ -13667,7 +13730,7 @@ function openCrmDetailView(contactId) {
       }).then(function(ok) {
         if (!ok) return;
         crmContacts.forEach(function(x) { if (x.id === contactId) { x.stage = "archived"; x.archivedDate = new Date().toISOString(); } });
-        closeCrmModal(); renderCrmActiveView(); saveDataCache();
+        _markFormClean("crm-modal-overlay"); closeCrmModal(); renderCrmActiveView(); saveDataCache();
         crmApiPost({ action: "update", contact: { id: contactId, stage: "archived", archivedDate: new Date().toISOString() } });
       });
     };
@@ -20228,7 +20291,7 @@ function switchToCrmEditMode(contactId) {
 }
 
 function saveCrmContact() {
-  if (!SCRIPT_URL) { closeCrmModal(); return; }
+  if (!SCRIPT_URL) { _markFormClean("crm-modal-overlay"); closeCrmModal(); return; }
   var id = document.getElementById("crm-modal-id").value;
   var contact = {
     name: document.getElementById("crm-modal-name").value.trim(),
@@ -20255,6 +20318,8 @@ function saveCrmContact() {
     socialMedia: document.getElementById("crm-modal-socialmedia").value.trim()
   };
   if (!contact.company && !contact.name) { showFormulatorToast("Company or contact name is required."); return; }
+
+  _markFormClean("crm-modal-overlay");
 
   // Show saving spinner, hide edit form
   document.getElementById("crm-edit-header").style.display = "none";
@@ -20388,6 +20453,7 @@ function deleteCrmContactConfirm() {
     destructive: true
   }).then(function(ok) {
     if (!ok) return;
+    _markFormClean("crm-modal-overlay");
     closeCrmModal();
     crmContacts = crmContacts.filter(function(c) { return c.id !== id; });
     renderCrmActiveView();
@@ -23273,6 +23339,7 @@ function openInvoiceCreateModal() {
   addInvoiceLineItem();
   recalcInvoiceTotals();
   document.getElementById("inv-modal-overlay").classList.add("open");
+  _watchDirty("inv-modal-overlay"); _markFormClean("inv-modal-overlay");
   if (!invSplitActive) toggleInvSplitPreview();
 }
 
@@ -23356,10 +23423,18 @@ function openInvoiceEditModal(invId) {
   });
   recalcInvoiceTotals();
   document.getElementById("inv-modal-overlay").classList.add("open");
+  _watchDirty("inv-modal-overlay"); _markFormClean("inv-modal-overlay");
   if (!invSplitActive) toggleInvSplitPreview();
 }
 
-function closeInvoiceModal() {
+function closeInvoiceModal(skipGuard) {
+  if (!skipGuard && _dirtyForms["inv-modal-overlay"]) {
+    showConfirm({ title: t("common.unsavedTitle"), message: t("common.unsavedMsg"),
+                  confirmLabel: t("common.discard"), cancelLabel: t("common.keepEditing"),
+                  destructive: true })
+      .then(function(ok){ if (ok) { _markFormClean("inv-modal-overlay"); closeInvoiceModal(true); } });
+    return;
+  }
   if (invSplitActive) {
     var modal = document.querySelector(".board-modal.inv-modal");
     modal.classList.remove("inv-split-mode");
@@ -23681,6 +23756,7 @@ function saveInvoice() {
   var isNewContact = !contactId && contactName;
   var newContactType = isNewContact ? document.getElementById("inv-modal-contact-type").value : "";
 
+  _markFormClean("inv-modal-overlay");
   closeInvoiceModal();
   setInvSyncStatus("Saving\u2026");
 
@@ -23781,6 +23857,7 @@ function deleteInvoiceConfirm() {
     destructive: true
   }).then(function(ok) {
     if (!ok) return;
+    _markFormClean("inv-modal-overlay");
     closeInvoiceModal();
     invoices = invoices.filter(function(inv) { return inv.id !== id; });
     renderDocuments();
@@ -25244,6 +25321,7 @@ function openReceiptCreateModal() {
   addReceiptLineItem();
   document.getElementById("rec-modal-delete-btn").style.display = "none";
   document.getElementById("rec-modal-overlay").classList.add("open");
+  _watchDirty("rec-modal-overlay"); _markFormClean("rec-modal-overlay");
 }
 
 function openReceiptEditModal(recId) {
@@ -25296,9 +25374,17 @@ function openReceiptEditModal(recId) {
   }
   document.getElementById("rec-modal-delete-btn").style.display = "";
   document.getElementById("rec-modal-overlay").classList.add("open");
+  _watchDirty("rec-modal-overlay"); _markFormClean("rec-modal-overlay");
 }
 
-function closeReceiptModal() {
+function closeReceiptModal(skipGuard) {
+  if (!skipGuard && _dirtyForms["rec-modal-overlay"]) {
+    showConfirm({ title: t("common.unsavedTitle"), message: t("common.unsavedMsg"),
+                  confirmLabel: t("common.discard"), cancelLabel: t("common.keepEditing"),
+                  destructive: true })
+      .then(function(ok){ if (ok) { _markFormClean("rec-modal-overlay"); closeReceiptModal(true); } });
+    return;
+  }
   document.getElementById("rec-modal-overlay").classList.remove("open");
 }
 
@@ -25342,6 +25428,7 @@ function saveReceipt() {
 
   if (!receipt.receiptNumber) { showFormulatorToast("Receipt number is required."); return; }
 
+  _markFormClean("rec-modal-overlay");
   closeReceiptModal();
   setRecSyncStatus("Saving\u2026");
 
@@ -25383,6 +25470,7 @@ function deleteReceiptConfirm() {
     destructive: true
   }).then(function(ok) {
     if (!ok) return;
+    _markFormClean("rec-modal-overlay");
     closeReceiptModal();
     setRecSyncStatus("Deleting\u2026");
     receipts = receipts.filter(function(r) { return r.id !== id; });
@@ -27443,9 +27531,17 @@ function openNewProductModal() {
   document.getElementById("new-product-targetLaunch").value = "";
   document.getElementById("new-product-notes").value = "";
   document.getElementById("new-product-overlay").classList.add("open");
+  _watchDirty("new-product-overlay"); _markFormClean("new-product-overlay");
 }
 
-function closeNewProductModal() {
+function closeNewProductModal(skipGuard) {
+  if (!skipGuard && _dirtyForms["new-product-overlay"]) {
+    showConfirm({ title: t("common.unsavedTitle"), message: t("common.unsavedMsg"),
+                  confirmLabel: t("common.discard"), cancelLabel: t("common.keepEditing"),
+                  destructive: true })
+      .then(function(ok){ if (ok) { _markFormClean("new-product-overlay"); closeNewProductModal(true); } });
+    return;
+  }
   document.getElementById("new-product-overlay").classList.remove("open");
 }
 
@@ -27481,6 +27577,7 @@ function saveNewProduct() {
 
   // Optimistic add + jump to the In-Development tab.
   productMeta.push(record);
+  _markFormClean("new-product-overlay");
   closeNewProductModal();
   productsCategory = "__dev";
   renderProducts();
@@ -28571,9 +28668,17 @@ function openManualOrderModal() {
   document.getElementById("mo-notes").value = "";
   addManualOrderLineItem();
   document.getElementById("manual-order-overlay").classList.add("open");
+  _watchDirty("manual-order-overlay"); _markFormClean("manual-order-overlay");
 }
 
-function closeManualOrderModal() {
+function closeManualOrderModal(skipGuard) {
+  if (!skipGuard && _dirtyForms["manual-order-overlay"]) {
+    showConfirm({ title: t("common.unsavedTitle"), message: t("common.unsavedMsg"),
+                  confirmLabel: t("common.discard"), cancelLabel: t("common.keepEditing"),
+                  destructive: true })
+      .then(function(ok){ if (ok) { _markFormClean("manual-order-overlay"); closeManualOrderModal(true); } });
+    return;
+  }
   document.getElementById("manual-order-overlay").classList.remove("open");
 }
 
@@ -28781,6 +28886,7 @@ function saveManualOrder() {
     source: "manual"
   };
 
+  _markFormClean("manual-order-overlay");
   closeManualOrderModal();
   shopifyOrders.unshift(order);
   renderOrders();
