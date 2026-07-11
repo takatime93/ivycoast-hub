@@ -1907,6 +1907,36 @@ body.crm-panel-open { overflow: hidden; }
 .orders-subtab.active { color: var(--color-primary); border-bottom-color: var(--color-primary); }
 
 /* Order detail modal */
+.order-detail-summary {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  padding-bottom: 16px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--color-border-separator);
+}
+.order-detail-summary-date {
+  font-size: var(--text-md);
+  color: var(--color-text-secondary);
+}
+.order-detail-summary-total {
+  text-align: right;
+  flex-shrink: 0;
+}
+.order-detail-summary-total label {
+  display: block;
+  font-size: var(--text-tab);
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 2px;
+}
+.order-detail-summary-total strong {
+  font-size: 26px;
+  font-weight: 600;
+  color: var(--color-text-heading);
+}
 .order-detail-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -2060,7 +2090,7 @@ body.crm-panel-open { overflow: hidden; }
   font-weight: 500;
   cursor: pointer;
 }
-.customer-drawer-body .btn-save:hover { background: #1558b0; }
+.customer-drawer-body .btn-save:hover { background: var(--color-primary-hover); }
 .customer-drawer-body h4 {
   font-size: var(--text-md);
   font-weight: 500;
@@ -2079,9 +2109,6 @@ body.crm-panel-open { overflow: hidden; }
   font-size: var(--text-md);
 }
 .customer-order-item:last-child { border-bottom: none; }
-.customer-order-date { color: var(--color-text-secondary); min-width: 80px; }
-.customer-order-items { flex: 1; margin: 0 12px; color: var(--color-text-heading); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.customer-order-total { font-weight: 500; color: var(--color-text-heading); min-width: 70px; text-align: right; }
 .customer-products-list { margin-bottom: 4px; }
 .customer-product-item { display: flex; justify-content: space-between; align-items: center; padding: 4px 0; font-size: var(--text-md); }
 .customer-product-name { color: var(--color-text-heading); }
@@ -7315,13 +7342,14 @@ select.contact-edit-input { appearance: auto; cursor: pointer; }
 <div class="board-modal-overlay" id="order-detail-overlay" onclick="if(event.target===this)closeOrderDetailModal()">
   <div class="board-modal" style="width:560px" role="dialog" aria-modal="true" aria-labelledby="order-detail-title">
     <h2 id="order-detail-title">Order Details</h2>
+    <div class="order-detail-summary" id="order-detail-summary"></div>
     <div class="order-detail-grid" id="order-detail-grid"></div>
     <div class="order-items-list" id="order-detail-items"></div>
     <div id="order-doc-checklist" style="display:none"></div>
-    <div id="order-linked-docs" style="display:none;margin-top:16px;padding-top:16px;border-top:1px solid #ebebeb"></div>
+    <div id="order-linked-docs" style="display:none;margin-top:16px;padding-top:16px;border-top:1px solid var(--color-border-light)"></div>
     <div class="board-modal-actions" style="margin-top:20px">
-      <button id="order-create-invoice-btn" onclick="createInvoiceFromOrder()" style="color:#0e413b;border-color:#0e413b;display:none" data-i18n="order.createInvoice">Create Invoice</button>
-      <button id="order-create-receipt-btn" onclick="createReceiptFromOrder()" style="color:#0e413b;border-color:#0e413b;display:none" data-i18n="order.createReceipt">Create Receipt</button>
+      <button id="order-create-invoice-btn" class="btn-save" onclick="createInvoiceFromOrder()" style="display:none" data-i18n="order.createInvoice">Create Invoice</button>
+      <button id="order-create-receipt-btn" onclick="createReceiptFromOrder()" style="display:none" data-i18n="order.createReceipt">Create Receipt</button>
       <button id="order-archive-btn" onclick="archiveOrderFromModal()" style="display:none" data-i18n="common.archive">Archive</button>
       <button id="order-delete-btn" class="btn-delete" onclick="deleteOrderFromModal()" style="display:none" data-i18n="common.delete">Delete</button>
       <button onclick="closeOrderDetailModal()" data-i18n="common.close">Close</button>
@@ -26363,7 +26391,7 @@ function renderCrmCustomers() {
 
     var tdSpent = document.createElement("td");
     tdSpent.className = "num-cell";
-    tdSpent.textContent = _yen(c.totalSpent);
+    tdSpent.textContent = (c.totalSpent === null || c.totalSpent === undefined || c.totalSpent === "") ? _yen(c.totalSpent) : _yen(Math.round(parseFloat(c.totalSpent) || 0));
     tdSpent.style.fontWeight = "500";
     tr.appendChild(tdSpent);
 
@@ -28441,9 +28469,24 @@ function openOrderDetailModal(order) {
 
   var _orderTotalStr = order.totalPrice ? _yen(order.totalPrice) + " " + (order.currency || "JPY") : "\u2014";
 
+  // Summary header \u2014 emphasize Total, with order date alongside.
+  var summary = document.getElementById("order-detail-summary");
+  summary.textContent = "";
+  var sumDate = document.createElement("div");
+  sumDate.className = "order-detail-summary-date";
+  sumDate.textContent = order.createdAt ? new Date(order.createdAt).toLocaleString() : "\u2014";
+  var sumTotal = document.createElement("div");
+  sumTotal.className = "order-detail-summary-total";
+  var sumTotalLbl = document.createElement("label");
+  sumTotalLbl.textContent = "Total";
+  var sumTotalVal = document.createElement("strong");
+  sumTotalVal.textContent = _orderTotalStr;
+  sumTotal.appendChild(sumTotalLbl);
+  sumTotal.appendChild(sumTotalVal);
+  summary.appendChild(sumDate);
+  summary.appendChild(sumTotal);
+
   var fields = [
-    { label: "Date", value: order.createdAt ? new Date(order.createdAt).toLocaleString() : "\u2014" },
-    { label: "Total", value: _orderTotalStr },
     { label: "Customer", value: order.customerName || "\u2014" },
     { label: "Email", value: order.email || "\u2014", render: function(p) {
         p.textContent = order.email || "\u2014";
