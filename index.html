@@ -626,7 +626,7 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
   color: var(--color-text-secondary);
   background: var(--color-neutral-bg);
   padding: 2px 10px;
-  border-radius: 12px;
+  border-radius: var(--radius-xl);
 }
 .file-row {
   display: flex;
@@ -719,6 +719,7 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
   user-select: none;
 }
 .doc-table th:hover { color: var(--color-primary); }
+.doc-table th.sorted { background: var(--color-primary-tint); color: var(--color-primary); font-weight: 600; }
 .no-results { text-align: center; padding: 40px; color: var(--color-text-secondary); }
 .grid-empty-state { text-align: center; padding: 40px; color: var(--color-text-secondary); font-size: var(--text-md); }
 
@@ -6942,7 +6943,7 @@ select.contact-edit-input { appearance: auto; cursor: pointer; }
         <div class="skel-table-row"><div class="skel skel-table-cell skel-table-cell-sm"></div><div class="skel skel-table-cell"></div><div class="skel skel-table-cell skel-table-cell-sm"></div><div class="skel skel-table-cell skel-table-cell-sm"></div><div class="skel skel-table-cell skel-table-cell-sm"></div></div>
         <div class="skel-table-row"><div class="skel skel-table-cell skel-table-cell-sm"></div><div class="skel skel-table-cell"></div><div class="skel skel-table-cell skel-table-cell-sm"></div><div class="skel skel-table-cell skel-table-cell-sm"></div><div class="skel skel-table-cell skel-table-cell-sm"></div></div>
       </div>
-      <p id="documents-no-results" style="display:none;text-align:center;padding:32px;color:var(--color-text-secondary);font-size:14px;" data-i18n="tools.noDocuments">No documents found.</p>
+      <p id="documents-no-results" class="no-results" style="display:none" data-i18n="tools.noDocuments">No documents found.</p>
     </div>
 
     <!-- SOAP FORMULATOR -->
@@ -9340,7 +9341,10 @@ function init() {
   renderHomeKeyStats();
   renderHomeActiveTasks();
   var defaultTh = document.querySelector('.doc-table th[data-sort="name"]');
-  if (defaultTh) defaultTh.querySelector(".sort-arrow").textContent = " \u25B2";
+  if (defaultTh) {
+    defaultTh.querySelector(".sort-arrow").textContent = " \u25B2";
+    defaultTh.classList.add("sorted");
+  }
 }
 
 // Tab switching — route all clicks through navigateTo() so dots clear and visits record
@@ -9792,7 +9796,9 @@ document.querySelectorAll(".doc-table th").forEach(function(th) {
       sortAsc = true;
     }
     document.querySelectorAll(".doc-table th .sort-arrow").forEach(function(a) { a.textContent = ""; });
+    document.querySelectorAll(".doc-table th.sorted").forEach(function(h) { h.classList.remove("sorted"); });
     th.querySelector(".sort-arrow").textContent = sortAsc ? " \u25B2" : " \u25BC";
+    th.classList.add("sorted");
     renderLibrary();
   });
 });
