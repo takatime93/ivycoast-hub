@@ -37,5 +37,5 @@ From the audit's "needs browser eyes" list: kanban drag drop-indicator + drag pa
 - Deploy in reviewable batches; bump SW cache each deploy.
 
 ## Status
-- [x] 0a confirm modal - [x] 0b save/discard - [ ] 0c modal shell - [ ] 0d primitives
+- [x] 0a confirm modal - [x] 0b save/discard - [x] 0c modal shell - [x] 0d primitives
 - [ ] 1 Products - [ ] 2 CRM - [ ] 3 Tools - [ ] 4 Orders/Customers - [ ] 5 Tasks - [ ] 6 Home - [ ] 7 Docs

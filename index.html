@@ -1949,7 +1949,7 @@ body.crm-panel-open { overflow: hidden; }
   max-width: 92vw;
   height: 100vh;
   background: var(--color-surface);
-  box-shadow: -4px 0 20px rgba(0,0,0,0.15);
+  box-shadow: var(--shadow-xl);
   z-index: 200;
   transform: translateX(100%);
   transition: transform var(--motion-drawer) var(--ease-in-out);
@@ -2117,7 +2117,7 @@ body.crm-panel-open { overflow: hidden; }
   max-width: 92vw;
   height: 100vh;
   background: var(--color-surface);
-  box-shadow: -4px 0 20px rgba(0,0,0,0.15);
+  box-shadow: var(--shadow-xl);
   z-index: 200;
   transform: translateX(100%);
   transition: transform var(--motion-drawer) var(--ease-in-out);
@@ -5817,22 +5817,24 @@ select.contact-edit-input { appearance: auto; cursor: pointer; }
 }
 .task-card,
 .crm-vendor-card,
-.product-card {
+.product-card,
+.dev-pipeline-card {
   animation: motion-rise var(--motion-base) var(--ease-out) backwards;
 }
 /* Done-column task cards keep their 0.65 de-emphasis (no entrance opacity fight). */
 .kanban-col[data-status="done"] .task-card { animation: none; }
 .task-card:nth-child(n+9),
 .crm-vendor-card:nth-child(n+9),
-.product-card:nth-child(n+9) { animation-delay: 0ms; }
-.task-card:nth-child(1),   .crm-vendor-card:nth-child(1),   .product-card:nth-child(1)   { animation-delay: 0ms; }
-.task-card:nth-child(2),   .crm-vendor-card:nth-child(2),   .product-card:nth-child(2)   { animation-delay: 24ms; }
-.task-card:nth-child(3),   .crm-vendor-card:nth-child(3),   .product-card:nth-child(3)   { animation-delay: 48ms; }
-.task-card:nth-child(4),   .crm-vendor-card:nth-child(4),   .product-card:nth-child(4)   { animation-delay: 72ms; }
-.task-card:nth-child(5),   .crm-vendor-card:nth-child(5),   .product-card:nth-child(5)   { animation-delay: 96ms; }
-.task-card:nth-child(6),   .crm-vendor-card:nth-child(6),   .product-card:nth-child(6)   { animation-delay: 120ms; }
-.task-card:nth-child(7),   .crm-vendor-card:nth-child(7),   .product-card:nth-child(7)   { animation-delay: 144ms; }
-.task-card:nth-child(8),   .crm-vendor-card:nth-child(8),   .product-card:nth-child(8)   { animation-delay: 168ms; }
+.product-card:nth-child(n+9),
+.dev-pipeline-card:nth-child(n+9) { animation-delay: 0ms; }
+.task-card:nth-child(1),   .crm-vendor-card:nth-child(1),   .product-card:nth-child(1),   .dev-pipeline-card:nth-child(1)   { animation-delay: 0ms; }
+.task-card:nth-child(2),   .crm-vendor-card:nth-child(2),   .product-card:nth-child(2),   .dev-pipeline-card:nth-child(2)   { animation-delay: 24ms; }
+.task-card:nth-child(3),   .crm-vendor-card:nth-child(3),   .product-card:nth-child(3),   .dev-pipeline-card:nth-child(3)   { animation-delay: 48ms; }
+.task-card:nth-child(4),   .crm-vendor-card:nth-child(4),   .product-card:nth-child(4),   .dev-pipeline-card:nth-child(4)   { animation-delay: 72ms; }
+.task-card:nth-child(5),   .crm-vendor-card:nth-child(5),   .product-card:nth-child(5),   .dev-pipeline-card:nth-child(5)   { animation-delay: 96ms; }
+.task-card:nth-child(6),   .crm-vendor-card:nth-child(6),   .product-card:nth-child(6),   .dev-pipeline-card:nth-child(6)   { animation-delay: 120ms; }
+.task-card:nth-child(7),   .crm-vendor-card:nth-child(7),   .product-card:nth-child(7),   .dev-pipeline-card:nth-child(7)   { animation-delay: 144ms; }
+.task-card:nth-child(8),   .crm-vendor-card:nth-child(8),   .product-card:nth-child(8),   .dev-pipeline-card:nth-child(8)   { animation-delay: 168ms; }
 
 /* — Generic entrance utilities (used for skeleton→content crossfade) — */
 @keyframes motion-fade-in { from { opacity: 0; } to { opacity: 1; } }
@@ -5880,8 +5882,10 @@ select.contact-edit-input { appearance: auto; cursor: pointer; }
   .task-card,
   .crm-vendor-card,
   .product-card,
+  .dev-pipeline-card,
   .motion-rise,
   .motion-fade-in { animation: none !important; }
+  .dev-pipeline-card:hover { box-shadow: none; }
   /* Pin modal-panel entrance to end-state (no first-frame displaced/faded flash) */
   .board-modal-overlay.open .board-modal,
   .status-picker-overlay.open .status-picker,
@@ -5902,6 +5906,7 @@ select.contact-edit-input { appearance: auto; cursor: pointer; }
   .formulator-add-btn:not(:disabled):active,
   .board-modal-actions .btn-save:not(:disabled):active,
   .crm-modal-actions .btn-save:not(:disabled):active,
+  .dev-stage-btn:not(:disabled):active,
   .task-card:active,
   .crm-vendor-card:active,
   .product-card:active { transform: none !important; }
@@ -6135,7 +6140,7 @@ select.contact-edit-input { appearance: auto; cursor: pointer; }
   display:inline-flex; align-items:center; gap:6px; background:var(--color-surface-secondary);
   border:1px solid var(--color-border); color:var(--color-text); font-size:var(--text-sm);
   font-weight:500; padding:7px 14px; border-radius:var(--radius-md); cursor:pointer;
-  transition:background 0.15s ease;
+  transition:background var(--motion-fast) var(--ease-out);
 }
 .pd-back:hover { background:var(--color-border); }
 .pd-topbar-title { font-family:var(--font-display); font-size:var(--text-h3); font-weight:600; color:var(--color-text-heading); }
@@ -6154,7 +6159,7 @@ select.contact-edit-input { appearance: auto; cursor: pointer; }
 .pd-thumbs { display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
 .pd-thumb {
   width:60px; height:60px; object-fit:cover; border-radius:var(--radius-md); cursor:pointer;
-  border:2px solid transparent; transition:border-color 0.15s ease;
+  border:2px solid transparent; transition:border-color var(--motion-fast) var(--ease-out);
 }
 .pd-thumb:hover { border-color:var(--color-border); }
 .pd-thumb.pd-thumb-active { border-color:var(--color-primary); }
@@ -6294,6 +6299,14 @@ select.contact-edit-input { appearance: auto; cursor: pointer; }
   border: 1px solid var(--color-border, #e0e0e0);
   border-radius: 8px;
   padding: 10px;
+  transition: box-shadow var(--motion-base) var(--ease-out),
+              border-color var(--motion-base) var(--ease-out);
+}
+/* Card itself is not clickable (only its ◀/▶ buttons are) — subtle
+   hover affordance only, no pointer/press. */
+.dev-pipeline-card:hover {
+  box-shadow: var(--shadow-md);
+  border-color: var(--color-border-subtle);
 }
 .dev-pipeline-card-name {
   font-size: var(--text-md);
@@ -6335,9 +6348,12 @@ select.contact-edit-input { appearance: auto; cursor: pointer; }
   font-size: var(--text-tab);
   padding: 3px 8px;
   color: var(--color-text);
-  transition: background 0.15s;
+  transition: background var(--motion-fast) var(--ease-out),
+              color var(--motion-fast) var(--ease-out),
+              transform var(--motion-instant) var(--ease-out);
 }
 .dev-stage-btn:hover:not(:disabled) { background: var(--color-primary); color: #fff; }
+.dev-stage-btn:not(:disabled):active { transform: scale(0.96); }
 .dev-stage-btn:disabled { opacity: 0.35; cursor: default; }
 .dev-stage-current {
   flex: 1;
@@ -7275,7 +7291,7 @@ select.contact-edit-input { appearance: auto; cursor: pointer; }
 
 <!-- Order Detail Modal -->
 <div class="board-modal-overlay" id="order-detail-overlay" onclick="if(event.target===this)closeOrderDetailModal()">
-  <div class="board-modal" style="width:560px">
+  <div class="board-modal" style="width:560px" role="dialog" aria-modal="true" aria-labelledby="order-detail-title">
     <h2 id="order-detail-title">Order Details</h2>
     <div class="order-detail-grid" id="order-detail-grid"></div>
     <div class="order-items-list" id="order-detail-items"></div>
@@ -7293,8 +7309,8 @@ select.contact-edit-input { appearance: auto; cursor: pointer; }
 
 <!-- Manual Order Modal -->
 <div class="board-modal-overlay" id="manual-order-overlay" onclick="if(event.target===this)closeManualOrderModal()">
-  <div class="board-modal" style="width:560px;max-height:90vh;overflow-y:auto">
-    <h2 data-i18n="manualOrder.title">New Manual Order</h2>
+  <div class="board-modal" style="width:560px;max-height:90vh;overflow-y:auto" role="dialog" aria-modal="true" aria-labelledby="manual-order-title">
+    <h2 id="manual-order-title" data-i18n="manualOrder.title">New Manual Order</h2>
     <div class="inv-modal-section">
       <div class="crm-field-row">
         <div class="crm-field"><label data-i18n="manualOrder.customerName">Customer Name</label><input type="text" id="mo-customer-name"></div>
@@ -7350,7 +7366,7 @@ select.contact-edit-input { appearance: auto; cursor: pointer; }
 
 <!-- Customer Drawer -->
 <div class="customer-drawer-overlay" id="customer-drawer-overlay" onclick="closeCustomerDrawer()"></div>
-<div class="customer-drawer" id="customer-drawer">
+<div class="customer-drawer" id="customer-drawer" role="dialog" aria-modal="true" aria-labelledby="customer-drawer-name">
   <div class="customer-drawer-header">
     <h3 id="customer-drawer-name">Customer</h3>
     <button onclick="closeCustomerDrawer()">&times;</button>
@@ -7400,9 +7416,9 @@ select.contact-edit-input { appearance: auto; cursor: pointer; }
 
 <!-- Quality Score Drawer -->
 <div class="score-drawer-overlay" id="score-drawer-overlay" onclick="closeScoreDrawer()"></div>
-<div class="score-drawer" id="score-drawer">
+<div class="score-drawer" id="score-drawer" role="dialog" aria-modal="true" aria-labelledby="score-drawer-title">
   <div class="score-drawer-header">
-    <h3>品質スコアについて (About the quality score)</h3>
+    <h3 id="score-drawer-title">品質スコアについて (About the quality score)</h3>
     <button type="button" onclick="closeScoreDrawer()">&times;</button>
   </div>
   <div class="score-drawer-tabs">
