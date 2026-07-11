@@ -488,7 +488,8 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
   gap: 12px;
   text-align: center;
 }
-.stat-num { font-size: 32px; font-weight: 700; }
+.stat-grid-2x2 { grid-template-columns: repeat(2, 1fr); }
+.stat-num { font-size: var(--text-xl); font-weight: 700; }
 .stat-label { font-size: var(--text-md); color: var(--color-text-secondary); }
 
 /* Home layout */
@@ -518,7 +519,7 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
   display: flex;
   gap: 8px;
   margin-bottom: 12px;
-  flex-wrap: wrap;
+  overflow-x: auto;
 }
 .doc-embed-tab {
   padding: 6px 14px;
@@ -529,6 +530,11 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
   border-radius: 20px;
   cursor: pointer;
   color: var(--color-text-secondary);
+  flex-shrink: 0;
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   transition: background var(--motion-fast) var(--ease-out), color var(--motion-fast) var(--ease-out);
 }
 .doc-embed-tab:hover { background: var(--color-neutral-bg); }
@@ -5362,7 +5368,8 @@ select.contact-edit-input { appearance: auto; cursor: pointer; }
   .home-grid-2col { grid-template-columns: 1fr; }
   .info-card-scroll { max-height: 220px; }
   .stat-grid { grid-template-columns: repeat(3, 1fr); gap: 8px; }
-  .stat-num { font-size: 24px; }
+  .stat-grid-2x2 { grid-template-columns: repeat(2, 1fr); }
+  .stat-num { font-size: var(--text-lg); }
   .quick-links { gap: 8px; }
   .pill { padding: 8px 16px; font-size: var(--text-md); }
   .search-bar { flex-direction: column; }
@@ -8668,6 +8675,8 @@ var I18N = {
     "home.connectBoard": "Connect your Board to see tasks here.",
     "home.noActiveTasksNice": "No active or overdue tasks. Nice work!",
     "home.noRecentDocs": "No recently updated documents.",
+    "home.noCrmData": "No contacts yet. Add contacts in CRM to see stats here.",
+    "home.noShopifyData": "Connect Shopify to see product and order stats here.",
     "crm.detail.noOrdersYet": "No orders yet",
     "crm.detail.noNotesYet": "No notes yet",
     "crm.detail.noActivity": "No activity recorded yet",
@@ -9108,6 +9117,8 @@ var I18N = {
     "home.connectBoard": "ボードを接続するとタスクがここに表示されます。",
     "home.noActiveTasksNice": "進行中または期限切れのタスクはありません。お疲れさまです！",
     "home.noRecentDocs": "最近更新されたドキュメントはありません。",
+    "home.noCrmData": "連絡先がまだありません。CRMで連絡先を追加すると指標が表示されます。",
+    "home.noShopifyData": "Shopifyを接続すると、商品と注文の指標が表示されます。",
     "crm.detail.noOrdersYet": "注文はまだありません",
     "crm.detail.noNotesYet": "メモはまだありません",
     "crm.detail.noActivity": "記録されたアクティビティはありません",
@@ -9436,6 +9447,7 @@ function renderHomeMeetingNotes() {
       var btn = document.createElement("button");
       btn.className = "doc-embed-tab" + (i === 0 ? " active" : "");
       btn.textContent = doc.name;
+      btn.title = doc.name;
       btn.addEventListener("click", function() {
         iframe.src = getDocPreviewUrl(doc.name);
         tabsEl.querySelectorAll(".doc-embed-tab").forEach(function(t) { t.classList.remove("active"); });
@@ -9574,9 +9586,9 @@ function renderHomeKeyStats() {
   today.setHours(0,0,0,0);
   var overdueCount = boardTasks.filter(function(t) { return isOverdue(t, today); }).length;
   var stats = [
-    { num: productCount, label: "Products", color: "#0e413b", action: "navigateTo('library','Products')" },
-    { num: activeCount, label: "In Progress", color: "#34a853", action: "navigateTo('board','','in_progress')" },
-    { num: overdueCount, label: "Overdue", color: overdueCount > 0 ? "#d93025" : "var(--color-text-secondary)", action: "navigateTo('board')" }
+    { num: productCount, label: "Products", color: "var(--color-primary)", action: "navigateTo('library','Products')" },
+    { num: activeCount, label: "In Progress", color: "var(--color-success-text)", action: "navigateTo('board','','in_progress')" },
+    { num: overdueCount, label: "Overdue", color: overdueCount > 0 ? "var(--color-error-text)" : "var(--color-text-secondary)", action: "navigateTo('board')" }
   ];
   stats.forEach(function(s) {
     var div = document.createElement("div");
@@ -20622,16 +20634,26 @@ function renderHomeCrmStats() {
   var grid = document.getElementById("home-crm-stats");
   if (!grid) return;
   grid.textContent = "";
+  grid.classList.add("stat-grid-2x2");
+  if (crmContacts.length === 0 && shopifyCustomers.length === 0) {
+    grid.classList.remove("stat-grid-2x2");
+    var pEmpty = document.createElement("p");
+    pEmpty.className = "home-placeholder";
+    pEmpty.style.gridColumn = "1 / -1";
+    pEmpty.textContent = t("home.noCrmData");
+    grid.appendChild(pEmpty);
+    return;
+  }
   var inPipeline = crmContacts.filter(function(c) {
     return c.stage === "prospect" || c.stage === "outreach" || c.stage === "negotiation";
   }).length;
   var active = crmContacts.filter(function(c) { return c.stage === "active_partner"; }).length;
   var total = crmContacts.length;
   var stats = [
-    { num: inPipeline, label: "In Pipeline", color: "#0e413b", action: "navigateTo('crm');switchCrmSubView('crm-pipeline')" },
-    { num: active, label: "Active", color: "#34a853", action: "navigateTo('crm');switchCrmSubView('crm-pipeline')" },
+    { num: inPipeline, label: "In Pipeline", color: "var(--color-primary)", action: "navigateTo('crm');switchCrmSubView('crm-pipeline')" },
+    { num: active, label: "Active", color: "var(--color-success-text)", action: "navigateTo('crm');switchCrmSubView('crm-pipeline')" },
     { num: total, label: "Total", color: "var(--color-text-secondary)", action: "navigateTo('crm');switchCrmSubView('crm-contacts')" },
-    { num: shopifyCustomers.length, label: "Customers", color: "#e8710a", action: "navigateTo('customers')" }
+    { num: shopifyCustomers.length, label: "Customers", color: "var(--color-primary)", action: "navigateTo('customers')" }
   ];
   stats.forEach(function(s) {
     var div = document.createElement("div");
@@ -29087,6 +29109,15 @@ function renderHomeShopifyStats() {
   if (!grid) return;
   grid.textContent = "";
 
+  if (shopifyProducts.length === 0 && shopifyOrders.length === 0) {
+    var pEmpty = document.createElement("p");
+    pEmpty.className = "home-placeholder";
+    pEmpty.style.gridColumn = "1 / -1";
+    pEmpty.textContent = t("home.noShopifyData");
+    grid.appendChild(pEmpty);
+    return;
+  }
+
   var inStock = shopifyProducts.filter(function(p) {
     return p.status === "active" && parseInt(p.inventoryQuantity, 10) > 5;
   }).length;
@@ -29101,9 +29132,9 @@ function renderHomeShopifyStats() {
   }).length;
 
   var stats = [
-    { num: inStock, label: "In Stock", color: "#34a853", action: "navigateTo('products')" },
-    { num: lowStock, label: "Low Stock", color: lowStock > 0 ? "#b06000" : "var(--color-text-secondary)", action: "navigateTo('products')" },
-    { num: ordersToday, label: "Orders Today", color: "#0e413b", action: "navigateTo('orders')" }
+    { num: inStock, label: "In Stock", color: "var(--color-success-text)", action: "navigateTo('products')" },
+    { num: lowStock, label: "Low Stock", color: lowStock > 0 ? "var(--color-warning-text)" : "var(--color-text-secondary)", action: "navigateTo('products')" },
+    { num: ordersToday, label: "Orders Today", color: "var(--color-primary)", action: "navigateTo('orders')" }
   ];
   stats.forEach(function(s) {
     var div = document.createElement("div");
