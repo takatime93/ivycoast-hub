@@ -1241,7 +1241,7 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
   border: none;
   font-size: var(--text-md);
   font-family: inherit;
-  color: #181818;
+  color: var(--color-text-primary);
   cursor: pointer;
 }
 .crm-add-dropdown button:hover { background: #f5f5f5; }
@@ -1280,7 +1280,7 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
 /* CRM Vendor Grid */
 .crm-vendor-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 12px;
 }
 .crm-vendor-card {
@@ -1298,7 +1298,7 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
   font-family: var(--font-display);
   font-size: var(--text-h3);
   font-weight: 600;
-  color: #000;
+  color: var(--color-text-heading);
   line-height: var(--leading-normal);
   word-break: break-word;
 }
@@ -1308,9 +1308,9 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
 .crm-vendor-details > .crm-detail-address { align-items: center; }
 .crm-vendor-detail-icon { flex-shrink: 0; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; color: var(--color-primary); font-family: 'FA6 Pro'; font-weight: 300; font-size: 18px; line-height: 0; }
 .crm-vendor-contact-info { flex: 1; min-width: 0; display: flex; flex-direction: column; }
-.crm-vendor-contact-name { font-family: var(--font-display); font-size: var(--text-h3); font-weight: 600; color: #000; line-height: var(--leading-normal); }
+.crm-vendor-contact-name { font-family: var(--font-display); font-size: var(--text-h3); font-weight: 600; color: var(--color-text-heading); line-height: var(--leading-normal); }
 .crm-vendor-contact-email { font-size: var(--text-sm); color: var(--color-text-muted); line-height: var(--leading-tight); }
-.crm-vendor-plus-badge { width: 28px; height: 28px; border: 1px solid #f3f3f3; border-radius: 50px; display: flex; align-items: center; justify-content: center; font-size: 12px; color: var(--color-primary); flex-shrink: 0; padding: 2px; }
+.crm-vendor-plus-badge { width: 28px; height: 28px; border: 1px solid var(--color-border-separator); border-radius: 50px; display: flex; align-items: center; justify-content: center; font-size: 12px; color: var(--color-primary); flex-shrink: 0; padding: 2px; }
 .crm-vendor-details:empty { display: none; }
 
 /* CRM Product Tags */
@@ -1322,7 +1322,7 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
   font-size: var(--text-sm);
   font-weight: 500;
   background: var(--color-surface);
-  color: #181818;
+  color: var(--color-text-primary);
   border: 1px solid var(--color-border-subtle);
   letter-spacing: 0.2px;
 }
@@ -1341,16 +1341,16 @@ a.pill:visited, a.pill:hover, a.pill:active { color: #fff; text-decoration: none
   align-self: flex-start;
   width: fit-content;
 }
-.crm-stage-prospect { background: #3cb1ff; color: #fff; }
-.crm-stage-outreach { background: #fec553; color: #000; }
-.crm-stage-negotiation { background: #ff5e5e; color: #fff; }
-.crm-stage-active_partner { background: var(--color-primary); color: #fff; }
+.crm-stage-prospect { background: var(--color-stage-prospect); color: #fff; }
+.crm-stage-outreach { background: var(--color-stage-outreach); color: #000; }
+.crm-stage-negotiation { background: var(--color-stage-negotiation); color: #fff; }
+.crm-stage-active_partner { background: var(--color-stage-active); color: #fff; }
 .crm-stage-inactive { background: var(--color-stage-inactive-bg); color: var(--color-stage-inactive-text); }
 
 
 /* CRM Card Footer */
 .crm-vendor-card-footer {
-  border-top: 1px solid #f3f3f3;
+  border-top: 1px solid var(--color-border-separator);
   display: flex;
   gap: 8px;
   align-items: center;
@@ -1720,7 +1720,7 @@ body.crm-panel-open { overflow: hidden; }
   align-items: center;
   gap: 12px;
   padding: 16px 20px;
-  border-bottom: 1px solid #f3f3f3;
+  border-bottom: 1px solid var(--color-border-separator);
 }
 .crm-vendor-card-header-info {
   flex: 1;
@@ -1733,7 +1733,11 @@ body.crm-panel-open { overflow: hidden; }
   display: flex;
   flex-direction: column;
   gap: 1px;
+  min-width: 0;
 }
+/* Keep the stage / "Since" badge intrinsic-sized so a long name can't crush it. */
+.crm-vendor-card-header-info > .crm-stage-badge,
+.crm-vendor-card-header-info > .crm-detail-stage-split { flex-shrink: 0; }
 
 /* Products */
 .product-img {
@@ -3068,10 +3072,10 @@ h2.crm-detail-name {
   white-space: nowrap;
   color: #fff;
 }
-.crm-detail-stage-badge.stage-prospect { background: #3cb1ff; }
-.crm-detail-stage-badge.stage-outreach { background: #fec553; }
-.crm-detail-stage-badge.stage-negotiation { background: #ff5e5e; }
-.crm-detail-stage-badge.stage-active_partner { background: var(--color-primary); }
+.crm-detail-stage-badge.stage-prospect { background: var(--color-stage-prospect); }
+.crm-detail-stage-badge.stage-outreach { background: var(--color-stage-outreach); }
+.crm-detail-stage-badge.stage-negotiation { background: var(--color-stage-negotiation); }
+.crm-detail-stage-badge.stage-active_partner { background: var(--color-stage-active); }
 .crm-detail-stage-badge.stage-inactive { background: var(--color-stage-inactive-bg); color: var(--color-stage-inactive-text); }
 /* Name block, badges row, contact rows in header */
 .crm-detail-name-block { display: flex; flex-direction: column; gap: 0; }
@@ -5262,11 +5266,8 @@ select.contact-edit-input { appearance: auto; cursor: pointer; }
 }
 
 /* Responsive */
-@media (max-width: 1200px) {
-  .crm-vendor-grid { grid-template-columns: repeat(3, 1fr); }
-}
 @media (max-width: 900px) {
-  .crm-vendor-grid { grid-template-columns: repeat(2, 1fr); }
+  /* .crm-vendor-grid columns now governed by auto-fill minmax(280px) — no fixed override needed */
   .main.main-full-width { padding: 12px 32px 32px; }
 }
 @media (max-width: 600px) {
@@ -8570,6 +8571,7 @@ var I18N = {
     "crmOv.noShopsConnected": "No shops connected yet",
     // sweep 2 — empty/error states + tooltips
     "board.columnEmpty": "Drop cards here",
+    "crm.pipelineEmpty": "No contacts",
     "docs.gridEmpty": "No documents in this workspace yet.",
     "home.viewStat": "View {label}",
     "home.noMeetingNotes": "No meeting notes found.",
@@ -9009,6 +9011,7 @@ var I18N = {
     "crmOv.noShopsConnected": "接続された店舗はまだありません",
     // sweep 2 — empty/error states + tooltips
     "board.columnEmpty": "ここにドロップ",
+    "crm.pipelineEmpty": "連絡先なし",
     "docs.gridEmpty": "このワークスペースにはまだドキュメントがありません。",
     "home.viewStat": "{label}を表示",
     "home.noMeetingNotes": "議事録が見つかりません。",
@@ -12399,6 +12402,13 @@ function renderCrmPipeline() {
     container.textContent = "";
     document.getElementById("crm-count-" + stage).textContent = cols[stage].length;
 
+    if (cols[stage].length === 0) {
+      var colEmpty = document.createElement("div");
+      colEmpty.className = "kanban-col-empty";
+      colEmpty.textContent = tr("crm.pipelineEmpty");
+      container.appendChild(colEmpty);
+    }
+
     cols[stage].forEach(function(c) {
       var card = document.createElement("div");
       card.className = "task-card";
@@ -13662,7 +13672,7 @@ function openCrmDetailView(contactId) {
   moreMenu.appendChild(editDivider);
 
   // Vendor Stage item with submenu
-  var stageColors = { inactive: "#f2f2f2", prospect: "#3cb1ff", outreach: "#fec553", negotiation: "#ff5e5e", active_partner: "#0e413b" };
+  var stageColors = { inactive: "var(--color-stage-inactive-bg)", prospect: "var(--color-stage-prospect)", outreach: "var(--color-stage-outreach)", negotiation: "var(--color-stage-negotiation)", active_partner: "var(--color-stage-active)" };
   var stageLabelsAll = { inactive: _crmStageLabel("inactive"), prospect: _crmStageLabel("prospect"), outreach: _crmStageLabel("outreach"), negotiation: _crmStageLabel("negotiation"), active_partner: _crmStageLabel("active_partner") };
   var stageMenuWrap = document.createElement("div");
   stageMenuWrap.className = "crm-stage-menu-wrap";
@@ -13970,10 +13980,13 @@ function openCrmDetailView(contactId) {
       case 5: renderCrmReferencesTab(c, panels[5], contactId, _refsData); break;
     }
   }
+  tabsBar.setAttribute("role", "tablist");
   tabNames.forEach(function(name, idx) {
     var btn = document.createElement("button");
     btn.className = "crm-detail-tab" + (idx === 0 ? " active" : "");
     btn.setAttribute("data-tab", idx);
+    btn.setAttribute("role", "tab");
+    btn.setAttribute("aria-selected", idx === 0 ? "true" : "false");
     btn.appendChild(document.createTextNode(name));
 
     var badgeConf = tabBadges[idx];
@@ -13989,15 +14002,24 @@ function openCrmDetailView(contactId) {
     var panel = document.createElement("div");
     panel.className = "crm-detail-tab-panel" + (idx === 0 ? " active crm-tab-panel-flush" : "");
     panel.setAttribute("data-tab-panel", idx);
+    panel.setAttribute("role", "tabpanel");
     panels.push(panel);
     body.appendChild(panel);
 
     btn.onclick = function() {
       _renderCrmTab(idx); // render-once on first activation (also covers programmatic .click())
-      tabsBar.querySelectorAll(".crm-detail-tab").forEach(function(t) { t.classList.remove("active"); });
+      tabsBar.querySelectorAll(".crm-detail-tab").forEach(function(t) {
+        t.classList.remove("active");
+        t.setAttribute("aria-selected", "false");
+      });
       btn.classList.add("active");
+      btn.setAttribute("aria-selected", "true");
       panels.forEach(function(p) { p.classList.remove("active"); });
       panel.classList.add("active");
+      // Subtle fade on the newly-shown panel (retrigger the CSS animation).
+      panel.classList.remove("motion-fade-in");
+      void panel.offsetWidth;
+      panel.classList.add("motion-fade-in");
     };
   });
 
