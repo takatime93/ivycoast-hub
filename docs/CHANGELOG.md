@@ -7,6 +7,16 @@ See `plans/` for the design reasoning behind each change.
 
 ## 2026-07-08
 
+### ✅ Phase 0c + 0d — modal/drawer consistency + interaction primitives (Plan 06)
+**Files:** `index.html`, `sw.js`. CSS/ARIA only — no behavior change.
+
+- **0c:** dialog semantics (`role`/`aria-modal`/`aria-labelledby`) added to order-detail, manual-order,
+  customer-drawer, score-drawer overlays; drawer shadows normalized to `--shadow-xl`; verified all modals
+  share `motion-modal-in`/`motion-backdrop-in` entrance and drawers share `--motion-drawer` slide.
+- **0d:** dev-pipeline cards gained hover elevation + `motion-rise` entrance (+ reduced-motion coverage);
+  dev stage buttons got `:active` press; `.pd-back`/`.pd-thumb` transitions moved to motion tokens. SW v11→v12.
+- **Phase 0 (foundation) complete.**
+
 ### ✅ Phase 0b — save/discard unsaved-changes guard (Plan 06)
 **Files:** `index.html`, `sw.js`.
 

@@ -6256,6 +6256,13 @@ select.contact-edit-input { appearance: auto; cursor: pointer; }
   overflow-x: auto;
   align-items: start;
 }
+@media (max-width: 640px) {
+  .products-dev-board {
+    grid-template-columns: 1fr;
+    overflow-x: visible;
+  }
+  .dev-pipeline-col { min-width: 0; }
+}
 .dev-pipeline-col {
   background: var(--color-surface-tertiary, #f5f5f5);
   border-radius: 10px;
@@ -8450,6 +8457,9 @@ var I18N = {
     "products.detail.options": "Options",
     "products.detail.inventoryPolicy": "Inventory policy",
     "products.detail.metafields": "Metafields",
+    "products.detail.batches": "Soap Batches ({n})",
+    "products.detail.noBatches": "No batches recorded",
+    "products.detail.viewAllBatches": "View all {n} batches in Formulator",
     "products.detail.viewOnShopify": "View on Shopify",
     "products.detail.variant": "Variant",
     "products.detail.stock": "Stock",
@@ -8886,6 +8896,9 @@ var I18N = {
     "products.detail.options": "オプション",
     "products.detail.inventoryPolicy": "在庫ポリシー",
     "products.detail.metafields": "メタフィールド",
+    "products.detail.batches": "バッチ ({n})",
+    "products.detail.noBatches": "バッチの記録なし",
+    "products.detail.viewAllBatches": "全 {n} 件のバッチをフォーミュレーターで見る",
     "products.detail.viewOnShopify": "Shopifyで表示",
     "products.detail.variant": "バリエーション",
     "products.detail.stock": "在庫",
@@ -27980,11 +27993,11 @@ function openProductDetailModal(product) {
     return false;
   });
   productBatches.sort(function(a, b) { return (b.date || "").localeCompare(a.date || ""); });
-  var batchSec = _pdSection("Soap Batches (" + productBatches.length + ")");
+  var batchSec = _pdSection(tf("products.detail.batches", { n: productBatches.length }));
   if (productBatches.length === 0) {
     var emptyEl = document.createElement("div");
     emptyEl.className = "product-batch-empty";
-    emptyEl.textContent = "No batches recorded";
+    emptyEl.textContent = t("products.detail.noBatches");
     batchSec.appendChild(emptyEl);
   } else {
     var cardsContainer = document.createElement("div");
@@ -28004,8 +28017,8 @@ function openProductDetailModal(product) {
       scoreEl.className = "product-batch-score";
       var qs = batch.qualityScore;
       scoreEl.textContent = qs != null ? String(qs) : "--";
-      if (qs >= 80) scoreEl.style.color = "#00a52c";
-      else if (qs >= 60) scoreEl.style.color = "#b06000";
+      if (qs >= 80) scoreEl.style.color = "var(--color-success-bright)";
+      else if (qs >= 60) scoreEl.style.color = "var(--color-warning-text)";
       else if (qs != null) scoreEl.style.color = "var(--color-error-text)";
       card.appendChild(scoreEl);
       var dateEl = document.createElement("span");
@@ -28023,7 +28036,7 @@ function openProductDetailModal(product) {
     if (productBatches.length > 5) {
       var viewAll = document.createElement("div");
       viewAll.className = "product-batch-view-all";
-      viewAll.textContent = "View all " + productBatches.length + " batches in Formulator";
+      viewAll.textContent = tf("products.detail.viewAllBatches", { n: productBatches.length });
       viewAll.addEventListener("click", function() { navigateTo("tools/formulator"); });
       batchSec.appendChild(viewAll);
     }
