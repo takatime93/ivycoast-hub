@@ -38,4 +38,4 @@ From the audit's "needs browser eyes" list: kanban drag drop-indicator + drag pa
 
 ## Status
 - [x] 0a confirm modal - [x] 0b save/discard - [x] 0c modal shell - [x] 0d primitives
-- [x] 1 Products - [x] 2 CRM - [x] 3 Tools - [x] 4 Orders/Customers - [ ] 5 Tasks - [ ] 6 Home - [ ] 7 Docs
+- [x] 1 Products - [x] 2 CRM - [x] 3 Tools - [x] 4 Orders/Customers - [x] 5 Tasks - [ ] 6 Home - [ ] 7 Docs
