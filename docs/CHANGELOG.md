@@ -7,6 +7,16 @@ See `plans/` for the design reasoning behind each change.
 
 ## 2026-07-08
 
+### ✅ Phase 1 surfaces 1–3: Products, CRM, Tools (Plan 06)
+- **1.1 Products:** detail-page Soap-Batches section i18n'd + score colors tokenized; dev pipeline board
+  reflows single-column on mobile. (Focus ring / badges / specs confirmed already-correct.)
+- **1.2 CRM:** pipeline empty-column states; vendor grid → responsive `auto-fill minmax(280px)`; vendor-card
+  long-name robustness; tokenized CRM hex + stage-badge palette (card+detail+submenu); contact-detail tabs
+  get `role=tablist/tab/tabpanel` + `aria-selected` + panel fade (lazy-render preserved).
+- **1.3 Tools/Formulator:** tokenized heading hex + quality color states (shared `--color-quality-*` for score
+  number AND property bars); score-card cohesion + read-more states; master-formula button demoted to
+  secondary; shared `.formulator-input-sm`. SW → v15.
+
 ### ✅ Phase 0c + 0d — modal/drawer consistency + interaction primitives (Plan 06)
 **Files:** `index.html`, `sw.js`. CSS/ARIA only — no behavior change.
 
