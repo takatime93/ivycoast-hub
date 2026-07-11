@@ -7,6 +7,19 @@ See `plans/` for the design reasoning behind each change.
 
 ## 2026-07-08
 
+### ✅ Phase 1 surfaces 4–7: Orders/Customers, Tasks, Home, Docs (Plan 06) — Phase 1 COMPLETE
+- **1.4 Orders/Customers:** order-detail summary header (date + emphasized total), consistent action-button
+  classes, tokenized drawer hover (fixed leftover blue-on-green), dead-CSS removal, aligned total rounding.
+  Halle-QA'd clean.
+- **1.5 Tasks:** overdue → error-bg pill; edit(⋯) button → accessible `.task-card-edit` class; fixed
+  done-column drag opacity compounding (~0.32→0.5); category chip ellipsis; BLD badge tokens; zero-count muted.
+- **1.6 Home:** meeting-note tabs single-row ellipsis+scroll; tokenized all stat-renderer hex (unified
+  warn/error semantics); `.stat-num`→`--text-xl/lg`; CRM 4-tile→balanced 2×2; CRM/Shopify empty states.
+- **1.7 Docs:** active-sort column affinity; standardized empty-state class; count-chip radius token.
+- **Plan 06 complete: Phase 0 (foundation) + all 7 Phase-1 surfaces shipped. SW → v19.**
+  Remaining = Phase 2 design-judgment items (kanban drag indicator, score-card gauge, home mobile order,
+  vendor grid density feel) — deliberately left for Taka's in-browser judgment.
+
 ### ✅ Phase 1 surfaces 1–3: Products, CRM, Tools (Plan 06)
 - **1.1 Products:** detail-page Soap-Batches section i18n'd + score colors tokenized; dev pipeline board
   reflows single-column on mobile. (Focus ring / badges / specs confirmed already-correct.)
