@@ -5,7 +5,97 @@ See `plans/` for the design reasoning behind each change.
 
 ---
 
-## 2026-07-08
+## 2026-07-11
+
+### ✅ Phase A — backend foundations (Plan 07, apps-script.js only — requires Apps Script redeploy)
+- **LockService on mutating CRUD:** `create`/`update`/`delete` in `doPost` now run under
+  `LockService.getScriptLock()` (`waitLock(10000)`, released in `finally`). Fixes duplicate-ID risk in
+  `nextId()` (max+1 scan) and lost updates in `updateRow()` (read-modify-write). Lock acquired after the
+  auth gate; on timeout the API returns `{error: "busy, retry"}` — the client should treat that as retryable.
+  Deliberately NOT locked: heartbeat (per-user row-scoped), Shopify sync actions (minutes-long; would starve
+  CRUD), uploadFile (Drive I/O; its only sheet write is an append-only activity row with collision-proof IDs).
+- **batchList cache actually works now (was dead):** the old single `cache.put("batchList", …)` exceeded
+  CacheService's ~100KB value cap, threw, and was silently swallowed — so every 2-min poll did 16 full-sheet
+  reads. Fixed both sides: (a) Products rows in the **batchList response no longer include `description` or
+  `metafields`** (detail views must fetch them via `?action=list&sheet=Products`, which still returns full
+  rows); (b) the payload is sharded into 30K-char chunks (`batchList_0..n` + `batchList_meta` count key,
+  60s TTL) and reassembled on read; cache errors now log via `console.error` instead of vanishing. Cache is
+  invalidated inside the locked mutation path (after the write) and after sync/updateInventory actions, so
+  writes are visible on the next poll.
+- **ActivityLog reads capped:** replaced full-sheet reads + `slice(-100)` with a windowed
+  `getRecentActivities_(100)` (reads only the last ≤100 data rows via `getRange`; guards the <100-row case;
+  still newest-first). Applied to both batchList and `?action=list&sheet=ActivityLog`.
+- **ensureSheets no longer runs per request:** was 9+ header-row reads on every doGet/doPost. Now gated by
+  Script Property `SHEETS_ENSURED_V1` — runs once per deployment, then never again. Manual force:
+  `?action=ensureSheets` (also re-sets the flag). **If a future deploy adds sheets/columns, either bump the
+  flag name (V1→V2) in code, delete the property in the Apps Script editor, or hit `?action=ensureSheets`
+  once after deploying.** `scheduledSync()` uses the same gated path.
+- **Heartbeat cost reduced:** one Presence-sheet read, in-memory diff, writes only changed cells
+  (`lastActive` always; `currentTab`/`photoUrl` only when different), and the response is built from the
+  in-memory data — the trailing full re-read is gone. Response shape unchanged.
+- **Schema links (plumbing only, no data populated):** canonical headers extended — Orders gains `contactId`
+  (appended after `lastSynced`), Tasks gains `entityType`, `entityId` (appended after `updatedAt`).
+  `ensureSheet` already appends missing header columns to existing sheets (append-only, never reorders);
+  Tasks and Orders are now registered in the ensure pass so the columns self-add. `createRow`/`updateRow`
+  are header-driven, so the new fields pass through create/update automatically.
+- **Unchanged:** auth verification + allowlist, Shopify webhook no-op (auto-invoice still disabled),
+  Shopify sync function bodies, uploadFile, fetchOgImage.
+
+**DEPLOY STEPS:**
+1. Copy `apps-script.js` into the Apps Script editor and deploy a new web app version.
+2. The first request after deploy runs the ensure pass once (the `SHEETS_ENSURED_V1` property doesn't exist
+   yet), which auto-appends the new `contactId` / `entityType` / `entityId` header columns. To trigger it
+   explicitly / verify: open `<webapp-url>?action=ensureSheets` — expect `{"success":true,"ensured":true}`.
+3. No Sheet edits, no new Script Properties to set manually.
+
+### ✅ Phase A — frontend foundations (Plan 07: index.html, sw.js, version.json)
+- **Version mismatch fixed:** `APP_VERSION` (index.html:9811) was `"20260313-1"` vs version.json
+  `"20260704-1"`, so the update banner fired every 3 min forever. Both now `"20260711-1"` with a
+  "MUST match version.json" comment at the constant.
+- **Head scripts unblocked (index.html:18–20):** firebase-app/auth-compat now load with `defer`; jsPDF +
+  autotable (~400KB) removed from `<head>` entirely — lazy-loaded via new `loadJsPdf()` helper
+  (index.html:9828, cached Promise, loads jspdf then autotable in order, retries on failure). Both PDF
+  entry points (`downloadInvoicePdf` index.html:24838, `downloadReceiptPdf` index.html:26044) are now
+  `async` and `await loadJsPdf()` first with a toast on load failure; all callers are fire-and-forget
+  (onclick / listeners / `exportInvoicePdf`), so no caller changes needed. Because `defer` moves SDK
+  execution after inline scripts, the firebase bootstrap (init/persistence/token interceptor/
+  onAuthStateChanged, index.html:29342–29405) now runs inside `initFirebaseAuth()` at DOMContentLoaded
+  (deferred scripts always execute before it) — the bootstrap statements themselves are byte-identical,
+  config and allowlist untouched.
+- **SW stale-while-revalidate for HTML (sw.js:57–91):** navigations respond from cache instantly when
+  present; a background fetch (registered with `e.waitUntil` synchronously) updates the cache and posts
+  the existing `SW_UPDATED` message only when the page's ETag/Last-Modified actually changed. Falls back
+  to network when uncached. `/fonts/` verified covered by the lazy cache-first branch (no skip pattern
+  matches same-origin fonts). `CACHE_NAME` → `ivyhub-v20`.
+- **localStorage snapshot hardened (`saveDataCache`, index.html:9863–9894):** products are slimmed
+  (`description` + `metafields` deleted from a copy) before writing — matches the backend change that
+  drops them from batchList; in-memory arrays untouched. The silent catch now
+  `console.warn("dataCache save failed", e)`.
+- **Post-save round-trips cut:** removed the `setTimeout(fetchActivityLog, 500)` chained onto all 8 API
+  helpers (`apiPost` :10577, `crmApiPost` :11830, `stockApiPost` :11841, `contactDocApiPost` :11852,
+  `peopleApiPost` :11862, `soapBatchApiPost` :11884, `invApiPost` :20891, `recApiPost` :25086) — the 60s
+  activity poll covers it. Removed the success-path refetches where local state is already reconciled
+  optimistically before the POST: task update (`fetchBoardTasks()` :11057), invoice update
+  (`fetchInvoices(true)` :24078), receipt update (`fetchReceipts(true)` :25737). All error/catch-path
+  refetches kept (they reconcile after failure).
+- **No-op re-render skip (index.html:9941–9981):** `fetchAllData` now computes a per-collection
+  fingerprint (row count + JSON length across the 16 consumed keys) and, on unforced polls with an
+  identical payload, only bumps `lastFetched`/last-synced and returns — no array reassignment, no render
+  cascade, no 5MB localStorage rewrite. `fetchAllData(force)` added; the 5 post-save reconcile call sites
+  (stock save/sold/delete, contact-doc save/delete) now pass `true`; the 2-min poll and
+  visibilitychange resume stay unforced; first fetch always renders (empty fingerprint).
+- **Contact image uploads parallelized (index.html:20674):** avatar/card-front/card-back now run via
+  `Promise.all` (they write disjoint contact fields); per-file result handling and null-URL error paths
+  unchanged (`uploadCrmFile` always invokes its callback). Per-step overlay texts dropped in favor of the
+  existing combined "Uploading …" message.
+- **Global search now covers Invoices + Receipts (index.html:~11606–11761):** invoices match on
+  invoiceNumber/contactName/contactCompany/orderNumber/total, receipts on
+  receiptNumber/contactName/invoiceNumber (5 results each, same createElement pattern — no innerHTML);
+  results route to `tools/documents` and open `openInvoiceEditModal`/`openReceiptEditModal` after nav,
+  mirroring the CRM result pattern. New i18n keys `search.invoices`/`search.receipts` (EN+JP).
+- **Fonts:** fonttools/pyftsubset available on this machine (`/Library/Frameworks/Python.framework/
+  Versions/3.12/bin/pyftsubset`) — FA Pro subsetting deferred to its own reviewed change per plan.
+- `grep -c innerHTML index.html` = 0 (baseline preserved).
 
 ### ✅ Phase 1 surfaces 4–7: Orders/Customers, Tasks, Home, Docs (Plan 06) — Phase 1 COMPLETE
 - **1.4 Orders/Customers:** order-detail summary header (date + emphasized total), consistent action-button
@@ -307,3 +397,26 @@ because saved batches serialize `weightOz` into the SoapBatches sheet — renami
 A clarifying comment was added instead.
 
 **Status:** ✅ Shipped to working tree (local only — not deployed).
+
+---
+
+## 2026-07-11 — Phase A: Halle QA fixes (Noa)
+
+Post-QA fixes applied after Halle's review of the Phase A bundle (PASS WITH WARNINGS — 0 critical):
+
+- **H1 (High)**: `SHEETS_ENSURED_FLAG` bumped V1→V2 in apps-script.js — without the bump, existing
+  deployments would never run the ensure pass, the new columns (Orders.contactId,
+  Tasks.entityType/entityId) would never be created, and writes to them would be silently dropped.
+- **M1**: invoice update error path now refetches (`fetchInvoices(true)`) so a backend-rejected edit
+  can't linger on screen — matches receipt/task error behavior.
+- **M2**: `fetchAllData` now MERGES products instead of clobbering — slim batchList rows (no
+  description/metafields, stripped server-side for the cache) preserve detail fields from
+  previously-loaded full rows.
+- **L1**: `initFirebaseAuth()` guards `typeof firebase === "undefined"` (deferred SDK load failure)
+  → visible `showLoginError` instead of a silent dead sign-in button.
+- Also this bundle (Noa, pre-QA): all 12 backend POST helpers consolidated into shared `_postJson()`
+  with a single 800ms retry on `{error:"busy, retry"}` (backend lock contention); the two inline
+  order-create fetches routed through it too.
+
+**Verified:** `node --check` passes on apps-script.js AND on the concatenated inline JS of index.html.
+**Status:** working tree only — REVIEW ticket noa-20260711-phase-a; not committed, not deployed.

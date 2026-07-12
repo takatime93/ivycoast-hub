@@ -10,10 +10,10 @@
 //   "Invoices"  — Invoice records (id prefix: inv-)
 //
 // 1. Create a Google Sheet with sheets named "Tasks", "Contacts", "Products", "Orders"
-// 2. Tasks headers:    id | name | status | priority | assignee | due | workspace | category | description | docLink | createdAt | updatedAt
+// 2. Tasks headers:    id | name | status | priority | assignee | due | workspace | category | description | docLink | createdAt | updatedAt | entityType | entityId
 // 3. Contacts headers: id | name | nameEn | type | company | role | email | phone | products | location | stage | notes | connectedDate | lastContactDate | workspace | wholesalePercent | consignmentPercent | profileImageUrl | businessCardFrontUrl | businessCardBackUrl | checklist | website | instagram | socialMedia | vendorRelation | connectorFeePercent | connectorId | businessCardUrl | people | createdAt | updatedAt
 // 4. Products headers: id | shopifyProductId | shopifyVariantId | title | variantTitle | sku | price | compareAtPrice | inventoryQuantity | inventoryItemId | locationId | status | productType | vendor | tags | imageUrl | lastSynced | description | handle | imageUrls | productOptions | barcode | weight | weightUnit | variantOptions | inventoryPolicy | metafields
-// 5. Orders headers:   id | shopifyOrderId | orderNumber | email | totalPrice | currency | financialStatus | fulfillmentStatus | lineItems | customerName | createdAt | shippingAddress | note | lastSynced
+// 5. Orders headers:   id | shopifyOrderId | orderNumber | email | totalPrice | currency | financialStatus | fulfillmentStatus | lineItems | customerName | createdAt | shippingAddress | note | lastSynced | contactId
 // 6. Customers headers: id | shopifyCustomerId | name | email | phone | totalOrders | totalSpent | firstOrderDate | lastOrderDate | tags | notes | createdAt | updatedAt
 // 7. Invoices headers:  id | invoiceNumber | contactId | contactName | contactCompany | contactEmail | contactAddress | invoiceDate | dueDate | poReference | items | subtotal | discount | shipping | taxType | tax | total | pricingType | pricingPercent | pricingParties | status | workspace | notes | orderId | orderNumber | paymentBank | paymentNote | marginNote | createdAt | updatedAt
 // 8. Receipts headers:  id | receiptNumber | invoiceId | invoiceNumber | contactName | contactCompany | contactEmail | contactAddress | receiptDate | items | subtotal | discount | shipping | taxType | tax | total | pricingType | pricingPercent | pricingParties | workspace | notes | orderId | orderNumber | createdAt | updatedAt
@@ -161,10 +161,9 @@ function ensureSheet(name, headers) {
   return sheet;
 }
 
-var _sheetsEnsured = false;
+// Full ensure pass. Not called per-request anymore — see ensureSheetsOnce_()
+// (PropertiesService-gated) and the ?action=ensureSheets admin path.
 function ensureActivityAndPresenceSheets() {
-  if (_sheetsEnsured) return;
-  _sheetsEnsured = true;
   ensureSheet("ActivityLog", ["id","action","itemType","itemId","itemName","detail","userId","userName","timestamp"]);
   ensureSheet("Presence", ["email","lastActive","currentTab","photoUrl"]);
   ensureSheet("People", ["id","nameJa","nameEn","initials","title","avatarImageUrl","email","phone","lineId","instagramHandle","preferredContact","vendorId","vendorRole","isPrimary","languages","communicationPrefs","background","howWeMet","lastContactedAt","lastContactedType","firstMetAt","createdAt","updatedAt"]);
@@ -174,6 +173,11 @@ function ensureActivityAndPresenceSheets() {
   ensureSheet("SoapBatches", ["id","name","batchNumber","date","status","oils","superfat","lyeConcentration","fragrance","fragranceOz","colorant","notes","properties","lyeCalc","qualityScore","cureStartDate","cureEndDate","actualResults","barsProduced","costPerBar","linkedProductId","linkedProductName","createdAt","updatedAt"]);
   ensureSheet("ProductMeta", ["id","shopifyProductId","source","category","devStatus","line","nameEn","nameJa","marketingName","ingredientLabelJa","linkedFormulaId","costPerBar","finishedCostPerBar","targetLaunch","heroImageUrl","internalNotes","versions","createdAt","updatedAt"]);
   ensureSheet("Products", ["id","shopifyProductId","shopifyVariantId","title","variantTitle","sku","price","compareAtPrice","inventoryQuantity","inventoryItemId","locationId","status","productType","vendor","tags","imageUrl","lastSynced","description","handle","imageUrls","productOptions","barcode","weight","weightUnit","variantOptions","inventoryPolicy","metafields"]);
+  // Schema links (entity graph): entityType/entityId let a Task point at any
+  // record; contactId links an Order to a CRM contact. New columns are appended
+  // at the END of existing header rows by ensureSheet — never reordered.
+  ensureSheet("Tasks", ["id","name","status","priority","assignee","due","workspace","category","description","docLink","createdAt","updatedAt","entityType","entityId"]);
+  ensureSheet("Orders", ["id","shopifyOrderId","orderNumber","email","totalPrice","currency","financialStatus","fulfillmentStatus","lineItems","customerName","createdAt","shippingAddress","note","lastSynced","contactId"]);
 }
 
 function logActivity(action, itemType, itemId, itemName, detail, userId, userName) {
@@ -184,6 +188,149 @@ function logActivity(action, itemType, itemId, itemName, detail, userId, userNam
     var ts = new Date().toISOString();
     sheet.appendRow([id, action, itemType || "", itemId || "", itemName || "", detail || "", userId || "", userName || "", ts]);
   } catch(ex) { /* non-fatal: never crash caller */ }
+}
+
+// --- Concurrency: script lock for mutating actions ---
+// Wraps sheet-mutating request handlers. nextId() (max+1 scan) and updateRow()
+// (read-modify-write) are not safe under concurrent writes — two simultaneous
+// creates can mint the same id, two updates can lose one. Scope is kept tight:
+// acquired AFTER auth, released in finally. On timeout returns a JSON error the
+// client can retry on. Heartbeat/presence is deliberately NOT locked (per-user
+// row-scoped; queuing it behind data writes would add latency for no safety).
+function withScriptLock_(fn) {
+  var lock = LockService.getScriptLock();
+  try {
+    lock.waitLock(10000);
+  } catch (e) {
+    return jsonResponse({ error: "busy, retry" });
+  }
+  try {
+    return fn();
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+// --- batchList cache (sharded) ---
+// CacheService caps values at ~100KB. The old single-key put silently threw and
+// was swallowed, so every 2-min poll did 16 full-sheet reads. The payload is now
+// trimmed (Products.description/metafields stripped) and sharded into chunks of
+// BATCH_CACHE_CHUNK_CHARS chars stored as batchList_0..n-1 plus batchList_meta
+// (chunk count). 30K chars keeps each chunk under ~90KB even if every char is a
+// 3-byte UTF-8 sequence (Japanese text is common in this data).
+var BATCH_CACHE_CHUNK_CHARS = 30 * 1024;
+var BATCH_CACHE_MAX_CHUNKS = 30; // invalidation sweep bound (~900KB payload ceiling)
+var BATCH_CACHE_TTL_SECONDS = 60;
+
+function batchCachePut_(payload) {
+  try {
+    var cache = CacheService.getScriptCache();
+    var chunks = [];
+    for (var i = 0; i < payload.length; i += BATCH_CACHE_CHUNK_CHARS) {
+      chunks.push(payload.substring(i, i + BATCH_CACHE_CHUNK_CHARS));
+    }
+    if (chunks.length === 0) chunks.push("");
+    if (chunks.length > BATCH_CACHE_MAX_CHUNKS) {
+      console.error("batchList cache: payload too large to shard (" + payload.length + " chars) — skipping cache");
+      return;
+    }
+    var kv = {};
+    chunks.forEach(function (c, idx) { kv["batchList_" + idx] = c; });
+    cache.putAll(kv, BATCH_CACHE_TTL_SECONDS);
+    // Meta written LAST so a concurrent reader never sees meta without chunks.
+    cache.put("batchList_meta", String(chunks.length), BATCH_CACHE_TTL_SECONDS);
+  } catch (ex) {
+    console.error("batchList cache write failed: " + ex);
+  }
+}
+
+function batchCacheGet_() {
+  try {
+    var cache = CacheService.getScriptCache();
+    var meta = cache.get("batchList_meta");
+    if (!meta) return null;
+    var count = parseInt(meta, 10);
+    if (!count || count < 1 || count > BATCH_CACHE_MAX_CHUNKS) return null;
+    var keys = [];
+    for (var i = 0; i < count; i++) keys.push("batchList_" + i);
+    var got = cache.getAll(keys);
+    var parts = [];
+    for (var j = 0; j < count; j++) {
+      var part = got["batchList_" + j];
+      if (part === undefined || part === null) return null; // partial eviction — treat as miss
+      parts.push(part);
+    }
+    return parts.join("");
+  } catch (ex) {
+    console.error("batchList cache read failed: " + ex);
+    return null;
+  }
+}
+
+function invalidateBatchListCache_() {
+  try {
+    var cache = CacheService.getScriptCache();
+    var keys = ["batchList", "batchList_meta"]; // "batchList" = legacy single key
+    for (var i = 0; i < BATCH_CACHE_MAX_CHUNKS; i++) keys.push("batchList_" + i);
+    cache.removeAll(keys);
+  } catch (ex) {
+    console.error("batchList cache invalidate failed: " + ex);
+  }
+}
+
+// Products rows for the batchList snapshot: strip description (HTML, can be
+// huge) and metafields (JSON blob) — the dashboard list views don't need them,
+// and they were the main reason the payload blew the cache cap. Detail views
+// fetch them via ?action=list&sheet=Products, which is untouched.
+function getProductsForBatch_() {
+  return getAllRows("Products").map(function (row) {
+    var slim = {};
+    Object.keys(row).forEach(function (k) {
+      if (k === "description" || k === "metafields") return;
+      slim[k] = row[k];
+    });
+    return slim;
+  });
+}
+
+// Windowed ActivityLog read: the sheet grows forever; reading all of it on
+// every poll gets slower every day. Read only the last `limit` data rows.
+// Returns newest-first (same order as the old slice(-100).reverse()).
+function getRecentActivities_(limit) {
+  var sheet = getSheet("ActivityLog");
+  if (!sheet) return [];
+  var lastRow = sheet.getLastRow();
+  if (lastRow < 2) return [];
+  var lastCol = sheet.getLastColumn();
+  var headers = sheet.getRange(1, 1, 1, lastCol).getValues()[0];
+  var count = Math.min(limit, lastRow - 1); // guard: fewer rows than limit
+  var startRow = lastRow - count + 1;
+  var data = sheet.getRange(startRow, 1, count, lastCol).getValues();
+  var rows = [];
+  for (var i = data.length - 1; i >= 0; i--) {
+    rows.push(rowToObj(headers, data[i]));
+  }
+  return rows;
+}
+
+// Run the sheet/column ensure pass ONCE per deployment instead of on every
+// request (it was costing 9+ header-row reads per request). Gated by a
+// PropertiesService flag. To force a re-run after adding new sheets/columns:
+// bump the flag version in a redeploy, delete the property in the Apps
+// Script editor, or hit ?action=ensureSheets.
+// V2: adds Orders.contactId + Tasks.entityType/entityId (Phase A) — the bump
+// forces one ensure pass on the first request after this deploy.
+var SHEETS_ENSURED_FLAG = "SHEETS_ENSURED_V2";
+
+function ensureSheetsOnce_() {
+  try {
+    var props = PropertiesService.getScriptProperties();
+    if (props.getProperty(SHEETS_ENSURED_FLAG) === "true") return;
+    ensureActivityAndPresenceSheets();
+    props.setProperty(SHEETS_ENSURED_FLAG, "true");
+  } catch (ex) {
+    console.error("ensureSheetsOnce_ failed: " + ex);
+  }
 }
 
 // --- Web App Endpoints ---
@@ -258,23 +405,32 @@ function authGate_(idToken) {
 }
 
 function doGet(e) {
-  try { ensureActivityAndPresenceSheets(); } catch (ex) { /* non-fatal */ }
+  ensureSheetsOnce_();
   var _authErr = authGate_(e && e.parameter ? e.parameter.idToken : "");
   if (_authErr) return _authErr;
   var action = (e.parameter && e.parameter.action) || "list";
   var sheetName = (e.parameter && e.parameter.sheet) || "Tasks";
-  // Batch endpoint: return all data in one request (cached 60s)
+  // Admin: force the full ensure pass (needed after adding sheets/columns).
+  if (action === "ensureSheets") {
+    try {
+      ensureActivityAndPresenceSheets();
+      PropertiesService.getScriptProperties().setProperty(SHEETS_ENSURED_FLAG, "true");
+      return jsonResponse({ success: true, ensured: true });
+    } catch (ex) {
+      return jsonResponse({ success: false, error: ex.message });
+    }
+  }
+  // Batch endpoint: return all data in one request (cached 60s, sharded).
+  // NOTE: Products rows here EXCLUDE description/metafields (see getProductsForBatch_).
   if (action === "batchList") {
-    var cache = CacheService.getScriptCache();
-    var cached = cache.get("batchList");
+    var cached = batchCacheGet_();
     if (cached) {
       return ContentService.createTextOutput(cached).setMimeType(ContentService.MimeType.JSON);
     }
-    var actAll = getAllRows("ActivityLog");
     var payload = JSON.stringify({
       tasks: getAllRows("Tasks"),
       contacts: getAllRows("Contacts"),
-      products: getAllRows("Products"),
+      products: getProductsForBatch_(),
       orders: getAllRows("Orders"),
       customers: getAllRows("Customers"),
       invoices: getAllRows("Invoices"),
@@ -287,17 +443,15 @@ function doGet(e) {
       contactActivityLog: getAllRows("ContactActivityLog"),
       soapBatches: getAllRows("SoapBatches"),
       productMeta: getAllRows("ProductMeta"),
-      activities: actAll.slice(-100).reverse()
+      activities: getRecentActivities_(100)
     });
-    try { cache.put("batchList", payload, 60); } catch(ex) { /* payload too large for cache */ }
+    batchCachePut_(payload);
     return ContentService.createTextOutput(payload).setMimeType(ContentService.MimeType.JSON);
   }
   if (action === "list") {
-    // ActivityLog: return only last 100 entries
+    // ActivityLog: windowed read of only the last 100 rows (sheet grows forever)
     if (sheetName === "ActivityLog") {
-      var all = getAllRows("ActivityLog");
-      var last100 = all.slice(-100).reverse();
-      return jsonResponse({ activities: last100 });
+      return jsonResponse({ activities: getRecentActivities_(100) });
     }
     var keyMap = { "Contacts": "contacts", "Products": "products", "Orders": "orders", "Customers": "customers", "Invoices": "invoices", "Receipts": "receipts", "PartnerStock": "partnerStock", "ContactDocuments": "contactDocuments", "People": "people", "ContactNotes": "contactNotes", "ContactInteractions": "contactInteractions", "ContactActivityLog": "contactActivityLog", "SoapBatches": "soapBatches", "ProductMeta": "productMeta" };
     var key = keyMap[sheetName] || "tasks";
@@ -309,7 +463,7 @@ function doGet(e) {
 }
 
 function doPost(e) {
-  try { ensureActivityAndPresenceSheets(); } catch (ex) { /* non-fatal */ }
+  ensureSheetsOnce_();
 
   // Detect Shopify webhook (has X-Shopify-Topic header or order_number field without action)
   var body;
@@ -334,52 +488,63 @@ function doPost(e) {
   var userName = body.userName || "";
   var iType = SHEET_TO_ITEM_TYPE[sheetName] || "task";
 
-  // Invalidate batchList cache on any data mutation
+  // Mutating CRUD actions run under the script lock: nextId() and updateRow()
+  // are read-modify-write and unsafe under concurrent requests. The batchList
+  // cache is invalidated AFTER the write, inside the lock, so the next poll
+  // rebuilds from post-write data.
   if (action === "create" || action === "update" || action === "delete") {
-    try { CacheService.getScriptCache().remove("batchList"); } catch(ex) {}
+    return withScriptLock_(function () {
+      if (action === "create") {
+        var created = createRow(sheetName, item);
+        invalidateBatchListCache_();
+        logActivity("created", iType, created.id, created.name || created.invoiceNumber || created.receiptNumber || created.title || "", "", userId, userName);
+        var res = {};
+        res[itemKey] = created;
+        return jsonResponse(res);
+      }
+      if (action === "update") {
+        var updated = updateRow(sheetName, item);
+        if (!updated) return jsonResponse({ error: itemKey + " not found" });
+        invalidateBatchListCache_();
+        logActivity("updated", iType, updated.id, updated.name || updated.invoiceNumber || updated.receiptNumber || updated.title || "", "", userId, userName);
+        var res2 = {};
+        res2[itemKey] = updated;
+        return jsonResponse(res2);
+      }
+      // delete
+      var ok = deleteRow(sheetName, body.id);
+      invalidateBatchListCache_();
+      logActivity("deleted", iType, body.id, body.itemName || "", "", userId, userName);
+      return jsonResponse({ success: ok });
+    });
   }
 
-  if (action === "create") {
-    var created = createRow(sheetName, item);
-    logActivity("created", iType, created.id, created.name || created.invoiceNumber || created.receiptNumber || created.title || "", "", userId, userName);
-    var res = {};
-    res[itemKey] = created;
-    return jsonResponse(res);
-  }
-  if (action === "update") {
-    var updated = updateRow(sheetName, item);
-    if (!updated) return jsonResponse({ error: itemKey + " not found" });
-    logActivity("updated", iType, updated.id, updated.name || updated.invoiceNumber || updated.receiptNumber || updated.title || "", "", userId, userName);
-    var res2 = {};
-    res2[itemKey] = updated;
-    return jsonResponse(res2);
-  }
-  if (action === "delete") {
-    var ok = deleteRow(sheetName, body.id);
-    logActivity("deleted", iType, body.id, body.itemName || "", "", userId, userName);
-    return jsonResponse({ success: ok });
-  }
-
-  // Shopify custom actions
+  // Shopify custom actions. NOT wrapped in the script lock: they can run for
+  // minutes (paginated API calls) and would starve CRUD writes waiting on the
+  // lock. They do invalidate the batchList cache so synced data is visible.
   if (action === "syncProducts") {
     var count = syncShopifyProducts();
+    invalidateBatchListCache_();
     logActivity("synced", "product", "", "", count + " products synced", "system", "Shopify");
     return jsonResponse({ success: true, synced: count });
   }
   if (action === "syncOrders") {
     var count2 = syncShopifyOrders();
+    invalidateBatchListCache_();
     logActivity("synced", "order", "", "", count2 + " orders synced", "system", "Shopify");
     return jsonResponse({ success: true, synced: count2 });
   }
   if (action === "updateInventory") {
     var result3 = updateShopifyInventory(body.inventoryItemId, body.locationId, body.quantity);
     if (result3.success) {
+      invalidateBatchListCache_();
       logActivity("updated", "product", body.inventoryItemId || "", "", "qty=" + body.quantity, userId, userName);
     }
     return jsonResponse(result3);
   }
   if (action === "syncCustomers") {
     var count3 = syncCustomers();
+    invalidateBatchListCache_();
     logActivity("synced", "customer", "", "", count3 + " customers synced", "system", "Shopify");
     return jsonResponse({ success: true, synced: count3 });
   }
@@ -411,28 +576,48 @@ function doPost(e) {
     }
   }
 
-  // Heartbeat / Presence
+  // Heartbeat / Presence: one read of the sheet, in-memory diff, write only
+  // cells that changed, and build the response from the in-memory data (no
+  // trailing re-read). Deliberately NOT under the script lock — it's per-user
+  // row-scoped and fires every 45s per client; queuing it behind data writes
+  // would add latency for no safety benefit.
   if (action === "heartbeat") {
+    var presenceList = [];
     var presenceSheet = getSheet("Presence");
     if (presenceSheet) {
       var email = body.email || "";
-      var data = presenceSheet.getDataRange().getValues();
+      var nowIso = new Date().toISOString();
+      var pData = presenceSheet.getDataRange().getValues();
+      var pHeaders = pData.length > 0 ? pData[0] : ["email", "lastActive", "currentTab", "photoUrl"];
       var found = false;
-      for (var pi = 1; pi < data.length; pi++) {
-        if (String(data[pi][0]) === email) {
-          presenceSheet.getRange(pi + 1, 2).setValue(new Date().toISOString());
-          presenceSheet.getRange(pi + 1, 3).setValue(body.currentTab || "");
-          if (body.photoUrl) presenceSheet.getRange(pi + 1, 4).setValue(body.photoUrl);
+      for (var pi = 1; pi < pData.length; pi++) {
+        if (String(pData[pi][0]) === email) {
           found = true;
+          // lastActive always changes
+          presenceSheet.getRange(pi + 1, 2).setValue(nowIso);
+          pData[pi][1] = nowIso;
+          var newTab = body.currentTab || "";
+          if (String(pData[pi][2]) !== newTab) {
+            presenceSheet.getRange(pi + 1, 3).setValue(newTab);
+            pData[pi][2] = newTab;
+          }
+          if (body.photoUrl && String(pData[pi][3]) !== String(body.photoUrl)) {
+            presenceSheet.getRange(pi + 1, 4).setValue(body.photoUrl);
+            pData[pi][3] = body.photoUrl;
+          }
           break;
         }
       }
       if (!found) {
-        presenceSheet.appendRow([email, new Date().toISOString(), body.currentTab || "", body.photoUrl || ""]);
+        var newPresenceRow = [email, nowIso, body.currentTab || "", body.photoUrl || ""];
+        presenceSheet.appendRow(newPresenceRow);
+        pData.push(newPresenceRow);
+      }
+      for (var pj = 1; pj < pData.length; pj++) {
+        presenceList.push(rowToObj(pHeaders, pData[pj]));
       }
     }
-    var presenceData = getAllRows("Presence");
-    return jsonResponse({ success: true, presence: presenceData });
+    return jsonResponse({ success: true, presence: presenceList });
   }
 
   return jsonResponse({ error: "Unknown action" });
@@ -938,7 +1123,7 @@ function updateShopifyInventory(inventoryItemId, locationId, quantity) {
 
 function scheduledSync() {
   try {
-    ensureActivityAndPresenceSheets();
+    ensureSheetsOnce_();
     var pCount = syncShopifyProducts();
     var oCount = syncShopifyOrders();
     logActivity("synced", "product", "", "", pCount + " products synced (scheduled)", "system", "Scheduler");

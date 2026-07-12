@@ -15,10 +15,9 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
-<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js" integrity="sha384-ZSs6LKr2GoUPDyHrN+rCQgyHL1yUyok5xMniSrgeRG7rUvA6vTmxronM1eZOfjgz" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js" integrity="sha384-fCAW/rDWORTbQXSiB7mOg0QtQ5c+r0f544y6XoKjuVva0nMBlCpNUjiFeG5iMdS3" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script defer src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script defer src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<!-- jsPDF + autotable (~400KB) are lazy-loaded on demand via loadJsPdf() — see the PDF export code. -->
 <style>
 @font-face { font-family: 'Tomato Grotesk'; src: url('fonts/TomatoGrotesk-Regular.otf') format('opentype'); font-weight: 400; font-style: normal; font-display: swap; }
 @font-face { font-family: 'Tomato Grotesk'; src: url('fonts/TomatoGrotesk-Medium.otf') format('opentype'); font-weight: 500; font-style: normal; font-display: swap; }
@@ -8653,6 +8652,8 @@ var I18N = {
     "search.products": "Products",
     "search.orders": "Orders",
     "search.customers": "Customers",
+    "search.invoices": "Invoices",
+    "search.receipts": "Receipts",
     // quick-add product panel
     "quickAdd.recent": "Recent",
     "quickAdd.allProducts": "All Products",
@@ -9095,6 +9096,8 @@ var I18N = {
     "search.products": "商品",
     "search.orders": "注文",
     "search.customers": "顧客",
+    "search.invoices": "請求書",
+    "search.receipts": "領収書",
     // quick-add product panel
     "quickAdd.recent": "最近",
     "quickAdd.allProducts": "すべての商品",
@@ -9805,7 +9808,7 @@ document.querySelectorAll(".doc-table th").forEach(function(th) {
 
 // ===================== BOARD =====================
 
-var APP_VERSION = "20260313-1";
+var APP_VERSION = "20260711-1"; // MUST match version.json — bump both together on deploy.
 var SCRIPT_URL = localStorage.getItem("boardScriptUrl") || "https://script.google.com/macros/s/AKfycbwC0gPe5EQRbk6ld99DMMg5UgmfjTrqE0UpRnBJqLRtqHWfHb_M4DSxt5ZWlg8KOrj2Dw/exec";
 // Public Shopify storefront root — used to build "View on Shopify" product links
 // from a product `handle` (URL = SHOPIFY_STORE_URL + "/products/" + handle).
@@ -9818,6 +9821,43 @@ var boardRefreshTimer = null;
 var isMobile = window.matchMedia("(max-width: 600px)").matches;
 var mobilePickTaskId = null;
 
+// ── jsPDF lazy loader ──────────────────────────────────────────
+// jsPDF + autotable (~400KB) were removed from <head>; they are only needed
+// when exporting a PDF. Every jsPDF code path must `await loadJsPdf()` first.
+var _jsPdfPromise = null;
+function loadJsPdf() {
+  if (window.jspdf && window.jspdf.jsPDF && window.jspdf.jsPDF.API && window.jspdf.jsPDF.API.autoTable) {
+    return Promise.resolve();
+  }
+  if (_jsPdfPromise) return _jsPdfPromise;
+  function loadScript(src, integrity) {
+    return new Promise(function(resolve, reject) {
+      var s = document.createElement("script");
+      s.src = src;
+      s.integrity = integrity;
+      s.crossOrigin = "anonymous";
+      s.referrerPolicy = "no-referrer";
+      s.onload = function() { resolve(); };
+      s.onerror = function() { reject(new Error("Failed to load " + src)); };
+      document.head.appendChild(s);
+    });
+  }
+  // autotable plugs into jsPDF, so it must load second.
+  _jsPdfPromise = loadScript(
+    "https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js",
+    "sha384-ZSs6LKr2GoUPDyHrN+rCQgyHL1yUyok5xMniSrgeRG7rUvA6vTmxronM1eZOfjgz"
+  ).then(function() {
+    return loadScript(
+      "https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js",
+      "sha384-fCAW/rDWORTbQXSiB7mOg0QtQ5c+r0f544y6XoKjuVva0nMBlCpNUjiFeG5iMdS3"
+    );
+  }).catch(function(e) {
+    _jsPdfPromise = null; // allow retry on next click
+    throw e;
+  });
+  return _jsPdfPromise;
+}
+
 // ── localStorage data cache (instant load) ────────────────────
 var CACHE_KEY = "ivyhub_dataCache";
 function saveDataCache() {
@@ -9826,7 +9866,15 @@ function saveDataCache() {
       ts: Date.now(),
       tasks: boardTasks,
       contacts: crmContacts,
-      products: shopifyProducts || [],
+      // Strip the heaviest product fields (full-HTML description, metafields)
+      // so the snapshot fits localStorage's ~5MB quota. The in-memory
+      // shopifyProducts array keeps them — only the cached copy is slimmed.
+      products: (shopifyProducts || []).map(function(p) {
+        var slim = Object.assign({}, p);
+        delete slim.description;
+        delete slim.metafields;
+        return slim;
+      }),
       productMeta: productMeta || [],
       orders: shopifyOrders || [],
       customers: shopifyCustomers || [],
@@ -9842,7 +9890,7 @@ function saveDataCache() {
       soapBatches: soapBatches || []
     };
     localStorage.setItem(CACHE_KEY, JSON.stringify(payload));
-  } catch(e) { /* storage full — ignore */ }
+  } catch(e) { console.warn("dataCache save failed", e); }
 }
 function loadDataCache() {
   try {
@@ -9891,7 +9939,24 @@ function hideSkeleton(id) {
 
 // ── Batch fetch: one request for all data ─────────────────────
 var _batchFetching = false;
-function fetchAllData() {
+// Fingerprint of the last batchList payload (per-collection row counts + JSON
+// lengths). When an unforced background poll returns an identical payload we
+// skip the full render cascade — only lastFetched/lastSynced are updated.
+var _lastBatchFingerprint = "";
+function _batchFingerprint(data) {
+  var keys = ["tasks", "contacts", "products", "productMeta", "orders", "customers",
+    "invoices", "receipts", "partnerStock", "contactDocuments", "people", "contactNotes",
+    "contactInteractions", "contactActivityLog", "soapBatches", "activities"];
+  return keys.map(function(k) {
+    var v = data[k];
+    if (!v) return k + ":0:0";
+    var s = "";
+    try { s = JSON.stringify(v) || ""; } catch (e) {}
+    return k + ":" + (v.length || 0) + ":" + s.length;
+  }).join("|");
+}
+// force=true (user-triggered saves / reconciles) always re-renders.
+function fetchAllData(force) {
   if (!SCRIPT_URL || _batchFetching) return;
   _batchFetching = true;
   fetch(SCRIPT_URL + "?action=batchList")
@@ -9905,6 +9970,15 @@ function fetchAllData() {
         return;
       }
       var now = Date.now();
+      // Skip the no-op render cascade when an unforced poll returns identical data.
+      var _fp = _batchFingerprint(data);
+      if (!force && _lastBatchFingerprint && _fp === _lastBatchFingerprint) {
+        lastFetched.board = lastFetched.crm = lastFetched.products = lastFetched.orders =
+          lastFetched.customers = lastFetched.invoices = lastFetched.receipts = now;
+        showLastSynced();
+        return;
+      }
+      _lastBatchFingerprint = _fp;
       if (data.tasks) { boardTasks = data.tasks; lastFetched.board = now; }
       if (data.contacts) {
         crmContacts = data.contacts;
@@ -9915,7 +9989,22 @@ function fetchAllData() {
         });
         lastFetched.crm = now;
       }
-      if (data.products) { shopifyProducts = data.products; lastFetched.products = now; }
+      if (data.products) {
+        // batchList products are slim (no description/metafields — stripped server-side
+        // to keep the cache under CacheService limits). Merge instead of clobber so
+        // full rows loaded via fetchShopifyProducts (action=list) keep their detail fields.
+        var _fullById = {};
+        shopifyProducts.forEach(function(p) { if (p && p.id) _fullById[p.id] = p; });
+        shopifyProducts = data.products.map(function(p) {
+          var prev = _fullById[p.id];
+          if (prev) {
+            if (p.description === undefined && prev.description !== undefined) p.description = prev.description;
+            if (p.metafields === undefined && prev.metafields !== undefined) p.metafields = prev.metafields;
+          }
+          return p;
+        });
+        lastFetched.products = now;
+      }
       // ProductMeta overlay — defensive: backend may not have the sheet yet.
       productMeta = data.productMeta || [];
       if (data.orders) { shopifyOrders = data.orders; lastFetched.orders = now; }
@@ -10500,14 +10589,26 @@ function fetchBoardTasks(force) {
 // API helpers
 // Content-Type is "text/plain" (not "application/json") to avoid the CORS
 // preflight OPTIONS request that Google Apps Script cannot respond to.
-function apiPost(body) {
-  body.userId = getCurrentUserEmail();
-  body.userName = getCurrentUserName();
+// Shared POST with one retry on backend lock contention ({error:"busy, retry"} from LockService).
+function _postJson(body, _retried) {
   return fetch(SCRIPT_URL, {
     method: "POST",
     headers: { "Content-Type": "text/plain" },
     body: JSON.stringify(body)
-  }).then(function(r) { return r.json(); }).then(function(data) { setTimeout(fetchActivityLog, 500); return data; });
+  }).then(function(r) { return r.json(); }).then(function(data) {
+    if (data && data.error === "busy, retry" && !_retried) {
+      return new Promise(function(resolve) {
+        setTimeout(function() { resolve(_postJson(body, true)); }, 800);
+      });
+    }
+    return data;
+  });
+}
+
+function apiPost(body) {
+  body.userId = getCurrentUserEmail();
+  body.userName = getCurrentUserName();
+  return _postJson(body);
 }
 
 // Render board
@@ -10980,7 +11081,8 @@ function saveTask() {
     apiPost({ action: "update", task: task })
       .then(function(data) {
         if (data && data.error) { setSyncStatus("Save failed"); fetchBoardTasks(); return; }
-        setSyncStatus("Saved"); fetchBoardTasks();
+        // Success: local state was already reconciled optimistically above — no refetch needed.
+        setSyncStatus("Saved");
       })
       .catch(function() { setSyncStatus("Save failed"); fetchBoardTasks(); });
   } else {
@@ -11530,7 +11632,21 @@ globalSearchInput.addEventListener("input", function() {
            (p.title && p.title.toLowerCase().indexOf(q) !== -1);
   }).slice(0, 5);
 
-  if (docMatches.length === 0 && taskMatches.length === 0 && crmMatches.length === 0 && productMatches.length === 0 && orderMatches.length === 0 && customerMatches.length === 0 && peopleMatches.length === 0) {
+  var invoiceMatches = (typeof invoices !== "undefined" ? invoices : []).filter(function(inv) {
+    return (inv.invoiceNumber && String(inv.invoiceNumber).toLowerCase().indexOf(q) !== -1) ||
+           (inv.contactName && inv.contactName.toLowerCase().indexOf(q) !== -1) ||
+           (inv.contactCompany && inv.contactCompany.toLowerCase().indexOf(q) !== -1) ||
+           (inv.orderNumber && String(inv.orderNumber).toLowerCase().indexOf(q) !== -1) ||
+           (inv.total && String(inv.total).indexOf(q) !== -1);
+  }).slice(0, 5);
+
+  var receiptMatches = (typeof receipts !== "undefined" ? receipts : []).filter(function(rec) {
+    return (rec.receiptNumber && String(rec.receiptNumber).toLowerCase().indexOf(q) !== -1) ||
+           (rec.contactName && rec.contactName.toLowerCase().indexOf(q) !== -1) ||
+           (rec.invoiceNumber && String(rec.invoiceNumber).toLowerCase().indexOf(q) !== -1);
+  }).slice(0, 5);
+
+  if (docMatches.length === 0 && taskMatches.length === 0 && crmMatches.length === 0 && productMatches.length === 0 && orderMatches.length === 0 && customerMatches.length === 0 && peopleMatches.length === 0 && invoiceMatches.length === 0 && receiptMatches.length === 0) {
     var noRes = document.createElement("div");
     noRes.className = "search-no-results";
     noRes.textContent = t("common.noResults");
@@ -11617,6 +11733,28 @@ globalSearchInput.addEventListener("input", function() {
     });
   }
 
+  if (invoiceMatches.length > 0) {
+    var label7 = document.createElement("div");
+    label7.className = "search-group-label";
+    label7.textContent = t("search.invoices");
+    searchResultsEl.appendChild(label7);
+    invoiceMatches.forEach(function(inv) {
+      var name = (inv.invoiceNumber || inv.id) + " — " + (inv.contactCompany || inv.contactName || "");
+      searchResultsEl.appendChild(createSearchItem(name, inv.status || "draft", "", "invoice", inv.id));
+    });
+  }
+
+  if (receiptMatches.length > 0) {
+    var label8 = document.createElement("div");
+    label8.className = "search-group-label";
+    label8.textContent = t("search.receipts");
+    searchResultsEl.appendChild(label8);
+    receiptMatches.forEach(function(rec) {
+      var name = (rec.receiptNumber || rec.id) + " — " + (rec.contactCompany || rec.contactName || "");
+      searchResultsEl.appendChild(createSearchItem(name, "Receipt", "", "receipt", rec.id));
+    });
+  }
+
   searchResultsEl.classList.add("active");
 });
 
@@ -11642,6 +11780,12 @@ searchResultsEl.addEventListener("click", function(e) {
     navigateTo("orders");
   } else if (item.dataset.action === "customer") {
     navigateTo("customers");
+  } else if (item.dataset.action === "invoice") {
+    navigateTo("tools/documents");
+    setTimeout(function() { if (item.dataset.id) openInvoiceEditModal(item.dataset.id); }, 100);
+  } else if (item.dataset.action === "receipt") {
+    navigateTo("tools/documents");
+    setTimeout(function() { if (item.dataset.id) openReceiptEditModal(item.dataset.id); }, 100);
   }
   globalSearchInput.value = "";
   searchResultsEl.classList.remove("active");
@@ -11714,43 +11858,27 @@ function crmApiPost(body) {
   body.sheet = "Contacts";
   body.userId = getCurrentUserEmail();
   body.userName = getCurrentUserName();
-  return fetch(SCRIPT_URL, {
-    method: "POST",
-    headers: { "Content-Type": "text/plain" },
-    body: JSON.stringify(body)
-  }).then(function(r) { return r.json(); }).then(function(data) { setTimeout(fetchActivityLog, 500); return data; });
+  return _postJson(body);
 }
 
 function stockApiPost(body) {
   body.sheet = "PartnerStock";
   body.userId = getCurrentUserEmail();
   body.userName = getCurrentUserName();
-  return fetch(SCRIPT_URL, {
-    method: "POST",
-    headers: { "Content-Type": "text/plain" },
-    body: JSON.stringify(body)
-  }).then(function(r) { return r.json(); }).then(function(data) { setTimeout(fetchActivityLog, 500); return data; });
+  return _postJson(body);
 }
 
 function contactDocApiPost(body) {
   body.sheet = "ContactDocuments";
   body.userId = getCurrentUserEmail();
   body.userName = getCurrentUserName();
-  return fetch(SCRIPT_URL, {
-    method: "POST",
-    headers: { "Content-Type": "text/plain" },
-    body: JSON.stringify(body)
-  }).then(function(r) { return r.json(); }).then(function(data) { setTimeout(fetchActivityLog, 500); return data; });
+  return _postJson(body);
 }
 function peopleApiPost(body) {
   body.sheet = "People";
   body.userId = getCurrentUserEmail();
   body.userName = getCurrentUserName();
-  return fetch(SCRIPT_URL, {
-    method: "POST",
-    headers: { "Content-Type": "text/plain" },
-    body: JSON.stringify(body)
-  }).then(function(r) { return r.json(); }).then(function(data) { setTimeout(fetchActivityLog, 500); return data; });
+  return _postJson(body);
 }
 function contactNotesApiPost(body) {
   body.sheet = "ContactNotes"; body.userId = getCurrentUserEmail(); body.userName = getCurrentUserName();
@@ -11766,7 +11894,7 @@ function contactActivityApiPost(body) {
 }
 function soapBatchApiPost(body) {
   body.sheet = "SoapBatches"; body.userId = getCurrentUserEmail(); body.userName = getCurrentUserName();
-  return fetch(SCRIPT_URL, { method: "POST", headers: { "Content-Type": "text/plain" }, body: JSON.stringify(body) }).then(function(r) { return r.json(); }).then(function(data) { setTimeout(fetchActivityLog, 500); return data; });
+  return fetch(SCRIPT_URL, { method: "POST", headers: { "Content-Type": "text/plain" }, body: JSON.stringify(body) }).then(function(r) { return r.json(); });
 }
 
 function fetchCrmContacts(force) {
@@ -19583,12 +19711,7 @@ function saveCrmManualOrder(overlay, vendor, contactId, orderNumInput, orderDate
   saveDataCache();
 
   // Save to server
-  fetch(SCRIPT_URL, {
-    method: "POST",
-    headers: { "Content-Type": "text/plain" },
-    body: JSON.stringify({ action: "create", sheet: "Orders", order: order, userId: getCurrentUserEmail(), userName: getCurrentUserName() })
-  })
-    .then(function(r) { return r.json(); })
+  _postJson({ action: "create", sheet: "Orders", order: order, userId: getCurrentUserEmail(), userName: getCurrentUserName() })
     .then(function(data) {
       if (data && data.error) { showFormulatorToast("Order save failed: " + data.error, 5000); fetchShopifyOrders(true); return; }
       if (data.order) {
@@ -19914,11 +20037,11 @@ function renderCrmStockTab(c, panel, contactId) {
       }
     };
     stockApiPost(body).then(function(data) {
-      if (data && data.error) { stockForm.style.display = "none"; showFormulatorToast("Stock save failed: " + data.error, 5000); fetchAllData(); return; }
+      if (data && data.error) { stockForm.style.display = "none"; showFormulatorToast("Stock save failed: " + data.error, 5000); fetchAllData(true); return; }
       stockForm.style.display = "none";
-      fetchAllData();
+      fetchAllData(true);
       setTimeout(function() { renderCrmStockTab(crmContacts.find(function(x) { return x.id === contactId; }) || c, panel, contactId); }, 1500);
-    }).catch(function() { stockForm.style.display = "none"; showFormulatorToast("Stock save failed — please try again.", 5000); fetchAllData(); });
+    }).catch(function() { stockForm.style.display = "none"; showFormulatorToast("Stock save failed — please try again.", 5000); fetchAllData(true); });
   };
   formActions.appendChild(saveBtn);
   stockForm.appendChild(formActions);
@@ -19993,7 +20116,7 @@ function renderCrmStockTab(c, panel, contactId) {
         soldBtn.onclick = function(e) {
           e.stopPropagation();
           stockApiPost({ action: "update", stock: { id: s.id, status: "sold", dateSold: new Date().toISOString().slice(0, 10) } }).then(function() {
-            fetchAllData();
+            fetchAllData(true);
             setTimeout(function() { renderCrmStockTab(crmContacts.find(function(x) { return x.id === contactId; }) || c, panel, contactId); }, 1500);
           });
         };
@@ -20012,7 +20135,7 @@ function renderCrmStockTab(c, panel, contactId) {
         }).then(function(ok) {
           if (!ok) return;
           stockApiPost({ action: "delete", id: s.id }).then(function() {
-            fetchAllData();
+            fetchAllData(true);
             setTimeout(function() { renderCrmStockTab(crmContacts.find(function(x) { return x.id === contactId; }) || c, panel, contactId); }, 1500);
           });
         });
@@ -20135,7 +20258,7 @@ function renderCrmDocumentsTab(c, panel, contactId) {
         }).then(function(ok) {
           if (!ok) return;
           contactDocApiPost({ action: "delete", id: doc.id }).then(function() {
-            fetchAllData();
+            fetchAllData(true);
             setTimeout(function() { renderCrmDocumentsTab(crmContacts.find(function(x) { return x.id === contactId; }) || c, panel, contactId); }, 1500);
           });
         });
@@ -20386,7 +20509,7 @@ function saveContactDocument(c, panel, contactId) {
       }
     };
     contactDocApiPost(body).then(function() {
-      fetchAllData();
+      fetchAllData(true);
       setTimeout(function() { renderCrmDocumentsTab(crmContacts.find(function(x) { return x.id === contactId; }) || c, panel, contactId); }, 1500);
     });
   }
@@ -20491,7 +20614,7 @@ function saveCrmContact() {
   var savingText = document.getElementById("crm-saving-text");
   savingOverlay.style.display = "flex";
 
-  // Upload pending files sequentially, then save contact
+  // Upload pending files in parallel, then save contact
   var pendingUploads = [];
   if (crmPendingAvatar) pendingUploads.push("avatar");
   if (crmPendingCardFront) pendingUploads.push("card front");
@@ -20500,7 +20623,6 @@ function saveCrmContact() {
 
   var uploadAvatar = function(cb) {
     if (crmPendingAvatar) {
-      savingText.textContent = "Uploading profile photo\u2026";
       var fname = "avatar-" + (contact.company || contact.name).replace(/\s+/g, "-").toLowerCase() + "-" + Date.now() + ".jpg";
       uploadCrmFile(crmPendingAvatar.base64, crmPendingAvatar.mimeType, fname, function(url) {
         if (url) { contact.profileImageUrl = url; }
@@ -20515,7 +20637,6 @@ function saveCrmContact() {
 
   var uploadCardFront = function(cb) {
     if (crmPendingCardFront) {
-      savingText.textContent = "Uploading business card (front)\u2026";
       var fname = "card-front-" + contact.name.replace(/\s+/g, "-").toLowerCase() + "-" + Date.now() + ".jpg";
       uploadCrmFile(crmPendingCardFront.base64, crmPendingCardFront.mimeType, fname, function(url) {
         if (url) { contact.businessCardFrontUrl = url; contact.businessCardUrl = url; }
@@ -20532,7 +20653,6 @@ function saveCrmContact() {
   };
   var uploadCardBack = function(cb) {
     if (crmPendingCardBack) {
-      savingText.textContent = "Uploading business card (back)\u2026";
       var fname = "card-back-" + contact.name.replace(/\s+/g, "-").toLowerCase() + "-" + Date.now() + ".jpg";
       uploadCrmFile(crmPendingCardBack.base64, crmPendingCardBack.mimeType, fname, function(url) {
         if (url) { contact.businessCardBackUrl = url; }
@@ -20555,9 +20675,13 @@ function saveCrmContact() {
     openCrmDetailView(contactId);
   };
 
-  uploadAvatar(function() {
-    uploadCardFront(function() {
-    uploadCardBack(function() {
+  // The three uploads are independent (each writes different contact fields),
+  // so run them in parallel instead of chaining (~3x faster behind the overlay).
+  Promise.all([
+    new Promise(function(resolve) { uploadAvatar(resolve); }),
+    new Promise(function(resolve) { uploadCardFront(resolve); }),
+    new Promise(function(resolve) { uploadCardBack(resolve); })
+  ]).then(function() {
       savingText.textContent = "Saving contact\u2026";
       if (id) {
         contact.id = id;
@@ -20599,8 +20723,6 @@ function saveCrmContact() {
           })
           .catch(function() { setCrmSyncStatus("Create failed"); fetchCrmContacts(); });
       }
-    });
-    });
   });
 }
 
@@ -20776,11 +20898,7 @@ function invApiPost(body) {
   body.sheet = "Invoices";
   body.userId = getCurrentUserEmail();
   body.userName = getCurrentUserName();
-  return fetch(SCRIPT_URL, {
-    method: "POST",
-    headers: { "Content-Type": "text/plain" },
-    body: JSON.stringify(body)
-  }).then(function(r) { return r.json(); }).then(function(data) { setTimeout(fetchActivityLog, 500); return data; });
+  return _postJson(body);
 }
 
 function setInvSyncStatus(msg) { setDocsSyncStatus(msg); }
@@ -23958,8 +24076,9 @@ function saveInvoice() {
     renderDocuments();
     invApiPost({ action: "update", invoice: invoice })
       .then(function(data) {
-        if (data && data.error) { setInvSyncStatus("Save failed"); showFormulatorToast("Save failed: " + data.error, 5000); return; }
-        setInvSyncStatus("Saved"); showFormulatorToast("Invoice saved"); fetchInvoices(true);
+        if (data && data.error) { setInvSyncStatus("Save failed"); showFormulatorToast("Save failed: " + data.error, 5000); fetchInvoices(true); return; }
+        // Success: invoices[] was already reconciled optimistically above — no forced refetch.
+        setInvSyncStatus("Saved"); showFormulatorToast("Invoice saved");
         if (invoice.status === "paid") autoCreateReceiptFromInvoice(invoice);
       })
       .catch(function(err) { setInvSyncStatus("Save failed"); showFormulatorToast("Save failed — check your connection and try again.", 5000); });
@@ -24718,7 +24837,13 @@ function createInvoiceFromOrder() {
 }
 
 // ── PDF Generation (LongForme template style) ─────────────────
-function downloadInvoicePdf(invData) {
+async function downloadInvoicePdf(invData) {
+  try { await loadJsPdf(); }
+  catch (e) {
+    console.warn("jsPDF load failed", e);
+    if (typeof showFormulatorToast === "function") showFormulatorToast("Could not load the PDF library — check your connection and try again.");
+    return;
+  }
   // marginNote intentionally excluded — internal pricing info, not shown to customers
   var inv = invData;
   if (!inv) {
@@ -24965,7 +25090,7 @@ function recApiPost(body) {
   body.userId = getCurrentUserEmail();
   body.userName = getCurrentUserName();
   return fetch(SCRIPT_URL, { method: "POST", headers: { "Content-Type": "text/plain" }, body: JSON.stringify(body) })
-    .then(function(r) { return r.json(); }).then(function(data) { setTimeout(fetchActivityLog, 500); return data; });
+    .then(function(r) { return r.json(); });
 }
 
 function setRecSyncStatus(msg) { setDocsSyncStatus(msg); }
@@ -25611,7 +25736,8 @@ function saveReceipt() {
     recApiPost({ action: "update", receipt: receipt })
       .then(function(data) {
         if (data && data.error) { setRecSyncStatus("Save failed"); showFormulatorToast("Save failed: " + data.error, 5000); fetchReceipts(true); return; }
-        setRecSyncStatus("Saved"); showFormulatorToast("Receipt saved"); fetchReceipts(true);
+        // Success: receipts[] was already reconciled optimistically above — no forced refetch.
+        setRecSyncStatus("Saved"); showFormulatorToast("Receipt saved");
       })
       .catch(function() { setRecSyncStatus("Save failed"); showFormulatorToast("Save failed — check your connection and try again.", 5000); });
   } else {
@@ -25917,7 +26043,13 @@ function closeReceiptPreview() {
 
 // ── Receipt PDF ───────────────────────────────────────────────
 
-function downloadReceiptPdf(recData) {
+async function downloadReceiptPdf(recData) {
+  try { await loadJsPdf(); }
+  catch (e) {
+    console.warn("jsPDF load failed", e);
+    if (typeof showFormulatorToast === "function") showFormulatorToast("Could not load the PDF library — check your connection and try again.");
+    return;
+  }
   var rec = recData;
   if (!rec) {
     var items = getReceiptLineItems();
@@ -26361,11 +26493,7 @@ function customersApiPost(body) {
   body.sheet = "Customers";
   body.userId = getCurrentUserEmail();
   body.userName = getCurrentUserName();
-  return fetch(SCRIPT_URL, {
-    method: "POST",
-    headers: { "Content-Type": "text/plain" },
-    body: JSON.stringify(body)
-  }).then(function(r) { return r.json(); });
+  return _postJson(body);
 }
 
 var debouncedRenderCustomers = debounce(renderCrmCustomers, 200);
@@ -27015,11 +27143,7 @@ function showProductsLastSynced() {
 function productsApiPost(body) {
   body.userId = getCurrentUserEmail();
   body.userName = getCurrentUserName();
-  return fetch(SCRIPT_URL, {
-    method: "POST",
-    headers: { "Content-Type": "text/plain" },
-    body: JSON.stringify(body)
-  }).then(function(r) { return r.json(); });
+  return _postJson(body);
 }
 
 var debouncedRenderProducts = debounce(renderProducts, 200);
@@ -28284,11 +28408,7 @@ function ordersApiPost(body) {
   body.sheet = "Orders";
   body.userId = getCurrentUserEmail();
   body.userName = getCurrentUserName();
-  return fetch(SCRIPT_URL, {
-    method: "POST",
-    headers: { "Content-Type": "text/plain" },
-    body: JSON.stringify(body)
-  }).then(function(r) { return r.json(); });
+  return _postJson(body);
 }
 
 function setOrdersSyncStatus(msg) {
@@ -29080,12 +29200,7 @@ function saveManualOrder() {
   renderDocuments();
   setOrdersSyncStatus("Saving\u2026");
 
-  fetch(SCRIPT_URL, {
-    method: "POST",
-    headers: { "Content-Type": "text/plain" },
-    body: JSON.stringify({ action: "create", sheet: "Orders", order: order, userId: getCurrentUserEmail(), userName: getCurrentUserName() })
-  })
-    .then(function(r) { return r.json(); })
+  _postJson({ action: "create", sheet: "Orders", order: order, userId: getCurrentUserEmail(), userName: getCurrentUserName() })
     .then(function(data) {
       if (data && data.error) { setOrdersSyncStatus("Save failed"); showFormulatorToast("Order save failed: " + data.error, 5000); fetchShopifyOrders(true); return; }
       if (data.order) {
@@ -29209,8 +29324,19 @@ var FIREBASE_CONFIG = {
 
 var ALLOWED_EMAILS = ["yoko@ivycoast.co", "taka@ivycoast.co"];
 
+// The Firebase SDK <script> tags use `defer`, so the SDK is only guaranteed to be
+// ready at DOMContentLoaded (deferred scripts always execute before it fires).
+// The bootstrap below is unchanged in logic — only its start time moved.
+var auth;
+var CURRENT_ID_TOKEN = "";
+function initFirebaseAuth() {
+if (typeof firebase === "undefined") {
+  // Deferred SDK failed to load (offline first visit / CDN blocked) — fail visibly, not silently.
+  showLoginError("Sign-in is temporarily unavailable — please check your connection and reload.");
+  return;
+}
 firebase.initializeApp(FIREBASE_CONFIG);
-var auth = firebase.auth();
+auth = firebase.auth();
 auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
 
 // ── Backend auth: attach the signed Firebase ID token to every backend call ──
@@ -29218,7 +29344,6 @@ auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
 // While CURRENT_ID_TOKEN is empty this interceptor is a no-op, so the client is
 // safe to ship before the backend enforces it (see REQUIRE_AUTH in apps-script.js).
 // onIdTokenChanged fires on sign-in, sign-out, and the hourly token refresh.
-var CURRENT_ID_TOKEN = "";
 auth.onIdTokenChanged(function(user) {
   if (user) { user.getIdToken().then(function(t) { CURRENT_ID_TOKEN = t; }).catch(function() {}); }
   else { CURRENT_ID_TOKEN = ""; }
@@ -29262,6 +29387,12 @@ auth.onAuthStateChanged(function(user) {
     showLogin();
   }
 });
+} // end initFirebaseAuth
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", initFirebaseAuth);
+} else {
+  initFirebaseAuth();
+}
 
 
 function signIn() {

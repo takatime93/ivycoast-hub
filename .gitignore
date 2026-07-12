@@ -1,0 +1,16 @@
+# Concept prototypes contain real business data (partner terms, pricing) — never publish
+concepts/
+
+# Internal planning docs with real business data (partner terms, balances, sales, costs) — never publish
+docs/plans/07-premium-platform-plan.md
+docs/plans/08-concept-round-2.md
+docs/research/
+docs/migration/
+SESSION.md
+BACKLOG.md
+CLAUDE.md
+AGENT_REFINEMENT_PLAN.md
+
+# Local/OS noise
+.DS_Store
+.claude/settings.local.json
