@@ -1,0 +1,1899 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1440">
+<title>Figma Test — CRM Page</title>
+<style>
+/* ─── Font Faces ─── */
+@font-face { font-family: 'Tomato Grotesk'; src: url('fonts/TomatoGrotesk-Regular.otf'); font-weight: 400; }
+@font-face { font-family: 'Tomato Grotesk'; src: url('fonts/TomatoGrotesk-Medium.otf'); font-weight: 500; }
+@font-face { font-family: 'Tomato Grotesk'; src: url('fonts/TomatoGrotesk-SemiBold.otf'); font-weight: 600; }
+@font-face { font-family: 'Tomato Grotesk'; src: url('fonts/TomatoGrotesk-Bold.otf'); font-weight: 700; }
+@font-face { font-family: 'FA6 Pro Light'; src: url('fonts/Font Awesome 6 Pro-Light-300.otf'); }
+@font-face { font-family: 'FA6 Pro Solid'; src: url('fonts/Font Awesome 6 Pro-Solid-900.otf'); }
+
+/* ─── Reset ─── */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Tomato Grotesk', sans-serif;
+  background: #fdfdfd;
+  color: #181818;
+  min-width: 1440px;
+}
+
+/* ─── Top Nav ─── */
+.top-nav {
+  position: relative;
+  height: 90px;
+  display: flex;
+  align-items: center;
+  padding: 0 28px;
+}
+
+.logo { height: 46px; margin-top: 22px; }
+.logo img { height: 100%; width: auto; }
+
+.search-bar {
+  position: absolute;
+  left: 50%;
+  top: 23px;
+  transform: translateX(-50%);
+  width: 514px;
+  padding: 12px 24px;
+  border: 1px solid #bbbbbb;
+  border-radius: 50px;
+  font-family: 'Tomato Grotesk', sans-serif;
+  font-size: 14px;
+  line-height: 20px;
+  color: rgba(0,0,0,0.6);
+  background: transparent;
+  outline: none;
+  display: flex;
+  align-items: center;
+}
+
+.top-nav-right {
+  position: absolute;
+  right: 28px;
+  top: 28px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.user-avatars {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-right: 8px;
+}
+
+.user-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 16px;
+  background: #d9d9d9;
+  position: relative;
+  overflow: hidden;
+}
+
+.user-avatar .online-dot {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 12px;
+  height: 12px;
+  background: #22c55e;
+  border-radius: 50%;
+  border: 2px solid white;
+}
+
+.icon-btn {
+  width: 38px;
+  height: 38px;
+  border: 1px solid #ebebeb;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: white;
+  cursor: pointer;
+}
+
+.icon-btn .fa-icon {
+  font-family: 'FA6 Pro Light';
+  font-size: 18px;
+  color: #0e413b;
+}
+
+.user-dropdown {
+  border: 1px solid #ebebeb;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 8px 8px 12px;
+  background: white;
+  cursor: pointer;
+}
+
+.user-dropdown .name {
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 18px;
+  color: #0e413b;
+  white-space: nowrap;
+}
+
+.user-dropdown .chevron {
+  font-family: 'FA6 Pro Light';
+  font-size: 12px;
+  color: #818181;
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ─── Main Tab Bar ─── */
+.tab-bar {
+  border-top: 1px solid #ebebeb;
+  border-bottom: 1px solid #ebebeb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tab-bar-inner {
+  display: flex;
+  align-items: center;
+}
+
+.tab-bar-left {
+  display: flex;
+  align-items: center;
+}
+
+.tab-item {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 6px;
+  padding: 12px 16px 14px;
+  cursor: pointer;
+  white-space: nowrap;
+  text-decoration: none;
+  color: #181818;
+}
+
+.tab-item span {
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 18px;
+}
+
+.tab-item.active {
+  border-bottom: 2px solid #0e413b;
+}
+
+.tab-item.active > span:not(.tab-count) {
+  font-weight: 600;
+  color: #0e413b;
+}
+
+.tab-count {
+  background: #ff1818;
+  color: white !important;
+  font-family: 'PP Neue Montreal', 'Tomato Grotesk', sans-serif;
+  font-weight: 500;
+  font-size: 12px;
+  line-height: 16px;
+  letter-spacing: 0.24px;
+  padding: 0 4px;
+  border-radius: 4px;
+  min-width: 20px;
+  text-align: center;
+}
+
+.tab-separator {
+  width: 0;
+  height: 24px;
+  border-left: 1px solid #ebebeb;
+  margin: 0 12px;
+  transform: rotate(0deg);
+}
+
+.tab-item.boldoath span {
+  font-weight: 600;
+  letter-spacing: 1.12px;
+}
+
+/* ─── Sub Header ─── */
+.sub-header {
+  position: relative;
+  padding: 0 80px;
+  margin-top: 18px;
+}
+
+.page-title {
+  font-size: 28px;
+  font-weight: 600;
+  line-height: 18px;
+  color: #181818;
+  position: absolute;
+  left: 80px;
+  top: 13px;
+}
+
+.sub-tabs {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sub-tab {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 6px;
+  padding: 12px 16px 14px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.sub-tab span {
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 18px;
+  color: #181818;
+}
+
+.sub-tab.active {
+  border-bottom: 2px solid #0e413b;
+}
+
+.sub-tab.active span {
+  font-weight: 600;
+  color: #0e413b;
+}
+
+.sub-tab-count {
+  background: #f1f1f1;
+  color: #181818;
+  font-family: 'PP Neue Montreal', 'Tomato Grotesk', sans-serif;
+  font-weight: 500;
+  font-size: 12px;
+  line-height: 16px;
+  letter-spacing: 0.24px;
+  padding: 0 4px;
+  border-radius: 4px;
+  min-width: 20px;
+  text-align: center;
+}
+
+.sub-actions {
+  position: absolute;
+  right: 80px;
+  top: 5px;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+/* ─── Grid/List Toggle ─── */
+.view-toggle {
+  background: #f1f1f1;
+  border: 1px solid #ebebeb;
+  border-radius: 8px;
+  padding: 2px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+}
+
+.view-toggle-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 7px 11px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  align-self: stretch;
+}
+
+.view-toggle-btn.active {
+  background: white;
+}
+
+.view-toggle-btn .fa-icon {
+  font-family: 'FA6 Pro Light';
+  font-size: 16px;
+  color: #0e413b;
+  width: 16px;
+  text-align: center;
+}
+
+.action-buttons {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.btn-add {
+  background: #0e413b;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 8px 8px 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  font-family: 'Tomato Grotesk', sans-serif;
+}
+
+.btn-add span {
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 18px;
+  white-space: nowrap;
+}
+
+.btn-add .chevron {
+  font-family: 'FA6 Pro Light';
+  font-size: 12px;
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ─── Card Grid ─── */
+.card-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px 80px 40px;
+  width: 1440px;
+}
+
+.card-row {
+  display: flex;
+  gap: 16px;
+}
+
+.card-row > * {
+  flex: 1 0 0;
+  min-width: 0;
+}
+
+/* ─── Vendor Card ─── */
+.vendor-card {
+  background: white;
+  border: 1px solid #e3e3e3;
+  border-radius: 16px;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.03);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.card-header {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 24px 20px;
+  border-bottom: 1px solid #f3f3f3;
+  position: relative;
+}
+
+.card-avatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: #e8e8e8;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.card-avatar .fa-icon {
+  font-family: 'FA6 Pro Solid';
+  font-size: 20px;
+  color: #888;
+}
+
+.card-header-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  justify-content: center;
+}
+
+.card-header-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.company-name {
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 21px;
+  color: #000000;
+}
+
+.company-subtitle {
+  font-size: 11px;
+  font-weight: 400;
+  line-height: 15px;
+  color: #424242;
+  letter-spacing: 0.11px;
+}
+
+/* ─── Status Badges ─── */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3px 12px;
+  border-radius: 5px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  white-space: nowrap;
+  align-self: flex-start;
+}
+
+.status-badge.active-partner { background: #0e413b; color: white; }
+.status-badge.negotiation { background: #ff5e5e; color: white; }
+.status-badge.outreach { background: #fec553; color: white; }
+.status-badge.prospect { background: #3cb1ff; color: white; }
+.status-badge.inactive { background: #f2f2f2; color: #353535; }
+
+/* ─── Notification Dot ─── */
+.notif-dot {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  background: red;
+  border-radius: 12px;
+  padding: 4px;
+  min-width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.notif-dot span {
+  font-size: 12px;
+  font-weight: 600;
+  color: white;
+  line-height: 14px;
+  text-align: center;
+}
+
+/* ─── Card Body ─── */
+.card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 24px;
+}
+
+.contact-row {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.contact-row .fa-icon {
+  font-family: 'FA6 Pro Light';
+  font-size: 18px;
+  color: #0e413b;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.contact-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.contact-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: #000000;
+  line-height: normal;
+}
+
+.contact-email {
+  font-size: 11px;
+  font-weight: 400;
+  color: #424242;
+  line-height: normal;
+}
+
+.contact-extra {
+  width: 28px;
+  height: 28px;
+  border: 1px solid #f3f3f3;
+  border-radius: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  padding: 2px;
+}
+
+.contact-extra span {
+  font-size: 12px;
+  font-weight: 400;
+  color: #0e413b;
+  text-align: center;
+}
+
+.address-row {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.address-row .fa-icon {
+  font-family: 'FA6 Pro Light';
+  font-size: 18px;
+  color: #0e413b;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.address-text {
+  flex: 1;
+  font-size: 11px;
+  font-weight: 400;
+  color: #424242;
+  line-height: normal;
+}
+
+/* ─── Card Footer ─── */
+.card-footer {
+  border-top: 1px solid #f3f3f3;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 24px;
+}
+
+.stat-item {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 4px 8px 4px 6px;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.stat-item .fa-icon {
+  font-family: 'FA6 Pro Solid';
+  font-size: 14px;
+  color: #0e413b;
+  width: 14px;
+  height: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.stat-item .stat-value {
+  font-size: 12px;
+  font-weight: 500;
+  color: #000000;
+  letter-spacing: 0.48px;
+  line-height: 14px;
+  white-space: nowrap;
+}
+
+/* ─── Row 2 cards (no footer, fixed height) ─── */
+.card-row-short .vendor-card {
+  height: 284px;
+}
+
+/* ═══════════════════════════════════════════
+   PARTNER DETAIL PANEL
+   ═══════════════════════════════════════════ */
+
+/* ─── Overlay & Container ─── */
+.panel-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: none;
+}
+.panel-overlay.open { display: flex; justify-content: flex-end; }
+
+.panel-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.12);
+  transition: opacity 0.25s;
+}
+
+.partner-panel {
+  position: relative;
+  width: 748px;
+  height: 100vh;
+  background: #fff;
+  box-shadow: -10px 2px 27px rgba(0,0,0,0.04);
+  display: flex;
+  flex-direction: column;
+  transform: translateX(100%);
+  transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
+  z-index: 1;
+}
+.panel-overlay.open .partner-panel { transform: translateX(0); }
+
+/* ─── Panel Header ─── */
+.panel-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 24px;
+  padding: 24px 32px;
+}
+
+.panel-header-left {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+}
+
+.panel-avatar {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  background: #e8e8e8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.panel-avatar .fa-icon {
+  font-family: 'FA6 Pro Solid';
+  font-size: 28px;
+  color: #888;
+}
+
+.panel-header-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.panel-company-name {
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 21px;
+  color: #000;
+}
+
+.panel-company-sub {
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 15px;
+  color: #616161;
+  letter-spacing: 0.14px;
+}
+
+.panel-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-shrink: 0;
+}
+
+.panel-header-actions .icon-group {
+  display: flex;
+  gap: 8px;
+}
+
+.panel-icon-btn {
+  width: 38px;
+  height: 38px;
+  border: 1px solid #0e413b;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  cursor: pointer;
+}
+
+.panel-icon-btn .fa-icon {
+  font-family: 'FA6 Pro Light';
+  font-size: 18px;
+  color: #0e413b;
+}
+
+.panel-close-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+.panel-close-btn .fa-icon {
+  font-family: 'FA6 Pro Light';
+  font-size: 24px;
+  color: #0e413b;
+}
+
+/* ─── Panel Info Bar ─── */
+.panel-info-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 32px;
+  border-top: 1px solid #e3e3e3;
+  border-bottom: 1px solid #e3e3e3;
+}
+
+.info-item {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  font-size: 12px;
+}
+
+.info-item .fa-icon {
+  font-family: 'FA6 Pro Light';
+  font-size: 12px;
+  color: #0e413b;
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.info-item .info-link {
+  font-weight: 500;
+  color: #157be1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.info-item .info-text {
+  font-weight: 400;
+  color: #424242;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.info-separator {
+  width: 1px;
+  height: 16px;
+  background: #e3e3e3;
+  flex-shrink: 0;
+}
+
+/* ─── Pipeline Tracker ─── */
+.panel-pipeline {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 24px 32px 20px;
+}
+
+.pipeline-stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.pipeline-stage .pipeline-icon {
+  font-family: 'FA6 Pro Light';
+  font-size: 14px;
+  color: #d9d9d9;
+  width: 16px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pipeline-stage .pipeline-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: #424242;
+  white-space: nowrap;
+}
+
+.pipeline-stage.completed .pipeline-icon {
+  font-family: 'FA6 Pro Solid';
+  color: #0e413b;
+  font-size: 14px;
+}
+
+.pipeline-stage.current .pipeline-icon {
+  font-family: 'FA6 Pro Solid';
+  color: #0e413b;
+  font-size: 20px;
+}
+
+.pipeline-stage.current .pipeline-label {
+  font-weight: 700;
+  color: #00433b;
+}
+
+.pipeline-stage.current { gap: 2px; }
+
+.pipeline-track {
+  flex: 1;
+  display: flex;
+  align-items: flex-start;
+  position: relative;
+  margin: 0 8px;
+}
+
+.pipeline-line {
+  position: absolute;
+  top: 8px;
+  left: 24px;
+  right: 24px;
+  height: 4px;
+  background: #d9d9d9;
+  border-radius: 2px;
+}
+
+.pipeline-track-stages {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  position: relative;
+  z-index: 1;
+}
+
+.pipeline-settings {
+  flex-shrink: 0;
+}
+
+.pipeline-settings .fa-icon {
+  font-family: 'FA6 Pro Light';
+  font-size: 18px;
+  color: #9c9c9c;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+/* ─── Panel Tab Bar ─── */
+.panel-tab-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-top: 1px solid #e3e3e3;
+  border-bottom: 1px solid #e3e3e3;
+}
+
+.panel-tab {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 6px;
+  padding: 12px 16px 14px;
+  cursor: pointer;
+  white-space: nowrap;
+  border-bottom: 2px solid transparent;
+  background: none;
+  border-top: none;
+  border-left: none;
+  border-right: none;
+  font-family: 'Tomato Grotesk', sans-serif;
+}
+
+.panel-tab .tab-label {
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 18px;
+  color: #181818;
+}
+
+.panel-tab.active {
+  border-bottom-color: #0e413b;
+}
+
+.panel-tab.active .tab-label {
+  font-weight: 600;
+  color: #0e413b;
+}
+
+.panel-tab .panel-tab-count {
+  background: #f1f1f1;
+  color: #181818;
+  font-family: 'PP Neue Montreal', 'Tomato Grotesk', sans-serif;
+  font-weight: 500;
+  font-size: 12px;
+  line-height: 16px;
+  letter-spacing: 0.24px;
+  padding: 0 4px;
+  border-radius: 4px;
+  min-width: 20px;
+  text-align: center;
+}
+
+/* ─── Panel Content ─── */
+.panel-content {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.panel-tab-content { display: none; }
+.panel-tab-content.active { display: block; }
+
+/* ─── Stats Cards ─── */
+.stats-row {
+  display: flex;
+  gap: 8px;
+  padding: 20px 32px;
+}
+
+.stat-card {
+  flex: 1;
+  background: #fff;
+  border: 1px solid #e3e3e3;
+  border-radius: 16px;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.03);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 12px 16px 16px;
+  overflow: hidden;
+}
+
+.stat-card .stat-card-value {
+  font-size: 18px;
+  font-weight: 600;
+  color: #000;
+  line-height: 32px;
+}
+
+.stat-card .stat-card-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: #424242;
+  line-height: 18px;
+}
+
+/* ─── Section Headers ─── */
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 32px;
+}
+
+.section-title {
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 18px;
+  color: #424242;
+}
+
+.section-add-btn {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #0e413b;
+  cursor: pointer;
+  background: none;
+  border: none;
+  font-family: 'Tomato Grotesk', sans-serif;
+}
+
+.section-add-btn .fa-icon {
+  font-family: 'FA6 Pro Light';
+  font-size: 11px;
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ─── Section Divider ─── */
+.panel-divider {
+  height: 1px;
+  background: #e3e3e3;
+}
+
+/* ─── Contacts Summary (Overview Tab) ─── */
+.contacts-summary {
+  padding: 24px 0;
+}
+
+.contacts-summary .section-header { margin-bottom: 12px; }
+
+.contacts-summary-cards {
+  display: flex;
+  gap: 8px;
+  padding: 0 32px;
+}
+
+.compact-contact-card {
+  flex: 1;
+  background: #fff;
+  border: 1px solid #e3e3e3;
+  border-radius: 16px;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.03);
+  overflow: hidden;
+}
+
+.compact-contact-inner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+}
+
+.compact-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: #d9d9d9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.compact-avatar span {
+  font-size: 20px;
+  font-weight: 600;
+  color: #000;
+}
+
+.compact-contact-info {
+  min-width: 0;
+}
+
+.compact-name-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.compact-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #000;
+  line-height: 21px;
+  white-space: nowrap;
+}
+
+.compact-sub {
+  font-size: 11px;
+  font-weight: 400;
+  color: #606060;
+  letter-spacing: 0.11px;
+  line-height: normal;
+}
+
+.primary-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 6px;
+  background: #e6f3f1;
+  border-radius: 5px;
+  font-size: 10px;
+  font-weight: 600;
+  color: #353535;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  white-space: nowrap;
+}
+
+/* ─── Notes & Tasks Split ─── */
+.notes-tasks-split {
+  display: flex;
+}
+
+.notes-column {
+  flex: 1;
+  padding: 24px 0;
+  min-width: 0;
+}
+
+.notes-column .section-header { margin-bottom: 12px; }
+
+.notes-scroll {
+  display: flex;
+  gap: 16px;
+  padding-left: 32px;
+  padding-right: 12px;
+}
+
+.notes-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+
+.notes-scrollbar {
+  width: 4px;
+  height: 167px;
+  background: #d9d9d9;
+  border-radius: 30px;
+  flex-shrink: 0;
+}
+
+.note-card {
+  background: #fff;
+  border: 1px solid #e3e3e3;
+  border-radius: 16px;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.03);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  overflow: hidden;
+}
+
+.note-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 20px;
+}
+
+.note-header-left {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.note-author-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.note-avatar {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #d9d9d9;
+  flex-shrink: 0;
+}
+
+.note-author {
+  font-size: 14px;
+  font-weight: 600;
+  color: #000;
+  line-height: 20px;
+  white-space: nowrap;
+}
+
+.note-time {
+  font-size: 11px;
+  font-weight: 400;
+  color: #606060;
+  letter-spacing: 0.11px;
+  line-height: 20px;
+  white-space: nowrap;
+}
+
+.note-more-btn {
+  font-family: 'FA6 Pro Light';
+  font-size: 16px;
+  color: #0e413b;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  background: none;
+  border: none;
+}
+
+.note-content {
+  font-size: 13px;
+  font-weight: 400;
+  color: #000;
+  line-height: normal;
+}
+
+/* ─── Split Divider ─── */
+.split-divider {
+  width: 1px;
+  background: #e3e3e3;
+  align-self: stretch;
+}
+
+/* ─── Tasks Column ─── */
+.tasks-column {
+  flex: 1;
+  padding: 24px 0;
+  min-width: 0;
+}
+
+.tasks-column .section-header { margin-bottom: 12px; }
+
+.tasks-list {
+  padding: 0 32px;
+}
+
+.task-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 4px;
+}
+
+.task-row:nth-child(odd) { background: #f7f7f7; }
+
+.task-check {
+  font-family: 'FA6 Pro Light';
+  font-size: 16px;
+  color: #0e413b;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.task-title {
+  font-size: 14px;
+  font-weight: 400;
+  color: #000;
+  line-height: 20px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ═══ CONTACTS TAB ═══ */
+.contacts-tab-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 32px;
+}
+
+.contacts-tab-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: #181818;
+  line-height: 18px;
+}
+
+.contacts-tab-cards {
+  display: flex;
+  gap: 16px;
+  padding: 0 32px 32px;
+}
+
+.detail-contact-card {
+  flex: 1;
+  background: #fff;
+  border: 1px solid #e3e3e3;
+  border-radius: 16px;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.03);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  cursor: pointer;
+}
+
+.detail-card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 20px;
+  border-bottom: 1px solid #f3f3f3;
+}
+
+.detail-avatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: #d9d9d9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.detail-avatar span {
+  font-size: 20px;
+  font-weight: 600;
+  color: #000;
+}
+
+.detail-card-name-block {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.detail-card-name {
+  font-size: 18px;
+  font-weight: 600;
+  color: #000;
+  line-height: 21px;
+}
+
+.detail-card-sub {
+  font-size: 11px;
+  font-weight: 400;
+  color: #606060;
+  letter-spacing: 0.11px;
+}
+
+.detail-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 24px;
+}
+
+.detail-info-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.detail-info-row .fa-icon {
+  font-family: 'FA6 Pro Light';
+  font-size: 14px;
+  color: #0e413b;
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.detail-info-row .info-role {
+  font-size: 12px;
+  font-weight: 400;
+  color: #171717;
+  line-height: 15px;
+}
+
+.detail-info-row .info-value {
+  font-size: 13px;
+  font-weight: 400;
+  color: #020202;
+}
+
+.primary-footer {
+  background: #e6f3f1;
+  text-align: center;
+  padding: 4px 8px;
+  font-size: 10px;
+  font-weight: 600;
+  color: #353535;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+
+/* ═══ CONTACT DETAIL VIEW ═══ */
+.contact-detail { display: none; }
+.contact-detail.active { display: block; }
+
+.contact-detail-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 32px 32px 20px;
+}
+
+.contact-detail-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.back-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+.back-btn .fa-icon {
+  font-family: 'FA6 Pro Light';
+  font-size: 18px;
+  color: #0e413b;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.contact-detail-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.contact-detail-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.contact-detail-name-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.contact-detail-name {
+  font-size: 18px;
+  font-weight: 600;
+  color: #000;
+  line-height: 21px;
+}
+
+.contact-detail-sub {
+  font-size: 11px;
+  font-weight: 400;
+  color: #606060;
+  letter-spacing: 0.11px;
+}
+
+/* ─── Contact Sub-Tabs ─── */
+.contact-sub-tabs {
+  display: flex;
+  align-items: center;
+  padding: 0 32px;
+  border-bottom: 1px solid #e3e3e3;
+}
+
+.contact-sub-tab {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  padding: 12px 16px 14px;
+  cursor: pointer;
+  white-space: nowrap;
+  border-bottom: 2px solid transparent;
+  background: none;
+  border-top: none;
+  border-left: none;
+  border-right: none;
+  font-family: 'Tomato Grotesk', sans-serif;
+}
+
+.contact-sub-tab .tab-label {
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 18px;
+  color: #181818;
+}
+
+.contact-sub-tab.active {
+  border-bottom-color: #0e413b;
+}
+
+.contact-sub-tab.active .tab-label {
+  font-weight: 600;
+  color: #0e413b;
+}
+
+.contact-sub-tab .panel-tab-count {
+  background: #f1f1f1;
+  color: #181818;
+  font-family: 'PP Neue Montreal', 'Tomato Grotesk', sans-serif;
+  font-weight: 500;
+  font-size: 12px;
+  line-height: 16px;
+  letter-spacing: 0.24px;
+  padding: 0 4px;
+  border-radius: 4px;
+  min-width: 20px;
+  text-align: center;
+}
+
+.contact-sub-content {
+  padding: 32px;
+}
+
+.contact-overview-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+</style>
+</head>
+<body>
+
+<!-- ═══ TOP NAV ═══ -->
+<div class="top-nav">
+  <div class="logo">
+    <img src="icons/logo.png" alt="Ivycoast">
+  </div>
+  <div class="search-bar">Search for anything...</div>
+  <div class="top-nav-right">
+    <div class="user-avatars">
+      <div class="user-avatar"><div class="online-dot"></div></div>
+      <div class="user-avatar"><div class="online-dot"></div></div>
+    </div>
+    <div class="icon-btn"><span class="fa-icon">&#xf0f3;</span></div>
+    <div class="user-dropdown">
+      <span class="name">Taka Imoto</span>
+      <span class="chevron">&#xf078;</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ MAIN TAB BAR ═══ -->
+<div class="tab-bar">
+  <div class="tab-bar-inner">
+    <div class="tab-bar-left">
+      <a class="tab-item"><span>Overview</span></a>
+      <a class="tab-item">
+        <span>Tasks</span>
+        <span class="tab-count">12</span>
+      </a>
+      <a class="tab-item"><span>Ivycoast Docs</span></a>
+      <a class="tab-item"><span>Products</span></a>
+      <a class="tab-item">
+        <span>Orders</span>
+        <span class="tab-count">12</span>
+      </a>
+      <a class="tab-item active">
+        <span>CRM</span>
+        <span class="tab-count">12</span>
+      </a>
+      <a class="tab-item"><span>Customers</span></a>
+    </div>
+    <div class="tab-separator"></div>
+    <a class="tab-item boldoath"><span>BOLDOATH</span></a>
+  </div>
+</div>
+
+<!-- ═══ SUB HEADER ═══ -->
+<div class="sub-header">
+  <div class="page-title">CRM</div>
+  <div class="sub-tabs">
+    <div class="sub-tab active">
+      <span>Vendors</span>
+      <span class="sub-tab-count">15</span>
+    </div>
+    <div class="sub-tab">
+      <span>Contacts</span>
+      <span class="sub-tab-count">12</span>
+    </div>
+    <div class="sub-tab">
+      <span>Pipeline</span>
+    </div>
+  </div>
+  <div class="sub-actions">
+    <div class="view-toggle">
+      <button class="view-toggle-btn active"><span class="fa-icon">&#xf00a;</span></button>
+      <button class="view-toggle-btn"><span class="fa-icon">&#xf0c9;</span></button>
+    </div>
+    <div class="action-buttons">
+      <div class="icon-btn"><span class="fa-icon">&#xf2f1;</span></div>
+      <button class="btn-add">
+        <span>Add new</span>
+        <span class="chevron">&#xf078;</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ CARD GRID ═══ -->
+<div class="card-grid">
+
+  <!-- Row 1: 4 cards with footer stats -->
+  <div class="card-row">
+
+    <!-- Card 1: Active Partner + notif 1 -->
+    <div class="vendor-card">
+      <div class="card-header">
+        <div class="card-avatar"><span class="fa-icon">&#xf1ad;</span></div>
+        <div class="card-header-info">
+          <div class="card-header-text">
+            <div class="company-name">NaturalFlow Science</div>
+            <div class="company-subtitle">株式会社naturalflow science</div>
+          </div>
+          <span class="status-badge active-partner">Active Partner</span>
+        </div>
+        <div class="notif-dot"><span>1</span></div>
+      </div>
+      <div class="card-body">
+        <div class="contact-row">
+          <span class="fa-icon">&#xf007;</span>
+          <div class="contact-info">
+            <span class="contact-name">Junna Kobayashi</span>
+            <span class="contact-email">Junna.Kobayashi@email.com</span>
+          </div>
+        </div>
+        <div class="address-row">
+          <span class="fa-icon">&#xf54f;</span>
+          <span class="address-text">〒150-0043 東京都渋谷区道玄坂1-10-7 五島育英会ビル5</span>
+        </div>
+      </div>
+      <div class="card-footer">
+        <div class="stat-item"><span class="fa-icon">&#xf007;</span><span class="stat-value">24</span></div>
+        <div class="stat-item"><span class="fa-icon">&#xf0c0;</span><span class="stat-value">24</span></div>
+        <div class="stat-item"><span class="fa-icon">&#xf157;</span><span class="stat-value">￥91,231</span></div>
+      </div>
+    </div>
+
+    <!-- Card 2: Active Partner, +2 contacts -->
+    <div class="vendor-card">
+      <div class="card-header">
+        <div class="card-avatar"><span class="fa-icon">&#xf1ad;</span></div>
+        <div class="card-header-info">
+          <div class="card-header-text">
+            <div class="company-name">NaturalFlow Science</div>
+            <div class="company-subtitle">株式会社naturalflow science</div>
+          </div>
+          <span class="status-badge active-partner">Active Partner</span>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="contact-row">
+          <span class="fa-icon">&#xf007;</span>
+          <div class="contact-info">
+            <span class="contact-name">Junna Kobayashi</span>
+            <span class="contact-email">Junna.Kobayashi@email.com</span>
+          </div>
+          <div class="contact-extra"><span>+2</span></div>
+        </div>
+        <div class="address-row">
+          <span class="fa-icon">&#xf54f;</span>
+          <span class="address-text">〒150-0043 東京都渋谷区道玄坂1-10-7 五島育英会ビル5</span>
+        </div>
+      </div>
+      <div class="card-footer">
+        <div class="stat-item"><span class="fa-icon">&#xf007;</span><span class="stat-value">24</span></div>
+        <div class="stat-item"><span class="fa-icon">&#xf0c0;</span><span class="stat-value">24</span></div>
+        <div class="stat-item"><span class="fa-icon">&#xf157;</span><span class="stat-value">￥91,231</span></div>
+      </div>
+    </div>
+
+    <!-- Card 3: Active Partner, +2 contacts -->
+    <div class="vendor-card">
+      <div class="card-header">
+        <div class="card-avatar"><span class="fa-icon">&#xf1ad;</span></div>
+        <div class="card-header-info">
+          <div class="card-header-text">
+            <div class="company-name">NaturalFlow Science</div>
+            <div class="company-subtitle">株式会社naturalflow science</div>
+          </div>
+          <span class="status-badge active-partner">Active Partner</span>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="contact-row">
+          <span class="fa-icon">&#xf007;</span>
+          <div class="contact-info">
+            <span class="contact-name">Junna Kobayashi</span>
+            <span class="contact-email">Junna.Kobayashi@email.com</span>
+          </div>
+          <div class="contact-extra"><span>+2</span></div>
+        </div>
+        <div class="address-row">
+          <span class="fa-icon">&#xf54f;</span>
+          <span class="address-text">〒150-0043 東京都渋谷区道玄坂1-10-7 五島育英会ビル5</span>
+        </div>
+      </div>
+      <div class="card-footer">
+        <div class="stat-item"><span class="fa-icon">&#xf007;</span><span class="stat-value">24</span></div>
+        <div class="stat-item"><span class="fa-icon">&#xf0c0;</span><span class="stat-value">24</span></div>
+        <div class="stat-item"><span class="fa-icon">&#xf157;</span><span class="stat-value">￥91,231</span></div>
+      </div>
+    </div>
+
+    <!-- Card 4: Active Partner + notif 10 -->
+    <div class="vendor-card">
+      <div class="card-header">
+        <div class="card-avatar"><span class="fa-icon">&#xf1ad;</span></div>
+        <div class="card-header-info">
+          <div class="card-header-text">
+            <div class="company-name">NaturalFlow Science</div>
+            <div class="company-subtitle">株式会社naturalflow science</div>
+          </div>
+          <span class="status-badge active-partner">Active Partner</span>
+        </div>
+        <div class="notif-dot"><span>10</span></div>
+      </div>
+      <div class="card-body">
+        <div class="contact-row">
+          <span class="fa-icon">&#xf007;</span>
+          <div class="contact-info">
+            <span class="contact-name">Junna Kobayashi</span>
+            <span class="contact-email">Junna.Kobayashi@email.com</span>
+          </div>
+        </div>
+        <div class="address-row">
+          <span class="fa-icon">&#xf54f;</span>
+          <span class="address-text">〒150-0043 東京都渋谷区道玄坂1-10-7 五島育英会ビル5</span>
+        </div>
+      </div>
+      <div class="card-footer">
+        <div class="stat-item"><span class="fa-icon">&#xf007;</span><span class="stat-value">24</span></div>
+        <div class="stat-item"><span class="fa-icon">&#xf0c0;</span><span class="stat-value">24</span></div>
+        <div class="stat-item"><span class="fa-icon">&#xf157;</span><span class="stat-value">￥91,231</span></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Row 2: 4 cards, no footer, fixed 284px, different statuses -->
+  <div class="card-row card-row-short">
+
+    <!-- Card 5: Negotiation + notif 3 -->
+    <div class="vendor-card">
+      <div class="card-header">
+        <div class="card-avatar"><span class="fa-icon">&#xf1ad;</span></div>
+        <div class="card-header-info">
+          <div class="card-header-text">
+            <div class="company-name">NaturalFlow Science</div>
+            <div class="company-subtitle">株式会社naturalflow science</div>
+          </div>
+          <span class="status-badge negotiation">Negotiation</span>
+        </div>
+        <div class="notif-dot"><span>3</span></div>
+      </div>
+      <div class="card-body">
+        <div class="contact-row">
+          <span class="fa-icon">&#xf007;</span>
+          <div class="contact-info">
+            <span class="contact-name">Junna Kobayashi</span>
+            <span class="contact-email">Junna.Kobayashi@email.com</span>
+          </div>
+        </div>
+        <div class="address-row">
+          <span class="fa-icon">&#xf54f;</span>
+          <span class="address-text">〒150-0043 東京都渋谷区道玄坂1-10-7 五島育英会ビル5</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 6: Outreach -->
+    <div class="vendor-card">
+      <div class="card-header">
+        <div class="card-avatar"><span class="fa-icon">&#xf1ad;</span></div>
+        <div class="card-header-info">
+          <div class="card-header-text">
+            <div class="company-name">NaturalFlow Science</div>
+            <div class="company-subtitle">株式会社naturalflow science</div>
+          </div>
+          <span class="status-badge outreach">Outreach</span>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="contact-row">
+          <span class="fa-icon">&#xf007;</span>
+          <div class="contact-info">
+            <span class="contact-name">Junna Kobayashi</span>
+            <span class="contact-email">Junna.Kobayashi@email.com</span>
+          </div>
+        </div>
+        <div class="address-row">
+          <span class="fa-icon">&#xf54f;</span>
+          <span class="address-text">〒150-0043 東京都渋谷区道玄坂1-10-7 五島育英会ビル5</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 7: Prospect + notif 2 -->
+    <div class="vendor-card">
+      <div class="card-header">
+        <div class="card-avatar"><span class="fa-icon">&#xf1ad;</span></div>
+        <div class="card-header-info">
+          <div class="card-header-text">
+            <div class="company-name">NaturalFlow Science</div>
+            <div class="company-subtitle">株式会社naturalflow science</div>
+          </div>
+          <span class="status-badge prospect">Prospect</span>
+        </div>
+        <div class="notif-dot"><span>2</span></div>
+      </div>
+      <div class="card-body">
+        <div class="contact-row">
+          <span class="fa-icon">&#xf007;</span>
+          <div class="contact-info">
+            <span class="contact-name">Junna Kobayashi</span>
+            <span class="contact-email">Junna.Kobayashi@email.com</span>
+          </div>
+        </div>
+        <div class="address-row">
+          <span class="fa-icon">&#xf54f;</span>
+          <span class="address-text">〒150-0043 東京都渋谷区道玄坂1-10-7 五島育英会ビル5</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 8: Inactive -->
+    <div class="vendor-card">
+      <div class="card-header">
+        <div class="card-avatar"><span class="fa-icon">&#xf1ad;</span></div>
+        <div class="card-header-info">
+          <div class="card-header-text">
+            <div class="company-name">NaturalFlow Science</div>
+            <div class="company-subtitle">株式会社naturalflow science</div>
+          </div>
+          <span class="status-badge inactive">Inactive</span>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="contact-row">
+          <span class="fa-icon">&#xf007;</span>
+          <div class="contact-info">
+            <span class="contact-name">Junna Kobayashi</span>
+            <span class="contact-email">Junna.Kobayashi@email.com</span>
+          </div>
+        </div>
+        <div class="address-row">
+          <span class="fa-icon">&#xf54f;</span>
+          <span class="address-text">〒150-0043 東京都渋谷区道玄坂1-10-7 五島育英会ビル5</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+</body>
+</html>

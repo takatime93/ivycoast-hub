@@ -14,3 +14,7 @@ AGENT_REFINEMENT_PLAN.md
 # Local/OS noise
 .DS_Store
 .claude/settings.local.json
+_ivy-brain.txt
+_ivy-brain-reload.js
+_invoice-*.js
+.DS_Store

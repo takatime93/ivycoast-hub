@@ -5,6 +5,50 @@ See `plans/` for the design reasoning behind each change.
 
 ---
 
+## 2026-07-15
+
+### ✅ Customers polish + Grow refit (slice-6 queue pass 2 — owner specs in `migration/slice6-plan.md`)
+- **"+ New Customer" (first manual add path):** primary toolbar button → §5.5 form modal
+  (name/email required, tags, notes) writing through the existing generic
+  `{action:"create", sheet:"Customers"}` Apps Script path (id prefix `cust-` — verified wired,
+  no backend change). Optimistic insert with rollback + toast; duplicate email opens the
+  existing record's drawer instead. Bilingual (12 new `customers.*` keys EN+JA).
+- **Search-to-create (ux-principles §8, first rollout):** a Customers search that matches
+  nothing now offers `＋ Create "{q}"` prefilled into the add-modal, replacing the dead-end
+  empty line. Documented as a §4.13 toolbar behavior in DESIGN_SYSTEM.md.
+- **§4.18 table refit — Customers + Docs tables (`.tbl-refit`):** header → label role
+  (mono/xs/uppercase/tertiary) on a border-light underline; numeric/money columns
+  mono-right (`.num-cell`); docs workspace → quiet mono tag, last-updated → muted right;
+  sticky `thead` under the app chrome (runtime-measured `--app-header-h`); sortable-header
+  affordance (arrow + `.sorted` tint, keyboard + `aria-sort`) on docs columns and the
+  Customers Total Spent header (now toggles asc/desc). Scoped modifier — the global
+  `.ivh-table` base is untouched until reconcile #8.
+- **Grow → Docs rename (owner directive):** on-screen tab/title/help now "Docs /
+  ドキュメント" via `nav.grow` + `grow.title` + `grow.help` values (machine id `grow`, hash
+  and seg unchanged — id rename deferred to a chrome slice; revert = restore three key values).
+- **Docs workspace-mix fix:** the Ivycoast Docs panel's workspace filter defaults to
+  IVYCOAST on first load (one-time flag `library_wsDefaultApplied`); explicit All/BOLDOATH
+  choices persist as before via `_saveFilterState("library")`.
+
+### ✅ Cleanup + push-prep (QA backlog worked; same day)
+- **`showConfirm` is now a true focus trap (§4.11.3, QA-deferred):** Tab/Shift+Tab cycles
+  Cancel↔OK inside the existing capture keydown — focus can no longer leave the confirm dialog.
+- **Help-tip listener accumulation fixed:** `renderHelpTip` rebuilt its button/popover on every
+  language switch but re-added the host `mouseleave` listener each time — now bound once
+  (guard flag). Handler was idempotent, so hygiene, not a behavior change.
+- **Dead `#tools-documents` legacy panel removed** (Halle Medium, batched from the slice-2
+  ticket): Sell owns the doc surface; `renderDocuments()` keeps repainting Sell and bails at
+  its existing tbody null-guard; every other internal id verified null-guarded at all
+  consumers. Panel-only i18n keys dropped (`tools.docsTitle/docsSubtitle/searchDocs`,
+  `docs.colOrderNum/colContact`) — the add/no-docs/col keys used by the live Sell tables stay.
+- **Dead i18n keys dropped (QA L7 + sync-sweep leftovers):** `partners.sub.*` (×4 EN + ×4 JA)
+  and `common.refresh` (EN + JA) — all verified zero-reference; stale in-code comment fixed.
+- **Push-gate version bumps:** sw.js `CACHE_NAME` → `ivyhub-v21`; `APP_VERSION` +
+  `version.json` → `20260715-1` (matched pair). Run-wide REVIEW ticket written
+  (`chief/REVIEW/noa-20260715-slice6-run/TICKET.md`).
+
+---
+
 ## 2026-07-11
 
 ### ✅ Phase A — backend foundations (Plan 07, apps-script.js only — requires Apps Script redeploy)

@@ -1,0 +1,437 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><title>Ivycoast Hub — Design System</title>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<style>
+body{max-width:860px;margin:40px auto;padding:0 24px 120px;font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;color:#1a1a1a}
+h1{font-size:32px;border-bottom:2px solid #0e413b;padding-bottom:12px}
+h2{font-size:24px;margin-top:48px;border-bottom:1px solid #e3e3e3;padding-bottom:8px;color:#0e413b}
+h3{font-size:18px;margin-top:32px}
+code{background:#f4f4f2;padding:2px 6px;border-radius:4px;font-size:14px}
+pre{background:#f4f4f2;padding:16px;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+table{border-collapse:collapse;width:100%;margin:16px 0;font-size:14px}
+th,td{border:1px solid #e3e3e3;padding:8px 12px;text-align:left;vertical-align:top}
+th{background:#f4f4f2}
+blockquote{border-left:4px solid #0e413b;margin:16px 0;padding:8px 20px;background:#f9f9f8;color:#333}
+a{color:#0e413b}
+</style></head><body>
+<div id="content"></div>
+<script id="md" type="text/plain"># Ivycoast Hub — Design System (canonical source of truth)
+
+**Status:** authoritative · supersedes ad-hoc styling decisions
+**Companion:** [`design-tokens.json`](./design-tokens.json) (machine-readable token layer, DTCG 2025.10)
+**Grounded in:** `concepts/round2/concept-b-loop.html` (the Loop foundation) · production `index.html :root` + gallery · `docs/migration/design-logic-reference.md` (Material 3 / Polaris / HIG / Primer) · `docs/migration/ux-interaction-principles.md`
+**Author:** Jude (iris-design) · 2026-07-13
+
+> Read this once and you should **compose** every new page and object from the finite catalog below — never design one from a blank canvas. If you find yourself inventing a color, a spacing, or a component shape, stop: the answer is almost always "alias an existing token" or "branch an existing object." The rare, justified exception has a governance path (§7).
+
+---
+
+## 1. Principles & the cascade model
+
+### 1.1 The mental model — the app is a finite catalog
+
+The Hub is **not** a set of hand-designed screens. It is:
+
+- a **finite set of TOKENS** (the primitives: color, space, type, radius, shadow, motion, control-height),
+- composed into a **finite set of OBJECTS** (card, tile, badge, seg, button, input, list row, board card, drawer, toast… §4),
+- arranged by a **finite set of CONCEPTS / LAYOUTS** (dashboard grid, board, master–detail, toolbar, form, list/table, detail side-sheet, empty page, split-preview… §5).
+
+**A new page is composition, not invention:** pick a layout → place objects into it → remove what you don't need → branch an object only if a genuine variant is required (§6). This is the un-stuck rule.
+
+### 1.2 The three token tiers = the cascade
+
+We use the industry-standard three-tier token architecture (W3C DTCG 2025.10 stable; the same tiering Polaris, Material 3, and Primer use). **The tiers ARE the cascade.**
+
+| Tier | What it is | Example | Who consumes it |
+|---|---|---|---|
+| **1 · Reference** (`ref.*`) | Raw, context-free values. The cascade root. | `ref.color.ivy.900 = #0e413b` | Only semantic tokens. **Never a component directly.** |
+| **2 · Semantic** (`sem.*`) | Roles/intent — *what a value means*. **The layer you edit to re-theme.** | `sem.color.primary → {ref.color.ivy.900}` | Objects and layouts. |
+| **3 · Component** (`cmp.*`) | Per-object knobs. *What a value does here.* | `cmp.btnPrimary.bg → {sem.color.primary}` | One object each. |
+
+**How a change cascades (build once → refine at the source):**
+
+```
+edit ref.color.ivy.900  →  sem.color.primary updates  →  cmp.btnPrimary.bg,
+cmp.seg.indicatorBg, cmp.listRow.selBar, sem.eventTint.contract, sem.sell.invoiced…
+all update  →  every button, seg, selected row, contract chip, Invoiced column
+on every page refines. One edit. Whole app.
+```
+
+**The hard rule that makes the cascade real:** *objects consume semantic tokens; semantic tokens alias reference tokens.* No component ever hard-codes a hex, a raw px, or a duration. If a component references a raw value, the cascade is broken at that point — that's a bug (see §6.4 audit).
+
+### 1.3 The composition rule
+
+> **New page = place existing objects into an existing layout; remove or arrange, don't invent.**
+
+Grounded in Material's *canonical layouts* ("use canonical layouts rather than inventing structure") and Apple HIG consistency ("things that look the same behave the same"). A page that reuses the toolbar + list + detail side-sheet pattern is instantly familiar, instantly accessible (the patterns are already AA), and free to build.
+
+### 1.4 The branching model (base → variant)
+
+Branching = extending a base object/concept, inheriting its tokens + structure, overriding **only** the specific properties that differ. Like a subclass.
+
+Two ways to branch, in order of preference:
+
+1. **Token branch (preferred):** re-alias one component token to a different semantic token. *Example:* the board card `cmp.pcard` is a branch of `cmp.card` — same anatomy, it just points `radius → ref.radius.lg` instead of `xl` and adds a `borderHover`. The nested "subdued" container `cmp.cardSubdued` is a branch that re-points `bg → sem.color.surfaceSecondary`. **No structural fork, no new hex.**
+2. **Structural branch (rare):** add/remove a slot in the anatomy while keeping the token wiring. *Example:* the Sell pipeline column is the board column with a stage-accent left-bar slot added, wired to `sem.sell.*`.
+
+If a "new" object can't be expressed as a branch of an existing one, that's a governance decision (§7), not a free choice.
+
+### 1.5 The five standing laws (why the system feels premium)
+
+Distilled from the design-logic reference; every rule in §2–§5 traces to one of these:
+
+1. **8-pt grid, 4-pt half-steps.** Every gap/pad/offset is a multiple of 4. A raw `7px`/`13px`/`15px` is a bug. (Primer/Material/Polaris.) *One sanctioned exception: the 28px page gutter.*
+2. **One primary action per view.** Exactly one filled button; everything else bordered or text; ≤2 filled per card. (Primer/Polaris.)
+3. **Color is signal, not decoration.** Neutral canvas; strong color only for status/priority/brand-active. (Polaris.)
+4. **Proximity = relationship.** Tighten within a group, widen between groups; whitespace defines groups, not borders. (Polaris.)
+5. **Uppercase/mono is a label accent, never body.** Reserved for section eyebrows, column/field labels, badges, IDs, SKUs, amounts. (Material label role.)
+
+---
+
+## 2. Foundation — TOKENS
+
+All values below are the live `:root` tokens (identical in the Loop concept and production `index.html`, byte-for-byte, plus the production-only additions flagged **★PROD**). These are the atoms you edit to cascade. Full machine layer in [`design-tokens.json`](./design-tokens.json).
+
+### 2.1 Color
+
+**Reference families (Tier 1) → semantic roles (Tier 2).** Edit a reference hex to shift the whole family; edit a semantic alias to re-map a role.
+
+**Brand / ivy**
+| Semantic role | Ref value | When / why |
+|---|---|---|
+| `primary` | `#0e413b` | Brand. Active state, primary button fill, links, selected-row bar, seg indicator. The one strong color. |
+| `primaryHover` | `#1a5c50` | Hover on primary surfaces only. |
+| `primaryTint` | `#e8f0ee` | Ivy wash: selected row/chip bg, info callout, today cell, tint button. The "gentle selected" surface. |
+| `sectionLabel` | `#062420` | Near-black ivy for mono-uppercase section eyebrows (semibold). |
+
+**Text tiers** (all AA-tuned — do not soften)
+| Role | Value | Contrast / use |
+|---|---|---|
+| `text` | `#181818` | Body default. |
+| `textHeading` | `#202124` | Headings, tile numbers, drawer title; also the dark toast/tooltip surface. |
+| `textSecondary` | `#5f6368` | 6.05:1 on white. Subtitles, why-lines, seg-option default. |
+| `textTertiary` | `#686d72` | ≥4.69:1. **Labels only** at 10px (column/field labels, meta). |
+| `textMuted` | `#424242` | Feed/calendar-event text. |
+| `textDisabled` | `#72777c` | 4.52:1. Disabled/strikethrough. |
+| `textInverse` | `#fff` | On primary/dark surfaces. |
+
+**Surfaces** — white = primary content, grey = secondary/subdued (Polaris).
+`surface #fff` · `surfaceSecondary #f8f9fa` (nested columns, search) · `surfaceTertiary #f1f3f4` (chart/track) · `surfaceAlt #fafafa` (weekend/blank cells).
+
+**Borders / dividers** — pick *one* separator per context (border **or** shadow, never both — Material elevation restraint).
+`border #dadce0` (interactive input/ghost) · `borderSubtle #e3e3e3` (**standard card hairline**) · `borderLight #ebebeb` (structural/container) · `borderSeparator #f0f0f0` (row-to-row) · `hoverTint rgba(0,0,0,.04)` (neutral row hover).
+
+**Semantic status** — the entire status vocabulary. Do not invent a new tone; if one fits, reuse it (Polaris badge restraint).
+| Role | bg | text | Meaning |
+|---|---|---|---|
+| success | `#e6f4ea` | `#137333` | positive / paid / growth |
+| warning | `#fef7e0` | `#9a5400` | needs attention / due soon |
+| error | `#fce8e6` | `#c5221f` | overdue / destructive / money-out |
+| neutral | `#e8eaed` | `#5f6368` | informational / off |
+| **settle ★PROD** | `#e0f2f1` | `#00695c` | settled money (teal) — see §2.1.1 |
+| BLD | `#e8eaf6` | `#3f51b5` | Boldoath (kept distinct from semantic set) |
+| stage-inactive | `#f2f2f2` | `#353535` | dormant pipeline stage |
+
+Bright accents (dots/fills only, never text-on-tint): `successBright #00a52c`, `errorBright #ff1818`.
+Links: `link #0e413b` · `linkExternal #1268c4` (5.52:1, AA).
+Pipeline stage accents (dots/bars): `stageProspect #3cb1ff` · `stageOutreach #fec553` · `stageNegotiation #ff5e5e` · `stageActive #0e413b`.
+Quality scale (margin bars): `qualityGood #00a52c` · `qualityWarn #b06000` · `qualityBad #c5221f`.
+
+#### 2.1.1 Typed-event & Sell-stage tint systems (★PROD — resolved from the concept)
+
+The Loop concept color-codes calendar events by **type** by aliasing each type to a badge tint. The concept had a defect: `task` and `settle` both mapped to amber (`.bdg-warn`) — indistinguishable. **Production resolved it** by adding the `settle` teal pair. The canonical map (`sem.eventTint.*`):
+
+| Type | bg / text role | Type | bg / text role |
+|---|---|---|---|
+| money | error | make | BLD |
+| settle | **settle (teal)** | check | stage-inactive |
+| contract | primaryTint / primary | rhythm | neutral |
+| launch | success | task | warning |
+
+The **Sell pipeline** got a parallel 5-stage identity system (`sem.sell.*`), each stage = accent (header/left-bar/dot) + soft bg (column wash) — a branch of the semantic-stage concept:
+
+| Stage | accent | bg |
+|---|---|---|
+| New | amber `#9a5400` | `#fef7e0` |
+| Invoiced | ivy `#0e413b` | `#e8f0ee` |
+| Paid | green `#137333` | `#e6f4ea` |
+| Packing | warm-orange `#b3541e` | `#fdeee2` |
+| Shipped | teal `#00695c` | `#e0f2f1` |
+
+> **Why this matters for the cascade:** these tint sets are *semantic aliases*, not raw hex in components. To recolor "settled money" everywhere (badge, calendar chip, ledger), edit `sem.color.settleBg/Text` once.
+
+### 2.2 Type scale
+
+Families: body/UI `font-display` (SF Pro Display stack); data/labels/IDs `font-mono` (SF Mono stack). Tomato Grotesk is an optional brand-display layer only — not load-bearing.
+
+Sizes: `xs 10` · `sm 12` · `tab 13` · `md 14` · `h3 16` · `lg 24` · `xl 32`.
+Weights: `normal 400` · `medium 500` · `semibold 600` · `bold 700`.
+Line-heights (fixed px): `tight 16` · `normal 20` · `h2 30` · `h1 40`.
+Tracking: `mono -0.3px` (mono only).
+
+**Named roles (5 — reference the ROLE, never a raw size+weight).** Material: use a defined type scale with named roles; don't free-style sizes.
+
+| Role (`sem.typeStyle.*`) | size / weight / lh | font / case | Used for |
+|---|---|---|---|
+| `pageTitle` | 24 / semibold / 30 | display | View titles, tile numbers, entity names |
+| `heading` | 16 / semibold / 20 | display (mono if it's an amount) | Drawer title, card sub-headings, big counts |
+| `body` | 14 / normal / 20 | display | Default body, row titles |
+| `bodySmall` | 12 / normal / 16 | display | Subtitles, why-lines, table cells, names |
+| `label` | 10 / medium / 16 · `-0.3px` **UPPERCASE** | **mono** | Section eyebrows, column/field labels, badges, seg options, IDs, SKUs, amounts |
+
+**The single strongest signature of this skin:** every section label and column/field label is `label` role — mono, 10px, uppercase, `-0.3px`. Section labels use `sectionLabel` + semibold; field/column labels use `textTertiary`. **Do not put uppercase/mono on headings, buttons, or body** — that reads cheap (Material label-role restraint, design-logic §11).
+
+### 2.3 Spacing
+
+`0 · 2 · 4 · 6 · 8 · 10 · 12 · 16 · 20 · 24 · 32` (tokens `space-0`…`space-8`). Everything is a multiple of 4 except the **28px page gutter** (the one sanctioned exception).
+
+**Applied rhythm (the layout logic):**
+| Context | Value | Why |
+|---|---|---|
+| Page gutter (H) | 28px | header/main/footer aligned |
+| Card body pad | 16 (`space-4`) | Polaris default card pad |
+| Card→card stack | 20 (`space-5`) | section rhythm |
+| Tile pad | 12 / 16 | dense but comfortable |
+| Row pad | 8 / 16 (list), 12 / 16 (attn) | scannable rows |
+| Label→input | 4–8 | tight = related (proximity) |
+| Field→field | 16 | distinct fields |
+| Section gap in card | 20–24 | widen between groups |
+| Major region gap | 24–32 | Material region spacing |
+| Inline (icon↔label) | 4; (meta) 6; (default) 8 | proximity ladder |
+| Main content max-width | 1240px, centered | — |
+
+**Proximity is the tool:** tighten within a group, widen between groups (Polaris). This is *why* spacing feels intentional, not the raw numbers.
+
+### 2.4 Radius / shadow / border / motion / control-height
+
+**Radius:** `sm 4` (badge, small track) · `md 6` (button, input, callout) · `lg 8` (board card, cal cell, textarea) · `xl 12` (**card, tile, seg, column, chip**) · `2xl 16` (available) · `full 50%` (avatar, dot).
+
+**Shadow (elevation scale — restraint: card gets EITHER border OR shadow emphasis, calm always):**
+`card` = resting card/tile · `md` = hover elevation · `lg` = popover · `xl` = drawer + toast · `focus` = input focus glow (`0 0 0 3px rgba(14,65,59,.28)`).
+
+**Border rules:** standard card = 1px `borderSubtle`; structural container = `borderLight`; row divider = `borderSeparator`; interactive input/ghost = `border`. **Focus ring (WCAG 2.4.7):** `2px solid primary`, offset `2px` on `:focus-visible` — global, objects inherit it (some inset it to `-1px` on tight rows).
+
+**Motion:** durations `instant 80 · fast 120 · base 200 · slow 260 · drawer 300`; easings `out (0.16,1,0.3,1)` entrances · `in (0.4,0,1,1)` exits · `inOut (0.4,0,0.2,1)` symmetric · `emphasized (0.2,0,0,1)` large surfaces. Full motion table in §4.16. **All motion is killed under `prefers-reduced-motion` (WCAG 2.3.3) via a global switch — non-negotiable.**
+
+**Control-height scale ★PROD (`--control-h-*`):** the rule that makes toolbars look engineered. Every interactive control snaps to one height; controls in a row share it.
+| Token | px | Use |
+|---|---|---|
+| `control-h-sm` | 30 | inline segs, filter chips, small buttons |
+| `control-h-md` | 38 | **default:** buttons, inputs, selects, header toggles |
+| `control-h-lg` | 44 | hero inputs, primary CTAs |
+
+> 30/38/44 aren't on the 8-grid, and that's intentional — they're comfortable **hit-region** heights (44 = Apple HIG min touch target; all exceed WCAG 2.5.8's 24px). Control height is a distinct axis from spacing; keep it on this named scale, not the space scale.
+
+---
+
+## 3. How to read the object & layout catalogs
+
+Every object entry gives: **anatomy** (slots top→bottom or left→right) · **tokens consumed** (which `cmp.*`/`sem.*`) · **variants / branches** · **rules of use** (grounded) · **how to branch**. Every layout entry gives: **grid/structure** · **spacing logic** · **when to use** · **placement thinking** · **responsive** · **branching**. States are default / hover / active(selected) / focus-visible / disabled where defined; focus-visible is global (§2.4) unless noted.
+
+---
+
+## 4. OBJECTS — the finite component catalog
+
+### 4.1 Card (`cmp.card`) · Subdued card (`cmp.cardSubdued`, branch)
+- **Anatomy:** `card` → `card-hd` (mono-uppercase `label` eyebrow, flex:1, optional right-slot count/`btn-sm`) → `card-bd` (16px pad; `.flush` = 0 pad for full-bleed tables/rows). Order is fixed: **title → meta → body → actions** (Polaris/Material anatomy).
+- **Tokens:** bg `surface`, border `borderSubtle`, radius `xl`, shadow `card`, stack-gap `space-5`.
+- **Branches:** `cardSubdued` (nested container `.stage-col`/`.dev-col`) re-aliases bg→`surfaceSecondary`, border→`borderLight`, pad→10px. **Never nest a `card` inside a `card`** — use a subdued section instead (design-logic §5).
+- **Rules:** one border style, one shadow token; ≤2 filled buttons; use a card to group concepts scanned/acted-on as a unit, a plain row for a flat list — don't wrap every row in a card.
+- **Branch how:** re-point bg/border/pad component tokens; keep the header/body slots.
+
+### 4.2 Stat tile (`cmp.tile`)
+- **Anatomy (top→bottom):** number (`pageTitle` role, 24) → optional chart band (§4.5) → label (`label` role, 10 mono) → optional sub-line (`label`, +4px).
+- **Tokens:** same as card but pad 12/16, adds `shadowHover → md`. Grid: `repeat(auto-fit, minmax(150px,1fr))`, gap 12.
+- **States:** hover = elevation to `shadow-md` only (no scale). Clickable tile is a `<button>`.
+- **Variants:** `tile-num.warn` (warning text), `.bad` (error text) for at-a-glance status.
+- **Branch how:** to make a "KPI tile with delta," add a delta slot after the number; keep tile tokens.
+
+### 4.3 Badge / status chip (`cmp.badge`)
+- **Anatomy:** inline-flex, optional leading dot, `label` role text, 1px/6px pad, radius `sm`.
+- **Variants (the whole vocabulary):** `ok · warn · err · neutral · prim · bld · stage · settle`. Each = a status bg+text pair from §2.1. **Do not add a tone if one fits** (Polaris). One word, past tense.
+- **Branch how:** a new typed tint = add a `sem.eventTint.*`/status alias, then a `.bdg-x` that consumes it — never a raw hex on the badge.
+
+### 4.4 Segmented control (`cmp.seg`) vs Filter chip (`cmp.fchip`)
+Two DISTINCT objects — pick by selection model. This is the elevation the owner demanded ("filters must feel like toggles, not four flat pills").
+
+- **`seg` — single-select (one active at a time).** `role="tablist"`, sliding `seg-indicator` (`primary` fill, animated `transform`+`width` over `base`/`emphasized`), options are `role="tab"` with `aria-selected`. Bg `surfaceSecondary`, border `border`, radius `xl`, 3px inset pad, `control-h-sm`. Option text = `label` role, `textSecondary` default → `textInverse` on active; `:active` scale 0.97 (micro-press). Used for: mode toggle, period (W/M/Y), channel filter, stage filter, view switchers — **all six use-sites are this one object.**
+- **`fchip` — multi-select (independent toggles).** `aria-pressed`, radius `xl` pill, tick-dot that fills on select, selected = `primaryTint` bg + `primary` border/text. Used when several filters can be on at once.
+- **Rule:** if it's "choose one of N," it's `seg`; if it's "toggle any of N," it's `fchip`. Never a row of flat identical pills for a single-select.
+
+### 4.5 Chart primitives (`.tile-chart` / `-stack` / `-steps` / `.prog` / `.margin-track`)
+Pure-CSS, token colors only. Mini-bars (h36) / tall (h64): `tile-bar` = `primary`, `.partial` = `primaryTint` (current period). Stacked bar (h10): quality good/warn/bad or revenue split (`primary`/`stageOutreach`/`stageProspect`). Step meter (h6): `on` = `primary`. Progress (h8): fill = `primary`. Margin bar: fill `good/warn/bad`. **All carry `role="img"` + descriptive `aria-label`** (WCAG 1.1.1 text alternative — color/height must never be the only signal).
+
+### 4.6 Buttons (`cmp.btnPrimary` / `btnGhost` / `btnTint` / `.btn-sm`)
+- **Base:** inline-flex, `bodySmall` weight-medium, 6/12 pad, radius `md`, `control-h-md`.
+- **Tiers (design-logic §3):** **primary** (filled `primary`, one per view) → **ghost** (bordered, secondary) → **tint** (soft ivy, low-emphasis affirmative) → **text/`btn-sm`** (mono, compact inline "Open →").
+- **States:** each has real hover; `[disabled]` = opacity .5, no pointer. Optional `:active { scale .97 }` micro-press (`instant`).
+- **Order rule:** dialog = Cancel-left / **Confirm-right**; in-page form = **Save bottom-left** (design-logic §3). Never disable Save on invalid — validate on submit.
+
+### 4.7 Inputs / select / textarea (`cmp.input`)
+- **Anatomy:** label **above** (visible, not placeholder), then control. `min-height control-h-md`, border `border`, radius `md`, pad 0/10, size `tab`, focus = `shadow-focus` glow + ring.
+- **Rules (design-logic §7):** one left edge per column; stack fields vertically (inline only for genuinely paired fields); 16px field-gap, 4–8px label→input; mark required once at top; hint text quiet + inline.
+
+### 4.8 List row (`cmp.listRow`) · selectable list item (`.p-item`)
+- **Anatomy:** flex, gap 10, pad 8/16, `borderSeparator` bottom divider (last none), hover `hoverTint`. Selectable variant adds a 2px left-bar (`primary`) + `primaryTint` bg when `.sel`.
+- **Use:** flat lists of like items; master list in master–detail (§5.3). `<button>` when it selects/opens.
+
+### 4.9 Board / pipeline card (`cmp.pcard`, branch of card)
+- **Anatomy:** top row (type tag `ptag` + id) → title → 1–2 meta lines → optional per-card state indicator. Radius `lg`, own `borderHover`, `.spotlight` = `primary` border.
+- **Rules (design-logic §6):** title + 1–2 meta max, don't cram; overflow detail to the side-sheet; 1 primary per card, rest in a hover "…". Card body stays **neutral** — stage color is a small dot/left-bar, never a filled card.
+
+### 4.10 Board column (`.stage-col`, = `cardSubdued`) + Sell-stage branch
+- **Anatomy:** subdued container → `stage-hd` (mono-uppercase `stage-name` + `stage-sum` count, quiet — label style, not a colored banner) → stacked pcards → **empty state per empty column** (never a blank gap). Grid `.pipe`: `repeat(4|N, minmax(0,1fr))`, gap 12, → 2-col under 980px.
+- **Sell branch:** adds a stage-accent left-bar/dot wired to `sem.sell.*.accent` + soft column wash `sem.sell.*.bg`.
+
+### 4.11 Side panel / drawer (`cmp.drawer`) — the master–detail detail
+- **Anatomy:** `drawer-hd` (title `heading` role + ✕ close) → `drawer-bd` (scroll; `kv` rows = 128px mono-uppercase label + flex value; `dsec` sections at +20px) → `d-actions` bar (top border, Cancel-left/Confirm-right).
+- **Behavior (ux-interaction-principles §1):** **non-blocking, right-docked, ~480–560px.** Content reflows beside it; clicking another item **swaps** the panel (don't force-close); no full-screen scrim on desktop (Material *standard* side sheet for wide windows). Blocking/scrim variant reserved for narrow screens or destructive confirms. Slide `transform translateX(100%)→0` over `drawer`/`emphasized`; teardown 320ms.
+- **Rule:** detail/record views are **side panels, NOT center modals** — every order/partner/person/product/invoice/event opens here.
+
+### 4.12 Modal (blocking) — narrow-screen / destructive only
+Reserved use. Scrim `slow` fade; actions Cancel-left/Confirm-right; destructive style behind confirm. Prefer §4.11 for records.
+
+### 4.13 Toolbar / filter bar (`.sell-toolbar` template)
+- **Anatomy (one template for every index page):** `[primary action + related] … flexible spacer … [filter cluster: selects · search]`. Every control normalized to `control-h-md`, one radius, `space-*` gaps — nothing floats.
+- **Rules (design-logic §4):** one primary action at a stable end; applied filters render as removable `fchip`s; overflow past ~5 controls into a menu; identical bar on Orders/Contacts/Invoices/Tasks. Cross-page controls (Sync) live in the **global header**, not repeated per toolbar (ux §6).
+
+### 4.14 Help-tip "?" (`cmp.helpTip`) — progressive disclosure
+- Replaces always-on page subtitles. 18px light-grey mono "?" beside the title; dark tooltip on **hover AND focus** (keyboard-accessible, `tabindex`, dismiss on blur/leave). Motion killed under reduced-motion. This is the standard page-header pattern (ux §4).
+
+### 4.15 Empty state (`cmp.emptyState`) — ⚠ needs upgrade
+- **Target anatomy (Polaris §10):** (optional icon) → short heading → one line of guidance → primary action. Encouraging tone ("Add your first contact"), never "No data." Full treatment for whole-page empties; light version for board columns.
+- **Current gap:** production `.empty-state` is centered text only (no heading/action). **Reconcile — see §7 gaps.**
+
+### 4.16 Toast (`cmp.toast`)
+Bottom-center, dark `textHeading` surface + inverse text, radius `lg`, `shadow-xl`. Enters fade-in + rise 12px over `slow`. Undo action underlined. Status dot variants ok/err/info. Non-blocking, auto-dismiss.
+
+### 4.17 Nav tab (`cmp.navTab`) · count-chip / tab-count
+- **Tab:** `text-tab` (13), `textSecondary` → `primary` active with underline. **Count-chip:** mono `xs`, `primaryTint` bg / `primary` text, radius `xl`, min-width 18px; `.hot` = error tint for urgent counts.
+
+### 4.18 Table (`cmp.table`)
+`th` = `label` role (mono uppercase, `textTertiary`), `borderLight` underline; `td` = `bodySmall`, `borderSeparator` divider; `.num` cells right-aligned mono; `tr.rowlink:hover` = `hoverTint`; `tfoot` = top border + semibold. Use `card-bd.flush` to seat a table full-bleed in a card.
+
+### 4.19 Avatar / presence · Entity chip
+Avatar = `radius-full`, initials or image. Presence dot = `radius-full`, status-bright color. **Entity chip** `.chip` = link-colored mono pill (`primaryTint` bg → `primary` fill on hover) for task↔entity / doc links.
+
+### 4.20 Calendar cell / typed-event chip
+Month cell (h84): today (`primary` border + `primaryTint`) > weekend (`surfaceAlt`) precedence; `cal-num` mono semibold. Typed event `.cal-ev` = a badge (§2.1.1 tint) + name. Week-strip day (h88) `.rhythm-day`; year-strip month `.cal-mo` button (hover/active border → `primary`). Grid `repeat(7, minmax(0,1fr))` Monday-start / year `repeat(6…)`.
+
+---
+
+## 5. CONCEPTS / LAYOUTS — the finite page patterns
+
+Each is a grid you drop objects into. **Placement thinking is the value** — the grid is easy; knowing *what leads, what clusters, what's subdued* is the craft.
+
+### 5.1 Dashboard grid (`.tiles` + `.two-col`)
+- **Structure:** stat-tile band (`repeat(auto-fit, minmax(150px,1fr))`, gap 12) on top → `.two-col` (`minmax(0,1fr) 340px`, gap 20) main + rail below.
+- **Thinking:** KPIs lead (scannable numbers first, Miller-style chunking); primary work in the wide column, secondary context in the 340px rail; cards stack at 20px rhythm.
+- **Responsive:** `.two-col` → single column under 980px; tiles reflow by auto-fit. **Branch:** drop the rail (`.two-col`→single) for a focused page.
+
+### 5.2 Board / pipeline (`.pipe` + `.stage-col`)
+- **Structure:** `repeat(N, minmax(0,1fr))` columns, gap 12; each = subdued column (quiet header: name + count) → pcards → per-column empty state.
+- **Thinking (design-logic §6):** mostly-neutral canvas; color only as small stage dot/left-bar; consistent card rhythm; make it read as a **connected flow** (stage accent identity + per-card state indicators showing done vs missing — ux §5), not disconnected boxes.
+- **Responsive:** → 2-col under 980px. **Branch:** Sell pipeline = add stage-accent bar/wash from `sem.sell.*`.
+
+### 5.3 Master–detail (`.partners-grid` + non-blocking drawer)
+- **Structure:** `300px minmax(0,1fr)` — master list (selectable `.p-item` rows) left, detail right; OR list full-width + record opens the right-docked **non-blocking side panel** (§4.11).
+- **Thinking (design-logic §8, Material list-detail canonical):** list stays visible; selecting swaps the detail; panel width stays comfortable and never collapses the list below usable width.
+- **Responsive:** → single column under 980px (list, then detail as drawer). **Branch:** any record surface (orders, contacts, invoices, products) reuses this.
+
+### 5.4 Toolbar / filter-bar (§4.13)
+The standing index-page header. Same template everywhere → §4.13.
+
+### 5.5 Form layout
+- **Structure:** single left edge, labels above, fields stacked vertically (inline only for paired fields), fieldset groups for related fields; 16px field-gap, 8px label→input; Save **bottom-left**.
+- **Thinking (design-logic §7):** the eye travels one left edge top→bottom; grouping via whitespace; required marked once; advanced fields behind a disclosure (progressive disclosure, §9 of design-logic). This is the fix for "inputs stacked with no logic."
+
+### 5.6 List / table (§4.18)
+Flat like-items in a table inside a `card-bd.flush`; or plain rows (§4.8). Filters/search/sort belong to the list (Polaris index pattern); saved views live in the tab strip.
+
+### 5.7 Detail side-sheet (§4.11)
+The non-blocking right panel. The canonical record view — reused across every entity.
+
+### 5.8 Empty page (§4.15)
+Full-treatment empty state centered in the content region: heading + guidance + primary action.
+
+### 5.9 Split-preview (form ⇄ live preview)
+- **Structure:** two-column — input/config left, live-computed preview right (e.g. Formulator margins, invoice preview). Preview updates on input.
+- **Thinking:** preview is `cardSubdued` (secondary); inputs lead; the preview is a read-only mirror, so it uses display type + charts, no controls.
+- **Branch:** any "configure → see result" surface.
+
+---
+
+## 6. Composition & extension — building without inventing
+
+### 6.1 Build a new PAGE (step-by-step)
+1. **Name the job.** Is it: overview → §5.1 · a flow/lifecycle → §5.2 · browse+inspect records → §5.3 · create/edit → §5.5 · a flat list → §5.6 · configure→preview → §5.9?
+2. **Pick that layout.** Copy its grid. Don't tune widths — use the layout's column ranges.
+3. **Place objects** from §4 into the slots (toolbar → filter-bar template; rows → list-row; detail → drawer). Reuse, don't restyle.
+4. **Remove** unused slots (drop the rail, drop a column). Removal is composition; addition is not.
+5. **Apply the five laws** (§1.5): one primary action, neutral canvas, 8-pt spacing, proximity grouping, mono/uppercase only on labels.
+6. **Branch only if needed** (§6.2). Otherwise you're done.
+
+### 6.2 Build a new OBJECT (branch, don't fork)
+1. Find the nearest existing object (§4).
+2. **Token branch first:** re-alias its `cmp.*` tokens to different `sem.*` roles (e.g. new stage color = new `sem.sell.*` alias, then point the column's accent at it). No new hex.
+3. **Structural branch only if** the anatomy genuinely differs — add/remove a slot, keep the token wiring.
+4. If it's neither a token nor structural branch of anything → it's a *new catalog entry*: governance (§7).
+
+### 6.3 Theme / re-skin (the cascade in action)
+- Re-brand: edit `sem.color.primary` (+ hover/tint) → every button, seg, selected state, link, contract chip, Invoiced stage updates.
+- Retune a status: edit `sem.color.settleBg/Text` → badge + calendar chip + Shipped stage + ledger all shift.
+- Densify a surface: swap its layout's gap tokens; objects unchanged.
+- **Never** edit a value inside a component to theme — edit the semantic alias.
+
+### 6.4 The cascade-integrity audit (run before shipping any surface)
+- [ ] No raw hex in any component — only `sem.*`/`ref.*` references.
+- [ ] No off-grid spacing (multiple of 4; gutter 28 excepted).
+- [ ] Every control on a shared `control-h-*`; grouped controls share height.
+- [ ] Exactly one primary (filled) action per view; ≤2 filled per card.
+- [ ] Uppercase/mono only on `label`-role text.
+- [ ] Contrast: text ≥4.5:1, large text & non-text UI ≥3:1; focus ring visible (2.4.7) and not obscured (2.4.11).
+- [ ] Motion has a reduced-motion path; charts have `role="img"`+`aria-label`.
+- [ ] Records open as non-blocking side panels; nested/deep views also on-system (ux §2 sweep).
+- [ ] Bilingual EN+JA; never `innerHTML` (createElement/textContent only).
+
+---
+
+## 7. Governance — keeping the catalog finite
+
+### 7.1 When to add a new object/concept vs compose
+Add to the catalog **only** when a need is: (a) not expressible as a branch of any existing object/layout (§6.2), AND (b) recurring (used ≥2 surfaces or clearly will be). A one-off is composition, not a catalog entry. Default answer to "do we need a new component?" is **no — branch or compose.** (Polaris/Material: reuse before invent.)
+
+### 7.2 How to add one correctly (so the cascade survives)
+1. Define its **reference** values only if a genuinely new primitive is needed (rare — usually an existing family works).
+2. Add a **semantic** alias for its role (this is what future edits touch).
+3. Add **component** tokens that reference the semantic alias — never raw values.
+4. Document it in §4/§5 with anatomy + branch instructions.
+5. Add it to `design-tokens.json` in the matching tier.
+
+### 7.3 How token edits are made (cascade-preserving)
+- Edit at the **highest tier that scopes the change**: whole-family shift → `ref`; role re-map → `sem`; one-object tweak → `cmp`. Never edit a lower tier to achieve a higher-tier effect.
+- Editing `ref`/`sem` must keep AA (§2.1 tokens are AA-tuned — verify contrast before committing a color edit).
+- One source of truth: `index.html :root` mirrors `design-tokens.json`. A token added in one must be added in the other.
+
+---
+
+## Appendix — gaps where implementation contradicts the system (reconcile)
+
+1. **Empty state is under-built.** Production `.empty-state` = centered text only; the system (§4.15, design-logic §10) requires heading + guidance + primary action. **Upgrade the component** to the Polaris anatomy and apply per page and per empty board column.
+2. **Two drawer widths in production.** The Loop/record drawer is `min(560px,94vw)` (§4.11); the person-drawer is `min(420px,92vw)` with a blocking scrim + a hard-coded `--motion-drawer:240ms` fallback. **Reconcile:** person detail should use the non-blocking record-drawer spec (~480–560px, no scrim on desktop) per ux §1 — the 420px blocking variant is a leftover.
+3. **Motion-drawer value drift.** Token is `300ms`; the person-drawer CSS falls back to `240ms`. Remove the fallback and consume `--motion-drawer` so the cascade holds.
+4. **Two overlay scrim opacities exist** (`rgba(0,0,0,.28)` Loop vs `rgba(0,0,0,.32)` person-drawer via `--color-scrim`). Pick one; on desktop the record drawer should be **non-blocking (no scrim)** anyway.
+5. **No entrance/view-transition motion in the base.** The Loop concept ships flat (only `hlpulse`). If production wants stagger/crossfade on view switch, it's net-new (recommend opacity+translateY(8px) over `base` 200ms `out`, ~30ms stagger, cap ~8 items) — author it on the tokens; don't leave it implied.
+6. **Sanctioned off-grid values** (28px gutter; 30/38/44 control heights) are intentional — keep them named, don't "fix" them to multiples of 4.
+
+## References
+- W3C Design Tokens Community Group — DTCG spec 2025.10 (stable): https://tr.designtokens.org/format/
+- Material Design 3 — design tokens & canonical layouts: https://m3.material.io/foundations/design-tokens · https://m3.material.io/foundations/layout/canonical-layouts/overview
+- Shopify Polaris — space/color/cards/empty-state/filters: https://polaris.shopify.com/design/space · https://polaris.shopify.com/foundations/design/colors
+- GitHub Primer — layout/forms/button order: https://primer.style/product/getting-started/foundations/layout/
+- Apple HIG — layout, toolbars, touch targets: https://developer.apple.com/design/human-interface-guidelines/layout
+- WCAG 2.2 — 1.1.1, 1.4.3, 2.3.3, 2.4.7, 2.4.11, 2.5.8: https://www.w3.org/WAI/WCAG22/quickref/
+- Internal: `docs/migration/design-logic-reference.md` · `docs/migration/ux-interaction-principles.md` · `concepts/round2/concept-b-loop.html` · `concepts/design-system/gallery.html` · `docs/design/loop-design-system.md`
+</script>
+<script>document.getElementById("content").innerHTML=marked.parse(document.getElementById("md").textContent);</script>
+</body></html>
