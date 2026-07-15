@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "f=$(jq -r '.tool_input.file_path // empty'); case \"$f\" in */ivycoast-hub/index.html) awk '/<script>/{f=1;next} /<\\/script>/{f=0} f' \"$f\" > /tmp/ih-hook.js && node --check /tmp/ih-hook.js 1>&2 || exit 2;; esac",
+            "timeout": 30
+          }
+        ]
+      }
+    ]
+  }
+}

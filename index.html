@@ -333,6 +333,11 @@ html, body { height: 100%; overflow: hidden; }
 /* §4.11.6 — a SELECTED row/card is PINNED: no hover wash/motion while its
    panel is open (owner, 2026-07-15; selection can't be toggled off by re-click). */
 tr.row-sel:hover, tr.row-sel:hover td { background: var(--color-primary-tint); }
+/* Specificity (0,3,3): beats the later-defined base hover rules
+   (.ivh-table tr:hover td / .products-table tr:hover td, both (0,2,2)) which
+   were winning the tie and washing SELECTED rows on hover (Halle HIGH). */
+.ivh-table tr.row-sel:hover td, .products-table tr.row-sel:hover td,
+.tbl-refit tr.row-sel:hover td { background: var(--color-primary-tint); }
 .pcard.row-sel:hover, .product-card.row-sel:hover {
   transform: none;
   border-color: var(--color-primary);
@@ -15064,6 +15069,9 @@ document.addEventListener("click", function(e) {
   }
   if (!e.target.closest(".crm-add-dropdown-wrap")) {
     closeCrmAddDropdown();
+    // Tools Create dropdown shares the wrap class — it was never closing on
+    // outside click, stranding aria-expanded="true" (Halle M2).
+    if (typeof closeToolsCreateDropdown === "function") closeToolsCreateDropdown();
   }
 });
 
@@ -28932,6 +28940,8 @@ function updateToolsSegCounts() {
   if (fc) fc.textContent = (recipes && recipes.length) ? String(recipes.length) : "";
   var ic = document.getElementById("tools-count-ingredients");
   if (ic) ic.textContent = (ingredients && ingredients.length) ? String(ingredients.length) : "";
+  // Chips change the active option's width — re-fit the indicator (Halle M3).
+  if (typeof _positionSegIndicator === "function") _positionSegIndicator(document.getElementById("tools-seg"));
 }
 
 // ── Tools quick-action launcher — CONVENIENCE DUPLICATES (owner decision):
@@ -29043,6 +29053,8 @@ function updateGrowSegCounts() {
   var bldCount = allDocs.filter(function(d) { return d.workspace === "BOLDOATH"; }).length;
   var bc = document.getElementById("grow-count-boldoath");
   if (bc) bc.textContent = bldCount ? String(bldCount) : "";
+  // Chips change the active option's width — re-fit the indicator (Halle M3).
+  if (typeof _positionSegIndicator === "function") _positionSegIndicator(document.getElementById("grow-seg"));
 }
 
 // True when the Customers tab is what the user is looking at. Gates the
