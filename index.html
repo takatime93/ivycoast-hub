@@ -14655,6 +14655,28 @@ function _batchFingerprint(data) {
     return k + ":" + (v.length || 0) + ":" + s.length;
   }).join("|");
 }
+// ── Seed echo-guard (round-2 spec, 2026-07-16) ────────────────
+// After a successful seed the server's batchList cache (60s TTL) can still
+// echo that collection as PRESENT-BUT-EMPTY (`x: []` — truthy, so the plain
+// `if (data.x)` clobber would wipe the freshly-seeded local rows; that was
+// half of the seed-vanish incident). While armed, an empty echo is ignored
+// for that collection; the first non-empty echo disarms (server caught up),
+// as does a timeout. Persisted to localStorage so a seed→reload round-trip
+// inside the cache window survives too.
+var _seedEchoGuard = {};
+try { _seedEchoGuard = JSON.parse(localStorage.getItem("seedEchoGuard") || "{}") || {}; } catch (e) { _seedEchoGuard = {}; }
+var _SEED_ECHO_GUARD_MS = 5 * 60 * 1000; // covers the 60s server cache TTL with margin
+function _saveSeedEchoGuard() { try { localStorage.setItem("seedEchoGuard", JSON.stringify(_seedEchoGuard)); } catch (e) {} }
+function _armSeedEchoGuard(key) { _seedEchoGuard[key] = Date.now(); _saveSeedEchoGuard(); }
+function _seedEchoGuardBlocks(key, rows) {
+  var armed = _seedEchoGuard[key];
+  if (!armed) return false;
+  if ((rows && rows.length > 0) || Date.now() - armed > _SEED_ECHO_GUARD_MS) {
+    delete _seedEchoGuard[key]; _saveSeedEchoGuard();
+    return false; // server caught up, or guard went stale — server authoritative again
+  }
+  return true; // empty echo inside the window — keep the seeded local rows
+}
 // force=true (user-triggered saves / reconciles) always re-renders.
 function fetchAllData(force) {
   if (!SCRIPT_URL || _batchFetching) return;
@@ -14717,12 +14739,13 @@ function fetchAllData(force) {
       if (data.shipments) { shipments = data.shipments; }
       // Make (slice 4): 材料 master + recipes ride batchList like shipments.
       // Server is authoritative — clobber, don't merge (edits round-trip fast).
-      if (data.ingredients) { ingredients = data.ingredients; }
+      // EXCEPT right after a seed: the echo-guard skips a present-but-empty echo.
+      if (data.ingredients && !_seedEchoGuardBlocks("ingredients", data.ingredients)) { ingredients = data.ingredients; }
       if (data.recipes) { recipes = data.recipes; }
       _ingredientsFetched = true;
       // Brand (slice 5): BrandConcept rows ride batchList the same way.
-      // Server is authoritative — clobber, don't merge.
-      if (data.brandConcept) { brandConcept = data.brandConcept; }
+      // Server is authoritative — clobber, don't merge (same echo-guard).
+      if (data.brandConcept && !_seedEchoGuardBlocks("brandConcept", data.brandConcept)) { brandConcept = data.brandConcept; }
       _brandConceptFetched = true;
       if (data.venueReports) { venueReports = data.venueReports; }
       if (data.contactDocuments) { contactDocuments = data.contactDocuments; }
@@ -29341,6 +29364,7 @@ function seedIngredientsFromFormulator() {
         _ingSeedRunning = false;
         _ingredientsFetched = true;
         ingredients = ingredients.concat(created);
+        if (created.length > 0) _armSeedEchoGuard("ingredients"); // empty batchList echoes can't clobber the seed
         renderIngredients();
         saveDataCache();
         showFormulatorToast(created.length + " 件の材料を作成しました" + (failed ? "（" + failed + " 件失敗）" : "") + " (seeded " + created.length + (failed ? ", " + failed + " failed" : "") + ")", 6000);
@@ -30200,6 +30224,7 @@ function seedBrandConcept() {
         _brandSeedRunning = false;
         _brandConceptFetched = true;
         brandConcept = brandConcept.concat(created);
+        if (created.length > 0) _armSeedEchoGuard("brandConcept"); // empty batchList echoes can't clobber the seed
         renderBrandWorkspace();
         saveDataCache();
         showFormulatorToast(
