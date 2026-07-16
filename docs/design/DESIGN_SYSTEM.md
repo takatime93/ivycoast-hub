@@ -80,6 +80,28 @@ Distilled from the design-logic reference; every rule in §2–§5 traces to one
 
 **Why:** skeleton-then-fade is the premium-SaaS loading convention (perceived performance: the page's structure is visible instantly); calm beats choreography — an ops tool opened many times a day shouldn't perform an entrance; and the owner explicitly rejected slide/stagger after seeing it live.
 
+### 1.7 Vertical rhythm law (THE spacing reference — owner round-2, 2026-07-16)
+
+> **Every vertical gap between page-level blocks is one of the named slots below. A gap that isn't in this table is a bug.** QA checks surfaces against this table. This is law 4 (proximity = relationship) given exact values so no page has to guess.
+
+| # | Slot — the gap between… | Value | Why |
+|---|---|---|---|
+| R1 | page header block (`.page-hd`) → what follows | **48px** | the one page-scale breath (grid-clean 12×4; still a raw value in `.page-hd` — tokenization rides DS_HARDENING_PLAN). **`.page-hd-tight` → `--space-4`** when a tab-strip/toolbar *continues* the title block (Products, Customers). |
+| R2 | tab-strip → toolbar | `--space-4` (16) | strip + tools are one working group |
+| R3 | toolbar → content (table / grid / board) | `--space-5` (20) | tools stand off from the data they operate on |
+| R4 | card → card in **grids** | `--space-4` (16) | one value per context type — never mix R4/R5 in one view |
+| R5 | card → card in **stacks** | `--space-5` (20) | section rhythm (= §2.3 card→card stack) |
+| R6 | section-title / sec-label → its content | `--space-3` (12) | a title belongs to its block (tighten within) |
+| R7 | label → control | `--space-2` (8) | tightest pair; supersedes §2.3's 4–8 range — the slot is 8 |
+| R8 | kv row → kv row | `--space-2-5` (10) vertical | dense but scannable key-value lists |
+
+**Application rules:**
+- The slots govern **page-level vertical rhythm** (header → strip → toolbar → content → sections → cards). *Within-component* padding stays §2.3's applied-rhythm table.
+- **Same relationship = same slot on every page.** Customers title→search must equal Docs title→search must equal Orders. Cross-page inconsistency in the same slot is the defect class this law exists to kill (owner round-2: spacing "used incorrectly in many many places").
+- Drawer / panel / modal **interiors follow the same slots** (mostly R5/R6/R7/R8) — §4.11 surfaces are not exempt.
+- **One element owns each gap** — prefer `margin-bottom` on the block above (or the parent's `gap`); never split a slot across two elements' margins.
+- New values require a new row in this table (governance §7.6) — don't invent a ninth slot inline.
+
 ---
 
 ## 2. Foundation — TOKENS
@@ -195,6 +217,8 @@ Tracking: `mono -0.3px` (mono only).
 | Main content max-width | 1240px, centered | — |
 
 **Proximity is the tool:** tighten within a group, widen between groups (Polaris). This is *why* spacing feels intentional, not the raw numbers.
+
+**Page-level vertical gaps (header→strip→toolbar→content→sections→cards) are governed by the §1.7 rhythm law** — this table covers within-component padding only.
 
 ### 2.4 Radius / shadow / border / motion / control-height
 
