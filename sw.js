@@ -1,4 +1,4 @@
-var CACHE_NAME = "ivyhub-v21"; // bumped for the 2026-07-15 slice-6 run (v20 was committed pre-run; fresh name guarantees cache invalidation on deploy)
+var CACHE_NAME = "ivyhub-v22"; // bumped for the 2026-07-16 round-2 rhythm pass (fresh name guarantees cache invalidation on deploy)
 var STATIC_ASSETS = [
   "/ivycoast-hub/",
   "/ivycoast-hub/index.html",

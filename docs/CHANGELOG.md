@@ -5,6 +5,35 @@ See `plans/` for the design reasoning behind each change.
 
 ---
 
+## 2026-07-16
+
+### ✅ Round-2 pass 1: seed echo-guard + §1.7 vertical rhythm law + app-wide spacing sweep (branch `run/round2-rhythm`)
+- **Seed echo-guard (data-safety, tail of the resolved seed-vanish bug):** freshly-seeded
+  ingredients/brandConcept now survive a present-but-empty batchList echo — `x: []` is truthy,
+  so the plain `if (data.x)` clobbered seeds inside the server's 60s cache window. Guard is
+  armed on successful seed, disarms on the first non-empty echo or a 5-min timeout, and
+  persists to localStorage so a seed→reload round-trip survives. Halle-traced: no bypass
+  writers, no stuck-blocked state, fingerprint-skip interaction safe.
+- **DS §1.7 VERTICAL RHYTHM LAW written** (spec said §1.8; landed as §1.7): 8 named slots
+  R1–R8 for every page-level vertical gap, application rules (same relationship = same slot
+  on every page; one element owns each gap; interiors not exempt). §2.3 scoped to
+  within-component padding. New `--space-12` (48px) tokenizes the R1 header breath
+  (`:root` + design-tokens.json in sync).
+- **Sweep (two read-only survey agents, every claim re-verified by Noa; 4 agent
+  slot-mappings corrected):** Brand/Board bare `h2.page-title` sat FLUSH on content (global
+  reset) → R1 slots (48px / 16px-tight); R3 toolbar→content unified at 20px (sell-toolbar 16→20,
+  search-bar 24→20, board-toolbar + Today segs tokenized); crm-vendor-grid 12→16 (R4);
+  section/od-dsec/crm-detail/product-detail/quick-edit/confirm titles → 12px (R6);
+  kv rhythm → 10px (R8: order-detail-grid, crm-detail-fields, `.p-kv` moved to margin-owned —
+  its containers have no flex gap); form rows → gap 8 / mb 16 (§2.3); off-grid 14/10/6/2px
+  strays tokenized. Raw px 1859→1832.
+- **Halle QA: SHIP, zero fix-first** + one real catch fixed same session: `.page-hd-tight`
+  was declared BEFORE the `.page-hd` base rule — equal specificity, source order won, so the
+  16px tight variant had **silently never applied** on Customers/Products (both showed 48px).
+  Fixed with a doubled-class selector `.page-hd.page-hd-tight`. Also dropped two off-rhythm
+  overrides Halle flagged (mobile crm-detail-section 12px, today-period-seg 16px).
+- Versions: sw.js CACHE_NAME → `ivyhub-v22`, APP_VERSION + version.json → `20260716-1`.
+
 ## 2026-07-15
 
 ### ✅ Customers polish + Grow refit (slice-6 queue pass 2 — owner specs in `migration/slice6-plan.md`)
