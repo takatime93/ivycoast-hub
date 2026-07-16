@@ -2778,6 +2778,11 @@ tr.row-sel:hover { background: var(--color-primary-tint); }
   gap: 12px;
 }
 .crm-add-dropdown-wrap { position: relative; }
+/* Inside a page-hd right zone the toolbar-era margin-left:auto is wrong: auto
+   margins beat justify-content, so the EMPTY sync div absorbed all free space
+   and stranded the primary next to the seg (owner P4 + screenshot, 2026-07-16).
+   The zone's own justify-end handles alignment here. */
+.page-hd-right .sync-indicator, .crm-header-right .sync-indicator { margin-left: 0; }
 .crm-add-dropdown {
   display: none;
   position: absolute;
@@ -9288,6 +9293,11 @@ body.tab-switching { transition: none !important; }
         </div>
       </div>
       <div class="page-hd-right">
+        <!-- Sync status BEFORE the action so the primary sits flush at the page's
+             right edge (owner, 2026-07-16); status text appears to its left. -->
+        <div class="sync-indicator">
+          <span id="crm-sync-status"></span>
+        </div>
         <div class="crm-action-group">
         <!-- page-local refresh removed (sync sweep 2026-07-15) — header sync is view-aware -->
         <div class="crm-add-dropdown-wrap">
@@ -9297,9 +9307,6 @@ body.tab-switching { transition: none !important; }
             <button onclick="openCrmCreateModal('Contact'); closeCrmAddDropdown()" data-i18n="crm.newContact">New Person</button>
           </div>
         </div>
-        </div>
-        <div class="sync-indicator">
-          <span id="crm-sync-status"></span>
         </div>
       </div>
     </div>
