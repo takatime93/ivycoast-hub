@@ -36,7 +36,7 @@
     },
     "space": {
       "$type": "dimension",
-      "0": {"$value":"0"}, "0-25": {"$value":"1px","$description":"quarter-step — hairline vertical inset for the badge (label-role text is 16px lh; 1px keeps the pill tight). Sanctioned sub-4 step, like the gutter."}, "0-5": {"$value":"2px"}, "1": {"$value":"4px"}, "1-5": {"$value":"6px"}, "2": {"$value":"8px"}, "2-5": {"$value":"10px"}, "3": {"$value":"12px"}, "4": {"$value":"16px"}, "5": {"$value":"20px"}, "6": {"$value":"24px"}, "8": {"$value":"32px"}, "gutter": {"$value":"28px","$description":"page horizontal gutter — off-grid by 4 on purpose; the one sanctioned non-multiple-of-4"}
+      "0": {"$value":"0"}, "0-25": {"$value":"1px","$description":"quarter-step — hairline vertical inset for the badge (label-role text is 16px lh; 1px keeps the pill tight). Sanctioned sub-4 step, like the gutter."}, "0-5": {"$value":"2px"}, "1": {"$value":"4px"}, "1-5": {"$value":"6px"}, "2": {"$value":"8px"}, "2-5": {"$value":"10px"}, "3": {"$value":"12px"}, "4": {"$value":"16px"}, "5": {"$value":"20px"}, "6": {"$value":"24px"}, "8": {"$value":"32px"}, "12": {"$value":"48px","$description":"R1 page-header breath — .page-hd → content (§1.7 rhythm law)"}, "gutter": {"$value":"28px","$description":"page horizontal gutter — off-grid by 4 on purpose; the one sanctioned non-multiple-of-4"}
     },
     "font": {
       "$type": "fontFamily",

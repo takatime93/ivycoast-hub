@@ -183,6 +183,7 @@
   --space-5: 20px;
   --space-6: 24px;
   --space-8: 32px;
+  --space-12: 48px;  /* R1 page-header breath — .page-hd → content (§1.7 rhythm law) */
 
   /* ── Radius ── */
   --radius-sm: 4px;
@@ -330,6 +331,11 @@ html, body { height: 100%; overflow: hidden; }
 /* Header variant for pages whose tab-strip/toolbar continues the title block
    (Products, Customers): tighter gap than the 48px page-hd default. */
 .page-hd-tight { margin-bottom: var(--space-4); }
+/* §1.7 R1 for the two pages whose title is still a bare h2 (global reset zeroes
+   heading margins → their titles sat FLUSH on the content). Brand = default
+   breath; Board's toolbar continues the title block = tight, like Customers. */
+#brand > .page-title { margin-bottom: var(--space-12); }
+#board > .page-title { margin-bottom: var(--space-4); }
 /* §4.11.6 — a SELECTED row/card is PINNED: no hover wash/motion while its
    panel is open (owner, 2026-07-15; selection can't be toggled off by re-click). */
 tr.row-sel:hover, tr.row-sel:hover td { background: var(--color-primary-tint); }
@@ -1179,7 +1185,7 @@ tr.row-sel:hover { background: var(--color-primary-tint); }
   align-items: center;
   gap: var(--space-3);
   flex-wrap: wrap;
-  margin-bottom: var(--space-4);
+  margin-bottom: var(--space-5); /* §1.7 R3 toolbar → content */
 }
 /* Each group is a single baseline-aligned unit that stays on ONE line — controls
    inside never wrap individually (that was the search "dangle" below the selects,
@@ -1425,7 +1431,10 @@ tr.row-sel:hover { background: var(--color-primary-tint); }
   color: var(--color-text-heading);
 }
 .p-name-ja { font-size: var(--text-sm); color: var(--color-text-tertiary); }
-.p-kv { display: flex; gap: var(--space-3); padding: var(--space-1-5) 0; align-items: baseline; }
+/* §1.7 R8: the ROW owns the kv rhythm (margin, not padding) — its containers
+   (partner-detail card bodies, person drawer) are plain stacks without gap. */
+.p-kv { display: flex; gap: var(--space-3); margin-bottom: var(--space-2-5); align-items: baseline; }
+.p-kv:last-child { margin-bottom: 0; }
 .p-kv-key { flex: none; width: 110px; font-family: var(--font-mono); font-size: var(--text-xs); letter-spacing: var(--ls-mono); text-transform: uppercase; color: var(--color-section-label); }
 .p-kv-val { flex: 1; min-width: 0; font-size: var(--text-sm); color: var(--color-text-primary); }
 .ledger-bal {
@@ -1547,13 +1556,13 @@ tr.row-sel:hover { background: var(--color-primary-tint); }
   font-size: var(--text-lg); color: var(--color-text-tertiary); line-height: 1;
 }
 .person-drawer-hd button:hover { color: var(--color-text-heading); }
-.person-drawer-bd { flex: 1; overflow-y: auto; padding: var(--space-4); display: flex; flex-direction: column; gap: var(--space-2); }
+.person-drawer-bd { flex: 1; overflow-y: auto; padding: var(--space-4); display: flex; flex-direction: column; } /* §1.7: children own the rhythm (.p-kv R8) */
 @media (prefers-reduced-motion: reduce) {
   .p-item, .p-people-row, .person-drawer, .seg-indicator { transition: none; }
 }
 
 /* ═══ TODAY (今日) — slice 1 ═══ */
-.today-header { margin-bottom: 16px; }
+.today-header { margin-bottom: var(--space-4); } /* §1.7 R1-tight — seg continues the title */
 .today-title {
   font-family: var(--font-display);
   font-size: var(--text-lg);
@@ -1564,7 +1573,7 @@ tr.row-sel:hover { background: var(--color-primary-tint); }
 .today-subtitle { font-size: var(--text-md); color: var(--color-text-secondary); margin-top: 4px; }
 /* Today's mode + period toggles use the shared Loop .seg segmented control
    (recessed track + sliding indicator). These rules add only Today-local spacing. */
-.today-seg { margin-bottom: 16px; }
+.today-seg { margin-bottom: var(--space-5); } /* §1.7 R3 — seg is the tools row here */
 .today-period-seg { margin-bottom: 16px; }
 .today-seg-badge {
   display: inline-flex;
@@ -1978,7 +1987,7 @@ tr.row-sel:hover { background: var(--color-primary-tint); }
   font-size: var(--text-lg);
   font-weight: 500;
   color: var(--color-text-heading);
-  margin-bottom: 8px;
+  margin-bottom: var(--space-3); /* §1.7 R6 section-title → content */
 }
 .section-subtitle {
   font-size: var(--text-md);
@@ -2045,9 +2054,9 @@ tr.row-sel:hover { background: var(--color-primary-tint); }
 /* Document Library */
 .search-bar {
   display: flex;
-  gap: 12px;
+  gap: var(--space-3);
   flex-wrap: wrap;
-  margin-bottom: 24px;
+  margin-bottom: var(--space-5); /* §1.7 R3 toolbar → content */
   align-items: center;
 }
 .search-input {
@@ -2178,10 +2187,10 @@ tr.row-sel:hover { background: var(--color-primary-tint); }
 /* Board */
 .board-toolbar {
   display: flex;
-  gap: 12px;
+  gap: var(--space-3);
   align-items: center;
   flex-wrap: wrap;
-  margin-bottom: 20px;
+  margin-bottom: var(--space-5); /* §1.7 R3 toolbar → content */
 }
 .board-toolbar .filter-select { min-width: 140px; }
 .btn-add-task {
@@ -2568,7 +2577,7 @@ tr.row-sel:hover { background: var(--color-primary-tint); }
 #confirm-modal-title {
   font-size: var(--text-lg);
   font-weight: 500;
-  margin-bottom: 10px;
+  margin-bottom: var(--space-3); /* §1.7 R6 */
 }
 #confirm-modal-message {
   color: var(--color-text-secondary);
@@ -2723,7 +2732,7 @@ tr.row-sel:hover { background: var(--color-primary-tint); }
   display: flex;
   flex-wrap: nowrap;
   align-items: center;
-  margin-bottom: 48px;
+  margin-bottom: var(--space-12); /* §1.7 R1 */
 }
 /* .crm-title now styled by the unified .page-title rule (§5.10). */
 /* TRUE page centering (owner, 2026-07-15: seg wasn't visually centered):
@@ -2807,7 +2816,7 @@ tr.row-sel:hover { background: var(--color-primary-tint); }
 .crm-vendor-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 12px;
+  gap: var(--space-4); /* §1.7 R4 card → card in grids */
 }
 .crm-vendor-card {
   background: var(--color-surface);
@@ -3654,13 +3663,13 @@ body.crm-panel-open { overflow: hidden; }
   color: var(--color-section-label);
   text-transform: uppercase;
   letter-spacing: -0.3px;
-  margin-bottom: var(--space-2);
+  margin-bottom: var(--space-3); /* §1.7 R6 */
 }
 /* kv rows — mono-uppercase label + flex value (drawer anatomy). */
 .order-detail-grid {
   display: flex;
   flex-direction: column;
-  gap: var(--space-2);
+  gap: var(--space-2-5); /* §1.7 R8 kv rhythm */
 }
 .order-detail-field {
   display: flex;
@@ -3945,13 +3954,13 @@ body.crm-panel-open { overflow: hidden; }
   font-size: var(--text-md);
   font-weight: 500;
   color: var(--color-text-heading);
-  margin: 20px 0 8px;
+  margin: var(--space-5) 0 var(--space-3); /* §1.7 R5 above · R6 below */
 }
 .score-drawer-body p {
   font-size: var(--text-md);
   color: var(--color-text-secondary);
   line-height: 1.5;
-  margin-bottom: 8px;
+  margin-bottom: var(--space-2);
 }
 .score-readmore-btn {
   display: block;
@@ -4921,7 +4930,7 @@ h2.crm-detail-name {
   padding-bottom: 16px;
 }
 .crm-detail-section {
-  padding: 14px 0;
+  padding: var(--space-2-5) 0; /* §1.7 R5 — 10+10 across the separator = 20 section rhythm */
   border-bottom: 1px solid var(--color-border-separator);
 }
 .crm-detail-section:last-child { border-bottom: none; }
@@ -4931,19 +4940,19 @@ h2.crm-detail-name {
   text-transform: uppercase;
   letter-spacing: 0.8px;
   color: var(--color-text-tertiary);
-  margin-bottom: 10px;
+  margin-bottom: var(--space-3); /* §1.7 R6 */
 }
 .crm-detail-fields {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 10px 16px;
+  gap: var(--space-2-5) var(--space-4); /* §1.7 R8 kv rhythm */
 }
 .crm-detail-field label {
   display: block;
   font-size: var(--text-sm);
   font-weight: 500;
   color: var(--color-text-tertiary);
-  margin-bottom: 2px;
+  margin-bottom: var(--space-0-5); /* read-only kv: label+value read as one unit */
 }
 .crm-detail-field p {
   font-size: var(--text-md);
@@ -5684,9 +5693,9 @@ h2.crm-detail-name {
 }
 .crm-quick-edit-title {
   font-family: var(--font-display); font-size: var(--text-h3); font-weight: 600;
-  color: var(--color-text-heading); margin-bottom: 16px;
+  color: var(--color-text-heading); margin-bottom: var(--space-3); /* §1.7 R6 */
 }
-.crm-quick-edit-row { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+.crm-quick-edit-row { display: flex; flex-direction: column; gap: var(--space-2) /* R7 */; margin-bottom: var(--space-4) /* §2.3 field→field */; }
 .crm-quick-edit-label { font-size: var(--text-sm); color: var(--color-text-tertiary); font-weight: 400; }
 .crm-quick-edit-input {
   background: var(--color-surface-secondary); border: 1px solid var(--color-border);
@@ -7849,7 +7858,7 @@ select.contact-edit-input { appearance: auto; cursor: pointer; }
 .ivy-chat-messages {
   flex: 1;
   overflow-y: auto;
-  padding: 16px 20px;
+  padding: var(--space-4) var(--space-5);
   display: flex;
   flex-direction: column;
   gap: var(--space-2-5);
@@ -8232,7 +8241,7 @@ body.tab-switching { transition: none !important; }
 .batch-save-modal { width: 420px; }
 .batch-formula-modal { width: 580px; }
 .product-detail-modal { width: 540px; }
-.batch-modal-field { display:flex; flex-direction:column; gap:6px; margin-bottom:14px; }
+.batch-modal-field { display:flex; flex-direction:column; gap:var(--space-2) /* R7 */; margin-bottom:var(--space-4) /* §2.3 field→field */; }
 .batch-modal-field label { font-size:var(--text-sm); color:var(--color-text-tertiary); font-weight:400; }
 .batch-modal-field input,
 .batch-modal-field select,
@@ -8336,10 +8345,10 @@ body.tab-switching { transition: none !important; }
 }
 .product-batch-date { font-family:var(--font-mono); font-size:var(--text-xs); color:var(--color-text-tertiary); flex:1; }
 .product-batch-empty { text-align:center; padding:var(--space-5); color:var(--color-text-tertiary); font-size:var(--text-sm); }
-.product-detail-section { margin-bottom:var(--space-4); }
+.product-detail-section { margin-bottom:var(--space-5); /* §1.7 R5 section stack */ }
 .product-detail-section-title {
   font-family:var(--font-mono); font-size:var(--text-xs); color:var(--color-text-tertiary);
-  text-transform:uppercase; letter-spacing:-0.3px; margin-bottom:var(--space-2);
+  text-transform:uppercase; letter-spacing:-0.3px; margin-bottom:var(--space-3); /* §1.7 R6 */
 }
 .product-detail-info { display:grid; grid-template-columns:1fr 1fr; gap:var(--space-2) var(--space-4); margin-bottom:var(--space-4); }
 .product-detail-item { display:flex; flex-direction:column; gap:var(--space-0-5); }
