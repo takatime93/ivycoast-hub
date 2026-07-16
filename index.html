@@ -330,7 +330,10 @@ html, body { height: 100%; overflow: hidden; }
 }
 /* Header variant for pages whose tab-strip/toolbar continues the title block
    (Products, Customers): tighter gap than the 48px page-hd default. */
-.page-hd-tight { margin-bottom: var(--space-4); }
+/* Doubled class for specificity: the .page-hd base rule is declared LATER in
+   the sheet and was winning the equal-specificity tie — the tight variant had
+   silently never applied on Customers/Products (Halle, 2026-07-16). */
+.page-hd.page-hd-tight { margin-bottom: var(--space-4); }
 /* §1.7 R1 for the two pages whose title is still a bare h2 (global reset zeroes
    heading margins → their titles sat FLUSH on the content). Brand = default
    breath; Board's toolbar continues the title block = tight, like Customers. */
@@ -1574,7 +1577,8 @@ tr.row-sel:hover { background: var(--color-primary-tint); }
 /* Today's mode + period toggles use the shared Loop .seg segmented control
    (recessed track + sliding indicator). These rules add only Today-local spacing. */
 .today-seg { margin-bottom: var(--space-5); } /* §1.7 R3 — seg is the tools row here */
-.today-period-seg { margin-bottom: 16px; }
+/* .today-period-seg margin override removed — it carries .today-seg and the same
+   R3 slot applies (it's the tools row for the period tiles below). */
 .today-seg-badge {
   display: inline-flex;
   align-items: center;
@@ -7126,7 +7130,7 @@ select.contact-edit-input { appearance: auto; cursor: pointer; }
   .crm-modal-actions { padding: 14px 20px; }
   .crm-detail-header { padding: 16px 18px 12px; }
 
-  .crm-detail-section { padding: 12px 0; }
+  /* mobile .crm-detail-section override removed — desktop R5 rhythm (10px) applies */
   .crm-detail-tab-panel { padding: 0 18px 12px; }
   .crm-detail-biz-row { grid-template-columns: 1fr; }
   .crm-detail-fields { grid-template-columns: 1fr; }
