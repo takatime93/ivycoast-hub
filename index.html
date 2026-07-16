@@ -519,7 +519,7 @@ textarea:focus-visible,
    transition, so tab switching never stretches or slides (§1.6: tab switch is
    instant / opacity-only). The old main-full-width / main-today variants are
    retired; navigateTo no longer swaps width classes. */
-.main { max-width: 100%; margin: 0 auto; padding: 12px 80px 32px; }
+.main { max-width: 100%; margin: 0 auto; padding: var(--space-8) 80px 32px; } /* top 12→32 (owner eyeball 2026-07-16) */
 .view { display: none; }
 .view.active { display: block; }
 
@@ -7066,7 +7066,7 @@ select.contact-edit-input { appearance: auto; cursor: pointer; }
 /* Responsive */
 @media (max-width: 900px) {
   /* .crm-vendor-grid columns now governed by auto-fill minmax(280px) — no fixed override needed */
-  .main { padding: 12px 32px 32px; } /* page-shell rule: one width, narrower gutters */
+  .main { padding: var(--space-8) 32px 32px; } /* page-shell rule: one width, narrower gutters; top 12→32 (owner eyeball 2026-07-16) */
   .home-grid-2col { grid-template-columns: 1fr; }
   .today-tiles { grid-template-columns: repeat(2, 1fr); }
   .today-rhythm { grid-template-columns: repeat(4, 1fr); }
