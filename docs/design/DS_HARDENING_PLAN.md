@@ -22,6 +22,16 @@ string literals assigned to style/cssText, with its own ratcheting baseline; (b)
 worst offenders into classes/tokens (many are lazy one-offs like `style="font-size:12px"`
 that belong on an existing utility). Until this closes, the ratchet has a side door.
 
+**→ (a) TOOLING SHIPPED 2026-07-17 (report-only, commit dc3759f)** — token-audit.js now
+measures every escape route on each run. Live numbers at ship: 184 inline style attrs ·
+96 cssText writes · 520 `.style.prop` writes (broader regex than the 123 estimate — it
+counts ALL JS style writes incl. dynamic widths; the sweepable subset is the string-
+literal ones) · z-index 47 uses/21 distinct (0→99999) · 124 raw font-size px ·
+22 auto-margins (watchlist for the 2026-07-16 flex defect class) ·
+**JSON↔:root sync: 0 misses — the two sources are verifiably in sync** (checker handles
+numeric $values + 3-digit hex). Remaining Phase-0 work: ratcheting baselines for these
+counts (flip report→gate) + move (b), the sweep itself (index.html, needs its own pass).
+
 Also measured, new token-category gaps (fold into Phase 1 tooling + Phase 4 sweeps):
 - **z-index: ZERO tokens, 47 raw uses, 22 distinct values** (1…99999). Define a layer
   scale (`--z-raised / -dropdown / -sticky / -panel / -scrim / -modal / -toast`, ~6 stops),
