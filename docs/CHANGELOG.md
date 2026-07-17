@@ -5,6 +5,28 @@ See `plans/` for the design reasoning behind each change.
 
 ---
 
+## 2026-07-16 (late) → 07-17 — Owner live-review round 3 (all fixed same night)
+
+### ✅ THE width bug + review-stream fixes (branch `run/round2-rhythm`, 7 more commits)
+- **THE WIDTH BUG:** `.main { margin: 0 auto }` — as a flex item of the app-shell column
+  container, cross-axis auto margins beat stretch, so every page shrink-wrapped to its
+  content's intrinsic width (narrow centered Customers/Docs/Products-table; Partners
+  changed width PER SELECTED RECORD). One deleted margin fixed four owner reports at once.
+  Reproduced and verified with the NEW headless-Chrome harness (gate-open /tmp copy +
+  computed-style dumps — Noa can now verify layout visually without owner screenshots).
+- Partners "Add new" stranded next to the seg (round-2b P4): `.sync-indicator`'s
+  toolbar-era `margin-left: auto` absorbed the header right-zone's free space (same
+  auto-margin defect class). Scoped reset + sync text now sits left of the action.
+- Orders header seg/actions overlap at mid widths → Orders-scoped early wrap at 1500px
+  (a global bump was tried first, broke Partners' wrapped header, reverted same hour).
+- .main top padding 12→32 (owner call) · Tools Create button symmetric padding ·
+  formulator 追加 row aligned flex-end · lye-calculator values unified to one size.
+- **Boldoath removal spec written** (owner directive: Boldoath leaves the Hub except
+  finance — invoice bank block + workspace fields stay) → awaiting owner sign-off.
+- Diagnosed R3-5 (broken wrapped page-hd < 1100px, pre-existing since round-1d): side
+  zones' flex-basis 0 made the wrap line always "fit" → title/right collapsed to 0 width.
+  Fix verified in harness, staged to land after the owner's review round.
+
 ## 2026-07-16
 
 ### ✅ Round-2 pass 1: seed echo-guard + §1.7 vertical rhythm law + app-wide spacing sweep (branch `run/round2-rhythm`)
