@@ -28,6 +28,7 @@
 // 16. BrandConcept headers (Slice 5 / Brand, id prefix: bc-): id | section | title | content | lang | order | status | updatedBy | createdAt | updatedAt
 // 17. Events headers (Slice 7 / Calendar, id prefix: evt-): id | type | title | date | endDate | allDay | note | link | linkType | linkId | workspace | status | createdBy | createdAt | updatedAt
 // 18. SocialPosts headers (Slice 7 / Social planner, id prefix: spost-): id | platform | caption | assetRef | assetType | scheduledAt | postedAt | status | workspace | campaign | linkUrl | voiceChecked | createdBy | createdAt | updatedAt
+// 19. Reviews headers (SPEC B1 / Judge.me cache, id prefix: rvw-, sync-only — no client CRUD): id | judgemeReviewId | shopifyProductId | productHandle | rating | title | body | reviewer | reviewerEmail | verified | reviewCreatedAt | source | lastSynced
 // 11. Open Extensions → Apps Script, paste this code, deploy as web app
 // 7. Set "Execute as: Me" and "Who has access: Anyone"
 // 8. Copy the deployed URL into the dashboard (Board tab config)
@@ -204,6 +205,9 @@ function ensureActivityAndPresenceSheets() {
   // (OWNER DECISION #1). Price edits flow through the normal update path — but
   // batches NEVER re-read prices after lock (snapshot rule above).
   ensureSheet("Ingredients", ["id","name","nameJa","category","unit","pricePerUnit","supplier","notes","active","createdAt","updatedAt"]);
+  // V6 (SPEC B1): Judge.me review cache — written ONLY by syncJudgemeReviews
+  // (upsert by judgemeReviewId); the client never creates/updates/deletes rows.
+  ensureSheet("Reviews", ["id","judgemeReviewId","shopifyProductId","productHandle","rating","title","body","reviewer","reviewerEmail","verified","reviewCreatedAt","source","lastSynced"]);
   // Slice 4 (Make): general recipes — kind ∈ {soap, candle, other}; candle math is
   // BLOCKED on specs but the kind field ships now (owner mandate). items is JSON:
   // [{ingredientId, name, qty, unit}]. version is a simple int — editing an ACTIVE
@@ -402,7 +406,13 @@ function getRecentActivities_(limit) {
 // standalone calendar events) + SocialPosts (spost-, social planner). LINKED
 // calendar events are client-computed projections and add no storage. Ivy/chat/
 // BrainKB untouched; all existing endpoints unaffected.
-var SHEETS_ENSURED_FLAG = "SHEETS_ENSURED_V5";
+// V6 (SPEC B1 / Judge.me reviews): adds the Reviews sheet (rvw-, written ONLY by
+// syncJudgemeReviews — no client CRUD) + `reviews` on batchList (bodies truncated
+// to 400 chars in the batch payload; full rows via action=list&sheet=Reviews).
+// Requires Script Properties JUDGEME_PRIVATE_TOKEN + JUDGEME_SHOP_DOMAIN before the
+// first sync; without them syncReviews returns a config error and touches nothing.
+// Run setupReviewsTrigger() once from the editor for the daily refresh.
+var SHEETS_ENSURED_FLAG = "SHEETS_ENSURED_V6";
 
 function ensureSheetsOnce_() {
   try {
@@ -548,6 +558,7 @@ function doGet(e) {
       brandConcept: getAllRows("BrandConcept"),
       events: getAllRows("Events"),
       socialPosts: getAllRows("SocialPosts"),
+      reviews: getReviewsForBatch_(),
       activities: getRecentActivities_(100)
     });
     batchCachePut_(payload);
@@ -558,7 +569,7 @@ function doGet(e) {
     if (sheetName === "ActivityLog") {
       return jsonResponse({ activities: getRecentActivities_(100) });
     }
-    var keyMap = { "Contacts": "contacts", "Products": "products", "Orders": "orders", "Customers": "customers", "Invoices": "invoices", "Receipts": "receipts", "PartnerStock": "partnerStock", "ContactDocuments": "contactDocuments", "People": "people", "ContactNotes": "contactNotes", "ContactInteractions": "contactInteractions", "ContactActivityLog": "contactActivityLog", "SoapBatches": "soapBatches", "ProductMeta": "productMeta", "VenueReports": "venueReports", "Shipments": "shipments", "Ingredients": "ingredients", "Recipes": "recipes", "BrandConcept": "brandConcept", "Events": "events", "SocialPosts": "socialPosts" };
+    var keyMap = { "Contacts": "contacts", "Products": "products", "Orders": "orders", "Customers": "customers", "Invoices": "invoices", "Receipts": "receipts", "PartnerStock": "partnerStock", "ContactDocuments": "contactDocuments", "People": "people", "ContactNotes": "contactNotes", "ContactInteractions": "contactInteractions", "ContactActivityLog": "contactActivityLog", "SoapBatches": "soapBatches", "ProductMeta": "productMeta", "VenueReports": "venueReports", "Shipments": "shipments", "Ingredients": "ingredients", "Recipes": "recipes", "BrandConcept": "brandConcept", "Events": "events", "SocialPosts": "socialPosts", "Reviews": "reviews" };
     var key = keyMap[sheetName] || "tasks";
     var result = {};
     result[key] = getAllRows(sheetName);
@@ -696,6 +707,16 @@ function doPost(e) {
     invalidateBatchListCache_();
     logActivity("synced", "customer", "", "", count3 + " customers synced", "system", "Shopify");
     return jsonResponse({ success: true, synced: count3 });
+  }
+  if (action === "syncReviews") {
+    // V6 (SPEC B1): manual refresh from the product full page. The daily
+    // time-driven trigger (setupReviewsTrigger) calls syncJudgemeReviews directly.
+    var revResult = syncJudgemeReviews();
+    if (revResult.success) {
+      invalidateBatchListCache_();
+      logActivity("synced", "review", "", "", revResult.synced + " reviews synced", "system", "Judge.me");
+    }
+    return jsonResponse(revResult);
   }
 
   if (action === "uploadFile") {
@@ -1649,6 +1670,126 @@ function shopifyPost(endpoint, payload) {
 }
 
 // ── Sync Shopify Products → Google Sheet ───────────────────────
+
+// ===================== JUDGE.ME REVIEWS (V6 / SPEC B1) =====================
+// Pulls published reviews from the Judge.me API into the Reviews sheet (upsert
+// by judgemeReviewId). Config lives in Script Properties — JUDGEME_PRIVATE_TOKEN
+// (server-side only, never sent to the client) + JUDGEME_SHOP_DOMAIN (the
+// store's .myshopify.com domain). Missing config = clean error, nothing touched.
+// Judge.me is NOT called on the header Sync path (rate limits) — only the daily
+// trigger and the explicit syncReviews action hit it.
+function syncJudgemeReviews() {
+  var props = PropertiesService.getScriptProperties();
+  var token = props.getProperty("JUDGEME_PRIVATE_TOKEN");
+  var shopDomain = props.getProperty("JUDGEME_SHOP_DOMAIN");
+  if (!token || !shopDomain) {
+    return { success: false, error: "server not configured (JUDGEME_PRIVATE_TOKEN / JUDGEME_SHOP_DOMAIN)" };
+  }
+
+  var sheet = getSheet("Reviews");
+  if (!sheet) return { success: false, error: "Reviews sheet missing — run ensureSheets" };
+  var headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+  var existing = getAllRows("Reviews");
+  var byJmId = {};
+  existing.forEach(function(r) { if (r.judgemeReviewId) byJmId[String(r.judgemeReviewId)] = r; });
+
+  var nowIso = new Date().toISOString();
+  var page = 1;
+  var fetched = 0;
+  var upserts = [];
+  // Paginate (per_page max 100). Hard page cap = runaway/backoff guard.
+  while (page <= 50) {
+    var url = "https://judge.me/api/v1/reviews?api_token=" + encodeURIComponent(token) +
+      "&shop_domain=" + encodeURIComponent(shopDomain) + "&per_page=100&page=" + page;
+    var resp = UrlFetchApp.fetch(url, { method: "get", muteHttpExceptions: true });
+    if (resp.getResponseCode() !== 200) {
+      return { success: false, error: "Judge.me HTTP " + resp.getResponseCode(), synced: fetched };
+    }
+    var data;
+    try { data = JSON.parse(resp.getContentText()); } catch (e) {
+      return { success: false, error: "Judge.me: invalid JSON", synced: fetched };
+    }
+    var reviews = data.reviews || [];
+    if (reviews.length === 0) break;
+    reviews.forEach(function(rv) {
+      if (rv.hidden === true) return; // published reviews only
+      var reviewer = rv.reviewer || {};
+      upserts.push({
+        judgemeReviewId: String(rv.id || ""),
+        shopifyProductId: String(rv.product_external_id || ""),
+        productHandle: String(rv.product_handle || rv.handle || ""),
+        rating: rv.rating != null ? rv.rating : "",
+        title: String(rv.title || ""),
+        body: String(rv.body || ""),
+        reviewer: String(reviewer.name || ""),
+        reviewerEmail: String(reviewer.email || ""),
+        verified: String(rv.verified || ""),
+        reviewCreatedAt: String(rv.created_at || ""),
+        source: "judgeme",
+        lastSynced: nowIso
+      });
+    });
+    fetched += reviews.length;
+    if (reviews.length < 100) break;
+    page++;
+  }
+
+  // Upsert: update matched rows in place, append the rest. Row order follows
+  // the existing sheet; ids are rvw-<judgemeReviewId> (stable, sync-owned).
+  var updated = 0, appended = 0;
+  var lastCol = headers.length;
+  var dataRange = sheet.getLastRow() > 1 ? sheet.getRange(2, 1, sheet.getLastRow() - 1, lastCol).getValues() : [];
+  var rowIndexByJmId = {};
+  dataRange.forEach(function(row, i) {
+    var obj = rowToObj(headers, row);
+    if (obj.judgemeReviewId) rowIndexByJmId[String(obj.judgemeReviewId)] = i + 2; // 1-based + header
+  });
+  upserts.forEach(function(u) {
+    var rowVals = headers.map(function(h) {
+      if (h === "id") return "rvw-" + u.judgemeReviewId;
+      return u[h] !== undefined ? u[h] : "";
+    });
+    var at = rowIndexByJmId[u.judgemeReviewId];
+    if (at) { sheet.getRange(at, 1, 1, lastCol).setValues([rowVals]); updated++; }
+    else { sheet.appendRow(rowVals); appended++; }
+  });
+
+  return { success: true, synced: upserts.length, updated: updated, appended: appended, fetchedFromApi: fetched };
+}
+
+// batchList payload variant: bodies truncated so the cached payload stays inside
+// CacheService limits (same precedent as the slim products). The product full
+// page fetches complete rows via action=list&sheet=Reviews when it needs them.
+function getReviewsForBatch_() {
+  var rows = getAllRows("Reviews");
+  return rows.map(function(r) {
+    var out = {};
+    for (var k in r) out[k] = r[k];
+    var b = String(out.body || "");
+    if (b.length > 400) { out.body = b.substring(0, 400) + "…"; out.bodyTruncated = true; }
+    return out;
+  });
+}
+
+// One-time setup (run from the Apps Script editor after setting the Script
+// Properties): daily refresh trigger for the review cache. Idempotent.
+function setupReviewsTrigger() {
+  var exists = ScriptApp.getProjectTriggers().some(function(t) {
+    return t.getHandlerFunction() === "syncJudgemeReviewsTriggered";
+  });
+  if (exists) return "trigger already installed";
+  ScriptApp.newTrigger("syncJudgemeReviewsTriggered").timeBased().everyDays(1).atHour(5).create();
+  return "daily trigger installed (05:00 script timezone)";
+}
+function syncJudgemeReviewsTriggered() {
+  var res = syncJudgemeReviews();
+  if (res.success) {
+    invalidateBatchListCache_();
+    logActivity("synced", "review", "", "", res.synced + " reviews synced (daily)", "system", "Judge.me");
+  } else {
+    console.error("syncJudgemeReviewsTriggered: " + res.error);
+  }
+}
 
 function syncShopifyProducts() {
   var sheet = getSheet("Products");
