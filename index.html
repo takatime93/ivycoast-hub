@@ -15369,7 +15369,10 @@ function checkBoardSetup() {
 }
 
 function setSyncStatus(msg) {
-  document.getElementById("sync-status").textContent = msg;
+  // Null-guarded (audit C1 convention): status writes run inside persistence
+  // chains — a missing span must never abort the save.
+  var el = document.getElementById("sync-status");
+  if (el) el.textContent = msg;
 }
 
 function showLastSynced() {
@@ -16833,7 +16836,9 @@ var crmActiveSubView = localStorage.getItem("ivyhub_crmSubView") || "crm-vendors
 var crmVendorViewMode = localStorage.getItem("ivyhub_crmVendorView") || "tile";
 
 function setCrmSyncStatus(msg) {
-  document.getElementById("crm-sync-status").textContent = msg;
+  // Null-guarded (audit C1 convention).
+  var el = document.getElementById("crm-sync-status");
+  if (el) el.textContent = msg;
 }
 
 function showCrmLastSynced() {
@@ -36393,7 +36398,9 @@ function generateProductMetaId() {
 }
 
 function setProductsSyncStatus(msg) {
-  document.getElementById("products-sync-status").textContent = msg;
+  // Null-guarded (audit C1 convention).
+  var el = document.getElementById("products-sync-status");
+  if (el) el.textContent = msg;
 }
 
 function showProductsLastSynced() {
