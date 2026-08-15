@@ -2766,6 +2766,11 @@ tr.row-sel:hover { background: var(--color-primary-tint); }
 @media (max-width: 1100px) {
   .page-hd { flex-wrap: wrap; row-gap: var(--space-3); }
   .page-hd-center { order: 3; flex-basis: 100%; justify-content: flex-start; overflow-x: auto; }
+  /* R3-5: side zones carry basis 0 (true-centering) → the flex line computes
+     0 + 0 + 100% = "fits" and WRAP NEVER FIRES; center takes the whole row while
+     title/right collapse to w:0 (headless geometry dump, 2026-07-17). Intrinsic
+     bases make the line overflow so the wrap above actually engages. */
+  .page-hd-title, .sell-title-row, .page-hd-right { flex-basis: auto; }
 }
 /* Orders only: its 5-option seg + wide right actions overlap between ~1100 and
    ~1500 (owner screenshot 2026-07-16) — zones can't shrink below min-content.
@@ -2775,6 +2780,8 @@ tr.row-sel:hover { background: var(--color-primary-tint); }
 @media (max-width: 1500px) {
   #orders .page-hd { flex-wrap: wrap; row-gap: var(--space-3); }
   #orders .page-hd-center { order: 3; flex-basis: 100%; justify-content: flex-start; overflow-x: auto; }
+  /* R3-5: same intrinsic-basis fix, Orders-scoped (its early wrap). */
+  #orders .sell-title-row, #orders .page-hd-right { flex-basis: auto; }
 }
 .crm-action-group {
   display: flex;
@@ -9967,6 +9974,13 @@ body.tab-switching { transition: none !important; }
         </div>
       </div>
       <div class="page-hd-right">
+        <!-- Sync status BEFORE the actions so the primary sits flush right (matches
+             Partners, owner 2026-07-16). Span restored 2026-08-16: the slice-6 sweep
+             removed it but setOrdersSyncStatus still wrote here — the TypeError was
+             silently aborting manual-order/mark-shipped persistence (audit C1). -->
+        <div class="sync-indicator">
+          <span id="orders-sync-status"></span>
+        </div>
         <button class="btn btn-ghost" onclick="openSettlementSurface()" data-i18n="settle.entry">精算 Consignment Settlements</button>
         <button class="btn btn-primary" onclick="openManualOrderModal()" data-i18n="orders.newOrder">+ New Order</button>
       </div>
@@ -37767,7 +37781,10 @@ function ordersApiPost(body) {
 }
 
 function setOrdersSyncStatus(msg) {
-  document.getElementById("orders-sync-status").textContent = msg;
+  // Null-guarded (audit C1): this runs inside order-persistence chains — a missing
+  // status span must degrade to no status text, never abort the save.
+  var el = document.getElementById("orders-sync-status");
+  if (el) el.textContent = msg;
 }
 
 function showOrdersLastSynced() {
