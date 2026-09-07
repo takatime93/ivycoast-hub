@@ -1,4 +1,4 @@
-var CACHE_NAME = "ivyhub-v22"; // bumped for the 2026-07-16 round-2 rhythm pass (fresh name guarantees cache invalidation on deploy)
+var CACHE_NAME = "ivyhub-v23"; // bumped for the 2026-09-07 round-2 merge (rhythm pass + Batch 0 audit fixes)
 var STATIC_ASSETS = [
   "/ivycoast-hub/",
   "/ivycoast-hub/index.html",

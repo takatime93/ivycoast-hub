@@ -5,6 +5,19 @@ See `plans/` for the design reasoning behind each change.
 
 ---
 
+## 2026-09-07 — Round-2 branch APPROVED + merged to main (deploy ivyhub-v23)
+
+### ✅ Merge to live: `run/round2-rhythm` → `main` (19 commits + push-prep)
+- Owner approval landed (`REVIEW/noa-20260716-round2-rhythm/APPROVED.md`) — covers the
+  whole tree: slice-6 mega-run, round-2 rhythm pass, round-3 owner fixes, Batch 0 audit
+  fixes (C1 orders-sync-status restore + null-guard convention, R3-5 wrap fix).
+- Push-prep: sw cache `ivyhub-v22` → `ivyhub-v23`, APP_VERSION + version.json →
+  `20260907-1` (matched).
+- Post-merge queue per the 2026-08-15 full-audit plan: Batch 1 (data integrity: C2
+  server-id adoption + dedupe, C3 unique stock-form ids, error-response rejection),
+  Batch 2 (security defaults, Taka ride-along: S1 fail-closed auth, S2 upload sharing,
+  S3 links.json verify), then Batches 3-4 and the existing feature queue.
+
 ## 2026-07-16 (late) → 07-17 — Owner live-review round 3 (all fixed same night)
 
 ### ✅ THE width bug + review-stream fixes (branch `run/round2-rhythm`, 7 more commits)
